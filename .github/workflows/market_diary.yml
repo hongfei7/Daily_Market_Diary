@@ -1,0 +1,102 @@
+name: Daily Market Diary
+
+on:
+  # 定时：每天北京时间 04:00（UTC 20:00）
+  # 你现在用的是 19:58 UTC（= 北京 03:58），没问题
+  schedule:
+    - cron: "58 19 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-market-diary-main
+  cancel-in-progress: true
+
+jobs:
+  run:
+    # 避免 actions bot 自己 push 后又触发（如果未来开启 on: push）
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync with origin/main (before generating)
+        run: |
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r market_diary/requirements.txt
+
+      - name: Debug time & trigger
+        env:
+          TZ: Asia/Shanghai
+        run: |
+          echo "event: $GITHUB_EVENT_NAME"
+          echo "actor: $GITHUB_ACTOR"
+          echo "Beijing time: $(date)"
+          echo "UTC time: $(date -u)"
+
+      # ✅ 不泄露 key：只检查是否注入成功 + 长度
+      - name: Debug API key presence (safe)
+        run: |
+          python - <<'PY'
+          import os
+          for k in ["MINIMAX_API_KEY", "OPENAI_API_KEY"]:
+              v = (os.getenv(k) or "").strip()
+              print(f"{k}: present={bool(v)}, len={len(v)}")
+          for k in ["OPENAI_BASE_URL", "LLM_BASE_URL", "LLM_MODEL"]:
+              print(f"{k}: {os.getenv(k)}")
+          PY
+
+      - name: Generate diary
+        env:
+          TZ: Asia/Shanghai
+
+          # ✅ 你的主 Key（请在 Repo Settings → Secrets → Actions 里创建）
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+
+          # ✅ 兜底：有些代码/SDK只认 OPENAI_API_KEY
+          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+
+          # ✅ base_url：如果你的 Key 是在 platform.minimaxi.com 创建，用 .com
+          #    如果你的 Key 是在 platform.minimax.io 创建，把下面两行改成 https://api.minimax.io/v1
+          OPENAI_BASE_URL: https://api.minimaxi.com/v1
+          LLM_BASE_URL: https://api.minimaxi.com/v1
+
+          # ✅ 模型名
+          LLM_MODEL: MiniMax-M2.5
+        run: |
+          python market_diary/main.py --date "$(date -d 'yesterday' +%F)"
+
+      - name: Commit & push report
+        env:
+          TZ: Asia/Shanghai
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -f reports/
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "chore: market diary $(date -d 'yesterday' +%F)"
+          git push origin HEAD:main

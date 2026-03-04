@@ -1,0 +1,37 @@
+venv/
+.venv/
+env/
+
+# Secrets — NEVER commit API keys
+.env
+*.env
+secrets.py
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Reports output (generated at runtime)
+reports/
+
+# IDE / editor
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Test scratch
