@@ -1,0 +1,57 @@
+{
+  "fx_pairs": [],
+  "fx_composite": {
+    "available": false
+  },
+  "assets": {
+    "Gold": {
+      "available": false
+    },
+    "Oil": {
+      "available": false
+    },
+    "Bitcoin": {
+      "available": true,
+      "net_pp": 0.003,
+      "range_pp": 2.11,
+      "high": {
+        "time": "2026-03-08 18:25",
+        "value": 1.037
+      },
+      "low": {
+        "time": "2026-03-08 12:55",
+        "value": -1.072
+      },
+      "turning_points": [
+        {
+          "time": "2026-03-08 08:10",
+          "value": 0.1026,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-08 08:50",
+          "value": -0.2842,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-03-08 09:05",
+          "value": -0.14,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "BTC"
+    }
+  },
+  "divergence": {
+    "best_asset": "Bitcoin",
+    "best_net_pp": 0.003,
+    "worst_asset": "Bitcoin",
+    "worst_net_pp": 0.003,
+    "spread_pp": 0.0
+  },
+  "correlations": {
+    "Gold_Oil": null,
+    "Gold_Bitcoin": null,
+    "Oil_Bitcoin": null
+  }
+}
