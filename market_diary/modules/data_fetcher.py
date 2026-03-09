@@ -1,6 +1,8 @@
 import yfinance as yf
 import feedparser
 import pandas as pd
+import io
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Any
 
@@ -121,6 +123,7 @@ INTRADAY_WHITELIST = {
 }
 
 DEFAULT_INTRADAY_INTERVAL = "5m"
+ALWAYS_OPEN_CATEGORIES = {"Crypto"}
 
 
 # -----------------------------
@@ -130,17 +133,35 @@ def _parse_date(date_str: str) -> datetime:
     return datetime.strptime(date_str, "%Y-%m-%d")
 
 
+def _flatten_download_df(df: pd.DataFrame) -> pd.DataFrame:
+    if not isinstance(df, pd.DataFrame):
+        return pd.DataFrame()
+    if df.empty:
+        return df
+
+    out = df.copy()
+    if isinstance(out.columns, pd.MultiIndex):
+        out.columns = out.columns.get_level_values(0)
+        out = out.loc[:, ~out.columns.duplicated()]
+    return out
+
+
 def _safe_download(symbol: str, start: datetime, end: datetime, interval: str) -> pd.DataFrame:
-    df = yf.download(
-        symbol,
-        start=start,
-        end=end,
-        interval=interval,
-        progress=False,
-        auto_adjust=False,
-        threads=False,
-    )
-    return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
+    sink = io.StringIO()
+    try:
+        with redirect_stdout(sink), redirect_stderr(sink):
+            df = yf.download(
+                symbol,
+                start=start,
+                end=end,
+                interval=interval,
+                progress=False,
+                auto_adjust=False,
+                threads=False,
+            )
+    except Exception:
+        return pd.DataFrame()
+    return _flatten_download_df(df)
 
 
 def _normalize_intraday_df(hist: pd.DataFrame, name: str, category: str, ticker: str) -> pd.DataFrame:
@@ -151,10 +172,7 @@ def _normalize_intraday_df(hist: pd.DataFrame, name: str, category: str, ticker:
     if hist is None or hist.empty:
         return pd.DataFrame(columns=["time", "symbol", "name", "ticker", "price", "Category"])
 
-    df = hist.reset_index()
-
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [c[0] if c[0] else c[1] for c in df.columns]
+    df = _flatten_download_df(hist).reset_index()
 
     if "Datetime" in df.columns:
         time_col = "Datetime"
@@ -190,15 +208,20 @@ def _normalize_intraday_df(hist: pd.DataFrame, name: str, category: str, ticker:
 
 def _get_effective_intraday_date(requested_date: str, interval: str, max_lookback_days: int = 4) -> Tuple[str, List[pd.DataFrame]]:
     base = _parse_date(requested_date)
+    crypto_only_candidate: Optional[Tuple[str, List[pd.DataFrame]]] = None
+
     for k in range(max_lookback_days + 1):
         day = base - timedelta(days=k)
         start = day
         end = day + timedelta(days=1)
 
         timeseries: List[pd.DataFrame] = []
-        any_rows = 0
+        market_rows = 0
+        crypto_rows = 0
 
         for category, items in TICKERS.items():
+            if category not in ALWAYS_OPEN_CATEGORIES and day.weekday() >= 5:
+                continue
             for name, ticker in items.items():
                 if (category, name) not in INTRADAY_WHITELIST:
                     continue
@@ -206,12 +229,20 @@ def _get_effective_intraday_date(requested_date: str, interval: str, max_lookbac
                 hist = _safe_download(ticker, start=start, end=end, interval=interval)
                 df_plot = _normalize_intraday_df(hist, name=name, category=category, ticker=ticker)
                 if not df_plot.empty:
-                    any_rows += len(df_plot)
+                    rows = len(df_plot)
+                    if category in ALWAYS_OPEN_CATEGORIES:
+                        crypto_rows += rows
+                    else:
+                        market_rows += rows
                     timeseries.append(df_plot)
 
-        if any_rows > 0:
+        if market_rows > 0:
             return day.strftime("%Y-%m-%d"), timeseries
+        if crypto_rows > 0 and crypto_only_candidate is None:
+            crypto_only_candidate = (day.strftime("%Y-%m-%d"), timeseries)
 
+    if crypto_only_candidate is not None:
+        return crypto_only_candidate
     return requested_date, []
 
 
@@ -220,11 +251,19 @@ def _calc_summary_for_symbol(ticker: str, target_date: str) -> Optional[Tuple[fl
     start = day - timedelta(days=10)
     end = day + timedelta(days=1)
 
-    daily = _safe_download(ticker, start=start, end=end, interval="1d")
-    if daily is None or daily.empty or "Close" not in daily.columns:
+    daily = _flatten_download_df(_safe_download(ticker, start=start, end=end, interval="1d"))
+    if daily is None or daily.empty:
         return None
 
-    closes = daily["Close"].dropna()
+    close_col = None
+    for cand in ["Close", "Adj Close", "close", "adjclose"]:
+        if cand in daily.columns:
+            close_col = cand
+            break
+    if close_col is None:
+        return None
+
+    closes = pd.to_numeric(daily[close_col], errors="coerce").dropna()
     if len(closes) == 0:
         return None
 

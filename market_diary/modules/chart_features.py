@@ -34,7 +34,7 @@ def _prep_ts(
     d = df.sort_values(time_col).copy()
     d[time_col] = pd.to_datetime(d[time_col], errors="coerce")
 
-    if pd.api.types.is_datetime64tz_dtype(d[time_col]):
+    if isinstance(d[time_col].dtype, pd.DatetimeTZDtype):
         d[time_col] = d[time_col].dt.tz_convert(tz).dt.tz_localize(None)
     else:
         try:

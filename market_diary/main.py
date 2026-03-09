@@ -18,6 +18,16 @@ from modules.chart_features import extract_chart_features, features_to_prompt_bl
 # -----------------------------
 # Helpers
 # -----------------------------
+def _configure_console_output() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            try:
+                reconfigure(errors="replace")
+            except Exception:
+                pass
+
+
 def _safe_first(df: pd.DataFrame, col: str, default=None):
     if df is None or df.empty or col not in df.columns:
         return default
@@ -57,7 +67,7 @@ def _prep_timeseries(
     d[time_col] = pd.to_datetime(d[time_col], errors="coerce")
 
     # Convert timezone
-    if pd.api.types.is_datetime64tz_dtype(d[time_col]):
+    if isinstance(d[time_col].dtype, pd.DatetimeTZDtype):
         d[time_col] = d[time_col].dt.tz_convert(tz).dt.tz_localize(None)
     else:
         # If tz-naive, try treat as UTC then convert to Beijing
@@ -499,7 +509,12 @@ def plot_wti_curve_front_back(timeseries_list: List[pd.DataFrame], report_date: 
 # -----------------------------
 # Charts builder
 # -----------------------------
-def create_charts(report_date: str, market_data_dict: dict, output_dir: str) -> str:
+def create_charts(
+    report_date: str,
+    market_data_dict: dict,
+    output_dir: str,
+    chart_label: Optional[str] = None,
+) -> str:
     """Create chart images and return the Markdown section embedding them."""
     chart_dir = os.path.join(output_dir, "charts")
     os.makedirs(chart_dir, exist_ok=True)
@@ -508,46 +523,47 @@ def create_charts(report_date: str, market_data_dict: dict, output_dir: str) -> 
     if not timeseries_list:
         return "\n*(No intraday data available for charts)*\n"
 
+    title_date = chart_label or report_date
     charts_md = "## 📊 Charts\n\n"
 
     # 1) USD / Multi assets
-    fx_img = plot_usd_trend(timeseries_list, report_date, os.path.join(chart_dir, f"fx_{report_date}.png"))
+    fx_img = plot_usd_trend(timeseries_list, title_date, os.path.join(chart_dir, f"fx_{report_date}.png"))
     if fx_img:
         charts_md += f"### 💵 USD Strength (FX, Intraday %)\n![FX Chart](charts/{fx_img})\n\n"
 
-    multi_img = plot_multi_asset_trend(timeseries_list, report_date, os.path.join(chart_dir, f"multi_{report_date}.png"))
+    multi_img = plot_multi_asset_trend(timeseries_list, title_date, os.path.join(chart_dir, f"multi_{report_date}.png"))
     if multi_img:
         charts_md += f"### 🟡🛢️₿ Gold vs Oil vs Bitcoin (Intraday %)\n![Multi Asset](charts/{multi_img})\n\n"
 
     # 2) Rates pack
-    rates_img = plot_rates_2y10y30y(timeseries_list, report_date, os.path.join(chart_dir, f"rates_{report_date}.png"))
+    rates_img = plot_rates_2y10y30y(timeseries_list, title_date, os.path.join(chart_dir, f"rates_{report_date}.png"))
     if rates_img:
         charts_md += f"### 🏦 Rates: UST 2Y/10Y/30Y (bps from open)\n![Rates](charts/{rates_img})\n\n"
 
-    curve_img = plot_curve_2s10s(timeseries_list, report_date, os.path.join(chart_dir, f"curve_2s10s_{report_date}.png"))
+    curve_img = plot_curve_2s10s(timeseries_list, title_date, os.path.join(chart_dir, f"curve_2s10s_{report_date}.png"))
     if curve_img:
         charts_md += f"### 📈 Curve: 2s10s (bps from open)\n![2s10s](charts/{curve_img})\n\n"
 
-    realbe_img = plot_real_vs_breakeven(timeseries_list, report_date, os.path.join(chart_dir, f"real_be_{report_date}.png"))
+    realbe_img = plot_real_vs_breakeven(timeseries_list, title_date, os.path.join(chart_dir, f"real_be_{report_date}.png"))
     if realbe_img:
         charts_md += f"### 🧊🔥 Real Yield vs Breakeven (levels)\n![Real vs BE](charts/{realbe_img})\n\n"
 
     # 3) Risk assets global
-    eq_img = plot_equity_global(timeseries_list, report_date, os.path.join(chart_dir, f"equities_{report_date}.png"))
+    eq_img = plot_equity_global(timeseries_list, title_date, os.path.join(chart_dir, f"equities_{report_date}.png"))
     if eq_img:
         charts_md += f"### 📉 Equities: US/EU/CN (Intraday %)\n![Equities](charts/{eq_img})\n\n"
 
     # 4) Vol & Credit
-    vol_img = plot_vol_vix_move(timeseries_list, report_date, os.path.join(chart_dir, f"vol_{report_date}.png"))
+    vol_img = plot_vol_vix_move(timeseries_list, title_date, os.path.join(chart_dir, f"vol_{report_date}.png"))
     if vol_img:
         charts_md += f"### 🌪️ Vol: VIX vs MOVE (Intraday %)\n![Vol](charts/{vol_img})\n\n"
 
-    credit_img = plot_credit_ig_hy(timeseries_list, report_date, os.path.join(chart_dir, f"credit_{report_date}.png"))
+    credit_img = plot_credit_ig_hy(timeseries_list, title_date, os.path.join(chart_dir, f"credit_{report_date}.png"))
     if credit_img:
         charts_md += f"### 🧱 Credit: IG vs HY (abs change)\n![Credit](charts/{credit_img})\n\n"
 
     # 5) Commodity curve (optional)
-    oilcurve_img = plot_wti_curve_front_back(timeseries_list, report_date, os.path.join(chart_dir, f"wti_curve_{report_date}.png"))
+    oilcurve_img = plot_wti_curve_front_back(timeseries_list, title_date, os.path.join(chart_dir, f"wti_curve_{report_date}.png"))
     if oilcurve_img:
         charts_md += f"### 🛢️ Oil Curve: WTI Front–Back (change from open)\n![WTI Curve](charts/{oilcurve_img})\n\n"
 
@@ -574,24 +590,38 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    _configure_console_output()
     args = _parse_args()
-    report_date = args.date
+    requested_date = args.date
 
-    print(f"🚀 Generating Market Diary for {report_date}...")
+    print(f"🚀 Generating Market Diary for {requested_date}...")
 
     print("📡 Fetching market data and news...")
-    raw_data = fetch_market_data(report_date)
+    raw_data = fetch_market_data(requested_date)
     news_headlines = fetch_news()
 
     if not raw_data:
         print("⚠️ Market data fetch failed; continuing with empty payload.")
-        raw_data = {"summary": {}, "timeseries": [], "meta": {"effective_date": report_date}}
+        raw_data = {"summary": {}, "timeseries": [], "meta": {"effective_date": requested_date}}
 
     meta = raw_data.get("meta", {}) or {}
-    effective_date = meta.get("effective_date", report_date)
-    if effective_date != report_date:
-        print(f"⚠️ No intraday on {report_date}; fallback to trading day {effective_date}")
-        report_date = effective_date
+    effective_date = meta.get("effective_date", requested_date)
+    fallback_note_md = ""
+    fallback_prompt_prefix = ""
+    chart_title_date = requested_date
+    if effective_date != requested_date:
+        print(f"⚠️ No intraday on {requested_date}; fallback to trading day {effective_date}")
+        fallback_note_md = (
+            f"> **Data fallback:** requested date `{requested_date}` had no usable intraday market data. "
+            f"Charts, chart features, and market snapshot below use the last available trading day: `{effective_date}`.\n\n"
+        )
+        fallback_prompt_prefix = (
+            "### Data Fallback Note\n"
+            f"- Requested report date: {requested_date}\n"
+            f"- No usable intraday market data was available on that date.\n"
+            f"- Charts, chart features, and market snapshot use fallback trading day: {effective_date}\n\n"
+        )
+        chart_title_date = f"{requested_date} (data fallback: {effective_date})"
 
     market_summary = raw_data.get("summary", {}) or {}
     timeseries_data = raw_data.get("timeseries", []) or []
@@ -602,7 +632,12 @@ def main() -> None:
     print("📊 Generating charts...")
     if timeseries_data:
         try:
-            charts_section = create_charts(report_date, raw_data, output_dir=output_dir)
+            charts_section = create_charts(
+                requested_date,
+                raw_data,
+                output_dir=output_dir,
+                chart_label=chart_title_date,
+            )
         except Exception as e:
             print(f"❌ Chart generation failed: {type(e).__name__}: {e}")
             charts_section = "\n*(Charts generation failed due to an error)*\n"
@@ -615,27 +650,27 @@ def main() -> None:
         chart_features = extract_chart_features(timeseries_data, tz="Asia/Shanghai")
         chart_dir = os.path.join(output_dir, "charts")
         os.makedirs(chart_dir, exist_ok=True)
-        feat_path = os.path.join(chart_dir, f"features_{report_date}.json")
+        feat_path = os.path.join(chart_dir, f"features_{requested_date}.json")
         with open(feat_path, "w", encoding="utf-8") as _f:
             json.dump(chart_features, _f, ensure_ascii=False, indent=2, default=str)
         print(f"💾 Chart features saved: {feat_path}")
-        chart_features_block = features_to_prompt_block(chart_features)
+        chart_features_block = fallback_prompt_prefix + features_to_prompt_block(chart_features)
     except Exception as e:
         print(f"⚠️ Chart feature extraction failed: {type(e).__name__}: {e}")
         chart_features_block = "[Chart features extraction failed — LLM should acknowledge missing data]"
 
     print("🧠 Generating AI analysis...")
-    report_content = generate_report(report_date, market_summary, news_headlines, chart_features_block)
+    report_content = generate_report(requested_date, market_summary, news_headlines, chart_features_block)
     if isinstance(report_content, str) and report_content.startswith("Error"):
         print(f"❌ LLM analysis failed: {report_content}")
         report_content = f"*AI Analysis failed: {report_content}*"
 
     # ✅ IMPORTANT: charts moved to the END of the report
-    final_report = f"""# 📅 Market Diary: {report_date}
+    final_report = f"""# 📅 Market Diary: {requested_date}
 
 ---
 
-## 🧠 AI Macro Analysis
+{fallback_note_md}## 🧠 AI Macro Analysis
 
 {report_content}
 
@@ -648,7 +683,7 @@ def main() -> None:
 *Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*
 """
 
-    output_file = os.path.join(output_dir, f"{report_date}.md")
+    output_file = os.path.join(output_dir, f"{requested_date}.md")
     try:
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(final_report)
