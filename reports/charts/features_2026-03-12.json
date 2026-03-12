@@ -1,0 +1,269 @@
+{
+  "fx_pairs": [
+    {
+      "available": true,
+      "net_pp": 0.258,
+      "range_pp": 0.503,
+      "high": {
+        "time": "2026-03-13 04:25",
+        "value": 0.29
+      },
+      "low": {
+        "time": "2026-03-12 19:35",
+        "value": -0.213
+      },
+      "turning_points": [
+        {
+          "time": "2026-03-12 12:05",
+          "value": 0.002,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 12:20",
+          "value": -0.001,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 12:45",
+          "value": 0.0523,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "DXY",
+      "inverted": false
+    },
+    {
+      "available": true,
+      "net_pp": 0.084,
+      "range_pp": 0.526,
+      "high": {
+        "time": "2026-03-13 03:25",
+        "value": 0.148
+      },
+      "low": {
+        "time": "2026-03-12 19:35",
+        "value": -0.378
+      },
+      "turning_points": [
+        {
+          "time": "2026-03-12 08:15",
+          "value": 0.0295,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 08:30",
+          "value": -0.0044,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 09:00",
+          "value": -0.1646,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "USD/JPY",
+      "inverted": false
+    },
+    {
+      "available": true,
+      "net_pp": 0.242,
+      "range_pp": 0.462,
+      "high": {
+        "time": "2026-03-13 04:25",
+        "value": 0.253
+      },
+      "low": {
+        "time": "2026-03-12 19:35",
+        "value": -0.208
+      },
+      "turning_points": [
+        {
+          "time": "2026-03-12 08:55",
+          "value": -0.0462,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 09:25",
+          "value": -0.1156,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-03-12 09:50",
+          "value": -0.0809,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "EUR/USD",
+      "inverted": true
+    },
+    {
+      "available": true,
+      "net_pp": -0.007,
+      "range_pp": 0.276,
+      "high": {
+        "time": "2026-03-12 12:55",
+        "value": 0.029
+      },
+      "low": {
+        "time": "2026-03-12 19:30",
+        "value": -0.247
+      },
+      "turning_points": [
+        {
+          "time": "2026-03-12 12:55",
+          "value": 0.0291,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 14:05",
+          "value": -0.0073,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-03-12 14:35",
+          "value": -0.0654,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "USD/CNH",
+      "inverted": false
+    }
+  ],
+  "fx_composite": {
+    "available": true,
+    "net_pp": 0.084,
+    "range_pp": 0.463,
+    "high": {
+      "time": "2026-03-13 04:55",
+      "value": 0.202
+    },
+    "low": {
+      "time": "2026-03-12 19:35",
+      "value": -0.261
+    },
+    "turning_points": [
+      {
+        "time": "2026-03-12 08:15",
+        "value": 0.0378,
+        "direction": "peak"
+      },
+      {
+        "time": "2026-03-12 08:30",
+        "value": -0.0022,
+        "direction": "peak"
+      },
+      {
+        "time": "2026-03-12 08:50",
+        "value": -0.0954,
+        "direction": "trough"
+      }
+    ]
+  },
+  "assets": {
+    "Gold": {
+      "available": true,
+      "net_pp": -1.415,
+      "range_pp": 2.323,
+      "high": {
+        "time": "2026-03-12 18:00",
+        "value": 0.712
+      },
+      "low": {
+        "time": "2026-03-13 04:35",
+        "value": -1.611
+      },
+      "turning_points": [
+        {
+          "time": "2026-03-12 12:05",
+          "value": 0.0019,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 12:20",
+          "value": -0.0368,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-03-12 12:40",
+          "value": -0.1822,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "GOLD"
+    },
+    "Oil": {
+      "available": true,
+      "net_pp": 2.294,
+      "range_pp": 6.83,
+      "high": {
+        "time": "2026-03-12 23:20",
+        "value": 2.836
+      },
+      "low": {
+        "time": "2026-03-12 15:50",
+        "value": -3.994
+      },
+      "turning_points": [
+        {
+          "time": "2026-03-12 12:15",
+          "value": 0.4143,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 12:35",
+          "value": 0.6373,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-03-12 13:00",
+          "value": -1.126,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "WTI"
+    },
+    "Bitcoin": {
+      "available": true,
+      "net_pp": 0.128,
+      "range_pp": 2.095,
+      "high": {
+        "time": "2026-03-12 19:40",
+        "value": 0.708
+      },
+      "low": {
+        "time": "2026-03-12 13:25",
+        "value": -1.387
+      },
+      "turning_points": [
+        {
+          "time": "2026-03-12 08:05",
+          "value": -0.0043,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-03-12 08:20",
+          "value": 0.1269,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-03-12 08:45",
+          "value": 0.0623,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "BTC"
+    }
+  },
+  "divergence": {
+    "best_asset": "Oil",
+    "best_net_pp": 2.294,
+    "worst_asset": "Gold",
+    "worst_net_pp": -1.415,
+    "spread_pp": 3.709
+  },
+  "correlations": {
+    "Gold_Oil": -0.858,
+    "Gold_Bitcoin": -0.152,
+    "Oil_Bitcoin": 0.111
+  }
+}
