@@ -216,7 +216,7 @@ Use the **Chart Features block above** (not any chart images — you cannot see 
 
     try:
         # ✅ 默认改成 MiniMax-M2.5
-        model_name = os.getenv("LLM_MODEL", "MiniMax-M2.5")
+        model_name = os.getenv("LLM_MODEL", "MiniMax-M2.7")
 
         response = client.chat.completions.create(
             model=model_name,
