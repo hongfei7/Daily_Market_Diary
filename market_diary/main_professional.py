@@ -207,39 +207,59 @@ def generate_llm_analysis(
     """
     print("🤖 正在生成 AI 分析...")
     
-    try:
-        client = get_client()
-        
-        # 构建 prompt
-        user_prompt = get_llm_prompt_for_professional_report(
-            date=report_date,
-            market_summary=all_data.get('market', {}).get('summary', {}),
-            chart_features=chart_features_block,
-            news_headlines=all_data.get('news', []),
-            macro_calendar=all_data.get('macro', {}),
-        )
-        
-        # 调用 LLM
-        model_name = os.getenv("LLM_MODEL", "MiniMax-M2.7")
-        
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {"role": "system", "content": PROFESSIONAL_SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.7,
-            max_tokens=4000,
-        )
-        
-        analysis = response.choices[0].message.content
-        print("   ✓ AI 分析生成完成")
-        
-        return analysis
-        
-    except Exception as e:
-        print(f"   ✗ AI 分析生成失败: {e}")
-        return f"*AI 分析生成失败: {e}*"
+    max_retries = 3
+    retry_delay = 5  # 初始延迟5秒
+    
+    for attempt in range(max_retries):
+        try:
+            client = get_client()
+            
+            # 构建 prompt
+            user_prompt = get_llm_prompt_for_professional_report(
+                date=report_date,
+                market_summary=all_data.get('market', {}).get('summary', {}),
+                chart_features=chart_features_block,
+                news_headlines=all_data.get('news', []),
+                macro_calendar=all_data.get('macro', {}),
+            )
+            
+            # 调用 LLM
+            model_name = os.getenv("LLM_MODEL", "MiniMax-M2.7")
+            
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": PROFESSIONAL_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.7,
+                max_tokens=4000,
+            )
+            
+            analysis = response.choices[0].message.content
+            print("   ✓ AI 分析生成完成")
+            
+            return analysis
+            
+        except Exception as e:
+            error_msg = str(e)
+            
+            # 检查是否是服务器负载问题
+            if '529' in error_msg or 'overloaded' in error_msg:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (attempt + 1)
+                    print(f"   ⚠️ 服务器负载高，{wait_time}秒后重试 ({attempt + 1}/{max_retries})...")
+                    import time
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    print(f"   ✗ AI 分析生成失败（服务器负载过高）: {e}")
+                    return f"*AI 分析暂时不可用（服务器负载过高），请稍后重试。错误: {error_msg[:200]}*"
+            else:
+                print(f"   ✗ AI 分析生成失败: {e}")
+                return f"*AI 分析生成失败: {error_msg[:200]}*"
+    
+    return "*AI 分析生成失败: 达到最大重试次数*"
 
 
 def main():
