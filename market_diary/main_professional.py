@@ -329,6 +329,9 @@ def main():
     # 5. 组装专业晨报
     print("📝 正在组装晨报...")
     try:
+        # 获取模型名称
+        model_name = os.getenv("LLM_MODEL", "Not Specified")
+        
         final_report = format_professional_report(
             date=report_date,
             market_data=all_data.get('market', {}),
@@ -338,6 +341,7 @@ def main():
             risk_data=all_data.get('risk', {}),
             llm_analysis=llm_analysis,
             charts_section=charts_section,
+            model_name=model_name,
         )
         print("   ✓ 晨报组装完成")
     except Exception as e:

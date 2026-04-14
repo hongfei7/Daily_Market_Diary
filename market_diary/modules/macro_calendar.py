@@ -114,38 +114,38 @@ class MacroCalendar:
         
         # 已公布数据
         if calendar_data.get('released'):
-            lines.append("#### 昨日已公布数据")
+            lines.append("#### Released Data (Prior Day)")
             lines.append("")
-            lines.append("| 时间 | 国家 | 指标 | 实际值 | 预期 | 前值 | 偏差 |")
-            lines.append("|------|------|------|--------|------|------|------|")
+            lines.append("| Time | Country | Indicator | Actual | Forecast | Prior | Deviation |")
+            lines.append("|------|---------|-----------|--------|----------|-------|-----------|")
             
             for item in calendar_data['released']:
-                surprise_emoji = "🔴" if item['surprise'] == 'miss' else "🟢" if item['surprise'] == 'beat' else "⚪"
+                surprise_text = "MISS" if item['surprise'] == 'miss' else "BEAT" if item['surprise'] == 'beat' else "INLINE"
                 lines.append(
                     f"| {item['time']} | {item['country']} | {item['indicator']} | "
                     f"{item['actual']} | {item['forecast']} | {item['previous']} | "
-                    f"{surprise_emoji} {item['surprise'].upper()} |"
+                    f"{surprise_text} |"
                 )
             lines.append("")
         
         # 待公布数据
         if calendar_data.get('upcoming'):
-            lines.append("#### 今日待公布数据")
+            lines.append("#### Upcoming Data (Today)")
             lines.append("")
-            lines.append("| 时间 | 国家 | 指标 | 预期 | 前值 | 重要性 |")
-            lines.append("|------|------|------|------|------|--------|")
+            lines.append("| Time | Country | Indicator | Forecast | Prior | Importance |")
+            lines.append("|------|---------|-----------|----------|-------|------------|")
             
             for item in calendar_data['upcoming']:
-                impact_emoji = "🔴" if item['impact'] == 'high' else "🟡" if item['impact'] == 'medium' else "🟢"
+                impact_text = "HIGH" if item['impact'] == 'high' else "MEDIUM" if item['impact'] == 'medium' else "LOW"
                 lines.append(
                     f"| {item['time']} | {item['country']} | {item['indicator']} | "
-                    f"{item['forecast']} | {item['previous']} | {impact_emoji} |"
+                    f"{item['forecast']} | {item['previous']} | {impact_text} |"
                 )
             lines.append("")
         
         # 央行事件
         if cb_events:
-            lines.append("#### 央行事件与官员讲话")
+            lines.append("#### Central Bank Events & Speeches")
             lines.append("")
             for event in cb_events:
                 lines.append(f"- **{event['time']}** | {event['bank']} | {event['speaker']}: {event['title']}")

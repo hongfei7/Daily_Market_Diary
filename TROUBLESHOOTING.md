@@ -2,6 +2,38 @@
 
 ## 🔍 常见问题和解决方案
 
+### 问题0: 模板占位符未被替换
+
+**错误信息：**
+生成的报告中出现 `{report_time}`, `{macro_calendar_section}` 等未替换的占位符
+
+**原因：**
+- 模板使用了 Python f-string，导致花括号被提前解析
+- 或者使用了旧版本的代码
+
+**解决方案：**
+
+1. 确保使用最新版本的 `market_diary/modules/report_template.py`
+2. 模板应该使用普通字符串（不是 f-string），占位符格式为 `{placeholder_name}`
+3. 在 `format_professional_report()` 函数中使用 `.replace()` 方法替换占位符
+4. 重新运行脚本生成报告：
+
+```bash
+cd market_diary
+python main_professional.py --date 2026-04-14
+```
+
+**验证：**
+```bash
+# 检查生成的报告前10行
+head -10 reports_professional/2026-04-14_morning_briefing.md
+
+# 应该看到实际的时间戳，而不是 {report_time}
+# 正确示例：报告时间：2026-04-14 10:35:58
+```
+
+---
+
 ### 问题1: LLM API 返回 529 错误
 
 **错误信息：**
