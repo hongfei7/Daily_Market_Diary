@@ -2,7 +2,7 @@
   "fx_pairs": [
     {
       "available": true,
-      "net_pp": -0.618,
+      "net_pp": -0.633,
       "range_pp": 0.731,
       "high": {
         "time": "2026-04-13 14:45",
@@ -98,7 +98,7 @@
     },
     {
       "available": true,
-      "net_pp": -0.199,
+      "net_pp": -0.213,
       "range_pp": 0.375,
       "high": {
         "time": "2026-04-13 15:55",
@@ -131,7 +131,7 @@
   ],
   "fx_composite": {
     "available": true,
-    "net_pp": -0.408,
+    "net_pp": -0.423,
     "range_pp": 0.526,
     "high": {
       "time": "2026-04-13 07:15",
@@ -162,7 +162,7 @@
   "assets": {
     "Gold": {
       "available": true,
-      "net_pp": 1.121,
+      "net_pp": 1.14,
       "range_pp": 1.537,
       "high": {
         "time": "2026-04-14 09:10",
@@ -193,7 +193,7 @@
     },
     "Oil": {
       "available": true,
-      "net_pp": -7.303,
+      "net_pp": -7.379,
       "range_pp": 8.542,
       "high": {
         "time": "2026-04-13 12:05",
@@ -258,12 +258,12 @@
     "best_asset": "Bitcoin",
     "best_net_pp": 5.517,
     "worst_asset": "Oil",
-    "worst_net_pp": -7.303,
-    "spread_pp": 12.82
+    "worst_net_pp": -7.379,
+    "spread_pp": 12.896
   },
   "correlations": {
-    "Gold_Oil": -0.857,
+    "Gold_Oil": -0.858,
     "Gold_Bitcoin": 0.802,
-    "Oil_Bitcoin": -0.932
+    "Oil_Bitcoin": -0.931
   }
 }
