@@ -1,8 +1,8 @@
 name: Daily Market Diary
 
 on:
-  # 定时：每天北京时间 04:00（UTC 20:00）
-  # 你现在用的是 19:58 UTC（= 北京 03:58），没问题
+  # Schedule: Daily at 04:00 Beijing time (UTC 20:00)
+  # Currently using 19:58 UTC (= Beijing 03:58), which is fine
   schedule:
     - cron: "58 19 * * *"
   workflow_dispatch: {}
@@ -16,9 +16,13 @@ concurrency:
 
 jobs:
   run:
-    # 避免 actions bot 自己 push 后又触发（如果未来开启 on: push）
+    # Avoid actions bot triggering itself on push (if enabled in future)
     if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
+    
+    env:
+      # Force Node.js 24 to avoid deprecation warnings
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout (full history)
@@ -51,7 +55,7 @@ jobs:
           echo "Beijing time: $(date)"
           echo "UTC time: $(date -u)"
 
-      # ✅ 不泄露 key：只检查是否注入成功 + 长度
+      # Safe: Only check if key is injected successfully + length
       - name: Debug API key presence (safe)
         run: |
           python - <<'PY'
@@ -67,18 +71,18 @@ jobs:
         env:
           TZ: Asia/Shanghai
 
-          # ✅ 你的主 Key（请在 Repo Settings → Secrets → Actions 里创建）
+          # Your main Key (create in Repo Settings → Secrets → Actions)
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
 
-          # ✅ 兜底：有些代码/SDK只认 OPENAI_API_KEY
+          # Fallback: Some code/SDK only recognizes OPENAI_API_KEY
           OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
 
-          # ✅ base_url：如果你的 Key 是在 platform.minimaxi.com 创建，用 .com
-          #    如果你的 Key 是在 platform.minimax.io 创建，把下面两行改成 https://api.minimax.io/v1
+          # base_url: If your Key is created on platform.minimaxi.com, use .com
+          # If your Key is created on platform.minimax.io, change to https://api.minimax.io/v1
           OPENAI_BASE_URL: https://api.minimaxi.com/v1
           LLM_BASE_URL: https://api.minimaxi.com/v1
 
-          # ✅ 模型名
+          # Model name
           LLM_MODEL: MiniMax-M2.7
         run: |
           python market_diary/main.py --date "$(date -d 'yesterday' +%F)"

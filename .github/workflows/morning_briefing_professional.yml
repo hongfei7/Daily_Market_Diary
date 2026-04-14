@@ -1,14 +1,14 @@
 name: Daily Morning Briefing (Professional)
 
 on:
-  # 定时：每天北京时间 06:00（UTC 22:00）- 开盘前生成
+  # Schedule: Daily at 06:00 Beijing time (UTC 22:00) - Generate before market open
   schedule:
     - cron: "0 22 * * *"
-  # 手动触发
+  # Manual trigger
   workflow_dispatch:
     inputs:
       date:
-        description: '报告日期 (YYYY-MM-DD，留空则为昨天)'
+        description: 'Report date (YYYY-MM-DD, leave empty for yesterday)'
         required: false
         type: string
 
@@ -23,6 +23,10 @@ jobs:
   generate-briefing:
     if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
+    
+    env:
+      # Force Node.js 24 to avoid deprecation warnings
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
@@ -80,29 +84,29 @@ jobs:
           LLM_BASE_URL: https://api.minimaxi.com/v1
           LLM_MODEL: MiniMax-M2.7
         run: |
-          echo "运行系统测试..."
+          echo "Running system tests..."
           python test_github_actions.py
 
       - name: Generate Morning Briefing
         env:
           TZ: Asia/Shanghai
-          # API 配置
+          # API Configuration
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_BASE_URL: https://api.minimaxi.com/v1
           LLM_BASE_URL: https://api.minimaxi.com/v1
           LLM_MODEL: MiniMax-M2.7
         run: |
-          # 确定报告日期
+          # Determine report date
           if [ -n "${{ github.event.inputs.date }}" ]; then
             REPORT_DATE="${{ github.event.inputs.date }}"
           else
             REPORT_DATE="$(date -d 'yesterday' +%F)"
           fi
           
-          echo "生成日期: $REPORT_DATE"
+          echo "Report date: $REPORT_DATE"
           
-          # 运行专业版晨报生成器
+          # Run professional morning briefing generator
           python market_diary/main_professional.py --date "$REPORT_DATE"
 
       - name: Commit and push reports
@@ -114,21 +118,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 添加专业版报告
+          # Add professional reports
           git add -f reports_professional/
           
-          # 检查是否有变化
+          # Check if there are changes
           if git diff --cached --quiet; then
-            echo "没有新的报告需要提交"
+            echo "No new reports to commit"
             exit 0
           fi
           
-          # 提交并推送
+          # Commit and push
           REPORT_DATE="$(date -d 'yesterday' +%F)"
           git commit -m "chore: morning briefing (professional) $REPORT_DATE"
           git push origin HEAD:main
           
-          echo "✅ 晨报已生成并推送到仓库"
+          echo "✅ Morning briefing generated and pushed to repository"
 
       - name: Upload reports as artifacts
         if: always()

@@ -1,7 +1,8 @@
 """
-main_professional.py — 投行研究院专业晨报生成器
+main_professional.py — Professional Investment Bank Morning Briefing Generator
 
-整合所有模块，生成符合头部券商标准的 Morning Briefing
+Integrates all modules to generate Morning Briefing reports that meet 
+top-tier investment bank standards
 """
 
 import argparse
@@ -11,12 +12,12 @@ import sys
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 
-# 导入现有模块
+# Import existing modules
 from modules.data_fetcher import fetch_market_data, fetch_news
 from modules.chart_features import extract_chart_features, features_to_prompt_block
 from modules.llm_client import get_client
 
-# 导入新增的专业模块
+# Import new professional modules
 from modules.macro_calendar import fetch_macro_data
 from modules.sector_news import fetch_sector_data
 from modules.market_movers import fetch_movers_data
@@ -27,7 +28,7 @@ from modules.report_template import (
     get_llm_prompt_for_professional_report,
 )
 
-# 导入图表生成（复用现有的）
+# Import chart generation (reuse existing)
 from main import create_charts, _configure_console_output
 
 
