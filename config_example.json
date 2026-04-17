@@ -1,139 +1,75 @@
 {
   "system": {
-    "name": "投行研究院晨报系统",
-    "version": "2.0.0",
-    "timezone": "Asia/Shanghai",
+    "name": "Morning Research Workbench",
+    "version": "3.0.0",
+    "timezone": "Asia/Hong_Kong",
     "output_dir": "reports_professional"
   },
-  
-  "data_sources": {
-    "market_data": {
-      "provider": "yfinance",
-      "fallback_days": 4,
-      "intraday_interval": "5m"
-    },
-    
-    "news": {
-      "sources": [
-        "https://feeds.reuters.com/reuters/businessNews",
-        "https://feeds.bloomberg.com/markets/news.rss",
-        "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664"
-      ],
-      "max_per_source": 10
-    },
-    
-    "macro_calendar": {
-      "provider": "investing.com",
-      "countries": ["US", "EU", "CN", "JP"]
-    }
-  },
-  
   "report": {
-    "language": "zh-CN",
-    "style": "professional",
-    "sections": [
-      "executive_summary",
-      "market_snapshot",
-      "macro_calendar",
-      "central_bank_watch",
-      "sector_news",
-      "premarket_movers",
-      "risk_radar",
-      "technical_levels",
-      "trading_strategy",
-      "chart_analysis"
-    ],
-    
-    "charts": {
-      "enabled": true,
-      "types": [
-        "fx_composite",
-        "multi_asset",
-        "rates_curve",
-        "equities_global",
-        "vol_indicators",
-        "credit_spreads"
-      ],
-      "dpi": 160
-    }
+    "language": "en",
+    "quick_items_limit": 10,
+    "catalyst_window_days": 7,
+    "watchlist_news_limit": 2,
+    "watchlist_workers": 4,
+    "top_macro_events": 6,
+    "top_news_items": 8,
+    "top_movers": 6
   },
-  
-  "llm": {
-    "provider": "minimax",
-    "model": "MiniMax-M2.7",
-    "temperature": 0.7,
-    "max_tokens": 4000,
-    "timeout": 60
-  },
-  
-  "sectors": {
-    "coverage": [
-      "Technology",
-      "Financials",
-      "Healthcare",
-      "Energy",
-      "Consumer",
-      "Industrials",
-      "Materials",
-      "Real Estate"
-    ],
-    "news_per_sector": 3
-  },
-  
-  "risk_monitoring": {
-    "geopolitical_regions": [
-      "Middle East",
-      "Asia-Pacific",
-      "Europe",
-      "Americas"
-    ],
-    
-    "key_levels": {
-      "SPX": {
-        "resistance": [6950, 7000, 7100],
-        "support": [6800, 6750, 6700]
+  "watchlists": {
+    "core_coverage": [
+      {
+        "ticker": "0700.HK",
+        "name": "Tencent",
+        "sector": "Internet",
+        "thesis": "Core offshore China platform proxy for gaming, ads, and AI monetization",
+        "upcoming_catalyst": "Game grossing trends and ad-demand checks"
       },
-      "NDX": {
-        "resistance": [20500, 21000, 21500],
-        "support": [19800, 19500, 19000]
+      {
+        "ticker": "9988.HK",
+        "name": "Alibaba",
+        "sector": "Internet",
+        "thesis": "Key read-through for China consumption, cloud, and platform regulation",
+        "upcoming_catalyst": "Cloud demand and GMV updates"
       },
-      "DXY": {
-        "resistance": [99.50, 100.00, 100.50],
-        "support": [98.00, 97.50, 97.00]
-      },
-      "US10Y": {
-        "resistance": [4.40, 4.50, 4.60],
-        "support": [4.20, 4.10, 4.00]
+      {
+        "ticker": "0388.HK",
+        "name": "HKEX",
+        "sector": "Exchange",
+        "thesis": "Direct proxy for Hong Kong market turnover, listings, and southbound interest",
+        "upcoming_catalyst": "Turnover data and IPO pipeline updates"
       }
-    },
-    
-    "sentiment_indicators": [
-      "aaii_bull_bear",
-      "fear_greed_index",
-      "put_call_ratio",
-      "vix_term_structure"
-    ]
-  },
-  
-  "notifications": {
-    "enabled": false,
-    "channels": ["email", "wechat"],
-    "recipients": [
-      "team@yourcompany.com"
     ],
-    "send_time": "06:00"
-  },
-  
-  "performance": {
-    "enable_cache": true,
-    "cache_expiry_seconds": 3600,
-    "parallel_requests": true,
-    "max_workers": 5
-  },
-  
-  "logging": {
-    "level": "INFO",
-    "file": "logs/morning_briefing.log",
-    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    "focus_pool": [
+      {
+        "ticker": "1211.HK",
+        "name": "BYD Company",
+        "sector": "Autos",
+        "thesis": "Hong Kong-listed proxy for EV volumes, export mix, and price competition",
+        "upcoming_catalyst": "Weekly sales data and model rollout cadence"
+      },
+      {
+        "ticker": "1299.HK",
+        "name": "AIA",
+        "sector": "Insurance",
+        "thesis": "Read-through for wealth demand, mainland visitor activity, and HK financial sentiment",
+        "upcoming_catalyst": "NBV trends and agency momentum"
+      }
+    ],
+    "learning_pool": [
+      {
+        "ticker": "2800.HK",
+        "name": "Tracker Fund of Hong Kong",
+        "sector": "Hong Kong beta",
+        "thesis": "Clean listed proxy for broad HSI positioning and passive flows",
+        "upcoming_catalyst": "Index-turnover shifts and ETF flows"
+      },
+      {
+        "ticker": "3033.HK",
+        "name": "Hang Seng TECH ETF",
+        "sector": "HK growth",
+        "thesis": "Fast proxy for Hong Kong internet and growth leadership",
+        "upcoming_catalyst": "AI narrative shifts and China platform regulation headlines"
+      }
+    ]
   }
 }

@@ -1,20 +1,14 @@
-"""
-sector_news.py — 行业与个股新闻聚合模块
+"""Sector and company news aggregation adapters."""
 
-功能：
-1. 按行业板块分类抓取重要新闻
-2. 财报发布与盈利惊喜
-3. 并购交易、监管政策
-4. 分析师评级调整
-"""
+import hashlib
+import json
+import os
+from typing import Any, Dict, List, Optional
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+import requests
 
-try:
-    import requests
-except ImportError:
-    requests = None
+from modules.adapter_hkex_announce import fetch_hkex_announcements
+from modules.text_normalizer import normalize_news_text
 
 try:
     import feedparser
@@ -22,231 +16,280 @@ except ImportError:
     feedparser = None
 
 
+NEWS_REQUEST_TIMEOUT = (5, 12)
+NEWS_USER_AGENT = "DailyMarketDiary/1.0"
+
+
+def _cache_path(cache_dir: str, cache_key: str) -> str:
+    digest = hashlib.md5(cache_key.encode("utf-8")).hexdigest()[:12]
+    return os.path.join(cache_dir, f"sector_data_{digest}.json")
+
+
+def _load_cache(cache_dir: str, cache_key: str) -> Optional[Dict[str, Any]]:
+    if not cache_dir:
+        return None
+    path = _cache_path(cache_dir, cache_key)
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        return payload if isinstance(payload, dict) else None
+    except Exception:
+        return None
+
+
+def _save_cache(cache_dir: str, cache_key: str, payload: Dict[str, Any]) -> None:
+    if not cache_dir:
+        return
+    os.makedirs(cache_dir, exist_ok=True)
+    path = _cache_path(cache_dir, cache_key)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, ensure_ascii=False, indent=2)
+
+
+def _fetch_feed(url: str):
+    response = requests.get(url, headers={"User-Agent": NEWS_USER_AGENT}, timeout=NEWS_REQUEST_TIMEOUT)
+    response.raise_for_status()
+    return feedparser.parse(response.content)
+
+
 class SectorNewsAggregator:
-    """行业新闻聚合器"""
-    
-    # 行业分类
+    """Fetch and bucket headlines into a desk-friendly sector map."""
+
     SECTORS = {
-        'Technology': ['tech', 'software', 'semiconductor', 'AI', 'cloud'],
-        'Financials': ['bank', 'insurance', 'fintech', 'payment'],
-        'Healthcare': ['pharma', 'biotech', 'medical', 'health'],
-        'Energy': ['oil', 'gas', 'renewable', 'energy'],
-        'Consumer': ['retail', 'consumer', 'e-commerce'],
-        'Industrials': ['manufacturing', 'aerospace', 'defense'],
-        'Materials': ['mining', 'metals', 'chemicals'],
-        'Real Estate': ['property', 'REIT', 'real estate'],
+        "China Internet": [
+            "tencent",
+            "alibaba",
+            "meituan",
+            "jd.com",
+            "internet",
+            "e-commerce",
+            "gaming",
+            "cloud",
+        ],
+        "Financials": ["bank", "insurance", "broker", "exchange", "wealth", "payment"],
+        "Autos and EV": ["auto", "ev", "electric vehicle", "battery", "byd", "tesla"],
+        "Semiconductors and AI": ["semiconductor", "chip", "ai", "server", "gpu"],
+        "Property and Construction": ["property", "developer", "mortgage", "real estate"],
+        "Consumer": ["consumer", "retail", "luxury", "travel", "macau", "beverage"],
+        "Healthcare": ["pharma", "biotech", "medical", "drug"],
+        "Energy and Materials": ["oil", "gas", "coal", "copper", "lithium", "steel", "aluminum"],
+        "Industrials": ["shipping", "logistics", "manufacturing", "industrial", "aerospace"],
     }
-    
-    # 新闻源配置
+
     NEWS_SOURCES = {
-        'reuters_business': 'http://feeds.reuters.com/reuters/businessNews',
-        'reuters_markets': 'http://feeds.reuters.com/reuters/marketsNews',
-        'bloomberg': 'https://feeds.bloomberg.com/markets/news.rss',
-        'cnbc': 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664',
-        'wsj_markets': 'https://feeds.content.dowjones.io/public/rss/mw_topstories',
+        "reuters_business": "http://feeds.reuters.com/reuters/businessNews",
+        "reuters_markets": "http://feeds.reuters.com/reuters/marketsNews",
+        "bloomberg_markets": "https://feeds.bloomberg.com/markets/news.rss",
+        "cnbc_markets": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664",
+        "wsj_markets": "https://feeds.content.dowjones.io/public/rss/mw_topstories",
     }
-    
-    def __init__(self):
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-    
+
     def fetch_sector_news(self, max_per_sector: int = 3) -> Dict[str, List[Dict]]:
-        """
-        按行业获取新闻
-        
-        Returns:
-            {
-                'Technology': [{title, summary, source, time, importance}],
-                'Financials': [...],
-                ...
-            }
-        """
+        """Fetch recent headlines and rank them by sector importance."""
         all_news = self._fetch_all_news()
         categorized = self._categorize_news(all_news)
-        
-        # 每个行业只保留最重要的 N 条
-        filtered = {}
+
+        filtered: Dict[str, List[Dict]] = {}
         for sector, news_list in categorized.items():
             filtered[sector] = sorted(
                 news_list,
-                key=lambda x: x.get('importance_score', 0),
-                reverse=True
+                key=lambda item: item.get("importance_score", 0),
+                reverse=True,
             )[:max_per_sector]
-        
+
         return filtered
-    
+
     def _fetch_all_news(self) -> List[Dict]:
-        """从所有新闻源获取新闻"""
-        all_news = []
-        
+        """Fetch raw headlines from the configured RSS sources."""
+        if feedparser is None:
+            return []
+
+        all_news: List[Dict] = []
         for source_name, url in self.NEWS_SOURCES.items():
             try:
-                feed = feedparser.parse(url)
-                for entry in feed.entries[:20]:  # 每个源取前20条
-                    all_news.append({
-                        'title': entry.get('title', ''),
-                        'summary': entry.get('summary', '')[:200],
-                        'link': entry.get('link', ''),
-                        'published': entry.get('published', ''),
-                        'source': source_name,
-                    })
-            except Exception as e:
-                print(f"[sector_news] Error fetching {source_name}: {e}")
-        
+                feed = _fetch_feed(url)
+                for entry in feed.entries[:20]:
+                    title = normalize_news_text(entry.get("title", ""), strip_html_tags=True)
+                    summary = normalize_news_text(entry.get("summary", ""), strip_html_tags=True, max_length=240)
+                    if not title:
+                        continue
+                    all_news.append(
+                        {
+                            "title": title,
+                            "summary": summary,
+                            "link": normalize_news_text(entry.get("link", ""), strip_html_tags=False),
+                            "published": entry.get("published", ""),
+                            "source": normalize_news_text(source_name, strip_html_tags=False),
+                        }
+                    )
+            except Exception as exc:
+                print(f"[sector_news] Error fetching {source_name}: {exc}")
+
         return all_news
-    
+
     def _categorize_news(self, news_list: List[Dict]) -> Dict[str, List[Dict]]:
-        """将新闻分类到各个行业"""
+        """Assign headlines to sectors using keyword rules."""
         categorized = {sector: [] for sector in self.SECTORS}
-        
+
         for news in news_list:
-            text = (news['title'] + ' ' + news['summary']).lower()
-            
-            # 计算重要性分数
-            importance_score = self._calculate_importance(news)
-            news['importance_score'] = importance_score
-            
-            # 分类到行业
+            text = f"{news['title']} {news['summary']}".lower()
+            news["importance_score"] = self._calculate_importance(news)
+
             matched = False
             for sector, keywords in self.SECTORS.items():
-                if any(kw.lower() in text for kw in keywords):
+                if any(keyword in text for keyword in keywords):
                     categorized[sector].append(news)
                     matched = True
                     break
-            
-            # 未匹配的放入 Other
+
             if not matched:
-                if 'Other' not in categorized:
-                    categorized['Other'] = []
-                categorized['Other'].append(news)
-        
+                categorized.setdefault("Other", []).append(news)
+
         return categorized
-    
+
     def _calculate_importance(self, news: Dict) -> float:
-        """计算新闻重要性分数"""
+        """Score headlines by event intensity and source quality."""
         score = 0.0
-        text = (news['title'] + ' ' + news['summary']).lower()
-        
-        # 高优先级关键词
-        high_priority = ['merger', 'acquisition', 'earnings', 'guidance', 'upgrade', 'downgrade',
-                        'regulation', 'approval', 'breakthrough', 'crisis', 'default']
-        for kw in high_priority:
-            if kw in text:
+        text = f"{news['title']} {news['summary']}".lower()
+
+        high_priority = [
+            "earnings",
+            "guidance",
+            "merger",
+            "acquisition",
+            "regulation",
+            "approval",
+            "buyback",
+            "placement",
+            "profit warning",
+            "tariff",
+        ]
+        medium_priority = ["deal", "contract", "partnership", "launch", "expansion", "pricing"]
+
+        for keyword in high_priority:
+            if keyword in text:
                 score += 2.0
-        
-        # 中优先级关键词
-        medium_priority = ['deal', 'contract', 'partnership', 'launch', 'expansion']
-        for kw in medium_priority:
-            if kw in text:
+
+        for keyword in medium_priority:
+            if keyword in text:
                 score += 1.0
-        
-        # 来源权重
-        if 'bloomberg' in news['source']:
+
+        source = news.get("source", "")
+        if "bloomberg" in source:
             score += 1.5
-        elif 'reuters' in news['source']:
+        elif "reuters" in source:
             score += 1.2
-        
+        elif "wsj" in source or "cnbc" in source:
+            score += 1.0
+
         return score
-    
+
     def fetch_earnings_calendar(self, date: str) -> List[Dict]:
-        """获取财报日历（盘前/盘后）"""
-        # 实际需要接入 Earnings Whispers / Yahoo Finance API
+        """Return a placeholder earnings calendar."""
         return [
             {
-                'ticker': 'AAPL',
-                'company': 'Apple Inc.',
-                'time': 'After Market Close',
-                'eps_estimate': '1.45',
-                'revenue_estimate': '89.5B',
-            }
+                "ticker": "0700.HK",
+                "company": "Tencent Holdings",
+                "time": "After Market Close",
+                "eps_estimate": "4.15 HKD",
+                "revenue_estimate": "163.2bn HKD",
+            },
+            {
+                "ticker": "0388.HK",
+                "company": "Hong Kong Exchanges and Clearing",
+                "time": "Before Market Open",
+                "eps_estimate": "2.81 HKD",
+                "revenue_estimate": "6.0bn HKD",
+            },
         ]
-    
+
     def fetch_analyst_changes(self, date: str) -> List[Dict]:
-        """获取分析师评级变动"""
-        # 实际需要接入 Bloomberg / FactSet
+        """Return a placeholder analyst rating change list."""
         return [
             {
-                'ticker': 'TSLA',
-                'firm': 'Morgan Stanley',
-                'action': 'Upgrade',
-                'from_rating': 'Equal Weight',
-                'to_rating': 'Overweight',
-                'price_target': '350',
-                'previous_target': '280',
+                "ticker": "9988.HK",
+                "firm": "Morgan Stanley",
+                "action": "Upgrade",
+                "from_rating": "Equal Weight",
+                "to_rating": "Overweight",
+                "price_target": "105",
+                "previous_target": "92",
             }
         ]
-    
-    def format_for_report(self, sector_news: Dict, earnings: List, analyst_changes: List) -> str:
-        """格式化为晨报文本"""
-        lines = []
-        
-        # 行业新闻
-        lines.append("### 行业与个股要闻")
-        lines.append("")
-        
+
+    def format_for_report(
+        self,
+        sector_news: Dict[str, List[Dict]],
+        earnings: List[Dict],
+        analyst_changes: List[Dict],
+    ) -> str:
+        """Format the news payload into a readable fallback block."""
+        lines: List[str] = ["### Sector and Company News", ""]
+
         for sector, news_list in sector_news.items():
             if not news_list:
                 continue
-            
             lines.append(f"#### {sector}")
             lines.append("")
-            
             for news in news_list:
                 lines.append(f"- **{news['title']}**")
-                if news.get('summary'):
+                if news.get("summary"):
                     lines.append(f"  {news['summary']}")
-                lines.append(f"  *来源: {news['source']}*")
+                lines.append(f"  *Source: {news['source']}*")
                 lines.append("")
-        
-        # 财报日历
+
         if earnings:
-            lines.append("#### 今日财报发布")
+            lines.append("#### Earnings Calendar")
             lines.append("")
-            lines.append("| 股票 | 公司 | 时间 | EPS预期 | 营收预期 |")
-            lines.append("|------|------|------|---------|----------|")
-            for e in earnings:
+            lines.append("| Ticker | Company | Timing | EPS Estimate | Revenue Estimate |")
+            lines.append("|--------|---------|--------|--------------|------------------|")
+            for item in earnings:
                 lines.append(
-                    f"| {e['ticker']} | {e['company']} | {e['time']} | "
-                    f"${e['eps_estimate']} | ${e['revenue_estimate']} |"
+                    f"| {item['ticker']} | {item['company']} | {item['time']} | "
+                    f"{item['eps_estimate']} | {item['revenue_estimate']} |"
                 )
             lines.append("")
-        
-        # 分析师评级
+
         if analyst_changes:
-            lines.append("#### 分析师评级调整")
+            lines.append("#### Analyst Rating Changes")
             lines.append("")
             for change in analyst_changes:
-                action_emoji = "⬆️" if change['action'] == 'Upgrade' else "⬇️" if change['action'] == 'Downgrade' else "➡️"
                 lines.append(
-                    f"- {action_emoji} **{change['ticker']}** | {change['firm']}: "
-                    f"{change['from_rating']} → {change['to_rating']} | "
-                    f"目标价 ${change['previous_target']} → ${change['price_target']}"
+                    f"- **{change['ticker']}** | {change['firm']} | {change['action']} | "
+                    f"{change['from_rating']} -> {change['to_rating']} | "
+                    f"Target {change['previous_target']} -> {change['price_target']}"
                 )
             lines.append("")
-        
+
         return "\n".join(lines)
 
 
-def fetch_sector_data(date: str) -> Dict:
-    """
-    主入口函数：获取行业新闻数据
-    
-    Args:
-        date: YYYY-MM-DD 格式
-        
-    Returns:
-        包含行业新闻、财报、评级的字典
-    """
+def fetch_sector_data(date: str, config: Optional[Dict[str, Any]] = None, cache_dir: str = "") -> Dict:
+    """Public entry point for sector and company news."""
+    watchlists = (config or {}).get("watchlists", {}) if isinstance(config, dict) else {}
+    cache_key = json.dumps({"date": date, "watchlists": watchlists}, sort_keys=True, ensure_ascii=True)
+    cached = _load_cache(cache_dir, cache_key)
+    if cached is not None:
+        print("[sector_news] using cached sector/company payload")
+        return cached
+
     aggregator = SectorNewsAggregator()
-    
     sector_news = aggregator.fetch_sector_news(max_per_sector=3)
     earnings = aggregator.fetch_earnings_calendar(date)
     analyst_changes = aggregator.fetch_analyst_changes(date)
-    
-    return {
-        'sector_news': sector_news,
-        'earnings_calendar': earnings,
-        'analyst_changes': analyst_changes,
-        'formatted_text': aggregator.format_for_report(sector_news, earnings, analyst_changes)
+    hkex_announcements = fetch_hkex_announcements(
+        report_date=date,
+        watchlists=watchlists,
+    )
+
+    payload = {
+        "sector_news": sector_news,
+        "earnings_calendar": earnings,
+        "analyst_changes": analyst_changes,
+        "hkex_announcements": hkex_announcements,
+        "formatted_text": aggregator.format_for_report(sector_news, earnings, analyst_changes),
     }
+    _save_cache(cache_dir, cache_key, payload)
+    return payload

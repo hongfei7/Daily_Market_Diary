@@ -1,0 +1,80 @@
+import json
+import os
+import shutil
+import sys
+from pathlib import Path
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "market_diary"))
+
+from professional.runtime_audit import audit_generated_run
+
+
+REPORT_BODY = """# Morning Research Workbench | 2026-04-14
+
+## Visual Dashboard
+![Research Dashboard](charts/dashboard_2026-04-14.png)
+
+### 1.2 Global Asset Price Dashboard
+| Asset | Last | Read |
+| --- | --- | --- |
+| China 10Y | 1.79% | China local rates anchor \\| Live public |
+
+### 1.3 Hong Kong Key Data Quick Check
+| Check | Value | Status |
+| --- | --- | --- |
+| Southbound / Northbound net flow | Southbound +HK$2.2bn \\| Northbound N/A | Live public |
+
+### 2.3 Flow Tracker and Attribution
+#### Stock Connect Southbound Active Names
+#### AH Premium Dispersion
+
+### 3.3 Daily One Chart
+![Daily One Chart](charts/daily_one_chart_2026-04-14.png)
+
+### Report Quality and Validation
+- **Quality score:** 90.0/100
+**LLM fact-check guardrail**
+**Adapter status**
+"""
+
+
+def _bundle():
+    return {
+        "meta": {"briefing_date": "2026-04-14"},
+        "report_quality": {"score": 90.0, "warnings": []},
+        "fact_check": {"status": "ok", "summary": "Checked 3 numeric claims; 0 numeric mismatch(es), 0 logic warning(s)."},
+        "llm_sections": {"task_meta": {"tasks": {"overnight_review": {"status": "ok"}}}},
+    }
+
+
+def main() -> None:
+    root = Path(os.getcwd()) / "reports_professional" / "_runtime_audit_tmp"
+    try:
+        shutil.rmtree(root, ignore_errors=True)
+        (root / "charts").mkdir(parents=True)
+        (root / "raw").mkdir(parents=True)
+        (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY, encoding="utf-8")
+        (root / "raw" / "2026-04-14_bundle.json").write_text(json.dumps(_bundle()), encoding="utf-8")
+        (root / "charts" / "dashboard_2026-04-14.png").write_bytes(b"png")
+        (root / "charts" / "daily_one_chart_2026-04-14.png").write_bytes(b"png")
+        (root / "2026-04-14_email_preview.html").write_text(
+            "<html><body>Report quality Deep-read setup Hong Kong local checks</body></html>", encoding="utf-8"
+        )
+
+        audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        assert audit["status"] == "ok"
+        assert not audit["errors"]
+
+        broken_report = REPORT_BODY.replace("\\|", "|")
+        (root / "2026-04-14_morning_briefing.md").write_text(broken_report, encoding="utf-8")
+        broken_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        assert broken_audit["status"] == "error"
+        assert any("Malformed markdown table" in item for item in broken_audit["errors"])
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+
+    print("Runtime audit test passed")
+
+
+if __name__ == "__main__":
+    main()

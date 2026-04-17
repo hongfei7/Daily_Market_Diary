@@ -1,14 +1,12 @@
 name: Daily Morning Briefing (Professional)
 
 on:
-  # Schedule: Daily at 06:00 Beijing time (UTC 22:00) - Generate before market open
   schedule:
-    - cron: "0 22 * * *"
-  # Manual trigger
+    - cron: "0 23 * * *"
   workflow_dispatch:
     inputs:
       date:
-        description: 'Report date (YYYY-MM-DD, leave empty for yesterday)'
+        description: "Last completed market data date (YYYY-MM-DD, leave empty for prior HK trading day)"
         required: false
         type: string
 
@@ -23,9 +21,8 @@ jobs:
   generate-briefing:
     if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
-    
+
     env:
-      # Force Node.js 24 to avoid deprecation warnings
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
@@ -44,7 +41,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: 'pip'
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -86,53 +83,95 @@ jobs:
         run: |
           echo "Running system tests..."
           python test_github_actions.py
+          python test_stockconnect_ah_premium.py
+          python test_report_quality.py
+          python test_runtime_audit.py
+          python test_hk_local_foundation.py
+          python test_hk_flow_attribution.py
+          python test_daily_one_chart.py
+          python test_market_data_resilience.py
+          python test_llm_enhancer_resilience.py
+          python test_llm_pipeline.py
+          python test_email_delivery.py
+          python test_text_normalizer.py
+          python test_chart_appendix.py
+          python test_news_cache.py
+          python test_trend_pack.py
+          python test_professional_workbench.py
 
       - name: Generate Morning Briefing
         env:
           TZ: Asia/Shanghai
-          # API Configuration
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_BASE_URL: https://api.minimaxi.com/v1
           LLM_BASE_URL: https://api.minimaxi.com/v1
           LLM_MODEL: MiniMax-M2.7
         run: |
-          # Determine report date
           if [ -n "${{ github.event.inputs.date }}" ]; then
-            REPORT_DATE="${{ github.event.inputs.date }}"
+            GLOBAL_DATE="${{ github.event.inputs.date }}"
+            HK_DATE="${{ github.event.inputs.date }}"
           else
-            REPORT_DATE="$(date -d 'yesterday' +%F)"
+            GLOBAL_DATE="$(python - <<'PY'
+          from datetime import datetime, timedelta
+          d = datetime.now().date() - timedelta(days=1)
+          while d.weekday() >= 5:
+              d -= timedelta(days=1)
+          print(d.isoformat())
+          PY
+          )"
+            HK_DATE="$GLOBAL_DATE"
           fi
-          
-          echo "Report date: $REPORT_DATE"
-          
-          # Run professional morning briefing generator
-          python market_diary/main_professional.py --date "$REPORT_DATE"
+          BRIEFING_DATE="$(date +%F)"
+
+          echo "Global markets through: $GLOBAL_DATE"
+          echo "HK/China local data through: $HK_DATE"
+          echo "Briefing date: $BRIEFING_DATE"
+          echo "GLOBAL_DATE=$GLOBAL_DATE" >> "$GITHUB_ENV"
+          echo "HK_DATE=$HK_DATE" >> "$GITHUB_ENV"
+          echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
+          python market_diary/main_professional.py --global-date "$GLOBAL_DATE" --hk-date "$HK_DATE" --briefing-date "$BRIEFING_DATE"
+
+      - name: Send briefing email
+        env:
+          REPORT_EMAIL_TO: hongfei_wu7@outlook.com
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
+        run: |
+          if [ -z "$SMTP_HOST" ] || [ -z "$SMTP_USERNAME" ] || [ -z "$SMTP_PASSWORD" ]; then
+            echo "SMTP credentials are not configured; skipping email delivery."
+            exit 0
+          fi
+
+          python scripts/send_report_email.py \
+            --report-date "$BRIEFING_DATE" \
+            --output-dir reports_professional \
+            --to "$REPORT_EMAIL_TO"
 
       - name: Commit and push reports
         env:
           TZ: Asia/Shanghai
         run: |
           set -e
-          
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Add professional reports
+
           git add -f reports_professional/
-          
-          # Check if there are changes
+
           if git diff --cached --quiet; then
             echo "No new reports to commit"
             exit 0
           fi
-          
-          # Commit and push
-          REPORT_DATE="$(date -d 'yesterday' +%F)"
-          git commit -m "chore: morning briefing (professional) $REPORT_DATE"
+
+          git commit -m "chore: morning briefing (professional) $BRIEFING_DATE"
           git push origin HEAD:main
-          
-          echo "✅ Morning briefing generated and pushed to repository"
+
+          echo "Morning briefing generated and pushed to repository"
 
       - name: Upload reports as artifacts
         if: always()

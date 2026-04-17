@@ -2,9 +2,10 @@ venv/
 .venv/
 env/
 
-# Secrets — NEVER commit API keys
+# Secrets
 .env
 *.env
+.apikey
 secrets.py
 
 # Python
@@ -17,7 +18,7 @@ dist/
 build/
 .eggs/
 
-# Reports output (generated at runtime)
+# Student-path generated output
 reports/
 
 # IDE / editor
@@ -33,5 +34,3 @@ desktop.ini
 
 # Jupyter
 .ipynb_checkpoints/
-
-# Test scratch

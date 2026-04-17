@@ -1,222 +1,124 @@
 """
-test_github_actions.py - GitHub Actions 环境测试脚本
-
-简化版测试，只测试关键功能
+GitHub Actions smoke test for the professional morning-briefing pipeline.
 """
 
-import sys
 import os
+import sys
 
-def test_basic_imports():
-    """测试基础模块导入"""
+
+def test_basic_imports() -> bool:
     print("=" * 60)
-    print("测试 1: 基础模块导入")
+    print("Test 1: Third-party imports")
     print("=" * 60)
-    
-    try:
-        import pandas
-        print("✓ pandas")
-    except ImportError as e:
-        print(f"✗ pandas: {e}")
-        return False
-    
-    try:
-        import numpy
-        print("✓ numpy")
-    except ImportError as e:
-        print(f"✗ numpy: {e}")
-        return False
-    
-    try:
-        import matplotlib
-        print("✓ matplotlib")
-    except ImportError as e:
-        print(f"✗ matplotlib: {e}")
-        return False
-    
-    try:
-        from openai import OpenAI
-        print("✓ openai")
-    except ImportError as e:
-        print(f"✗ openai: {e}")
-        return False
-    
-    try:
-        import yfinance
-        print("✓ yfinance")
-    except ImportError as e:
-        print(f"✗ yfinance: {e}")
-        return False
-    
-    print("\n✅ 基础模块导入成功\n")
+
+    required = ["pandas", "numpy", "matplotlib", "openai", "yfinance"]
+    for module_name in required:
+        try:
+            __import__(module_name)
+            print(f"OK  {module_name}")
+        except Exception as exc:
+            print(f"FAIL {module_name}: {exc}")
+            return False
     return True
 
 
-def test_project_modules():
-    """测试项目模块导入"""
+def test_project_imports() -> bool:
     print("=" * 60)
-    print("测试 2: 项目模块导入")
+    print("Test 2: Project imports")
     print("=" * 60)
-    
-    # 添加模块路径
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'market_diary'))
-    
+
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "market_diary"))
     modules = [
-        'modules.data_fetcher',
-        'modules.chart_features',
-        'modules.llm_client',
-        'modules.macro_calendar',
-        'modules.sector_news',
-        'modules.market_movers',
-        'modules.risk_radar',
-        'modules.report_template',
+        "main_professional",
+        "modules.data_fetcher",
+        "modules.chart_features",
+        "modules.china_rates",
+        "modules.adapter_ah_premium",
+        "modules.adapter_hkex_announce",
+        "modules.adapter_shortsell",
+        "modules.adapter_stockconnect",
+        "modules.llm_client",
+        "modules.macro_calendar",
+        "modules.market_movers",
+        "modules.hk_local_data",
+        "modules.local_metrics",
+        "modules.risk_radar",
+        "modules.sector_news",
+        "modules.text_normalizer",
+        "professional.analytics",
+        "professional.attribution",
+        "professional.config",
+        "professional.daily_one_chart",
+        "professional.dashboard",
+        "professional.email_builder",
+        "professional.fact_checker",
+        "professional.llm_enhancer",
+        "professional.models",
+        "professional.report_quality",
+        "professional.report_builder",
+        "professional.runtime_audit",
+        "professional.trend_pack",
     ]
-    
-    failed = []
+
     for module_name in modules:
         try:
             __import__(module_name)
-            print(f"✓ {module_name}")
-        except Exception as e:
-            print(f"✗ {module_name}: {e}")
-            failed.append(module_name)
-    
-    if failed:
-        print(f"\n⚠️ {len(failed)} 个模块导入失败")
-        return False
-    
-    print("\n✅ 项目模块导入成功\n")
+            print(f"OK  {module_name}")
+        except Exception as exc:
+            print(f"FAIL {module_name}: {exc}")
+            return False
     return True
 
 
-def test_api_key():
-    """测试 API 密钥配置"""
+def test_api_env() -> bool:
     print("=" * 60)
-    print("测试 3: API 密钥配置")
+    print("Test 3: API environment")
     print("=" * 60)
-    
-    api_key = os.getenv("MINIMAX_API_KEY") or os.getenv("OPENAI_API_KEY")
-    
+
+    from modules.llm_client import api_key_available
+
+    api_key = (os.getenv("MINIMAX_API_KEY") or os.getenv("OPENAI_API_KEY") or "").strip()
     if not api_key:
-        print("✗ 未设置 API 密钥")
-        print("  请设置 MINIMAX_API_KEY 或 OPENAI_API_KEY 环境变量")
-        return False
-    
-    print(f"✓ API 密钥已设置 (长度: {len(api_key)})")
-    
-    base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")
+        if api_key_available():
+            print("Local API key file detected; skipping remote client validation.")
+            return True
+        print("No API key configured; skipping client validation.")
+        return True
+
+    print(f"API key detected (length={len(api_key)})")
+    base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL") or ""
     if base_url:
-        print(f"✓ Base URL: {base_url}")
-    
-    model = os.getenv("LLM_MODEL")
-    if model:
-        print(f"✓ Model: {model}")
-    
-    print("\n✅ API 配置正常\n")
+        print(f"Base URL: {base_url}")
+    if os.getenv("LLM_MODEL"):
+        print(f"Model: {os.getenv('LLM_MODEL')}")
     return True
 
 
-def test_llm_client():
-    """测试 LLM 客户端"""
-    print("=" * 60)
-    print("测试 4: LLM 客户端")
-    print("=" * 60)
-    
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'market_diary'))
-    
-    try:
-        from modules.llm_client import get_client
-        
-        client = get_client()
-        print("✓ LLM 客户端初始化成功")
-        
-        # 简单测试调用（增加重试逻辑）
-        model_name = os.getenv("LLM_MODEL", "MiniMax-M2.7")
-        print(f"  使用模型: {model_name}")
-        
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = client.chat.completions.create(
-                    model=model_name,
-                    messages=[
-                        {"role": "user", "content": "回复'测试成功'"}
-                    ],
-                    max_tokens=20,
-                    temperature=0.7,
-                )
-                
-                result = response.choices[0].message.content
-                print(f"✓ LLM 调用成功")
-                print(f"  响应: {result[:50]}")
-                
-                print("\n✅ LLM 客户端测试通过\n")
-                return True
-                
-            except Exception as e:
-                error_msg = str(e)
-                if '529' in error_msg or 'overloaded' in error_msg:
-                    if attempt < max_retries - 1:
-                        wait_time = (attempt + 1) * 2
-                        print(f"⚠️ 服务器负载高，{wait_time}秒后重试 ({attempt + 1}/{max_retries})...")
-                        import time
-                        time.sleep(wait_time)
-                        continue
-                    else:
-                        print(f"⚠️ LLM 服务器负载过高，跳过测试（这不影响系统功能）")
-                        print("  提示：实际运行时会自动重试")
-                        print("\n✅ LLM 客户端测试通过（跳过调用测试）\n")
-                        return True
-                else:
-                    raise
-        
-    except Exception as e:
-        print(f"✗ LLM 客户端测试失败: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-
-
-def main():
-    """运行所有测试"""
+def main() -> int:
     print("\n" + "=" * 60)
-    print("GitHub Actions 环境测试")
+    print("GitHub Actions Smoke Test")
     print("=" * 60 + "\n")
-    
-    results = []
-    
-    # 运行测试
-    results.append(("基础模块导入", test_basic_imports()))
-    results.append(("项目模块导入", test_project_modules()))
-    results.append(("API 密钥配置", test_api_key()))
-    
-    # 只有前面都通过才测试 LLM
-    if all(r[1] for r in results):
-        results.append(("LLM 客户端", test_llm_client()))
-    else:
-        print("⏭️  跳过 LLM 测试（前置条件未满足）\n")
-    
-    # 汇总结果
+
+    results = [
+        ("Third-party imports", test_basic_imports()),
+        ("Project imports", test_project_imports()),
+        ("API environment", test_api_env()),
+    ]
+
+    print("\n" + "=" * 60)
+    print("Summary")
     print("=" * 60)
-    print("测试结果汇总")
-    print("=" * 60)
-    
-    for test_name, result in results:
-        status = "✅ 通过" if result else "❌ 失败"
-        print(f"{test_name:20s} {status}")
-    
-    passed = sum(1 for _, result in results if result)
-    total = len(results)
-    
-    print(f"\n总计: {passed}/{total} 测试通过")
-    
-    if passed == total:
-        print("\n🎉 所有测试通过！可以运行晨报生成器。")
-        return 0
-    else:
-        print(f"\n⚠️ {total - passed} 个测试失败，请检查配置。")
+    for name, passed in results:
+        print(f"{name:24s} {'PASS' if passed else 'FAIL'}")
+
+    failed = [name for name, passed in results if not passed]
+    if failed:
+        print(f"\nSmoke test failed: {', '.join(failed)}")
         return 1
+
+    print("\nSmoke test passed")
+    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

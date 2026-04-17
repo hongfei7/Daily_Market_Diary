@@ -1,16 +1,13 @@
-# 1. 默认策略：让 Git 自动识别文本文件，并统一使用 LF
 * text=auto
 
-# 2. 强制规定：所有 shell 脚本必须使用 LF 换行符
+# Keep shell and source files on LF for cross-platform execution.
 *.sh text eol=lf
-
-# 3. 强制规定：其他脚本和配置文件也使用 LF
 *.py text eol=lf
 *.js text eol=lf
 Dockerfile text eol=lf
 Makefile text eol=lf
 
-# 4. 强制规定：二进制文件不做任何转换
+# Do not transform binary assets.
 *.png binary
 *.jpg binary
 *.jar binary
