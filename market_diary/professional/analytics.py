@@ -1410,7 +1410,7 @@ def build_professional_bundle(
     morning_date = briefing_date or report_date
     global_date = global_market_date or market_meta.get("requested_date", report_date)
     local_date = hk_data_date or report_date
-    day_mode = build_day_mode(morning_date, config)
+    day_mode = build_day_mode(report_date, config)
     macro_agenda = build_macro_agenda(morning_date, macro_data, config)
     sector_digest = build_sector_news_digest(sector_data, config)
     high_frequency = build_high_frequency_trackers(summary, chart_features)
@@ -1438,6 +1438,7 @@ def build_professional_bundle(
     return {
         "meta": {
             "report_date": report_date,
+            "review_date": report_date,
             "briefing_date": morning_date,
             "data_through": local_date,
             "global_market_date": global_date,

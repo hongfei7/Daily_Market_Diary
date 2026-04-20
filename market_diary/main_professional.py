@@ -42,7 +42,8 @@ from professional.trend_pack import generate_hk_trend_pack
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate the professional morning research briefing.")
-    parser.add_argument("--date", type=str, default="", help="Compatibility override: use the same completed date for global and Hong Kong local data.")
+    parser.add_argument("--date", type=str, default="", help="Compatibility override: use the same completed date for review, global, and Hong Kong local data.")
+    parser.add_argument("--review-date", type=str, default="", help="Calendar date being reviewed in YYYY-MM-DD format. Defaults to the previous calendar day.")
     parser.add_argument("--global-date", type=str, default="", help="Last completed global market date for US/Europe/FX/commodities in YYYY-MM-DD format.")
     parser.add_argument("--hk-date", type=str, default="", help="Last completed Hong Kong / China local data date in YYYY-MM-DD format.")
     parser.add_argument("--briefing-date", type=str, default="", help="Morning briefing date in YYYY-MM-DD format. Defaults to today in the configured timezone.")
@@ -62,6 +63,10 @@ def _today_in_timezone(tz_name: str) -> str:
         return datetime.now(ZoneInfo(tz_name)).strftime("%Y-%m-%d")
     except Exception:
         return datetime.now().strftime("%Y-%m-%d")
+
+
+def _previous_calendar_day(briefing_date: str) -> str:
+    return (datetime.strptime(briefing_date, "%Y-%m-%d").date() - timedelta(days=1)).isoformat()
 
 
 def _configure_console_output() -> None:
@@ -131,6 +136,7 @@ def fetch_all_data(
     global_market_date: str,
     hk_data_date: str,
     briefing_date: str,
+    review_date: str,
     config: Dict[str, Any],
     debug: bool = False,
     debug_dir: str = "",
@@ -138,7 +144,7 @@ def fetch_all_data(
     print(f"\n{'=' * 72}")
     print(
         "Collecting morning-briefing inputs | "
-        f"briefing={briefing_date} | global-through={global_market_date} | hk-through={hk_data_date}"
+        f"briefing={briefing_date} | review={review_date} | global-request={global_market_date} | hk-request={hk_data_date}"
     )
     print(f"{'=' * 72}\n")
 
@@ -208,8 +214,9 @@ def main() -> None:
 
     timezone = config.get("system", {}).get("timezone", "Asia/Shanghai")
     briefing_date = args.briefing_date or _today_in_timezone(timezone)
-    global_market_date = args.global_date or args.date or _previous_weekday(briefing_date)
-    hk_data_date = args.hk_date or args.date or _previous_hk_trading_day(briefing_date, config)
+    review_date = args.review_date or args.date or _previous_calendar_day(briefing_date)
+    global_market_date = args.global_date or args.date or review_date
+    hk_data_date = args.hk_date or args.date or review_date
     output_dir = args.output_dir or config.get("system", {}).get("output_dir", "reports_professional")
     os.makedirs(output_dir, exist_ok=True)
 
@@ -218,6 +225,7 @@ def main() -> None:
         global_market_date=global_market_date,
         hk_data_date=hk_data_date,
         briefing_date=briefing_date,
+        review_date=review_date,
         config=config,
         debug=args.debug,
         debug_dir=debug_dir,
@@ -229,7 +237,7 @@ def main() -> None:
     _save_chart_features(output_label, output_dir, chart_features)
 
     bundle = build_professional_bundle(
-        report_date=hk_data_date,
+        report_date=review_date,
         briefing_date=briefing_date,
         global_market_date=global_market_date,
         hk_data_date=hk_data_date,

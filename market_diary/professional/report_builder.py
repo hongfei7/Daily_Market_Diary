@@ -795,6 +795,7 @@ def render_professional_report(
     today_ahead_title = "Today Ahead and Trading Calendar" if day_mode.get("is_trading_day", True) else "Next Session Outlook and Calendar"
 
     briefing_date = meta.get("briefing_date", meta.get("report_date", ""))
+    review_date = meta.get("review_date", meta.get("report_date", ""))
     data_through = meta.get("data_through", meta.get("report_date", ""))
     global_date = meta.get("global_market_date", meta.get("effective_date", data_through))
     hk_date = meta.get("hk_data_date", data_through)
@@ -803,7 +804,7 @@ def render_professional_report(
 
 > Designed for a Hong Kong sell-side commute: Layer 1 `Scan`, Layer 2 `Deep Read`, Layer 3 `Thinking`  
 > Mode: `{day_mode.get('label', 'Trading day')}` | {day_mode.get('note', '')}
-> Briefing date: `{briefing_date}` | Global markets through: `{global_date}` | HK/China local data through: `{hk_date}` | Market effective date: `{meta.get('effective_date', '')}` | Generated at: `{meta.get('generated_at', '')}`
+> Briefing date: `{briefing_date}` | Review date: `{review_date}` | Global request: `{global_date}` | HK/China request: `{hk_date}` | Market effective date: `{meta.get('effective_date', '')}` | Generated at: `{meta.get('generated_at', '')}`
 {market_quality_block}
 {quality_line}
 

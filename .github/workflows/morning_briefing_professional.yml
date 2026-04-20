@@ -2,11 +2,12 @@ name: Daily Morning Briefing (Professional)
 
 on:
   schedule:
+    # 23:00 UTC = 07:00 Hong Kong / Beijing time, leaving a 30-minute buffer before the 07:30 target.
     - cron: "0 23 * * *"
   workflow_dispatch:
     inputs:
       date:
-        description: "Last completed market data date (YYYY-MM-DD, leave empty for prior HK trading day)"
+        description: "Calendar review date (YYYY-MM-DD, leave empty for yesterday in Hong Kong time)"
         required: false
         type: string
 
@@ -96,6 +97,7 @@ jobs:
           python test_text_normalizer.py
           python test_chart_appendix.py
           python test_news_cache.py
+          python test_date_semantics.py
           python test_trend_pack.py
           python test_professional_workbench.py
 
@@ -109,28 +111,23 @@ jobs:
           LLM_MODEL: MiniMax-M2.7
         run: |
           if [ -n "${{ github.event.inputs.date }}" ]; then
-            GLOBAL_DATE="${{ github.event.inputs.date }}"
-            HK_DATE="${{ github.event.inputs.date }}"
+            REVIEW_DATE="${{ github.event.inputs.date }}"
           else
-            GLOBAL_DATE="$(python - <<'PY'
-          from datetime import datetime, timedelta
-          d = datetime.now().date() - timedelta(days=1)
-          while d.weekday() >= 5:
-              d -= timedelta(days=1)
-          print(d.isoformat())
-          PY
-          )"
-            HK_DATE="$GLOBAL_DATE"
+            REVIEW_DATE="$(date -d 'yesterday' +%F)"
           fi
           BRIEFING_DATE="$(date +%F)"
+          GLOBAL_DATE="$REVIEW_DATE"
+          HK_DATE="$REVIEW_DATE"
 
-          echo "Global markets through: $GLOBAL_DATE"
-          echo "HK/China local data through: $HK_DATE"
+          echo "Review date: $REVIEW_DATE"
+          echo "Global market request date: $GLOBAL_DATE"
+          echo "HK/China local request date: $HK_DATE"
           echo "Briefing date: $BRIEFING_DATE"
+          echo "REVIEW_DATE=$REVIEW_DATE" >> "$GITHUB_ENV"
           echo "GLOBAL_DATE=$GLOBAL_DATE" >> "$GITHUB_ENV"
           echo "HK_DATE=$HK_DATE" >> "$GITHUB_ENV"
           echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
-          python market_diary/main_professional.py --global-date "$GLOBAL_DATE" --hk-date "$HK_DATE" --briefing-date "$BRIEFING_DATE"
+          python market_diary/main_professional.py --review-date "$REVIEW_DATE" --global-date "$GLOBAL_DATE" --hk-date "$HK_DATE" --briefing-date "$BRIEFING_DATE"
 
       - name: Send briefing email
         env:
