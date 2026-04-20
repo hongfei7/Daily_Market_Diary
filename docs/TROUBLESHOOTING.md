@@ -5,8 +5,8 @@
 Run these commands first from the project root:
 
 ```bash
-python test_github_actions.py
-python test_professional_workbench.py
+python tests/test_github_actions.py
+python tests/test_professional_workbench.py
 python market_diary/main_professional.py --date 2026-04-13 --no-llm
 ```
 
@@ -101,13 +101,13 @@ Fix:
 ### Validate the local professional stack
 
 ```bash
-python test_professional_workbench.py
+python tests/test_professional_workbench.py
 ```
 
 ### Validate the CI smoke path
 
 ```bash
-python test_github_actions.py
+python tests/test_github_actions.py
 ```
 
 ### Inspect a single adapter

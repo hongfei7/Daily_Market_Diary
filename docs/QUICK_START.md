@@ -35,9 +35,9 @@ By default, task outputs are cached under `reports_professional/raw/llm_cache/` 
 Run smoke tests:
 
 ```bash
-python test_github_actions.py
-python test_professional_workbench.py
-python test_market_data_resilience.py
+python tests/test_github_actions.py
+python tests/test_professional_workbench.py
+python tests/test_market_data_resilience.py
 ```
 
 Generate a briefing:

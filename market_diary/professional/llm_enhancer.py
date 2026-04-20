@@ -402,6 +402,7 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
     base = {
         "report_date": (bundle.get("meta", {}) or {}).get("report_date", ""),
         "day_mode": _day_mode_context(bundle),
+        "date_semantics": bundle.get("date_semantics", {}) or {},
         "market_theme": overview.get("theme", ""),
         "risk_regime": overview.get("risk_regime", ""),
     }
@@ -501,11 +502,21 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
 
 
 def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
+    day_mode = context.get("day_mode", {}) or {}
+    non_trading_instruction = ""
+    if not bool(day_mode.get("is_trading_day", True)):
+        non_trading_instruction = (
+            "Non-trading-day rule: treat Hong Kong and A-share cash-market data as last-available reference tape only. "
+            "Do not frame it as a fresh cash-session move. Focus analysis on still-moving financial actions: policy and regulatory signals, "
+            "geopolitics, central-bank repricing, FX/commodities/crypto, corporate actions, and the next open.\n"
+        )
+
     common_requirements = (
         "Write in English only.\n"
         "Use only the supplied facts.\n"
         "Keep the tone calm, specific, and useful for a Hong Kong sell-side commute note.\n"
         "If data is missing, say so instead of filling gaps.\n"
+        + non_trading_instruction
     )
 
     task_instructions = {

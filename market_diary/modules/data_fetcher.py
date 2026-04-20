@@ -143,6 +143,7 @@ INTRADAY_WHITELIST = {
 
 DEFAULT_INTRADAY_INTERVAL = "5m"
 ALWAYS_OPEN_CATEGORIES = {"Crypto"}
+WEEKEND_ACTIVE_CATEGORIES = {"Crypto", "FX", "Commodities"}
 SUMMARY_LOOKBACK_DAYS = 14
 SUMMARY_STALE_AFTER_DAYS = 1
 SUMMARY_FETCH_ATTEMPTS = 2
@@ -319,6 +320,7 @@ def _get_effective_intraday_date(
     requested_date: str,
     interval: str,
     max_lookback_days: int = 4,
+    prefer_weekend_active_assets: bool = False,
 ) -> Tuple[str, List[pd.DataFrame]]:
     base = _parse_date(requested_date)
     crypto_only_candidate: Optional[Tuple[str, List[pd.DataFrame]]] = None
@@ -333,7 +335,13 @@ def _get_effective_intraday_date(
         crypto_rows = 0
 
         for category, items in TICKERS.items():
-            if category not in ALWAYS_OPEN_CATEGORIES and day.weekday() >= 5:
+            weekend_active_allowed = (
+                prefer_weekend_active_assets
+                and offset == 0
+                and day.weekday() >= 5
+                and category in WEEKEND_ACTIVE_CATEGORIES
+            )
+            if category not in ALWAYS_OPEN_CATEGORIES and day.weekday() >= 5 and not weekend_active_allowed:
                 continue
 
             for name, ticker in items.items():
@@ -544,6 +552,7 @@ def fetch_market_data(
     report_date: Optional[str] = None,
     intraday_interval: str = DEFAULT_INTRADAY_INTERVAL,
     intraday_fallback_days: int = 4,
+    prefer_weekend_active_assets: bool = False,
 ) -> Dict[str, Any]:
     """Fetch summary market data and intraday chart series."""
     if report_date is None:
@@ -556,6 +565,7 @@ def fetch_market_data(
         requested_date=report_date,
         interval=intraday_interval,
         max_lookback_days=intraday_fallback_days,
+        prefer_weekend_active_assets=prefer_weekend_active_assets,
     )
 
     if timeseries_data:

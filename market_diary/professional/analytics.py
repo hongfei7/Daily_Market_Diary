@@ -9,6 +9,7 @@ import yfinance as yf
 
 from modules.text_normalizer import normalize_news_text
 from professional.attribution import build_attribution
+from professional.date_policy import build_date_semantics, build_day_mode
 from professional.models import WatchlistDefinition, WatchlistSnapshot
 
 
@@ -467,6 +468,8 @@ def build_high_frequency_trackers(summary: Dict[str, Any], chart_features: Dict[
         rows.append(
             {
                 "label": label,
+                "category": category,
+                "symbol": name,
                 "price": _parse_float(item.get("Price")),
                 "change_pct": change_pct,
                 "interpretation": _tracker_interpretation(label, change_pct, chart_features),
@@ -888,6 +891,7 @@ def build_must_watch(
     movers_digest: Dict[str, Any],
     catalysts: List[Dict[str, Any]],
     report_config: Dict[str, Any],
+    day_mode: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     quick_limit = int((report_config or {}).get("quick_items_limit", 10))
     top_macro = int((report_config or {}).get("top_macro_events", 4))
@@ -895,12 +899,17 @@ def build_must_watch(
     top_trackers = int((report_config or {}).get("top_high_frequency_items", 3))
     top_movers = int((report_config or {}).get("top_movers", 2))
     top_catalysts = int((report_config or {}).get("top_catalysts", 3))
+    is_trading_day = bool((day_mode or {}).get("is_trading_day", True))
 
     items: List[Dict[str, Any]] = [
         {
-            "bucket": "Overnight regime",
+            "bucket": "Overnight regime" if is_trading_day else "Still-moving markets",
             "title": overview.get("theme", ""),
-            "summary": f"Start by deciding whether the day is about {overview.get('risk_regime')} conditions or a style pivot.",
+            "summary": (
+                f"Start by deciding whether the day is about {overview.get('risk_regime')} conditions or a style pivot."
+                if is_trading_day
+                else "No fresh Hong Kong cash session is assumed; use global active assets and policy/event flow to prepare the next open."
+            ),
             "score": 95,
         }
     ]
@@ -925,7 +934,12 @@ def build_must_watch(
             }
         )
 
-    for tracker in high_frequency[:top_trackers]:
+    tracker_candidates = high_frequency
+    if not is_trading_day:
+        active_categories = {"FX", "Commodities", "Crypto", "Rates", "Vol"}
+        tracker_candidates = [item for item in high_frequency if item.get("category") in active_categories]
+
+    for tracker in tracker_candidates[:top_trackers]:
         items.append(
             {
                 "bucket": "High-frequency data",
@@ -935,7 +949,8 @@ def build_must_watch(
             }
         )
 
-    for mover in movers_digest.get("movers", [])[:top_movers]:
+    mover_candidates = movers_digest.get("movers", []) if is_trading_day else []
+    for mover in mover_candidates[:top_movers]:
         items.append(
             {
                 "bucket": "Mover attribution",
@@ -1066,9 +1081,11 @@ def build_hk_quick_checks(
     flow_status = "unavailable"
     flow_source = ""
     flow_as_of = ""
-    if southbound_metric.get("status") != "unavailable" or northbound_metric.get("status") != "unavailable":
+    southbound_status = southbound_metric.get("status", "unavailable")
+    northbound_status = northbound_metric.get("status", "unavailable")
+    if southbound_status != "unavailable" or northbound_status != "unavailable":
         flow_value = f"Southbound {southbound_metric.get('display_value', 'N/A')} | Northbound {northbound_metric.get('display_value', 'N/A')}"
-        flow_status = "live_public"
+        flow_status = southbound_status if southbound_status != "unavailable" else northbound_status
         flow_source = southbound_metric.get("source", "") or northbound_metric.get("source", "")
         flow_as_of = southbound_metric.get("as_of", "") or northbound_metric.get("as_of", "")
 
@@ -1324,13 +1341,23 @@ def build_theme_deep_dive(
     }
 
 
-def build_today_forward(report_date: str, macro_agenda: List[Dict[str, Any]], catalysts: List[Dict[str, Any]]) -> Dict[str, Any]:
+def build_today_forward(
+    report_date: str,
+    macro_agenda: List[Dict[str, Any]],
+    catalysts: List[Dict[str, Any]],
+    day_mode: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     today = report_date
     today_macro = [item for item in macro_agenda if item.get("date", today) == today][:6]
     today_catalysts = [item for item in catalysts if item.get("date", today) == today][:8]
     next_catalysts = catalysts[:10]
+    is_trading_day = bool((day_mode or {}).get("is_trading_day", True))
 
     focus_lines = []
+    if not is_trading_day:
+        focus_lines.append(
+            "Non-trading review: use today's calendar to prepare the next Hong Kong open rather than treating the last cash tape as a fresh signal."
+        )
     if today_macro:
         focus_lines.append(
             f"Macro: {today_macro[0].get('event', '')} is the first item to anchor the open and the rates/FX response."
@@ -1359,25 +1386,69 @@ def build_reflection_prompts(config: Dict[str, Any], overview: Dict[str, Any], h
     return dynamic + [str(prompt) for prompt in prompts]
 
 
-def build_day_mode(report_date: str, config: Dict[str, Any]) -> Dict[str, Any]:
-    day = datetime.strptime(report_date, "%Y-%m-%d")
-    calendar = config.get("calendar", {}) or {}
-    closed_weekdays = set(int(value) for value in (calendar.get("closed_weekdays", []) or []))
-    closed_dates = set(str(value) for value in (calendar.get("closed_dates", []) or []))
-    is_closed = day.weekday() in closed_weekdays or report_date in closed_dates
+def build_non_trading_focus(
+    day_mode: Dict[str, Any],
+    date_semantics: Dict[str, Any],
+    overview: Dict[str, Any],
+    macro_agenda: List[Dict[str, Any]],
+    sector_digest: Dict[str, Any],
+    high_frequency: List[Dict[str, Any]],
+    catalysts: List[Dict[str, Any]],
+    risk_data: Dict[str, Any],
+) -> Dict[str, Any]:
+    if bool((day_mode or {}).get("is_trading_day", True)):
+        return {}
 
-    if is_closed:
-        return {
-            "mode": "non_trading_day",
-            "label": "Non-trading day",
-            "is_trading_day": False,
-            "note": "Shift weight from execution prep toward synthesis, theme work, and next-session preparation.",
-        }
+    active_categories = {"FX", "Commodities", "Crypto", "Rates", "Vol"}
+    still_moving = [
+        item
+        for item in high_frequency
+        if item.get("category") in active_categories and item.get("price") is not None
+    ][:6]
+
+    action_items: List[Dict[str, Any]] = []
+    for item in ((risk_data or {}).get("geopolitical_risks", []) or [])[:3]:
+        action_items.append(
+            {
+                "bucket": "Geopolitics",
+                "item": f"{item.get('region', '')}: {item.get('event', '')}",
+                "read": item.get("impact", "Watch risk-premium transmission into oil, gold, FX, and China proxies."),
+            }
+        )
+    for item in (sector_digest.get("graded_news", []) or [])[:3]:
+        action_items.append(
+            {
+                "bucket": "Policy / company tape",
+                "item": item.get("title", ""),
+                "read": item.get("why", ""),
+            }
+        )
+    for item in (macro_agenda or [])[:3]:
+        action_items.append(
+            {
+                "bucket": item.get("status", "Macro"),
+                "item": item.get("event", ""),
+                "read": item.get("impact", ""),
+            }
+        )
+
+    next_open = [
+        "Refresh HKEX turnover, Stock Connect, short-selling, and AH dispersion once the next HK cash session closes.",
+        "Use USD/CNH, USD/HKD, DXY, oil, gold, and crypto as bridge signals before cash markets reopen.",
+        "Prepare one base case and one risk case for the next Hong Kong open instead of over-reading stale cash-market moves.",
+    ]
+    if catalysts:
+        next_open.insert(0, f"First dated catalyst to prepare: {catalysts[0].get('date', '')} | {catalysts[0].get('event', '')}.")
+
     return {
-        "mode": "trading_day",
-        "label": "Trading day",
-        "is_trading_day": True,
-        "note": "Keep the report execution-oriented: what matters by the Hong Kong open, what can move leadership, and what needs fast follow-up.",
+        "summary": (
+            f"No fresh Hong Kong cash-market session is assumed for {date_semantics.get('review_date')}; "
+            f"HK local tape is {date_semantics.get('hk_cash_role')} from {date_semantics.get('hk_data_date')}."
+        ),
+        "still_moving": still_moving,
+        "action_items": action_items[:6],
+        "next_open": next_open[:5],
+        "market_regime": overview.get("theme", ""),
     }
 
 
@@ -1411,6 +1482,14 @@ def build_professional_bundle(
     global_date = global_market_date or market_meta.get("requested_date", report_date)
     local_date = hk_data_date or report_date
     day_mode = build_day_mode(report_date, config)
+    date_semantics = build_date_semantics(
+        report_date=report_date,
+        briefing_date=morning_date,
+        global_market_date=global_date,
+        hk_data_date=local_date,
+        market_meta=market_meta,
+        day_mode=day_mode,
+    )
     macro_agenda = build_macro_agenda(morning_date, macro_data, config)
     sector_digest = build_sector_news_digest(sector_data, config)
     high_frequency = build_high_frequency_trackers(summary, chart_features)
@@ -1422,7 +1501,17 @@ def build_professional_bundle(
     attribution = build_attribution(summary, hk_local_metrics, movers_digest, overview)
     flow_tracker = build_flow_tracker(hk_quick_checks, movers_digest, attribution, stock_connect_data, ah_premium_data)
     theme_deep_dive = build_theme_deep_dive(morning_date, config, sector_digest, watchlists, high_frequency, catalysts)
-    today_forward = build_today_forward(morning_date, macro_agenda, catalysts)
+    today_forward = build_today_forward(morning_date, macro_agenda, catalysts, day_mode=day_mode)
+    non_trading_focus = build_non_trading_focus(
+        day_mode=day_mode,
+        date_semantics=date_semantics,
+        overview=overview,
+        macro_agenda=macro_agenda,
+        sector_digest=sector_digest,
+        high_frequency=high_frequency,
+        catalysts=catalysts,
+        risk_data=risk_data,
+    )
     reflection_prompts = build_reflection_prompts(config, overview, hk_desk_view)
     source_links = build_source_links(sector_digest, watchlists, report_config, company_events=company_events)
     must_watch = build_must_watch(
@@ -1433,6 +1522,7 @@ def build_professional_bundle(
         movers_digest=movers_digest,
         catalysts=catalysts,
         report_config=report_config,
+        day_mode=day_mode,
     )
 
     return {
@@ -1450,6 +1540,7 @@ def build_professional_bundle(
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "config_path": config.get("config_path", ""),
         },
+        "date_semantics": date_semantics,
         "overview": overview,
         "day_mode": day_mode,
         "hk_desk_view": hk_desk_view,
@@ -1472,6 +1563,7 @@ def build_professional_bundle(
         "ah_premium": ah_premium_data or {},
         "theme_deep_dive": theme_deep_dive,
         "today_forward": today_forward,
+        "non_trading_focus": non_trading_focus,
         "reflection_prompts": reflection_prompts,
         "source_links": source_links,
         "must_watch": must_watch,

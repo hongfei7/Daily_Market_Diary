@@ -101,8 +101,8 @@ python market_diary/main_professional.py --date 2026-04-13
 ### 4. Validate the workbench
 
 ```bash
-python test_github_actions.py
-python test_professional_workbench.py
+python tests/test_github_actions.py
+python tests/test_professional_workbench.py
 ```
 
 ## Customization Points

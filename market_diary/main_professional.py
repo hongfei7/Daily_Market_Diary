@@ -14,9 +14,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timedelta
 from typing import Any, Dict
-from zoneinfo import ZoneInfo
 
 from modules.adapter_ah_premium import fetch_ah_premium_data
 from modules.adapter_stockconnect import fetch_stock_connect_data
@@ -33,6 +31,13 @@ from professional.chart_appendix import render_chart_appendix
 from professional.config import load_professional_config
 from professional.daily_one_chart import generate_daily_one_chart
 from professional.dashboard import generate_dashboard
+from professional.date_policy import (
+    build_day_mode,
+    previous_calendar_day as _previous_calendar_day,
+    previous_hk_trading_day as _previous_hk_trading_day,
+    previous_weekday as _previous_weekday,
+    resolve_report_dates,
+)
 from professional.fact_checker import run_fact_check
 from professional.llm_enhancer import generate_llm_sections
 from professional.report_quality import build_report_quality
@@ -58,17 +63,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _today_in_timezone(tz_name: str) -> str:
-    try:
-        return datetime.now(ZoneInfo(tz_name)).strftime("%Y-%m-%d")
-    except Exception:
-        return datetime.now().strftime("%Y-%m-%d")
-
-
-def _previous_calendar_day(briefing_date: str) -> str:
-    return (datetime.strptime(briefing_date, "%Y-%m-%d").date() - timedelta(days=1)).isoformat()
-
-
 def _configure_console_output() -> None:
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
@@ -77,29 +71,6 @@ def _configure_console_output() -> None:
                 reconfigure(errors="replace")
             except Exception:
                 pass
-
-
-def _previous_weekday(briefing_date: str) -> str:
-    current = datetime.strptime(briefing_date, "%Y-%m-%d").date() - timedelta(days=1)
-    for _ in range(7):
-        if current.weekday() < 5:
-            return current.isoformat()
-        current -= timedelta(days=1)
-    return (datetime.strptime(briefing_date, "%Y-%m-%d").date() - timedelta(days=1)).isoformat()
-
-
-def _previous_hk_trading_day(briefing_date: str, config: Dict[str, Any]) -> str:
-    current = datetime.strptime(briefing_date, "%Y-%m-%d").date() - timedelta(days=1)
-    calendar = config.get("calendar", {}) or {}
-    closed_weekdays = set(int(item) for item in (calendar.get("closed_weekdays", [5, 6]) or []))
-    closed_dates = set(str(item) for item in (calendar.get("closed_dates", []) or []))
-
-    for _ in range(14):
-        if current.weekday() not in closed_weekdays and current.isoformat() not in closed_dates:
-            return current.isoformat()
-        current -= timedelta(days=1)
-
-    return (datetime.strptime(briefing_date, "%Y-%m-%d").date() - timedelta(days=1)).isoformat()
 
 
 def _extract_current_prices(market_data: Dict[str, Any]) -> Dict[str, float]:
@@ -153,7 +124,11 @@ def fetch_all_data(
     runtime_cache_dir = os.path.normpath(runtime_cache_dir)
 
     print("[1/7] Market data")
-    payload["market"] = fetch_market_data(global_market_date)
+    day_mode = build_day_mode(review_date, config)
+    payload["market"] = fetch_market_data(
+        global_market_date,
+        prefer_weekend_active_assets=not bool(day_mode.get("is_trading_day", True)),
+    )
 
     print("[2/7] Sector news and HKEX announcements")
     payload["sector"] = fetch_sector_data(hk_data_date, config=config, cache_dir=runtime_cache_dir)
@@ -212,11 +187,11 @@ def main() -> None:
     args = parse_args()
     config = load_professional_config(args.config or None)
 
-    timezone = config.get("system", {}).get("timezone", "Asia/Shanghai")
-    briefing_date = args.briefing_date or _today_in_timezone(timezone)
-    review_date = args.review_date or args.date or _previous_calendar_day(briefing_date)
-    global_market_date = args.global_date or args.date or review_date
-    hk_data_date = args.hk_date or args.date or review_date
+    resolved_dates = resolve_report_dates(args, config)
+    briefing_date = resolved_dates["briefing_date"]
+    review_date = resolved_dates["review_date"]
+    global_market_date = resolved_dates["global_market_date"]
+    hk_data_date = resolved_dates["hk_data_date"]
     output_dir = args.output_dir or config.get("system", {}).get("output_dir", "reports_professional")
     os.makedirs(output_dir, exist_ok=True)
 

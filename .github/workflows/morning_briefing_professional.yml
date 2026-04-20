@@ -10,6 +10,11 @@ on:
         description: "Calendar review date (YYYY-MM-DD, leave empty for yesterday in Hong Kong time)"
         required: false
         type: string
+      commit_reports:
+        description: "Commit generated report artifacts back to main (manual archive only)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -83,23 +88,24 @@ jobs:
           LLM_MODEL: MiniMax-M2.7
         run: |
           echo "Running system tests..."
-          python test_github_actions.py
-          python test_stockconnect_ah_premium.py
-          python test_report_quality.py
-          python test_runtime_audit.py
-          python test_hk_local_foundation.py
-          python test_hk_flow_attribution.py
-          python test_daily_one_chart.py
-          python test_market_data_resilience.py
-          python test_llm_enhancer_resilience.py
-          python test_llm_pipeline.py
-          python test_email_delivery.py
-          python test_text_normalizer.py
-          python test_chart_appendix.py
-          python test_news_cache.py
-          python test_date_semantics.py
-          python test_trend_pack.py
-          python test_professional_workbench.py
+          python tests/test_github_actions.py
+          python tests/test_stockconnect_ah_premium.py
+          python tests/test_report_quality.py
+          python tests/test_runtime_audit.py
+          python tests/test_hk_local_foundation.py
+          python tests/test_hk_flow_attribution.py
+          python tests/test_daily_one_chart.py
+          python tests/test_market_data_resilience.py
+          python tests/test_llm_enhancer_resilience.py
+          python tests/test_llm_pipeline.py
+          python tests/test_email_delivery.py
+          python tests/test_text_normalizer.py
+          python tests/test_chart_appendix.py
+          python tests/test_news_cache.py
+          python tests/test_date_semantics.py
+          python tests/test_trend_pack.py
+          python tests/test_repo_hygiene.py
+          python tests/test_professional_workbench.py
 
       - name: Generate Morning Briefing
         env:
@@ -110,24 +116,21 @@ jobs:
           LLM_BASE_URL: https://api.minimaxi.com/v1
           LLM_MODEL: MiniMax-M2.7
         run: |
+          BRIEFING_DATE="$(date +%F)"
           if [ -n "${{ github.event.inputs.date }}" ]; then
             REVIEW_DATE="${{ github.event.inputs.date }}"
+            GLOBAL_DATE="$REVIEW_DATE"
+            HK_DATE="$REVIEW_DATE"
+            echo "Manual review date: $REVIEW_DATE"
+            echo "Manual global market request date: $GLOBAL_DATE"
+            echo "Manual HK/China local request date: $HK_DATE"
+            python market_diary/main_professional.py --review-date "$REVIEW_DATE" --global-date "$GLOBAL_DATE" --hk-date "$HK_DATE" --briefing-date "$BRIEFING_DATE"
           else
-            REVIEW_DATE="$(date -d 'yesterday' +%F)"
+            echo "Scheduled run: letting main_professional.py resolve review/global/HK dates."
+            python market_diary/main_professional.py --briefing-date "$BRIEFING_DATE"
           fi
-          BRIEFING_DATE="$(date +%F)"
-          GLOBAL_DATE="$REVIEW_DATE"
-          HK_DATE="$REVIEW_DATE"
-
-          echo "Review date: $REVIEW_DATE"
-          echo "Global market request date: $GLOBAL_DATE"
-          echo "HK/China local request date: $HK_DATE"
-          echo "Briefing date: $BRIEFING_DATE"
-          echo "REVIEW_DATE=$REVIEW_DATE" >> "$GITHUB_ENV"
-          echo "GLOBAL_DATE=$GLOBAL_DATE" >> "$GITHUB_ENV"
-          echo "HK_DATE=$HK_DATE" >> "$GITHUB_ENV"
           echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
-          python market_diary/main_professional.py --review-date "$REVIEW_DATE" --global-date "$GLOBAL_DATE" --hk-date "$HK_DATE" --briefing-date "$BRIEFING_DATE"
+          echo "Briefing date: $BRIEFING_DATE"
 
       - name: Send briefing email
         env:
@@ -149,7 +152,8 @@ jobs:
             --output-dir reports_professional \
             --to "$REPORT_EMAIL_TO"
 
-      - name: Commit and push reports
+      - name: Commit and push reports (manual archival only)
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.commit_reports == 'true' }}
         env:
           TZ: Asia/Shanghai
         run: |
@@ -158,7 +162,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add -f reports_professional/
+          git add -f reports_professional/*.md reports_professional/charts/*.png reports_professional/charts/*.json
 
           if git diff --cached --quiet; then
             echo "No new reports to commit"
@@ -177,6 +181,8 @@ jobs:
           name: morning-briefing-${{ github.run_number }}
           path: |
             reports_professional/*.md
+            reports_professional/*.html
             reports_professional/charts/*.png
             reports_professional/charts/*.json
+            reports_professional/raw/*.json
           retention-days: 30

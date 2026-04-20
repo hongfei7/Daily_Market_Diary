@@ -1,276 +1,28 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Sequence
+from typing import Any, Dict, List
 
-
-def _report_setting(bundle: Dict[str, Any], key: str, default: int) -> int:
-    report_config = (bundle.get("report_config", {}) or {})
-    value = report_config.get(key, default)
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _render_market_data_quality(meta: Dict[str, Any]) -> str:
-    quality = meta.get("market_quality", {}) or {}
-    if not quality:
-        return ""
-
-    available = quality.get("available")
-    total = quality.get("total")
-    fallback_count = len(quality.get("fallback", []) or [])
-    stale_count = len(quality.get("stale", []) or [])
-    missing_count = len(quality.get("missing", []) or [])
-
-    parts: List[str] = []
-    if isinstance(available, int) and isinstance(total, int) and total > 0:
-        parts.append(f"Coverage: `{available}/{total}`")
-    if fallback_count:
-        parts.append(f"Fallbacks used: `{fallback_count}`")
-    if stale_count:
-        parts.append(f"Stale items (>1d): `{stale_count}`")
-    if missing_count:
-        parts.append(f"Missing: `{missing_count}`")
-
-    if not parts:
-        return ""
-    return "> Market data quality: " + " | ".join(parts)
-
-
-def _fmt_pct(value: Any) -> str:
-    if value is None:
-        return "N/A"
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return str(value)
-    return f"{number:+.2f}%"
-
-
-def _fmt_price(value: Any, digits: int = 2) -> str:
-    if value is None:
-        return "N/A"
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return str(value)
-    if abs(number) < 10:
-        digits = max(digits, 4)
-    return f"{number:,.{digits}f}"
-
-
-def _fmt_hkd_bn(value: Any) -> str:
-    if value is None:
-        return "N/A"
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return str(value)
-    return f"HK${number / 1_000_000_000:.1f}bn"
-
-
-def _fmt_millions(value: Any, currency: str = "HK$") -> str:
-    if value is None:
-        return "N/A"
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return str(value)
-    return f"{currency}{number:,.1f}mn"
-
-
-def _status_label(status: str) -> str:
-    mapping = {
-        "live_local": "Live local",
-        "stale_local": "Stale local",
-        "live_public": "Live public",
-        "stale_public": "Stale public",
-        "live_quote": "Live quote",
-        "live_hybrid": "Live quote + local",
-        "proxy": "Proxy fallback",
-        "unavailable": "Unavailable",
-    }
-    return mapping.get(str(status or ""), str(status or "Unavailable").replace("_", " ").title())
-
-
-def _source_as_of(item: Dict[str, Any]) -> str:
-    source = str(item.get("source", "") or "").strip()
-    as_of = str(item.get("as_of", "") or "").strip()
-    if source and as_of:
-        return f"{source} | {as_of}"
-    if source:
-        return source
-    if as_of:
-        return as_of
-    return "N/A"
-
-
-def _bundle_metric(bundle: Dict[str, Any], section: str, key: str) -> Dict[str, Any]:
-    section_data = bundle.get(section, {}) or {}
-    item = section_data.get(key, {}) if isinstance(section_data, dict) else {}
-    return item if isinstance(item, dict) else {}
-
-
-def _truncate(text: str, limit: int = 110) -> str:
-    text = str(text or "").strip()
-    if len(text) <= limit:
-        return text
-    return text[: limit - 3].rstrip() + "..."
-
-
-def _make_table(headers: Sequence[str], rows: Iterable[Sequence[Any]]) -> str:
-    def _cell(value: Any) -> str:
-        text = str(value)
-        text = text.replace("|", "\\|").replace("\r\n", "<br>").replace("\n", "<br>")
-        return text
-
-    lines = ["| " + " | ".join(_cell(header) for header in headers) + " |", "| " + " | ".join(["---"] * len(headers)) + " |"]
-    for row in rows:
-        lines.append("| " + " | ".join(_cell(cell) for cell in row) + " |")
-    return "\n".join(lines)
-
-
-def _summary_item(bundle: Dict[str, Any], category: str, name: str) -> Dict[str, Any]:
-    summary = (bundle.get("market_summary", {}) or {})
-    item = (summary.get(category, {}) or {}).get(name, {})
-    return item if isinstance(item, dict) else {}
-
-
-def _summary_price(bundle: Dict[str, Any], category: str, name: str) -> Any:
-    return _summary_item(bundle, category, name).get("Price")
-
-
-def _summary_pct(bundle: Dict[str, Any], category: str, name: str) -> Any:
-    item = _summary_item(bundle, category, name)
-    value = item.get("Pct Change")
-    if isinstance(value, str):
-        value = value.replace("%", "").strip()
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _fmt_alert_pct(value: Any, threshold: float = 1.5) -> str:
-    if value is None:
-        return "N/A"
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return str(value)
-    text = f"{number:+.2f}%"
-    return f"**{text}**" if abs(number) >= threshold else text
-
-
-def _render_top_items(items: List[Dict[str, Any]], limit: int = 6) -> str:
-    if not items:
-        return "1. No priority items were available."
-    lines = []
-    for idx, item in enumerate(items[:limit], 1):
-        lines.append(f"{idx}. **{item.get('title', '')}**")
-        lines.append(f"   {item.get('bucket', '')} | {_truncate(item.get('summary', ''), 110)}")
-    return "\n".join(lines)
-
-
-def _render_selected_news(bundle: Dict[str, Any]) -> str:
-    llm_sections = bundle.get("llm_sections", {}) or {}
-    items = llm_sections.get("selected_news", []) or []
-    if not items:
-        return ""
-    lines = ["**Curated overnight stories:**"]
-    for item in items[:5]:
-        lines.append(
-            f"- **{item.get('headline', '')}** | {item.get('why_it_matters', '')} | HK read-through: {item.get('hk_market_impact', '')}"
-        )
-    return "\n".join(lines)
-
-
-def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
-    rows = [
-        ("Equities", "S&P 500", "S&P 500", "US large-cap risk appetite"),
-        ("Equities", "Nasdaq 100", "Nasdaq 100", "Growth and duration leadership"),
-        ("Equities", "Dow Jones", "Dow Jones", "Old-economy and cyclicals"),
-        ("Equities", "Hang Seng Index", "Hang Seng Index", "Hong Kong broad beta"),
-        ("Equities", "Hang Seng TECH ETF", "Hang Seng TECH", "Hong Kong growth / platform read-through"),
-        ("Equities", "CSI 300", "CSI 300", "Mainland large-cap tone"),
-        ("Equities", "ChiNext Index", "ChiNext", "Mainland growth risk appetite"),
-        ("Equities", "Nikkei 225", "Nikkei 225", "Asia developed-market leadership"),
-        ("Equities", "Euro Stoxx 50", "Euro Stoxx 50", "Europe macro risk"),
-        ("Rates", "10Y Treasury", "US 10Y", "Global discount-rate anchor"),
-        ("Rates", "China 10Y", "China 10Y", "China local rates anchor"),
-        ("Rates", "CN-US 10Y spread", "CN-US 10Y spread", "Relative carry and macro-pressure gauge"),
-        ("FX", "DXY", "DXY", "Dollar liquidity impulse"),
-        ("FX", "USD/CNH", "USD/CNH", "Offshore China risk appetite"),
-        ("FX", "USD/HKD", "USD/HKD", "Linked-exchange regime stress check"),
-        ("FX", "USD/JPY", "USD/JPY", "Asia funding and carry read"),
-        ("Commodities", "Brent Crude", "Brent crude", "Energy / geopolitics"),
-        ("Commodities", "Gold", "COMEX gold", "Hedge demand / real yields"),
-        ("Commodities", "Copper", "Copper", "Global growth proxy"),
-        ("Vol", "VIX", "VIX", "US stress barometer"),
-        ("Vol", "HSI Volatility", "HSI volatility", "No stable public HSI volatility feed is configured"),
-    ]
-
-    table_rows = []
-    china_10y_metric = _bundle_metric(bundle, "china_rates", "china_10y")
-    spread_metric = _bundle_metric(bundle, "china_rates", "cn_us_10y_spread")
-
-    for category, name, label, note in rows:
-        if name == "China 10Y":
-            price = china_10y_metric.get("display_value", "N/A")
-            pct = china_10y_metric.get("change_display", "")
-            read = f"{note} | {_status_label(china_10y_metric.get('status', 'unavailable'))} | {_source_as_of(china_10y_metric)}"
-        elif name == "CN-US 10Y spread":
-            price = spread_metric.get("display_value", "N/A")
-            pct = spread_metric.get("change_display", "")
-            read = f"{note} | {_status_label(spread_metric.get('status', 'unavailable'))} | {_source_as_of(spread_metric)}"
-        else:
-            price = _summary_price(bundle, category, name)
-            pct = _summary_pct(bundle, category, name)
-            read = note
-
-        last_value = price if isinstance(price, str) else _fmt_price(price)
-        move_value = pct if isinstance(pct, str) and pct else _fmt_alert_pct(pct)
-        table_rows.append((label, last_value, move_value, read))
-
-    return _make_table(["Asset", "Last", "1D move", "Read"], table_rows)
-
-
-def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
-    rows = bundle.get("hk_quick_checks", []) or []
-    table_rows = [
-        (
-            item.get("metric", ""),
-            item.get("value", ""),
-            _status_label(str(item.get("status", ""))),
-            _source_as_of(item),
-            _truncate(item.get("note", ""), 88),
-        )
-        for item in rows
-    ]
-    return _make_table(["Check", "Value", "Status", "Source / as of", "Why it matters"], table_rows)
-
-
-def _render_risk_dashboard(bundle: Dict[str, Any]) -> str:
-    risk = ((bundle.get("attribution", {}) or {}).get("risk_dashboard", {}) or {})
-    if not risk:
-        return "Risk dashboard was unavailable."
-
-    components = risk.get("components", []) or []
-    lines = [
-        f"- **Composite risk score:** {risk.get('score', 'N/A')}/100 | **Regime:** {risk.get('bucket', 'Mixed')}",
-    ]
-    if components:
-        rows = [
-            (
-                item.get("label", ""),
-                f"{item.get('delta', 0):+}",
-                _truncate(item.get("evidence", ""), 80),
-            )
-            for item in components[:6]
-        ]
-        lines.append(_make_table(["Component", "Score impact", "Evidence"], rows))
-    return "\n".join(lines)
+from professional.report_formatting import (
+    _fmt_hkd_bn,
+    _fmt_millions,
+    _fmt_pct,
+    _fmt_price,
+    _make_table,
+    _report_setting,
+    _source_as_of,
+    _status_label,
+    _truncate,
+)
+from professional.report_layout import build_report_layout
+from professional.report_sections import (
+    _pick_metrics_by_name,
+    _render_global_asset_dashboard,
+    _render_hk_quick_checks,
+    _render_non_trading_focus,
+    _render_risk_dashboard,
+    _render_selected_news,
+    _render_top_items,
+)
 
 
 def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
@@ -347,7 +99,21 @@ def _render_flows(bundle: Dict[str, Any]) -> str:
     bullets = (bundle.get("movers_digest", {}) or {}).get("flow_bullets", []) or []
     if not bullets:
         return "- No flow or positioning signals were available."
-    return "\n".join(f"- {item}" for item in bullets)
+    flow_tracker_keywords = (
+        "Stock Connect",
+        "AH premium",
+        "HKEX short selling",
+        "Highest stock-level short ratios",
+        "ETF flow anomalies",
+    )
+    filtered = [
+        item
+        for item in bullets
+        if not any(keyword.lower() in str(item).lower() for keyword in flow_tracker_keywords)
+    ]
+    if not filtered:
+        return "- Detailed local flow evidence is covered in Section 2.3; keep this section focused on options, hedging, and macro-positioning risk."
+    return "\n".join(f"- {item}" for item in filtered[:5])
 
 
 def _render_attribution(bundle: Dict[str, Any]) -> str:
@@ -373,9 +139,28 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     if not tracker:
         return "No dedicated flow tracker data were available."
 
-    lines: List[str] = [tracker.get("summary", "Flow evidence was not conclusive."), ""]
+    lines: List[str] = ["##### Flow Takeaways"]
+    summary = tracker.get("summary", "Flow evidence was not conclusive.")
+    if summary:
+        lines.append(f"- {summary}")
+
+    flow_bullets = tracker.get("flow_bullets", []) or []
+    if flow_bullets:
+        lines.extend(f"- {item}" for item in flow_bullets[:3])
+    lines.append("")
 
     metrics = tracker.get("key_metrics", []) or []
+    metrics = _pick_metrics_by_name(
+        metrics,
+        (
+            "Southbound / Northbound net flow",
+            "Main Board turnover vs 20D",
+            "Short-selling ratio",
+            "AH premium index",
+            "HIBOR 1M",
+            "Aggregate Balance",
+        ),
+    )
     if metrics:
         rows = [
             (
@@ -387,20 +172,14 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
             )
             for item in metrics
         ]
-        lines.append("#### Local Flow and Funding Checks")
+        lines.append("##### Key Flow / Funding Metrics")
         lines.append(_make_table(["Metric", "Value", "Status", "Source / as of", "Read"], rows))
         lines.append("")
 
-    flow_bullets = tracker.get("flow_bullets", []) or []
-    if flow_bullets:
-        lines.append("#### Flow Notes")
-        lines.extend(f"- {item}" for item in flow_bullets[:6])
-        lines.append("")
-
     stock_connect = (tracker.get("stock_connect", {}) or {}).get("data", {}) or {}
-    southbound_active = ((stock_connect.get("southbound", {}) or {}).get("top_active", []) or [])[:8]
+    southbound_active = ((stock_connect.get("southbound", {}) or {}).get("top_active", []) or [])[:5]
     if southbound_active:
-        lines.append("#### Stock Connect Southbound Active Names")
+        lines.append("##### Stock Connect Southbound Active Names")
         rows = [
             (
                 item.get("rank", ""),
@@ -418,7 +197,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     ah_premium = (tracker.get("ah_premium", {}) or {}).get("data", {}) or {}
     ah_rows = ah_premium.get("top_premium", []) or []
     if ah_rows:
-        lines.append("#### AH Premium Dispersion")
+        lines.append("##### AH Premium Dispersion")
         rows = [
             (
                 item.get("name", ""),
@@ -427,7 +206,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
                 f"{item.get('premium_pct', 0):+.2f}%",
                 item.get("as_of", ""),
             )
-            for item in ah_rows[:8]
+            for item in ah_rows[:5]
         ]
         lines.append(_make_table(["Name", "A ticker", "H ticker", "Premium", "As of"], rows))
         lines.append("")
@@ -437,7 +216,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     short_value = tracker.get("short_sell_top_value", []) or []
     short_rows = watch_hits or short_ratio
     if short_rows:
-        lines.append("#### HKEX Short-Selling Watch")
+        lines.append("##### HKEX Short-Selling Watch")
         rows = [
             (
                 item.get("ticker") or f"{item.get('code', '')}.HK",
@@ -446,7 +225,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
                 _fmt_hkd_bn(item.get("short_turnover_hkd")),
                 _fmt_hkd_bn(item.get("total_turnover_hkd")),
             )
-            for item in short_rows[:8]
+            for item in short_rows[:5]
         ]
         lines.append(_make_table(["Ticker", "Name", "Short ratio", "Short turnover", "Total turnover"], rows))
         lines.append("")
@@ -458,8 +237,12 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
         )
         lines.append(f"- **Short-value leaders:** {leaders}.")
 
-    lines.append("#### ETF Proxy Flow")
-    lines.append(_render_hk_etf_proxy_table(bundle))
+    if not southbound_active:
+        proxy_table = _render_hk_etf_proxy_table(bundle)
+        if "No Hong Kong or offshore-China ETF proxy data" not in proxy_table:
+            lines.append("##### ETF Proxy Fallback")
+            lines.append("_Use this only when official Stock Connect / local-flow data are incomplete._")
+            lines.append(proxy_table)
     return "\n".join(lines).strip()
 
 
@@ -479,6 +262,51 @@ def _render_hk_etf_proxy_table(bundle: Dict[str, Any]) -> str:
     if not rows:
         return "No Hong Kong or offshore-China ETF proxy data were available."
     return _make_table(["Ticker", "Last", "1D", "Volume ratio", "Flow bias"], rows)
+
+
+def _has_official_stock_connect_flow(bundle: Dict[str, Any]) -> bool:
+    tracker = bundle.get("flow_tracker", {}) or {}
+    stock_connect = (tracker.get("stock_connect", {}) or {}).get("data", {}) or {}
+    southbound = stock_connect.get("southbound", {}) or {}
+    return bool(southbound.get("top_active")) or southbound.get("net_buy") is not None
+
+
+def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
+    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
+    llm_sections = bundle.get("llm_sections", {}) or {}
+
+    lines: List[str] = []
+    setup = str(llm_sections.get("hk_review_setup", "") or "").strip()
+    if setup:
+        lines.append(setup)
+        lines.append("")
+
+    leadership = hk_desk_view.get("leadership", "")
+    if leadership:
+        lines.append(f"- **Style leadership:** {leadership}.")
+    else:
+        lines.append("- **Style leadership:** Check HSI, HSCEI, and HSTECH first to separate broad-beta, old-economy, and growth leadership.")
+
+    for line in (hk_desk_view.get("lines", []) or [])[:3]:
+        lines.append(f"- **Cross-market read:** {line}")
+
+    local_leadership = str(llm_sections.get("hk_local_leadership", "") or "").strip()
+    if local_leadership:
+        lines.append(f"- **LLM local leadership read:** {local_leadership}")
+
+    follow_through = str(llm_sections.get("hk_follow_through", "") or "").strip()
+    if not follow_through:
+        follow_through = "Confirm the opening read through Southbound active names, short-selling concentration, USD/CNH, and USD/HKD funding pressure."
+    lines.append(f"- **Follow-through check:** {follow_through}")
+
+    if not _has_official_stock_connect_flow(bundle):
+        proxy_table = _render_hk_etf_proxy_table(bundle)
+        if "No Hong Kong or offshore-China ETF proxy data" not in proxy_table:
+            lines.append("")
+            lines.append("**ETF proxy fallback, only if official local-flow data are incomplete:**")
+            lines.append(proxy_table)
+
+    return "\n".join(lines)
 
 
 def _render_company_events(bundle: Dict[str, Any]) -> str:
@@ -769,42 +597,38 @@ def render_professional_report(
     daily_chart_rel_path: str = "",
     trend_pack_rel_path: str = "",
 ) -> str:
-    meta = bundle.get("meta", {}) or {}
-    overview = bundle.get("overview", {}) or {}
-    day_mode = bundle.get("day_mode", {}) or {}
+    layout = build_report_layout(bundle, dashboard_rel_path=dashboard_rel_path)
+    meta = layout["meta"]
+    overview = layout["overview"]
+    day_mode = layout["day_mode"]
     hk_desk_view = bundle.get("hk_desk_view", {}) or {}
-    llm_sections = bundle.get("llm_sections", {}) or {}
-    dashboard_md = f"![Research Dashboard]({dashboard_rel_path})\n" if dashboard_rel_path else ""
-    market_quality_line = _render_market_data_quality(meta)
-    market_quality_block = f"{market_quality_line}\n" if market_quality_line else ""
-    quality = bundle.get("report_quality", {}) or {}
-    quality_line = (
-        f"> Report quality: `{quality.get('score')}/100` | Grade `{quality.get('grade')}` | Status `{str(quality.get('status', '')).replace('_', ' ')}`\n"
-        if quality
-        else ""
-    )
-    pulse = llm_sections.get("one_line_market_pulse") or overview.get("theme", "")
-    deep_read_setup = llm_sections.get("deep_read_setup") or (
-        f"The overnight tape still looks like a `{overview.get('risk_regime', 'Neutral')}` setup. "
-        + " ".join((overview.get("notes", []) or [])[:3])
-    )
-    hk_review_setup = llm_sections.get("hk_review_setup", "")
-    macro_takeaway = llm_sections.get("macro_takeaway", "")
-    layer_one_title = "Layer 1 | Scan (5-10 min)" if day_mode.get("is_trading_day", True) else "Layer 1 | Reset (5-10 min)"
-    checklist_title = "Morning Checklist" if day_mode.get("is_trading_day", True) else "Next Open Checklist"
-    today_ahead_title = "Today Ahead and Trading Calendar" if day_mode.get("is_trading_day", True) else "Next Session Outlook and Calendar"
-
-    briefing_date = meta.get("briefing_date", meta.get("report_date", ""))
-    review_date = meta.get("review_date", meta.get("report_date", ""))
-    data_through = meta.get("data_through", meta.get("report_date", ""))
-    global_date = meta.get("global_market_date", meta.get("effective_date", data_through))
-    hk_date = meta.get("hk_data_date", data_through)
+    llm_sections = layout["llm_sections"]
+    dashboard_md = layout["dashboard_md"]
+    market_quality_block = layout["market_quality_block"]
+    date_policy_block = layout["date_policy_block"]
+    quality_line = layout["quality_line"]
+    pulse = layout["pulse"]
+    deep_read_setup = layout["deep_read_setup"]
+    macro_takeaway = layout["macro_takeaway"]
+    is_trading_day = layout["is_trading_day"]
+    layer_one_title = layout["layer_one_title"]
+    checklist_title = layout["checklist_title"]
+    today_ahead_title = layout["today_ahead_title"]
+    overseas_title = layout["overseas_title"]
+    hk_quick_title = layout["hk_quick_title"]
+    hk_review_title = layout["hk_review_title"]
+    non_trading_lens = layout["non_trading_lens"]
+    briefing_date = layout["briefing_date"]
+    review_date = layout["review_date"]
+    global_date = layout["global_date"]
+    hk_date = layout["hk_date"]
 
     return f"""# Morning Research Workbench | {briefing_date}
 
 > Designed for a Hong Kong sell-side commute: Layer 1 `Scan`, Layer 2 `Deep Read`, Layer 3 `Thinking`  
 > Mode: `{day_mode.get('label', 'Trading day')}` | {day_mode.get('note', '')}
 > Briefing date: `{briefing_date}` | Review date: `{review_date}` | Global request: `{global_date}` | HK/China request: `{hk_date}` | Market effective date: `{meta.get('effective_date', '')}` | Generated at: `{meta.get('generated_at', '')}`
+{date_policy_block}
 {market_quality_block}
 {quality_line}
 
@@ -818,19 +642,21 @@ def render_professional_report(
 ### 1.2 Global Asset Price Dashboard
 {_render_global_asset_dashboard(bundle)}
 
-### 1.3 Hong Kong Key Data Quick Check
+### 1.3 {hk_quick_title}
 {_render_hk_quick_checks(bundle)}
 
 ### 1.4 Risk Dashboard
 {_render_risk_dashboard(bundle)}
 
 ### 1.5 {checklist_title}
-{_render_top_items(bundle.get('must_watch', []) or [], limit=6)}
+{_render_top_items(bundle.get('must_watch', []) or [], limit=5)}
 
 ## Layer 2 | Deep Read (20-30 min)
 
-### 2.1 Overnight Overseas Market Review
-{deep_read_setup}
+### 2.1 {overseas_title}
+{non_trading_lens}{deep_read_setup}
+
+{_render_non_trading_focus(bundle)}
 
 {_render_selected_news(bundle)}
 
@@ -841,15 +667,8 @@ def render_professional_report(
 {"".join(f"- {line}\n" for line in ((overview.get('chart_read', {}) or {}).get('fx', []) or []))}
 {"".join(f"- {line}\n" for line in ((overview.get('chart_read', {}) or {}).get('assets', []) or []))}
 
-### 2.2 Hong Kong / A-share Previous-Day Review
-{hk_review_setup}
-
-- Use Hong Kong style leadership first: HSI / HSCEI / HSTECH tell you whether the market is broad-beta, old-economy, or growth-led.
-- For cross-market read-through, keep CSI 300, ChiNext, FXI, and USD/CNH together rather than reading any single market in isolation.
-- **LLM local leadership read:** {llm_sections.get('hk_local_leadership', '') or 'No extra leadership read was generated.'}
-- **Follow-through check:** {llm_sections.get('hk_follow_through', '') or 'No extra follow-through check was generated.'}
-- Hong Kong / offshore-China ETF proxies:
-{_render_hk_etf_proxy_table(bundle)}
+### 2.2 {hk_review_title}
+{non_trading_lens if not is_trading_day else ""}{_render_hk_review_block(bundle)}
 
 ### 2.3 Flow Tracker and Attribution
 #### Cross-Asset Attribution v1

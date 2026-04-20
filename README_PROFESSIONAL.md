@@ -19,12 +19,26 @@ market_diary/
 |-- main_professional.py
 |-- professional/
 |   |-- analytics.py
+|   |-- attribution.py
 |   |-- config.py
+|   |-- daily_one_chart.py
 |   |-- dashboard.py
+|   |-- date_policy.py
+|   |-- fact_checker.py
+|   |-- llm_enhancer.py
 |   |-- models.py
-|   `-- report_builder.py
+|   |-- report_builder.py
+|   |-- report_formatting.py
+|   |-- report_layout.py
+|   `-- report_sections.py
 `-- modules/
+    |-- adapter_ah_premium.py
+    |-- adapter_hkex_announce.py
+    |-- adapter_shortsell.py
+    |-- adapter_stockconnect.py
+    |-- china_rates.py
     |-- data_fetcher.py
+    |-- hk_local_data.py
     |-- macro_calendar.py
     |-- market_movers.py
     |-- risk_radar.py
@@ -41,10 +55,12 @@ Each run writes to `reports_professional/`:
 - `charts/features_YYYY-MM-DD.json`: extracted chart features
 - `raw/YYYY-MM-DD_bundle.json`: structured research bundle
 
+Generated reports are ignored by default. The GitHub Action emails the briefing and uploads report artifacts; it only commits report files back to `main` when manually dispatched with the archival option enabled.
+
 ## Run
 
 ```bash
-python market_diary/main_professional.py --date 2026-04-13 --no-llm
+python market_diary/main_professional.py --review-date 2026-04-13 --no-llm
 ```
 
 Useful flags:
@@ -72,7 +88,8 @@ See [docs/README.md](docs/README.md) for the supporting documentation index.
 ## Test
 
 ```bash
-python test_professional_workbench.py
+python tests/test_professional_workbench.py
+python scripts/audit_repo_hygiene.py
 ```
 
 This regression test validates the professional bundle, dashboard, and markdown renderer without depending on the full live run.

@@ -21,6 +21,19 @@ build/
 # Student-path generated output
 reports/
 
+# Professional-run generated output.
+# GitHub Actions emails the report and uploads artifacts by default.
+# Manual archival can still force-add selected artifacts from workflow_dispatch.
+reports_professional/*.md
+reports_professional/*.html
+reports_professional/charts/*.png
+reports_professional/charts/*.json
+reports_professional/raw/
+market_diary/reports_professional/
+runtime_audit_*/
+tmp*/
+.pytest_cache/
+
 # IDE / editor
 .vscode/
 .idea/
