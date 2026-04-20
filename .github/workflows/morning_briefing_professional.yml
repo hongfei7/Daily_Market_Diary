@@ -10,11 +10,6 @@ on:
         description: "Calendar review date (YYYY-MM-DD, leave empty for yesterday in Hong Kong time)"
         required: false
         type: string
-      commit_reports:
-        description: "Commit generated report artifacts back to main (manual archive only)"
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: write
@@ -152,8 +147,7 @@ jobs:
             --output-dir reports_professional \
             --to "$REPORT_EMAIL_TO"
 
-      - name: Commit and push reports (manual archival only)
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.commit_reports == 'true' }}
+      - name: Commit and push report archive
         env:
           TZ: Asia/Shanghai
         run: |
@@ -162,7 +156,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add -f reports_professional/*.md reports_professional/charts/*.png reports_professional/charts/*.json
+          python scripts/stage_report_archive.py --report-date "$BRIEFING_DATE" --include-all-charts
 
           if git diff --cached --quiet; then
             echo "No new reports to commit"

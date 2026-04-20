@@ -25,7 +25,10 @@ VENV_PATTERNS = (
 
 GENERATED_PATTERNS = (
     "reports/*",
-    "reports_professional/*",
+    "reports_professional/*_email_preview.html",
+    "reports_professional/*_morning_briefing.md",
+    "reports_professional/raw/*",
+    "reports_professional/charts/*",
     "market_diary/reports_professional/*",
     "runtime_audit_*/*",
 )

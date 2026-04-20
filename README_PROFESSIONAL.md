@@ -55,7 +55,7 @@ Each run writes to `reports_professional/`:
 - `charts/features_YYYY-MM-DD.json`: extracted chart features
 - `raw/YYYY-MM-DD_bundle.json`: structured research bundle
 
-Generated reports are ignored by default. The GitHub Action emails the briefing and uploads report artifacts; it only commits report files back to `main` when manually dispatched with the archival option enabled.
+Final markdown reports and their production chart assets are archived in `reports_professional/` so they can be read directly on GitHub. Raw bundles, email previews, runtime caches, and test-generated chart probes remain ignored.
 
 ## Run
 

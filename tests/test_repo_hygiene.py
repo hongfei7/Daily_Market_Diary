@@ -31,6 +31,13 @@ def test_hygiene_classifier() -> None:
     assert generated is not None
     assert generated.severity == "warning"
 
+    official_report = audit.classify_path("reports_professional/archive/2026-04-17/morning_briefing.md")
+    assert official_report is None
+
+    test_chart = audit.classify_path("reports_professional/charts/test_dashboard.png")
+    assert test_chart is not None
+    assert test_chart.severity == "warning"
+
     planned_cleanup = audit.classify_path("test_legacy.py", "D")
     assert planned_cleanup is not None
     assert planned_cleanup.severity == "info"
