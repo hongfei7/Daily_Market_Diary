@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -22,7 +23,7 @@ EASTMONEY_PARAMS = {
     "pageSize": "120",
 }
 USER_AGENT = "Daily-Market-Diary/3.0"
-REQUEST_TIMEOUT = 20
+REQUEST_TIMEOUT = float(os.environ.get("DMD_PUBLIC_REQUEST_TIMEOUT_SECONDS", "12"))
 
 
 def _status_from_metrics(metrics: Dict[str, Dict[str, Any]]) -> str:
@@ -184,4 +185,3 @@ def fetch_china_rates_data(report_date: str) -> Dict[str, Any]:
             "fetched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         },
     }
-

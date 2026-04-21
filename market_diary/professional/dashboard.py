@@ -5,7 +5,7 @@ import textwrap
 from typing import Any, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch
+from matplotlib.patches import FancyBboxPatch, Rectangle
 
 
 INK = "#0f172a"
@@ -17,7 +17,7 @@ GREEN = "#1f7a3e"
 RED = "#b42318"
 AMBER = "#b54708"
 BLUE = "#0b4f71"
-DASHBOARD_LAYOUT_VERSION = "4-panel-v1"
+DASHBOARD_LAYOUT_VERSION = "4-panel-v2"
 
 
 def _parse_float(value: Any) -> float | None:
@@ -106,9 +106,30 @@ def _panel(ax) -> None:
 
 
 def _panel_title(ax, title: str, subtitle: str = "") -> None:
-    ax.text(0.03, 0.94, title, transform=ax.transAxes, fontsize=13.2, fontweight="bold", color=INK, va="top")
+    ax.add_patch(
+        Rectangle(
+            (0.02, 0.805),
+            0.96,
+            0.18,
+            transform=ax.transAxes,
+            linewidth=0,
+            facecolor=PANEL_BG,
+            zorder=4,
+            clip_on=False,
+        )
+    )
+    ax.text(0.03, 0.94, title, transform=ax.transAxes, fontsize=13.2, fontweight="bold", color=INK, va="top", zorder=7)
     if subtitle:
-        ax.text(0.03, 0.885, subtitle, transform=ax.transAxes, fontsize=9.4, color=SLATE, va="top")
+        ax.text(
+            0.03,
+            0.885,
+            _wrap_text(subtitle, width=72, max_lines=2),
+            transform=ax.transAxes,
+            fontsize=9.4,
+            color=SLATE,
+            va="top",
+            zorder=7,
+        )
 
 
 def _top_snapshot_rows(bundle: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -310,23 +331,24 @@ def _draw_flow_focus(ax, bundle: Dict[str, Any]) -> None:
     ax.axvline(0, color="#98a2b3", linewidth=1.0)
     ax.invert_yaxis()
     ax.set_xlim(left, right)
-    ax.set_ylim(len(labels) - 0.35, -1.55)
+    top_pad = 0.82 if len(labels) <= 3 else 1.22
+    ax.set_ylim(len(labels) - 0.35, -top_pad)
     ax.set_xlabel(xlabel, fontsize=9.5, color=SLATE)
     ax.tick_params(axis="x", labelsize=8.5)
     ax.tick_params(axis="y", labelsize=9.4, pad=3)
     ax.grid(axis="x", color="#e4e7ec", linewidth=0.8, alpha=0.75)
     for idx, (value, tag) in enumerate(zip(values, tags)):
-        offset = max_abs * 0.035 if max_abs else 0.1
-        x = value + offset if value >= 0 else offset
         ax.text(
-            x,
+            0.98,
             idx,
-            _safe_text(textwrap.shorten(tag, width=26, placeholder="...")),
+            _safe_text(textwrap.shorten(tag, width=30, placeholder="...")),
+            transform=ax.get_yaxis_transform(),
             va="center",
-            ha="left",
-            fontsize=8.7,
-            color=INK if value >= 0 else RED,
-            clip_on=False,
+            ha="right",
+            fontsize=8.5,
+            color=INK,
+            bbox=dict(boxstyle="round,pad=0.16", facecolor="#ffffff", edgecolor="#e4e7ec", alpha=0.92),
+            clip_on=True,
         )
 
 
@@ -510,12 +532,41 @@ def _header_chip(fig, x: float, y: float, label: str, value: str, color: str = I
     )
 
 
+def _draw_header_card(fig, rect: Tuple[float, float, float, float], label: str, value: str, color: str = INK) -> None:
+    ax = fig.add_axes(rect)
+    ax.axis("off")
+    ax.add_patch(
+        FancyBboxPatch(
+            (0, 0),
+            1,
+            1,
+            boxstyle="round,pad=0.018,rounding_size=0.04",
+            transform=ax.transAxes,
+            linewidth=1.0,
+            edgecolor=LINE,
+            facecolor=PANEL_BG,
+        )
+    )
+    ax.text(0.055, 0.70, label, transform=ax.transAxes, fontsize=8.8, color=SLATE, va="center", fontweight="bold")
+    ax.text(
+        0.055,
+        0.34,
+        _safe_text(_wrap_text(value, width=26, max_lines=2)),
+        transform=ax.transAxes,
+        fontsize=10.2,
+        color=color,
+        va="center",
+        fontweight="bold",
+        linespacing=1.1,
+    )
+
+
 def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     plt.style.use("default")
-    fig = plt.figure(figsize=(16.8, 9.6), facecolor=FIG_BG)
-    grid = fig.add_gridspec(2, 2, left=0.095, right=0.965, top=0.805, bottom=0.115, hspace=0.30, wspace=0.12)
+    fig = plt.figure(figsize=(18.2, 10.4), facecolor=FIG_BG)
+    grid = fig.add_gridspec(2, 2, left=0.07, right=0.965, top=0.775, bottom=0.105, hspace=0.36, wspace=0.16)
 
     report_date = bundle.get("meta", {}).get("report_date", "")
     theme = str((bundle.get("overview", {}) or {}).get("theme", "") or "")
@@ -553,40 +604,70 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
         bbox=dict(boxstyle="round,pad=0.35", facecolor=PANEL_BG, edgecolor=LINE),
     )
 
-    _header_chip(fig, 0.045, 0.855, "Risk score", f"{risk_score}/100 | {risk_bucket}", bucket_color)
-    _header_chip(fig, 0.27, 0.855, "HK style", textwrap.shorten(leadership, width=30, placeholder="..."), INK)
-    _header_chip(fig, 0.50, 0.855, "Data coverage", quality_text, INK)
-    _header_chip(fig, 0.72, 0.855, "Mode", mode_label, BLUE)
+    _draw_header_card(fig, (0.045, 0.825, 0.205, 0.065), "Risk score", f"{risk_score}/100 | {risk_bucket}", bucket_color)
+    _draw_header_card(fig, (0.275, 0.825, 0.205, 0.065), "HK style", leadership, INK)
+    _draw_header_card(fig, (0.505, 0.825, 0.205, 0.065), "Data coverage", quality_text, INK)
+    _draw_header_card(fig, (0.735, 0.825, 0.205, 0.065), "Mode", mode_label, BLUE)
 
     ax_regime = fig.add_subplot(grid[0, 0])
     _panel(ax_regime)
     _panel_title(ax_regime, "Global regime board", "The cross-asset tape that frames the Hong Kong open")
     rows = _top_snapshot_rows(bundle)[:8]
-    labels = [row.get("label", "") for row in rows]
-    values = [float(row.get("change_pct", 0) or 0) for row in rows]
-    colors = [_bar_color(value) for value in values]
-    max_abs = max(max((abs(value) for value in values), default=1.0), 1.0)
-    ax_regime.barh(labels, values, color=colors, height=0.56)
-    ax_regime.axvline(0, color="#98a2b3", linewidth=1.0)
-    ax_regime.set_xlim(min(0.0, min(values or [0])) - max_abs * 0.18, max(0.0, max(values or [0])) + max_abs * 0.24)
-    ax_regime.invert_yaxis()
-    ax_regime.set_ylim(len(labels) - 0.35, -1.95)
-    ax_regime.tick_params(axis="x", labelsize=8.6)
-    ax_regime.tick_params(axis="y", labelsize=9.6)
-    ax_regime.grid(axis="x", color="#e4e7ec", linewidth=0.8, alpha=0.75)
-    for idx, value in enumerate(values):
-        if abs(value) < 0.35:
-            continue
+    if not rows:
+        ax_regime.set_axis_off()
         ax_regime.text(
-            value + (max_abs * 0.025 if value >= 0 else -max_abs * 0.025),
-            idx,
-            _safe_text(f"{value:+.2f}%"),
-            va="center",
-            ha="left" if value >= 0 else "right",
-            fontsize=8.8,
+            0.06,
+            0.58,
+            "Market snapshot unavailable",
+            transform=ax_regime.transAxes,
+            fontsize=15.5,
+            fontweight="bold",
             color=INK,
-            clip_on=False,
         )
+        ax_regime.text(
+            0.06,
+            0.48,
+            "No reliable 1D cross-asset moves were available.\nUse the markdown dashboard table and source-status fields.",
+            transform=ax_regime.transAxes,
+            fontsize=10.5,
+            color=SLATE,
+            linespacing=1.45,
+        )
+        ax_regime.text(
+            0.06,
+            0.32,
+            "This panel is intentionally blank rather than plotting proxy data as fact.",
+            transform=ax_regime.transAxes,
+            fontsize=9.4,
+            color=AMBER,
+            fontweight="bold",
+        )
+    else:
+        labels = [row.get("label", "") for row in rows]
+        values = [float(row.get("change_pct", 0) or 0) for row in rows]
+        colors = [_bar_color(value) for value in values]
+        max_abs = max(max((abs(value) for value in values), default=1.0), 1.0)
+        ax_regime.barh(labels, values, color=colors, height=0.56)
+        ax_regime.axvline(0, color="#98a2b3", linewidth=1.0)
+        ax_regime.set_xlim(min(0.0, min(values or [0])) - max_abs * 0.18, max(0.0, max(values or [0])) + max_abs * 0.24)
+        ax_regime.invert_yaxis()
+        ax_regime.set_ylim(len(labels) - 0.35, -2.45)
+        ax_regime.tick_params(axis="x", labelsize=8.6)
+        ax_regime.tick_params(axis="y", labelsize=9.6)
+        ax_regime.grid(axis="x", color="#e4e7ec", linewidth=0.8, alpha=0.75)
+        for idx, value in enumerate(values):
+            if abs(value) < 0.35:
+                continue
+            ax_regime.text(
+                value + (max_abs * 0.025 if value >= 0 else -max_abs * 0.025),
+                idx,
+                _safe_text(f"{value:+.2f}%"),
+                va="center",
+                ha="left" if value >= 0 else "right",
+                fontsize=8.8,
+                color=INK,
+                clip_on=True,
+            )
 
     ax_hk = fig.add_subplot(grid[0, 1])
     _draw_metric_cards(ax_hk, _hk_metric_cards(bundle))

@@ -8,15 +8,22 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 
-REQUIRED_REPORT_SECTIONS = [
-    "## Visual Dashboard",
-    "### 1.2 Global Asset Price Dashboard",
-    "### 1.3 Hong Kong Key Data Quick Check",
-    "### 2.3 Flow Tracker and Attribution",
-    "#### Stock Connect Southbound Active Names",
-    "#### AH Premium Dispersion",
-    "### 3.3 Daily One Chart",
-    "### Report Quality and Validation",
+REQUIRED_REPORT_SECTION_GROUPS = [
+    ("Visual dashboard", ("## Visual Dashboard",)),
+    ("Global asset dashboard", ("### 1.2 Global Asset Price Dashboard",)),
+    (
+        "Hong Kong quick check",
+        (
+            "### 1.3 Hong Kong Key Data Quick Check",
+            "### 1.3 Hong Kong Weekly Tape Quick Check",
+            "### 1.3 Hong Kong Last Cash-Tape Quick Check (Reference)",
+        ),
+    ),
+    ("Flow tracker", ("### 2.3 Flow Tracker and Attribution",)),
+    ("Stock Connect active names", ("#### Stock Connect Southbound Active Names",)),
+    ("A/H premium dispersion", ("#### AH Premium Dispersion",)),
+    ("Daily one chart", ("### 3.3 Daily One Chart",)),
+    ("Report quality", ("### Report Quality and Validation",)),
 ]
 
 FORBIDDEN_PHRASES = [
@@ -106,9 +113,9 @@ def audit_generated_run(
     report_text = report_path.read_text(encoding="utf-8") if report_path.exists() else ""
     bundle = _load_json(bundle_path) if bundle_path.exists() else {}
 
-    for marker in REQUIRED_REPORT_SECTIONS:
-        if marker not in report_text:
-            errors.append(f"Missing required report section: {marker}")
+    for label, markers in REQUIRED_REPORT_SECTION_GROUPS:
+        if not any(marker in report_text for marker in markers):
+            errors.append(f"Missing required report section group: {label} ({' OR '.join(markers)})")
 
     for phrase in FORBIDDEN_PHRASES:
         if phrase.lower() in report_text.lower():

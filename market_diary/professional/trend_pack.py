@@ -4,7 +4,7 @@ import io
 import json
 import os
 from contextlib import redirect_stderr, redirect_stdout
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
@@ -27,6 +27,10 @@ RED = "#b42318"
 AMBER = "#d97706"
 BLUE = "#0b4f71"
 DEFAULT_CACHE_ROOT = os.path.join("reports_professional", "raw", "trend_cache")
+
+
+def _utc_timestamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 TREND_PACK_CACHE_VERSION = 1
 
 
@@ -167,7 +171,7 @@ def _download_daily_close(symbol: str, start: date, end: date, cache_dir: Option
                     path,
                     {
                         "symbol": symbol,
-                        "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "updated_at": _utc_timestamp(),
                         "series": {key: float(value) for key, value in sorted(series.items())},
                     },
                 )
@@ -249,7 +253,7 @@ def _collect_hkma_history(report_date: str, sessions: int = 30, cache_dir: Optio
                 _write_json_cache(
                     path,
                     {
-                        "fetched_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "fetched_at": _utc_timestamp(),
                         "result": {"records": records},
                     },
                 )
@@ -409,7 +413,7 @@ def collect_hk_trend_pack_data(bundle: Dict[str, Any], sessions: int = 20, cache
                 "version": TREND_PACK_CACHE_VERSION,
                 "report_date": report_date,
                 "sessions": sessions,
-                "generated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "generated_at": _utc_timestamp(),
                 "data": data,
             },
         )
@@ -521,6 +525,120 @@ def _plot_ah_heatmap(ax, heatmap: Dict[str, Any]) -> None:
     ax.grid(False)
 
 
+def _recent_rows(rows: List[Dict[str, Any]], sessions: int = 5) -> List[Dict[str, Any]]:
+    return [row for row in (rows or []) if isinstance(row, dict)][-sessions:]
+
+
+def _fmt_signed(value: Optional[float], suffix: str = "") -> str:
+    if value is None or (isinstance(value, float) and np.isnan(value)):
+        return "N/A"
+    return f"{float(value):+,.1f}{suffix}"
+
+
+def _safe_delta(values: List[Any]) -> Optional[float]:
+    numeric = [_safe_float(value) for value in values]
+    numeric = [value for value in numeric if value is not None and not np.isnan(value)]
+    if len(numeric) < 2:
+        return None
+    return float(numeric[-1]) - float(numeric[0])
+
+
+def summarize_hk_trend_pack_data(data: Dict[str, Any], sessions: int = 5) -> Dict[str, Any]:
+    """Compress trend-pack history into a weekly desk summary."""
+    southbound_rows = _recent_rows(data.get("southbound", []) or [], sessions=sessions)
+    liquidity_rows = _recent_rows(data.get("liquidity", []) or [], sessions=sessions)
+    leadership = data.get("leadership", {}) or {}
+    ah_heatmap = data.get("ah_heatmap", {}) or {}
+
+    summary_rows: List[Dict[str, str]] = []
+    window_dates: List[str] = []
+
+    if southbound_rows:
+        window_dates.extend(str(row.get("date", "")) for row in southbound_rows if row.get("date"))
+        values = [_safe_float(row.get("net_buy_hkd_bn")) or 0.0 for row in southbound_rows]
+        cumulative = sum(values)
+        positive_days = sum(1 for value in values if value > 0)
+        latest = values[-1] if values else None
+        summary_rows.append(
+            {
+                "signal": "Southbound flow",
+                "weekly_change": f"{_fmt_signed(cumulative, 'bn')} over {len(values)} sessions",
+                "latest": _fmt_signed(latest, "bn"),
+                "read": f"{positive_days}/{len(values)} positive sessions; cumulative buying is the flow-confirmation test for next week.",
+            }
+        )
+
+    if liquidity_rows:
+        window_dates.extend(str(row.get("date", "")) for row in liquidity_rows if row.get("date"))
+        hibor_delta = _safe_delta([row.get("hibor_1m") for row in liquidity_rows])
+        balance_delta = _safe_delta([row.get("aggregate_balance_bn") for row in liquidity_rows])
+        hibor_read = f"{hibor_delta * 100:+.0f}bp" if hibor_delta is not None else "N/A"
+        balance_read = _fmt_signed(balance_delta, "bn") if balance_delta is not None else "N/A"
+        latest_hibor = _safe_float(liquidity_rows[-1].get("hibor_1m"))
+        latest_balance = _safe_float(liquidity_rows[-1].get("aggregate_balance_bn"))
+        summary_rows.append(
+            {
+                "signal": "HKD funding",
+                "weekly_change": f"HIBOR {hibor_read}; Aggregate Balance {balance_read}",
+                "latest": f"{latest_hibor:.2f}% / HK${latest_balance:.1f}bn" if latest_hibor is not None and latest_balance is not None else "N/A",
+                "read": "Funding stress matters if HIBOR rises while Aggregate Balance contracts.",
+            }
+        )
+
+    leadership_series = leadership.get("series", {}) or {}
+    leadership_dates = leadership.get("dates", []) or []
+    if leadership_series and leadership_dates:
+        window_dates.extend(str(day) for day in leadership_dates[-sessions:])
+        rows = []
+        for label, values in leadership_series.items():
+            recent = [value for value in (values or [])[-sessions:] if value is not None]
+            delta = _safe_delta(recent)
+            rows.append({"label": label, "delta": delta})
+        valid_rows = [row for row in rows if row["delta"] is not None]
+        if valid_rows:
+            leader = max(valid_rows, key=lambda row: row["delta"])
+            laggard = min(valid_rows, key=lambda row: row["delta"])
+            summary_rows.append(
+                {
+                    "signal": "HK style leadership",
+                    "weekly_change": f"{leader['label']} led ({_fmt_signed(leader['delta'], 'pp')}); {laggard['label']} lagged ({_fmt_signed(laggard['delta'], 'pp')})",
+                    "latest": f"{leader['label']} leadership",
+                    "read": "Use HSI / HSCEI / HSTECH spread to separate broad beta from growth-led rerating.",
+                }
+            )
+
+    ah_dates = ah_heatmap.get("dates", []) or []
+    ah_matrix = ah_heatmap.get("matrix", []) or []
+    if ah_dates and ah_matrix:
+        window_dates.extend(str(day) for day in ah_dates[-sessions:])
+        first_values = []
+        last_values = []
+        for row in ah_matrix:
+            recent = [value for value in (row or [])[-sessions:] if value is not None and not np.isnan(value)]
+            if len(recent) >= 2:
+                first_values.append(float(recent[0]))
+                last_values.append(float(recent[-1]))
+        if first_values and last_values:
+            first_avg = float(np.nanmean(first_values))
+            last_avg = float(np.nanmean(last_values))
+            summary_rows.append(
+                {
+                    "signal": "A/H premium dispersion",
+                    "weekly_change": f"{last_avg - first_avg:+.1f}pp average change",
+                    "latest": f"{last_avg:.1f}% average premium",
+                    "read": "Premium narrowing can support H-share relative demand; widening keeps valuation friction in place.",
+                }
+            )
+
+    window_dates = sorted({day for day in window_dates if day})
+    return {
+        "status": "ok" if summary_rows else "unavailable",
+        "window": {"start": window_dates[0], "end": window_dates[-1]} if window_dates else {},
+        "rows": summary_rows,
+        "method_note": "Trend summary uses the latest available five observations from the Hong Kong Trend Pack inputs.",
+    }
+
+
 def generate_hk_trend_pack(
     bundle: Dict[str, Any],
     output_path: str,
@@ -529,6 +647,7 @@ def generate_hk_trend_pack(
 ) -> Dict[str, Any]:
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     data = trend_data or collect_hk_trend_pack_data(bundle, cache_dir=cache_dir)
+    weekly_summary = summarize_hk_trend_pack_data(data)
 
     plt.style.use("default")
     fig = plt.figure(figsize=(16, 10.5), facecolor=FIG_BG)
@@ -559,4 +678,5 @@ def generate_hk_trend_pack(
         "caption": "Four historical lenses: Southbound cumulative flow, HKMA funding and liquidity, HSI/HSCEI/HSTECH relative leadership, and A/H premium dispersion.",
         "source": "HKEX Stock Connect, HKMA liquidity data, and public Yahoo Finance quotes",
         "rel_path": f"charts/{os.path.basename(output_path)}",
+        "weekly_summary": weekly_summary,
     }

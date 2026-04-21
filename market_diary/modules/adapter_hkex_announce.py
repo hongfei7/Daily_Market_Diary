@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
@@ -18,7 +19,8 @@ HKEXNEWS_PREDEFINED_TEMPLATE = "https://www1.hkexnews.hk/search/predefineddoc.xh
 HKEX_PROFIT_WARNING_URL = "http://www3.hkexnews.hk/reports/profitwarning/ncms/profitwarning_anntdate_des.htm"
 HKEXNEWS_SOURCE = "HKEXnews"
 USER_AGENT = "Daily-Market-Diary/3.1"
-REQUEST_TIMEOUT = 35
+REQUEST_TIMEOUT = float(os.environ.get("DMD_PUBLIC_REQUEST_TIMEOUT_SECONDS", "12"))
+REQUEST_RETRY_TOTAL = int(os.environ.get("DMD_PUBLIC_RETRY_TOTAL", "1"))
 
 PREDEFINED_CATEGORIES = {
     "results_announcements": {
@@ -37,9 +39,9 @@ PREDEFINED_CATEGORIES = {
 def _session() -> requests.Session:
     session = requests.Session()
     retry = Retry(
-        total=4,
-        connect=4,
-        read=4,
+        total=REQUEST_RETRY_TOTAL,
+        connect=REQUEST_RETRY_TOTAL,
+        read=REQUEST_RETRY_TOTAL,
         backoff_factor=1.0,
         allowed_methods=frozenset(["GET"]),
     )

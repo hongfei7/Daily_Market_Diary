@@ -9,6 +9,7 @@ the already-normalized facts.
 from __future__ import annotations
 
 import html
+import os
 import re
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, Iterable, List, Optional, Set
@@ -21,7 +22,8 @@ from urllib3.util.retry import Retry
 HKEX_DAY_QUOTATION_TEMPLATE = "https://www.hkex.com.hk/eng/stat/smstat/dayquot/d{yymmdd}e.htm"
 HKEX_SHORT_SELL_SOURCE = "HKEX Daily Quotations - Short Selling Turnover"
 USER_AGENT = "Daily-Market-Diary/3.1"
-REQUEST_TIMEOUT = 35
+REQUEST_TIMEOUT = float(os.environ.get("DMD_PUBLIC_REQUEST_TIMEOUT_SECONDS", "12"))
+REQUEST_RETRY_TOTAL = int(os.environ.get("DMD_PUBLIC_RETRY_TOTAL", "1"))
 LOOKBACK_DAYS = 7
 
 SHORT_SECTION_START = '<a name = "short_selling">SHORT SELLING TURNOVER - DAILY REPORT</a>'
@@ -50,9 +52,9 @@ MARKET_TURNOVER_RE = re.compile(r"Total market turnover\s*:\s*HKD\s*([0-9,]+)", 
 def _session() -> requests.Session:
     session = requests.Session()
     retry = Retry(
-        total=4,
-        connect=4,
-        read=4,
+        total=REQUEST_RETRY_TOTAL,
+        connect=REQUEST_RETRY_TOTAL,
+        read=REQUEST_RETRY_TOTAL,
         backoff_factor=1.0,
         allowed_methods=frozenset(["GET"]),
     )

@@ -15,8 +15,12 @@ import yfinance as yf
 from modules.text_normalizer import normalize_news_text
 
 
-NEWS_REQUEST_TIMEOUT = (5, 12)
+NEWS_REQUEST_TIMEOUT = (
+    float(os.environ.get("DMD_NEWS_CONNECT_TIMEOUT_SECONDS", "3")),
+    float(os.environ.get("DMD_NEWS_READ_TIMEOUT_SECONDS", "6")),
+)
 NEWS_USER_AGENT = "DailyMarketDiary/1.0"
+YFINANCE_TIMEOUT = float(os.environ.get("DMD_YFINANCE_TIMEOUT_SECONDS", "6"))
 
 
 TICKERS = {
@@ -178,6 +182,7 @@ def _request_download(symbol: str, start: datetime, end: datetime, interval: str
                 progress=False,
                 auto_adjust=False,
                 threads=False,
+                timeout=YFINANCE_TIMEOUT,
             )
     except Exception:
         return pd.DataFrame()
@@ -204,6 +209,7 @@ def _request_history(
             else:
                 kwargs["start"] = start
                 kwargs["end"] = end
+            kwargs["timeout"] = YFINANCE_TIMEOUT
             df = ticker.history(**kwargs)
     except Exception:
         return pd.DataFrame()

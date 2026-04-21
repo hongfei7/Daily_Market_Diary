@@ -8,7 +8,7 @@ import sys
 from _bootstrap import MARKET_DIARY
 
 
-def test_basic_imports() -> bool:
+def check_basic_imports() -> bool:
     print("=" * 60)
     print("Test 1: Third-party imports")
     print("=" * 60)
@@ -24,7 +24,7 @@ def test_basic_imports() -> bool:
     return True
 
 
-def test_project_imports() -> bool:
+def check_project_imports() -> bool:
     print("=" * 60)
     print("Test 2: Project imports")
     print("=" * 60)
@@ -76,7 +76,7 @@ def test_project_imports() -> bool:
     return True
 
 
-def test_api_env() -> bool:
+def check_api_env() -> bool:
     print("=" * 60)
     print("Test 3: API environment")
     print("=" * 60)
@@ -106,9 +106,9 @@ def main() -> int:
     print("=" * 60 + "\n")
 
     results = [
-        ("Third-party imports", test_basic_imports()),
-        ("Project imports", test_project_imports()),
-        ("API environment", test_api_env()),
+        ("Third-party imports", check_basic_imports()),
+        ("Project imports", check_project_imports()),
+        ("API environment", check_api_env()),
     ]
 
     print("\n" + "=" * 60)
@@ -124,6 +124,18 @@ def main() -> int:
 
     print("\nSmoke test passed")
     return 0
+
+
+def test_basic_imports() -> None:
+    assert check_basic_imports()
+
+
+def test_project_imports() -> None:
+    assert check_project_imports()
+
+
+def test_api_env() -> None:
+    assert check_api_env()
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ import yfinance as yf
 
 from modules.text_normalizer import normalize_news_text
 from professional.attribution import build_attribution
-from professional.date_policy import build_date_semantics, build_day_mode
+from professional.date_policy import build_date_semantics, build_report_mode
 from professional.models import WatchlistDefinition, WatchlistSnapshot
 
 
@@ -496,6 +496,126 @@ def _format_hkd_billions(value: Any) -> str:
     if number is None:
         return "N/A"
     return f"HK${number / 1_000_000_000:.1f}bn"
+
+
+def _format_rmb_billions(value: Any) -> str:
+    number = _parse_float(value)
+    if number is None:
+        return "N/A"
+    return f"RMB{number / 1_000_000_000:.1f}bn"
+
+
+def _metric_unavailable(metric: Dict[str, Any]) -> bool:
+    return not isinstance(metric, dict) or str(metric.get("status", "unavailable")) == "unavailable"
+
+
+def _public_metric(
+    *,
+    value: Any,
+    display_value: str,
+    source: str,
+    as_of: str,
+    note: str,
+    status: str = "live_public",
+) -> Dict[str, Any]:
+    return {
+        "value": value,
+        "display_value": display_value,
+        "status": status,
+        "source": source,
+        "as_of": as_of,
+        "freshness_days": None,
+        "quality": "public_adapter",
+        "fallback_used": True,
+        "note": note,
+    }
+
+
+def enrich_hk_local_with_public_flow(
+    report_date: str,
+    hk_local_metrics: Dict[str, Any],
+    stock_connect_data: Optional[Dict[str, Any]],
+    ah_premium_data: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Use already-fetched public adapters if the local rollup timed out.
+
+    The Hong Kong local adapter derives these metrics itself when it completes.
+    This enrichment keeps the report truthful when HKMA / turnover fetching times
+    out but Stock Connect or A/H premium adapters succeeded independently.
+    """
+    metrics = dict(hk_local_metrics or {})
+
+    if isinstance(stock_connect_data, dict) and stock_connect_data.get("status") in {"ok", "partial"}:
+        data = stock_connect_data.get("data", {}) or {}
+        meta = stock_connect_data.get("meta", {}) or {}
+        source = meta.get("source", "HKEX Stock Connect Historical Daily")
+        as_of = meta.get("effective_date", report_date)
+
+        southbound = data.get("southbound", {}) or {}
+        if _metric_unavailable(metrics.get("southbound_net_flow", {})):
+            net_buy = southbound.get("net_buy")
+            total_turnover = southbound.get("total_turnover")
+            if net_buy is not None:
+                net_hkd = float(net_buy) * 1_000_000.0
+                turnover_hkd = float(total_turnover or 0) * 1_000_000.0
+                metrics["southbound_net_flow"] = _public_metric(
+                    value=net_hkd,
+                    display_value=f"Net {_format_hkd_billions(net_hkd)} | turnover {_format_hkd_billions(turnover_hkd)}",
+                    source=source,
+                    as_of=as_of,
+                    note="Derived directly from the already-fetched HKEX Stock Connect public adapter.",
+                )
+            elif total_turnover is not None:
+                turnover_hkd = float(total_turnover) * 1_000_000.0
+                metrics["southbound_net_flow"] = _public_metric(
+                    value=turnover_hkd,
+                    display_value=f"Turnover {_format_hkd_billions(turnover_hkd)} | net unavailable",
+                    source=source,
+                    as_of=as_of,
+                    note="HKEX public file provided Southbound turnover, but not a comparable full-day net-buy figure.",
+                    status="partial_public",
+                )
+
+        northbound = data.get("northbound", {}) or {}
+        if _metric_unavailable(metrics.get("northbound_net_flow", {})):
+            net_buy = northbound.get("net_buy")
+            total_turnover = northbound.get("total_turnover")
+            if net_buy is not None:
+                net_rmb = float(net_buy) * 1_000_000.0
+                turnover_rmb = float(total_turnover or 0) * 1_000_000.0
+                metrics["northbound_net_flow"] = _public_metric(
+                    value=net_rmb,
+                    display_value=f"Net {_format_rmb_billions(net_rmb)} | turnover {_format_rmb_billions(turnover_rmb)}",
+                    source=source,
+                    as_of=as_of,
+                    note="Derived directly from the already-fetched HKEX Stock Connect public adapter.",
+                )
+            elif total_turnover is not None:
+                turnover_rmb = float(total_turnover) * 1_000_000.0
+                metrics["northbound_net_flow"] = _public_metric(
+                    value=turnover_rmb,
+                    display_value=f"Turnover {_format_rmb_billions(turnover_rmb)} | net unavailable",
+                    source=source,
+                    as_of=as_of,
+                    note="HKEX public file provided Northbound turnover, but not a comparable full-day net-buy figure.",
+                    status="partial_public",
+                )
+
+    if isinstance(ah_premium_data, dict) and ah_premium_data.get("status") in {"ok", "partial"}:
+        data = ah_premium_data.get("data", {}) or {}
+        meta = ah_premium_data.get("meta", {}) or {}
+        average = data.get("average_premium")
+        rows = data.get("rows", []) or data.get("top_premium", []) or []
+        if average is not None and _metric_unavailable(metrics.get("ah_premium_index", {})):
+            metrics["ah_premium_index"] = _public_metric(
+                value=float(average),
+                display_value=f"{float(average):.2f}%",
+                source=meta.get("source", "Public Yahoo Finance quotes - calculated A/H premium"),
+                as_of=meta.get("effective_date", report_date),
+                note=f"Simple covered-pair average across {len(rows)} public A/H observations; use dispersion rather than the average alone.",
+            )
+
+    return metrics
 
 
 def build_movers_and_flows(movers_data: Dict[str, Any], risk_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -1396,7 +1516,7 @@ def build_non_trading_focus(
     catalysts: List[Dict[str, Any]],
     risk_data: Dict[str, Any],
 ) -> Dict[str, Any]:
-    if bool((day_mode or {}).get("is_trading_day", True)):
+    if bool((day_mode or {}).get("is_trading_day", True)) or (day_mode or {}).get("mode") == "weekly_review":
         return {}
 
     active_categories = {"FX", "Commodities", "Crypto", "Rates", "Vol"}
@@ -1432,6 +1552,44 @@ def build_non_trading_focus(
             }
         )
 
+    event_watch: List[Dict[str, Any]] = []
+    for item in still_moving[:4]:
+        event_watch.append(
+            {
+                "channel": item.get("category", ""),
+                "signal": f"{item.get('label', '')} {_format_signed(item.get('change_pct'))}",
+                "why": item.get("interpretation", ""),
+                "next_check": "Keep this as the bridge signal until the next Hong Kong cash close confirms or rejects it.",
+            }
+        )
+    for item in (macro_agenda or [])[:3]:
+        event_watch.append(
+            {
+                "channel": item.get("status", "Macro"),
+                "signal": item.get("event", ""),
+                "why": item.get("impact", ""),
+                "next_check": "Check the rates, FX, and China-proxy reaction after release or official communication.",
+            }
+        )
+    for item in ((risk_data or {}).get("geopolitical_risks", []) or [])[:2]:
+        event_watch.append(
+            {
+                "channel": "Geopolitics",
+                "signal": f"{item.get('region', '')}: {item.get('event', '')}",
+                "why": item.get("impact", "Potential risk-premium transmission into oil, gold, FX, and China proxies."),
+                "next_check": "Map any escalation first into oil, gold, USD, CNH, and HK growth-beta sensitivity.",
+            }
+        )
+    for item in (catalysts or [])[:3]:
+        event_watch.append(
+            {
+                "channel": item.get("category", "Catalyst"),
+                "signal": item.get("event", ""),
+                "why": item.get("impact", ""),
+                "next_check": "Prepare the base-case and risk-case talking points before the next open.",
+            }
+        )
+
     next_open = [
         "Refresh HKEX turnover, Stock Connect, short-selling, and AH dispersion once the next HK cash session closes.",
         "Use USD/CNH, USD/HKD, DXY, oil, gold, and crypto as bridge signals before cash markets reopen.",
@@ -1446,9 +1604,114 @@ def build_non_trading_focus(
             f"HK local tape is {date_semantics.get('hk_cash_role')} from {date_semantics.get('hk_data_date')}."
         ),
         "still_moving": still_moving,
+        "event_watch": event_watch[:8],
         "action_items": action_items[:6],
         "next_open": next_open[:5],
         "market_regime": overview.get("theme", ""),
+    }
+
+
+def build_weekly_review(
+    day_mode: Dict[str, Any],
+    date_semantics: Dict[str, Any],
+    overview: Dict[str, Any],
+    summary: Dict[str, Any],
+    hk_desk_view: Dict[str, Any],
+    high_frequency: List[Dict[str, Any]],
+    sector_digest: Dict[str, Any],
+    macro_agenda: List[Dict[str, Any]],
+    catalysts: List[Dict[str, Any]],
+    flow_tracker: Dict[str, Any],
+    attribution: Dict[str, Any],
+) -> Dict[str, Any]:
+    if (day_mode or {}).get("mode") != "weekly_review":
+        return {}
+
+    rows = build_market_snapshot(summary)
+    selected_labels = ["S&P 500", "Nasdaq 100", "Hang Seng Index", "Hang Seng TECH", "DXY", "US 10Y", "Gold", "VIX"]
+    cross_assets = []
+    for label in selected_labels:
+        row = _get_row(rows, label)
+        if row:
+            cross_assets.append(
+                {
+                    "asset": label,
+                    "latest_move": _format_signed(row.get("change_pct")),
+                    "read": row.get("question", ""),
+                }
+            )
+
+    hk_rows = []
+    for label in ["Hang Seng Index", "HSCEI", "Hang Seng TECH", "China proxy (FXI)", "USD/CNH", "USD/HKD"]:
+        row = _get_row(rows, label)
+        if row:
+            hk_rows.append(
+                {
+                    "signal": label,
+                    "latest_move": _format_signed(row.get("change_pct")),
+                    "read": row.get("question", ""),
+                }
+            )
+
+    developments = []
+    for item in (sector_digest.get("graded_news", []) or [])[:4]:
+        developments.append(
+            {
+                "bucket": item.get("grade", "News"),
+                "item": item.get("title", ""),
+                "read": item.get("why", ""),
+            }
+        )
+    for item in (macro_agenda or [])[:3]:
+        developments.append(
+            {
+                "bucket": item.get("status", "Macro"),
+                "item": item.get("event", ""),
+                "read": item.get("impact", ""),
+            }
+        )
+
+    next_week = [
+        {
+            "date": item.get("date", ""),
+            "event": item.get("event", ""),
+            "read": item.get("impact", ""),
+        }
+        for item in (catalysts or [])[:8]
+    ]
+
+    flow_lines = []
+    conclusion = (flow_tracker or {}).get("conclusion")
+    if conclusion:
+        flow_lines.append(conclusion)
+    for item in ((attribution or {}).get("dominant_drivers", []) or [])[:3]:
+        flow_lines.append(f"{item.get('driver', '')}: {item.get('interpretation', '')}")
+
+    desk_questions = [
+        "Did Southbound flow confirm the index move, or was the week mainly offshore beta without local money follow-through?",
+        "Did HIBOR and Aggregate Balance point to benign funding, or should tighter HKD liquidity be part of next week's risk case?",
+        "Was leadership broad enough beyond HSTECH / platform beta, or was the week concentrated in a narrow style pocket?",
+        "Which dated macro, policy, earnings, or IPO catalyst can realistically change the next-week narrative?",
+        "What single data point would invalidate the base-case market pulse by Monday or Tuesday morning?",
+    ]
+
+    return {
+        "window": {
+            "start": day_mode.get("period_start", ""),
+            "end": day_mode.get("period_end", ""),
+            "review_date": date_semantics.get("review_date", ""),
+        },
+        "summary": (
+            f"Weekly review window: {day_mode.get('period_start', '')} to {day_mode.get('period_end', '')}. "
+            f"Core regime: {overview.get('theme', '')}. Hong Kong leadership: {hk_desk_view.get('leadership', '')}."
+        ),
+        "cross_assets": cross_assets,
+        "hk_tape": hk_rows,
+        "developments": developments[:6],
+        "next_week": next_week,
+        "flow_lines": flow_lines[:4],
+        "desk_questions": desk_questions,
+        "method_note": "Weekly mode uses the last completed cash tape, available cross-asset snapshots, and Hong Kong Trend Pack evidence when generated.",
     }
 
 
@@ -1473,15 +1736,20 @@ def build_professional_bundle(
     summary = (market_data or {}).get("summary", {}) or {}
     market_meta = ((market_data or {}).get("meta", {}) or {})
     report_config = (config.get("report", {}) or {}).copy()
-    hk_local_metrics = ((hk_local_data or {}).get("data", {}) or {})
+    morning_date = briefing_date or report_date
+    global_date = global_market_date or market_meta.get("requested_date", report_date)
+    local_date = hk_data_date or report_date
+    hk_local_metrics = enrich_hk_local_with_public_flow(
+        report_date=local_date,
+        hk_local_metrics=((hk_local_data or {}).get("data", {}) or {}),
+        stock_connect_data=stock_connect_data,
+        ah_premium_data=ah_premium_data,
+    )
     china_rate_metrics = ((china_rates_data or {}).get("data", {}) or {})
 
     overview = build_market_overview(summary, chart_features)
     hk_desk_view = build_hk_desk_view(summary)
-    morning_date = briefing_date or report_date
-    global_date = global_market_date or market_meta.get("requested_date", report_date)
-    local_date = hk_data_date or report_date
-    day_mode = build_day_mode(report_date, config)
+    day_mode = build_report_mode(report_date, config, briefing_date=morning_date)
     date_semantics = build_date_semantics(
         report_date=report_date,
         briefing_date=morning_date,
@@ -1512,6 +1780,19 @@ def build_professional_bundle(
         catalysts=catalysts,
         risk_data=risk_data,
     )
+    weekly_review = build_weekly_review(
+        day_mode=day_mode,
+        date_semantics=date_semantics,
+        overview=overview,
+        summary=summary,
+        hk_desk_view=hk_desk_view,
+        high_frequency=high_frequency,
+        sector_digest=sector_digest,
+        macro_agenda=macro_agenda,
+        catalysts=catalysts,
+        flow_tracker=flow_tracker,
+        attribution=attribution,
+    )
     reflection_prompts = build_reflection_prompts(config, overview, hk_desk_view)
     source_links = build_source_links(sector_digest, watchlists, report_config, company_events=company_events)
     must_watch = build_must_watch(
@@ -1533,9 +1814,9 @@ def build_professional_bundle(
             "data_through": local_date,
             "global_market_date": global_date,
             "hk_data_date": local_date,
-            "requested_date": market_meta.get("requested_date", report_date),
-            "effective_date": market_meta.get("effective_date", report_date),
-            "summary_date": market_meta.get("summary_date", report_date),
+            "requested_date": market_meta.get("requested_date", global_date),
+            "effective_date": market_meta.get("effective_date", global_date),
+            "summary_date": market_meta.get("summary_date", market_meta.get("effective_date", global_date)),
             "market_quality": market_meta.get("market_quality", {}),
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "config_path": config.get("config_path", ""),
@@ -1564,6 +1845,7 @@ def build_professional_bundle(
         "theme_deep_dive": theme_deep_dive,
         "today_forward": today_forward,
         "non_trading_focus": non_trading_focus,
+        "weekly_review": weekly_review,
         "reflection_prompts": reflection_prompts,
         "source_links": source_links,
         "must_watch": must_watch,

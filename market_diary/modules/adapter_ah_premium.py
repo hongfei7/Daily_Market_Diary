@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timedelta
@@ -14,6 +15,7 @@ import yfinance as yf
 AH_PREMIUM_SOURCE = "Public Yahoo Finance quotes - calculated A/H premium"
 LOOKBACK_DAYS = 14
 MAX_WORKERS = 6
+YFINANCE_TIMEOUT = float(os.environ.get("DMD_YFINANCE_TIMEOUT_SECONDS", "6"))
 MIN_REASONABLE_PREMIUM_PCT = -80.0
 MAX_REASONABLE_PREMIUM_PCT = 250.0
 
@@ -50,7 +52,16 @@ def _download_history(symbol: str, target: datetime):
     end = target + timedelta(days=1)
     sink = io.StringIO()
     with redirect_stdout(sink), redirect_stderr(sink):
-        return yf.download(symbol, start=start, end=end, interval="1d", progress=False, auto_adjust=False, threads=False)
+        return yf.download(
+            symbol,
+            start=start,
+            end=end,
+            interval="1d",
+            progress=False,
+            auto_adjust=False,
+            threads=False,
+            timeout=YFINANCE_TIMEOUT,
+        )
 
 
 def _last_close(symbol: str, target: datetime) -> Optional[Dict[str, Any]]:

@@ -367,13 +367,51 @@ def _theme_context(bundle: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _weekly_review_context(bundle: Dict[str, Any]) -> Dict[str, Any]:
+    weekly = bundle.get("weekly_review", {}) or {}
+    if not weekly:
+        return {}
+    trend_summary = weekly.get("trend_summary", {}) or {}
+    return {
+        "window": weekly.get("window", {}) or {},
+        "summary": weekly.get("summary", ""),
+        "trend_summary": {
+            "status": trend_summary.get("status", ""),
+            "window": trend_summary.get("window", {}) or {},
+            "rows": (trend_summary.get("rows", []) or [])[:5],
+        },
+        "flow_lines": (weekly.get("flow_lines", []) or [])[:4],
+        "desk_questions": (weekly.get("desk_questions", []) or [])[:5],
+        "key_developments": (weekly.get("developments", []) or [])[:5],
+        "next_week": (weekly.get("next_week", []) or [])[:6],
+    }
+
+
+def _non_trading_focus_context(bundle: Dict[str, Any]) -> Dict[str, Any]:
+    focus = bundle.get("non_trading_focus", {}) or {}
+    if not focus:
+        return {}
+    return {
+        "summary": focus.get("summary", ""),
+        "market_regime": focus.get("market_regime", ""),
+        "still_moving": (focus.get("still_moving", []) or [])[:5],
+        "event_watch": (focus.get("event_watch", []) or [])[:6],
+        "action_items": (focus.get("action_items", []) or [])[:5],
+        "next_open": (focus.get("next_open", []) or [])[:5],
+    }
+
+
 def _day_mode_context(bundle: Dict[str, Any]) -> Dict[str, Any]:
     day_mode = bundle.get("day_mode", {}) or {}
     return {
-        "mode": day_mode.get("mode", "trading_day"),
-        "label": day_mode.get("label", "Trading day"),
+        "mode": day_mode.get("mode", "trading_daily"),
+        "label": day_mode.get("label", "Trading Daily"),
         "note": day_mode.get("note", ""),
         "is_trading_day": bool(day_mode.get("is_trading_day", True)),
+        "report_horizon": day_mode.get("report_horizon", "daily"),
+        "period_start": day_mode.get("period_start", ""),
+        "period_end": day_mode.get("period_end", ""),
+        "next_hk_trading_day": day_mode.get("next_hk_trading_day", ""),
     }
 
 
@@ -425,6 +463,8 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
                 "hk_desk_view": hk_desk_view,
                 "hk_quick_checks": (bundle.get("hk_quick_checks", []) or [])[:6],
                 "attribution_v1": bundle.get("attribution", {}) or {},
+                "weekly_review": _weekly_review_context(bundle),
+                "non_trading_focus": _non_trading_focus_context(bundle),
                 "news_selection": prior.get("news_selection", TASK_DEFAULTS["news_selection"]),
                 "high_frequency": (bundle.get("high_frequency", []) or [])[:5],
             }
@@ -438,6 +478,8 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
                 "hk_quick_checks": (bundle.get("hk_quick_checks", []) or [])[:6],
                 "attribution_v1": bundle.get("attribution", {}) or {},
                 "flow_tracker": bundle.get("flow_tracker", {}) or {},
+                "weekly_review": _weekly_review_context(bundle),
+                "non_trading_focus": _non_trading_focus_context(bundle),
                 "overnight_review": prior.get("overnight_review", TASK_DEFAULTS["overnight_review"]),
                 "news_selection": prior.get("news_selection", TASK_DEFAULTS["news_selection"]),
                 "etf_flows": ((bundle.get("movers_digest", {}) or {}).get("etf_flows", []) or [])[:6],
@@ -453,6 +495,8 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
                 "macro_agenda": _macro_items(bundle, limit=6),
                 "high_frequency": (bundle.get("high_frequency", []) or [])[:4],
                 "day_mode_note": _day_mode_context(bundle).get("note", ""),
+                "weekly_review": _weekly_review_context(bundle),
+                "non_trading_focus": _non_trading_focus_context(bundle),
             }
         )
         return base
@@ -477,6 +521,8 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
                 "high_frequency": (bundle.get("high_frequency", []) or [])[:5],
                 "macro_agenda": _macro_items(bundle, limit=4),
                 "must_watch": (bundle.get("must_watch", []) or [])[:5],
+                "weekly_review": _weekly_review_context(bundle),
+                "non_trading_focus": _non_trading_focus_context(bundle),
             }
         )
         return base
@@ -493,6 +539,8 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
                 "theme_deep_dive": prior.get("theme_deep_dive", TASK_DEFAULTS["theme_deep_dive"]),
                 "attribution_v1": bundle.get("attribution", {}) or {},
                 "flow_tracker": bundle.get("flow_tracker", {}) or {},
+                "weekly_review": _weekly_review_context(bundle),
+                "non_trading_focus": _non_trading_focus_context(bundle),
                 "must_watch": (bundle.get("must_watch", []) or [])[:6],
             }
         )
@@ -505,11 +553,20 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
     day_mode = context.get("day_mode", {}) or {}
     non_trading_instruction = ""
     if not bool(day_mode.get("is_trading_day", True)):
-        non_trading_instruction = (
-            "Non-trading-day rule: treat Hong Kong and A-share cash-market data as last-available reference tape only. "
-            "Do not frame it as a fresh cash-session move. Focus analysis on still-moving financial actions: policy and regulatory signals, "
-            "geopolitics, central-bank repricing, FX/commodities/crypto, corporate actions, and the next open.\n"
-        )
+        if day_mode.get("mode") == "weekly_review":
+            non_trading_instruction = (
+                "Weekly-review rule: synthesize the completed Hong Kong trading week and next-week preparation. "
+                "Use weekly_review.trend_summary and desk_questions when supplied. "
+                "Do not frame Saturday as a fresh cash-market session or refer to today's Hong Kong open. "
+                "Separate weekly evidence, bounded interpretation, and next-week preparation.\n"
+            )
+        else:
+            non_trading_instruction = (
+                "Non-trading-day rule: treat Hong Kong and A-share cash-market data as last-available reference tape only. "
+                "Do not frame it as a fresh cash-session move. Focus analysis on still-moving financial actions: policy and regulatory signals, "
+                "geopolitics, central-bank repricing, FX/commodities/crypto, corporate actions, and the next open. "
+                "Use non_trading_focus.event_watch when supplied.\n"
+            )
 
     common_requirements = (
         "Write in English only.\n"
@@ -530,13 +587,15 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
             "Task: write the overnight overseas market review.\n"
             "Explain why markets moved, not just how much.\n"
             "Use attribution_v1 as a consistency anchor when it is present; do not add causal claims that conflict with it.\n"
-            "End with what the move means for today's Hong Kong open or next Hong Kong session.\n"
+            "Keep paragraph to 2-4 short sentences. Put detailed causal points in drivers rather than making one dense paragraph.\n"
+            "End with what the move means for today's Hong Kong open or next Hong Kong session via hk_open_implication.\n"
             "Return JSON with keys: paragraph, drivers, hk_open_implication.\n"
         ),
         "hk_review": (
-            "Task: write a Hong Kong / A-share review paragraph.\n"
+            "Task: write a Hong Kong / A-share review setup.\n"
             "Focus on style leadership, local flow implications, and cross-market read-through.\n"
             "Use flow_tracker and attribution_v1 when available; if Connect or CCASS data is absent, state that confirmation is incomplete.\n"
+            "Keep paragraph to 2-4 short sentences. Put the actionable confirmation test in follow_through.\n"
             "Return JSON with keys: paragraph, local_leadership, follow_through.\n"
         ),
         "macro_interpretation": (

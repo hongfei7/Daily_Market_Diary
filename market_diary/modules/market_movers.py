@@ -1,10 +1,13 @@
 """Market movers, ETF flow proxies, and options activity adapters."""
 
+import os
 from typing import Any, Dict, List, Optional
 
 import yfinance as yf
 
 from modules.adapter_shortsell import fetch_short_sell_data
+
+YFINANCE_TIMEOUT = float(os.environ.get("DMD_YFINANCE_TIMEOUT_SECONDS", "6"))
 
 
 class MarketMoversAnalyzer:
@@ -78,7 +81,7 @@ class MarketMoversAnalyzer:
 
         for ticker, name in self.MAJOR_ETFS.items():
             try:
-                hist = yf.Ticker(ticker).history(period="5d")
+                hist = yf.Ticker(ticker).history(period="5d", timeout=YFINANCE_TIMEOUT)
                 if hist.empty or len(hist) < 2:
                     continue
 

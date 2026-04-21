@@ -249,7 +249,7 @@ def main():
     dashboard_path = os.path.join("reports_professional", "charts", "test_dashboard.png")
     generate_dashboard(bundle, dashboard_path)
     assert os.path.exists(dashboard_path)
-    assert DASHBOARD_LAYOUT_VERSION == "4-panel-v1"
+    assert DASHBOARD_LAYOUT_VERSION == "4-panel-v2"
 
     daily_chart_path = os.path.join("reports_professional", "charts", "test_daily_one_chart.png")
     daily_meta = generate_daily_one_chart(bundle, daily_chart_path)
@@ -289,6 +289,8 @@ def main():
     bundle["trend_pack"] = {**trend_pack_meta, "rel_path": "charts/test_hk_trend_pack.png"}
     assert os.path.exists(trend_pack_path)
     assert os.path.basename(trend_pack_path) != os.path.basename(daily_chart_path)
+    assert trend_pack_meta["weekly_summary"]["status"] == "ok"
+    assert trend_pack_meta["weekly_summary"]["rows"]
 
     report = render_professional_report(
         bundle,

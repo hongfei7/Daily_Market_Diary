@@ -44,6 +44,9 @@ def main() -> None:
     assert meta["title"] == "Hong Kong Trend Pack"
     assert meta["path"] == "test_hk_trend_pack_unit.png"
     assert meta["rel_path"] == "charts/test_hk_trend_pack_unit.png"
+    assert meta["weekly_summary"]["status"] == "ok"
+    assert meta["weekly_summary"]["rows"]
+    assert any(row["signal"] == "Southbound flow" for row in meta["weekly_summary"]["rows"])
 
     cache_path = ROOT / "tmp_trend_pack_cache"
     if cache_path.exists():

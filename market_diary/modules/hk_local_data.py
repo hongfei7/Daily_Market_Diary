@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
@@ -30,7 +31,7 @@ HKEX_SOURCE = "HKEX Daily Quotations"
 HKEX_SHORT_SELL_SOURCE = "HKEX Short Selling Turnover Report"
 HKMA_SOURCE = "HKMA Daily Figures - Interbank Liquidity"
 USER_AGENT = "Daily-Market-Diary/3.0"
-REQUEST_TIMEOUT = 20
+REQUEST_TIMEOUT = float(os.environ.get("DMD_PUBLIC_REQUEST_TIMEOUT_SECONDS", "12"))
 TURNOVER_LOOKBACK_DAYS = 45
 TURNOVER_AVERAGE_WINDOW = 20
 TURNOVER_MAX_WORKERS = 6

@@ -13,7 +13,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import queue
 import sys
+import threading
 from typing import Any, Dict
 
 from modules.adapter_ah_premium import fetch_ah_premium_data
@@ -42,7 +44,10 @@ from professional.fact_checker import run_fact_check
 from professional.llm_enhancer import generate_llm_sections
 from professional.report_quality import build_report_quality
 from professional.report_builder import render_professional_report
-from professional.trend_pack import generate_hk_trend_pack
+from professional.trend_pack import collect_hk_trend_pack_data, generate_hk_trend_pack, summarize_hk_trend_pack_data
+
+
+DEFAULT_DATA_STEP_TIMEOUT_SECONDS = float(os.environ.get("DMD_DATA_STEP_TIMEOUT_SECONDS", "90"))
 
 
 def parse_args() -> argparse.Namespace:
@@ -71,6 +76,111 @@ def _configure_console_output() -> None:
                 reconfigure(errors="replace")
             except Exception:
                 pass
+
+
+def _configure_market_data_cache(output_dir: str) -> None:
+    """Keep third-party quote caches inside the project output tree."""
+    cache_dir = os.path.join(output_dir, "raw", "runtime_cache", "yfinance")
+    os.makedirs(cache_dir, exist_ok=True)
+    try:
+        import yfinance as yf
+
+        yf.set_tz_cache_location(cache_dir)
+    except Exception as exc:
+        print(f"[runtime] yfinance cache setup skipped: {type(exc).__name__}: {exc}")
+
+
+def _run_external_step(
+    label: str,
+    func,
+    fallback: Dict[str, Any],
+    timeout_seconds: float = DEFAULT_DATA_STEP_TIMEOUT_SECONDS,
+) -> Dict[str, Any]:
+    """Run network-bound adapters with a bounded wait.
+
+    A daemon worker lets the report degrade cleanly when a third-party library
+    ignores its own socket timeout.  This is intentionally used only around
+    data collection, where a structured fallback is safer than blocking the
+    entire morning run.
+    """
+    result_queue: "queue.Queue[tuple[str, Any]]" = queue.Queue(maxsize=1)
+
+    def _target() -> None:
+        try:
+            result_queue.put(("ok", func()), block=False)
+        except Exception as exc:
+            result_queue.put(("error", exc), block=False)
+
+    worker = threading.Thread(target=_target, name=f"dmd-{label}", daemon=True)
+    worker.start()
+    worker.join(timeout=max(float(timeout_seconds), 1.0))
+
+    if worker.is_alive():
+        print(f"[runtime] {label} timed out after {timeout_seconds:.0f}s; using structured fallback.")
+        return {**fallback, "status": "timeout", "error": f"{label} timed out after {timeout_seconds:.0f}s"}
+
+    try:
+        status, payload = result_queue.get_nowait()
+    except queue.Empty:
+        return {**fallback, "status": "error", "error": f"{label} returned no payload"}
+
+    if status == "ok" and isinstance(payload, dict):
+        return payload
+    if status == "ok":
+        return {"status": "ok", "data": payload}
+
+    print(f"[runtime] {label} failed: {type(payload).__name__}: {payload}")
+    return {**fallback, "status": "error", "error": str(payload)}
+
+
+def _fallback_market_payload(date_value: str) -> Dict[str, Any]:
+    return {
+        "requested_date": date_value,
+        "effective_date": date_value,
+        "summary_date": date_value,
+        "timeseries": [],
+        "summary": {},
+        "quality": {"coverage": "0/0", "missing": 0, "fallback": 0, "status": "timeout"},
+    }
+
+
+def _fallback_sector_payload() -> Dict[str, Any]:
+    return {
+        "sector_news": {},
+        "earnings_calendar": [],
+        "analyst_changes": [],
+        "hkex_announcements": {"status": "timeout", "items": [], "data": []},
+        "formatted_text": "",
+    }
+
+
+def _fallback_movers_payload() -> Dict[str, Any]:
+    return {
+        "premarket_movers": {"gainers": [], "losers": [], "most_active": []},
+        "etf_flows": [],
+        "block_trades": [],
+        "unusual_options": [],
+        "short_sell": {"status": "timeout", "data": {}, "meta": {}},
+        "formatted_text": "",
+    }
+
+
+def _fallback_trend_pack_payload() -> Dict[str, Any]:
+    return {
+        "southbound": [],
+        "liquidity": [],
+        "leadership": {"dates": [], "series": {}},
+        "ah_heatmap": {"dates": [], "names": [], "matrix": []},
+    }
+
+
+def _attach_weekly_trend_summary(bundle: Dict[str, Any], trend_summary: Dict[str, Any]) -> None:
+    if (bundle.get("day_mode", {}) or {}).get("mode") != "weekly_review" or not trend_summary:
+        return
+    weekly_review = bundle.setdefault("weekly_review", {})
+    weekly_review["trend_summary"] = trend_summary
+    if trend_summary.get("method_note"):
+        weekly_review["method_note"] = trend_summary["method_note"]
 
 
 def _extract_current_prices(market_data: Dict[str, Any]) -> Dict[str, float]:
@@ -125,36 +235,77 @@ def fetch_all_data(
 
     print("[1/7] Market data")
     day_mode = build_day_mode(review_date, config)
-    payload["market"] = fetch_market_data(
-        global_market_date,
-        prefer_weekend_active_assets=not bool(day_mode.get("is_trading_day", True)),
+    payload["market"] = _run_external_step(
+        "market-data",
+        lambda: fetch_market_data(
+            global_market_date,
+            prefer_weekend_active_assets=not bool(day_mode.get("is_trading_day", True)),
+        ),
+        fallback=_fallback_market_payload(global_market_date),
+        timeout_seconds=float(os.environ.get("DMD_MARKET_STEP_TIMEOUT_SECONDS", DEFAULT_DATA_STEP_TIMEOUT_SECONDS)),
     )
 
     print("[2/7] Sector news and HKEX announcements")
-    payload["sector"] = fetch_sector_data(hk_data_date, config=config, cache_dir=runtime_cache_dir)
+    payload["sector"] = _run_external_step(
+        "sector-news",
+        lambda: fetch_sector_data(hk_data_date, config=config, cache_dir=runtime_cache_dir),
+        fallback=_fallback_sector_payload(),
+        timeout_seconds=float(os.environ.get("DMD_NEWS_STEP_TIMEOUT_SECONDS", "45")),
+    )
 
     print("[3/7] Movers, Stock Connect, AH premium, and HKEX short selling")
-    payload["movers"] = fetch_movers_data(hk_data_date, watchlists=(config or {}).get("watchlists", {}))
-    payload["stock_connect"] = fetch_stock_connect_data(hk_data_date)
-    payload["ah_premium"] = fetch_ah_premium_data(hk_data_date)
+    payload["movers"] = _run_external_step(
+        "market-movers",
+        lambda: fetch_movers_data(hk_data_date, watchlists=(config or {}).get("watchlists", {})),
+        fallback=_fallback_movers_payload(),
+        timeout_seconds=float(os.environ.get("DMD_MOVER_STEP_TIMEOUT_SECONDS", "60")),
+    )
+    payload["stock_connect"] = _run_external_step(
+        "stock-connect",
+        lambda: fetch_stock_connect_data(hk_data_date),
+        fallback={"status": "timeout", "data": {}, "meta": {}},
+        timeout_seconds=float(os.environ.get("DMD_PUBLIC_STEP_TIMEOUT_SECONDS", "45")),
+    )
+    payload["ah_premium"] = _run_external_step(
+        "ah-premium",
+        lambda: fetch_ah_premium_data(hk_data_date),
+        fallback={"status": "timeout", "data": {}, "meta": {}},
+        timeout_seconds=float(os.environ.get("DMD_MOVER_STEP_TIMEOUT_SECONDS", "60")),
+    )
 
     print("[4/7] Hong Kong local market data")
-    payload["hk_local"] = fetch_hk_local_data(
-        hk_data_date,
-        short_sell_data=(payload.get("movers", {}) or {}).get("short_sell"),
-        stock_connect_data=payload.get("stock_connect", {}) or {},
-        ah_premium_data=payload.get("ah_premium", {}) or {},
+    payload["hk_local"] = _run_external_step(
+        "hk-local",
+        lambda: fetch_hk_local_data(
+            hk_data_date,
+            short_sell_data=(payload.get("movers", {}) or {}).get("short_sell"),
+            stock_connect_data=payload.get("stock_connect", {}) or {},
+            ah_premium_data=payload.get("ah_premium", {}) or {},
+        ),
+        fallback={"status": "timeout", "data": {}, "meta": {}},
+        timeout_seconds=float(os.environ.get("DMD_PUBLIC_STEP_TIMEOUT_SECONDS", "45")),
     )
 
     print("[5/7] China local rates")
-    payload["china_rates"] = fetch_china_rates_data(hk_data_date)
+    payload["china_rates"] = _run_external_step(
+        "china-rates",
+        lambda: fetch_china_rates_data(hk_data_date),
+        fallback={"status": "timeout", "data": {}, "meta": {}},
+        timeout_seconds=float(os.environ.get("DMD_PUBLIC_STEP_TIMEOUT_SECONDS", "45")),
+    )
 
     print("[6/7] Macro calendar")
     payload["macro"] = fetch_macro_data(briefing_date)
 
     print("[7/7] Risk radar + headlines")
     payload["risk"] = fetch_risk_data(_extract_current_prices(payload.get("market", {})))
-    payload["news"] = fetch_news(max_per_feed=10, cache_dir=runtime_cache_dir, cache_key=briefing_date)
+    news_payload = _run_external_step(
+        "rss-headlines",
+        lambda: {"items": fetch_news(max_per_feed=10, cache_dir=runtime_cache_dir, cache_key=briefing_date)},
+        fallback={"items": []},
+        timeout_seconds=float(os.environ.get("DMD_NEWS_STEP_TIMEOUT_SECONDS", "45")),
+    )
+    payload["news"] = news_payload.get("items", []) if isinstance(news_payload, dict) else []
 
     if debug and debug_dir:
         os.makedirs(debug_dir, exist_ok=True)
@@ -194,6 +345,7 @@ def main() -> None:
     hk_data_date = resolved_dates["hk_data_date"]
     output_dir = args.output_dir or config.get("system", {}).get("output_dir", "reports_professional")
     os.makedirs(output_dir, exist_ok=True)
+    _configure_market_data_cache(output_dir)
 
     debug_dir = os.path.join(output_dir, "debug")
     payload = fetch_all_data(
@@ -229,6 +381,18 @@ def main() -> None:
         hk_local_data=payload.get("hk_local", {}) or {},
         china_rates_data=payload.get("china_rates", {}) or {},
     )
+
+    trend_pack_data: Dict[str, Any] | None = None
+    trend_cache_dir = os.path.join(output_dir, "raw", "trend_cache")
+    if not args.skip_trend_pack and (bundle.get("day_mode", {}) or {}).get("mode") == "weekly_review":
+        trend_pack_data = _run_external_step(
+            "trend-pack-data",
+            lambda: collect_hk_trend_pack_data(bundle, cache_dir=trend_cache_dir),
+            fallback=_fallback_trend_pack_payload(),
+            timeout_seconds=float(os.environ.get("DMD_TREND_PACK_STEP_TIMEOUT_SECONDS", "45")),
+        )
+        _attach_weekly_trend_summary(bundle, summarize_hk_trend_pack_data(trend_pack_data))
+
     llm_cache_dir = os.path.join(output_dir, "raw", "llm_cache")
     bundle["llm_sections"] = (
         {}
@@ -263,13 +427,16 @@ def main() -> None:
         trend_pack_meta = generate_hk_trend_pack(
             bundle,
             os.path.join(chart_dir, f"hk_trend_pack_{output_label}.png"),
-            cache_dir=os.path.join(output_dir, "raw", "trend_cache"),
+            trend_data=trend_pack_data,
+            cache_dir=trend_cache_dir,
         )
         bundle["trend_pack"] = {
             **trend_pack_meta,
             "rel_path": f"charts/{trend_pack_meta['path']}",
         }
         trend_pack_rel_path = bundle["trend_pack"]["rel_path"]
+        trend_summary = trend_pack_meta.get("weekly_summary", {}) if isinstance(trend_pack_meta, dict) else {}
+        _attach_weekly_trend_summary(bundle, trend_summary)
 
     charts_section = (
         "_Supplementary visual appendix was skipped._"

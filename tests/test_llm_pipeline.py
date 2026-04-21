@@ -170,6 +170,49 @@ def main() -> None:
     assert llm_sections["selected_news"][0]["headline"] == "AI demand remains firm"
     assert llm_sections["task_meta"]["tasks"]["final_framing"]["status"] == "ok"
 
+    weekly_bundle = build_professional_bundle(
+        report_date="2026-04-18",
+        briefing_date="2026-04-19",
+        global_market_date="2026-04-18",
+        hk_data_date="2026-04-17",
+        config=config,
+        market_data=data["market_data"],
+        chart_features=data["chart_features"],
+        macro_data=data["macro_data"],
+        sector_data=data["sector_data"],
+        movers_data=data["movers_data"],
+        risk_data=data["risk_data"],
+        news_headlines=["- Reuters: AI demand remains firm"],
+        stock_connect_data=data["stock_connect_data"],
+        ah_premium_data=data["ah_premium_data"],
+    )
+    weekly_bundle["weekly_review"]["trend_summary"] = {
+        "status": "ok",
+        "window": {"start": "2026-04-13", "end": "2026-04-17"},
+        "rows": [
+            {
+                "signal": "Southbound flow",
+                "weekly_change": "+4.0bn over 5 sessions",
+                "latest": "+1.4bn",
+                "read": "Southbound flow stayed net positive into the weekly close.",
+            }
+        ],
+    }
+
+    weekly_seen = {}
+
+    def weekly_runner(task_name, context, prompt):
+        weekly_seen[task_name] = {"context": context, "prompt": prompt}
+        return fake_runner(task_name, context, prompt)
+
+    weekly_sections = generate_llm_sections(bundle=weekly_bundle, config=config, cache_dir="", runner=weekly_runner)
+    assert weekly_sections["one_line_market_pulse"]
+    assert weekly_seen["overnight_review"]["context"]["weekly_review"]["trend_summary"]["rows"][0]["signal"] == "Southbound flow"
+    assert weekly_seen["hk_review"]["context"]["weekly_review"]["desk_questions"]
+    assert weekly_seen["final_framing"]["context"]["weekly_review"]["next_week"]
+    assert "Weekly-review rule" in weekly_seen["overnight_review"]["prompt"]
+    assert "Use weekly_review.trend_summary" in weekly_seen["overnight_review"]["prompt"]
+
     print("LLM pipeline test passed")
 
 

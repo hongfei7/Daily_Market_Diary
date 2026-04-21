@@ -7,6 +7,8 @@ import subprocess
 from pathlib import Path
 from typing import Iterable, List, Set
 
+from build_report_gallery import build_report_gallery
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE_DIR = ROOT / "reports_professional"
@@ -142,6 +144,8 @@ def main(argv: List[str] | None = None) -> int:
     for report_date in report_dates:
         for path in build_date_archive(report_date, include_all_charts=args.include_all_charts):
             staged.add(path)
+    for path in build_report_gallery():
+        staged.add(path)
 
     _run_git_add(sorted(staged))
     print(f"Staged {len(staged)} report archive files")

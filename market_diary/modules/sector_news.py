@@ -16,7 +16,10 @@ except ImportError:
     feedparser = None
 
 
-NEWS_REQUEST_TIMEOUT = (5, 12)
+NEWS_REQUEST_TIMEOUT = (
+    float(os.environ.get("DMD_NEWS_CONNECT_TIMEOUT_SECONDS", "3")),
+    float(os.environ.get("DMD_NEWS_READ_TIMEOUT_SECONDS", "6")),
+)
 NEWS_USER_AGENT = "DailyMarketDiary/1.0"
 
 

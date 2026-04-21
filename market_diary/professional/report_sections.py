@@ -134,7 +134,7 @@ def _render_risk_dashboard(bundle: Dict[str, Any]) -> str:
 
     components = risk.get("components", []) or []
     lines = [
-        f"- **Composite risk score:** {risk.get('score', 'N/A')}/100 | **Regime:** {risk.get('bucket', 'Mixed')}",
+        f"**Composite risk score:** `{risk.get('score', 'N/A')}/100` | **Regime:** `{risk.get('bucket', 'Mixed')}`",
     ]
     if components:
         rows = [
@@ -145,6 +145,7 @@ def _render_risk_dashboard(bundle: Dict[str, Any]) -> str:
             )
             for item in components[:6]
         ]
+        lines.append("")
         lines.append(_make_table(["Component", "Score impact", "Evidence"], rows))
     return "\n".join(lines)
 
@@ -169,6 +170,20 @@ def _render_non_trading_focus(bundle: Dict[str, Any]) -> str:
         ]
         lines.append(_make_table(["Monitor", "Bucket", "Last", "Move", "Why it matters"], rows))
 
+    event_watch = focus.get("event_watch", []) or []
+    if event_watch:
+        rows = [
+            (
+                item.get("channel", ""),
+                _truncate(item.get("signal", ""), 66),
+                _truncate(item.get("why", ""), 82),
+                _truncate(item.get("next_check", ""), 82),
+            )
+            for item in event_watch[:8]
+        ]
+        lines.append("\n**Weekend / Holiday Event Docket**")
+        lines.append(_make_table(["Channel", "Signal", "Why monitor", "Next check"], rows))
+
     action_items = focus.get("action_items", []) or []
     if action_items:
         lines.append("\n**Still-moving actions to track**")
@@ -179,5 +194,98 @@ def _render_non_trading_focus(bundle: Dict[str, Any]) -> str:
     if next_open:
         lines.append("\n**Next-open preparation**")
         lines.extend(f"- {line}" for line in next_open[:4])
+
+    return "\n".join(lines)
+
+
+def _render_weekly_review(bundle: Dict[str, Any]) -> str:
+    weekly = bundle.get("weekly_review", {}) or {}
+    if not weekly:
+        return ""
+
+    lines: List[str] = ["#### Weekly Review Map", f"- {weekly.get('summary', '')}"]
+    method_note = weekly.get("method_note", "")
+    if method_note:
+        lines.append(f"- Method note: {method_note}")
+
+    cross_assets = weekly.get("cross_assets", []) or []
+    if cross_assets:
+        rows = [
+            (
+                item.get("asset", ""),
+                item.get("latest_move", "N/A"),
+                _truncate(item.get("read", ""), 78),
+            )
+            for item in cross_assets[:8]
+        ]
+        lines.append("\n**Cross-asset weekly dashboard**")
+        lines.append(_make_table(["Asset", "Latest move", "Weekly read"], rows))
+
+    hk_tape = weekly.get("hk_tape", []) or []
+    if hk_tape:
+        rows = [
+            (
+                item.get("signal", ""),
+                item.get("latest_move", "N/A"),
+                _truncate(item.get("read", ""), 78),
+            )
+            for item in hk_tape[:6]
+        ]
+        lines.append("\n**Hong Kong / China weekly tape**")
+        lines.append(_make_table(["Signal", "Latest move", "Read"], rows))
+
+    trend_summary = weekly.get("trend_summary", {}) or {}
+    trend_rows = trend_summary.get("rows", []) or []
+    if trend_rows:
+        window = trend_summary.get("window", {}) or {}
+        lines.append("\n**Five-session trend evidence**")
+        if window.get("start") and window.get("end"):
+            lines.append(f"_Window: {window.get('start')} to {window.get('end')}_")
+        rows = [
+            (
+                item.get("signal", ""),
+                item.get("weekly_change", "N/A"),
+                item.get("latest", "N/A"),
+                _truncate(item.get("read", ""), 86),
+            )
+            for item in trend_rows[:6]
+        ]
+        lines.append(_make_table(["Signal", "Five-session change", "Latest", "Desk read"], rows))
+
+    flow_lines = weekly.get("flow_lines", []) or []
+    if flow_lines:
+        lines.append("\n**Flow and attribution clues**")
+        lines.extend(f"- {_truncate(line, 120)}" for line in flow_lines[:4])
+
+    desk_questions = weekly.get("desk_questions", []) or []
+    if desk_questions:
+        lines.append("\n**Next-week desk questions**")
+        lines.extend(f"- {_truncate(line, 128)}" for line in desk_questions[:6])
+
+    developments = weekly.get("developments", []) or []
+    if developments:
+        rows = [
+            (
+                item.get("bucket", ""),
+                _truncate(item.get("item", ""), 64),
+                _truncate(item.get("read", ""), 88),
+            )
+            for item in developments[:6]
+        ]
+        lines.append("\n**Key developments to retain**")
+        lines.append(_make_table(["Bucket", "Item", "Why it matters"], rows))
+
+    next_week = weekly.get("next_week", []) or []
+    if next_week:
+        rows = [
+            (
+                item.get("date", ""),
+                _truncate(item.get("event", ""), 64),
+                _truncate(item.get("read", ""), 88),
+            )
+            for item in next_week[:8]
+        ]
+        lines.append("\n**Next-week playbook**")
+        lines.append(_make_table(["Date", "Catalyst", "Desk read"], rows))
 
     return "\n".join(lines)

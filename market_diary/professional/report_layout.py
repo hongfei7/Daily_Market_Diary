@@ -48,6 +48,8 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
     quality = bundle.get("report_quality", {}) or {}
 
     is_trading_day = bool(day_mode.get("is_trading_day", True))
+    report_mode = day_mode.get("mode", "trading_daily")
+    is_weekly_review = report_mode == "weekly_review"
     dashboard_md = f"![Research Dashboard]({dashboard_rel_path})\n" if dashboard_rel_path else ""
     market_quality_line = _render_market_data_quality(meta)
     date_policy_line = _render_date_policy(bundle)
@@ -62,6 +64,37 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
         + " ".join((overview.get("notes", []) or [])[:3])
     )
 
+    if is_weekly_review:
+        layer_one_title = "Layer 1 | Weekly Scan (5-10 min)"
+        checklist_title = "Next Week Checklist"
+        today_ahead_title = "Next Week Calendar and Reopen Prep"
+        overseas_title = "Weekly Cross-Asset Review"
+        hk_quick_title = "Hong Kong Weekly Tape Quick Check"
+        hk_review_title = "Hong Kong / A-share Weekly Review"
+        mode_lens = (
+            "> Weekly review mode: synthesize the completed Hong Kong week, retain the main cross-asset and policy lessons, "
+            "and convert them into next-week preparation rather than treating Saturday as a fresh cash-market session.\n\n"
+        )
+    elif is_trading_day:
+        layer_one_title = "Layer 1 | Scan (5-10 min)"
+        checklist_title = "Morning Checklist"
+        today_ahead_title = "Today Ahead and Trading Calendar"
+        overseas_title = "Overnight Overseas Market Review"
+        hk_quick_title = "Hong Kong Key Data Quick Check"
+        hk_review_title = "Hong Kong / A-share Previous-Day Review"
+        mode_lens = ""
+    else:
+        layer_one_title = "Layer 1 | Reset (5-10 min)"
+        checklist_title = "Next Open Checklist"
+        today_ahead_title = "Next Session Outlook and Calendar"
+        overseas_title = "Still-Moving Global Financial Actions"
+        hk_quick_title = "Hong Kong Last Cash-Tape Quick Check (Reference)"
+        hk_review_title = "Last Available Hong Kong / A-share Tape (Reference Only)"
+        mode_lens = (
+            "> Non-trading mode: treat the cash-market tape below as last-available reference, not a fresh trading signal. "
+            "Priority shifts to policy headlines, geopolitics, central-bank repricing, FX/commodities/crypto, corporate actions, and next-open preparation.\n\n"
+        )
+
     return {
         "meta": meta,
         "overview": overview,
@@ -75,22 +108,15 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
         "deep_read_setup": deep_read_setup,
         "macro_takeaway": llm_sections.get("macro_takeaway", ""),
         "is_trading_day": is_trading_day,
-        "layer_one_title": "Layer 1 | Scan (5-10 min)" if is_trading_day else "Layer 1 | Reset (5-10 min)",
-        "checklist_title": "Morning Checklist" if is_trading_day else "Next Open Checklist",
-        "today_ahead_title": "Today Ahead and Trading Calendar" if is_trading_day else "Next Session Outlook and Calendar",
-        "overseas_title": "Overnight Overseas Market Review" if is_trading_day else "Still-Moving Global Financial Actions",
-        "hk_quick_title": "Hong Kong Key Data Quick Check" if is_trading_day else "Hong Kong Last Cash-Tape Quick Check (Reference)",
-        "hk_review_title": (
-            "Hong Kong / A-share Previous-Day Review"
-            if is_trading_day
-            else "Last Available Hong Kong / A-share Tape (Reference Only)"
-        ),
-        "non_trading_lens": (
-            "> Non-trading mode: treat the cash-market tape below as last-available reference, not a fresh trading signal. "
-            "Priority shifts to policy headlines, geopolitics, central-bank repricing, FX/commodities/crypto, corporate actions, and next-open preparation.\n\n"
-            if not is_trading_day
-            else ""
-        ),
+        "report_mode": report_mode,
+        "is_weekly_review": is_weekly_review,
+        "layer_one_title": layer_one_title,
+        "checklist_title": checklist_title,
+        "today_ahead_title": today_ahead_title,
+        "overseas_title": overseas_title,
+        "hk_quick_title": hk_quick_title,
+        "hk_review_title": hk_review_title,
+        "non_trading_lens": mode_lens,
         "briefing_date": meta.get("briefing_date", meta.get("report_date", "")),
         "review_date": meta.get("review_date", meta.get("report_date", "")),
         "data_through": meta.get("data_through", meta.get("report_date", "")),

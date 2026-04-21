@@ -99,6 +99,7 @@ jobs:
           python tests/test_news_cache.py
           python tests/test_date_semantics.py
           python tests/test_trend_pack.py
+          python tests/test_report_gallery.py
           python tests/test_repo_hygiene.py
           python tests/test_professional_workbench.py
 

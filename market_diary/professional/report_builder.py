@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List
 
 from professional.report_formatting import (
@@ -22,7 +23,57 @@ from professional.report_sections import (
     _render_risk_dashboard,
     _render_selected_news,
     _render_top_items,
+    _render_weekly_review,
 )
+
+
+def _split_sentences(text: str) -> List[str]:
+    normalized = re.sub(r"\s+", " ", str(text or "")).strip()
+    if not normalized:
+        return []
+    parts = re.split(r"(?<=[.!?])\s+(?=[A-Z0-9`$])", normalized)
+    return [part.strip() for part in parts if part.strip()]
+
+
+def _paragraph_chunks(text: str, max_sentences: int = 2, max_chars: int = 420, limit: int = 3) -> List[str]:
+    sentences = _split_sentences(text)
+    if not sentences:
+        return []
+
+    chunks: List[str] = []
+    current: List[str] = []
+    current_len = 0
+    for sentence in sentences:
+        projected_len = current_len + len(sentence) + (1 if current else 0)
+        if current and (len(current) >= max_sentences or projected_len > max_chars):
+            chunks.append(" ".join(current))
+            current = []
+            current_len = 0
+            if len(chunks) >= limit:
+                break
+        current.append(sentence)
+        current_len += len(sentence) + 1
+
+    if current and len(chunks) < limit:
+        chunks.append(" ".join(current))
+    return chunks[:limit]
+
+
+def _compact_bullets(items: List[str], limit: int = 4, width: int = 150) -> List[str]:
+    bullets: List[str] = []
+    for item in items:
+        text = str(item or "").strip()
+        if text:
+            bullets.append(_truncate(text, width))
+        if len(bullets) >= limit:
+            break
+    return bullets
+
+
+def _clean_report_spacing(text: str) -> str:
+    """Keep generated markdown readable without changing table rows."""
+    cleaned = re.sub(r"\n{4,}", "\n\n\n", text)
+    return cleaned.strip() + "\n"
 
 
 def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
@@ -178,8 +229,8 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
 
     stock_connect = (tracker.get("stock_connect", {}) or {}).get("data", {}) or {}
     southbound_active = ((stock_connect.get("southbound", {}) or {}).get("top_active", []) or [])[:5]
+    lines.append("##### Stock Connect Southbound Active Names")
     if southbound_active:
-        lines.append("##### Stock Connect Southbound Active Names")
         rows = [
             (
                 item.get("rank", ""),
@@ -193,11 +244,15 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
         ]
         lines.append(_make_table(["Rank", "Ticker", "Name", "Buy", "Sell", "Net buy"], rows))
         lines.append("")
+    else:
+        status = (tracker.get("stock_connect", {}) or {}).get("status", "unavailable")
+        lines.append(f"- Southbound active-name detail was not available from the public adapter. Status: `{status}`.")
+        lines.append("")
 
     ah_premium = (tracker.get("ah_premium", {}) or {}).get("data", {}) or {}
     ah_rows = ah_premium.get("top_premium", []) or []
+    lines.append("##### AH Premium Dispersion")
     if ah_rows:
-        lines.append("##### AH Premium Dispersion")
         rows = [
             (
                 item.get("name", ""),
@@ -209,6 +264,10 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
             for item in ah_rows[:5]
         ]
         lines.append(_make_table(["Name", "A ticker", "H ticker", "Premium", "As of"], rows))
+        lines.append("")
+    else:
+        status = (tracker.get("ah_premium", {}) or {}).get("status", "unavailable")
+        lines.append(f"- A/H premium dispersion was unavailable from the public quote model. Status: `{status}`.")
         lines.append("")
 
     watch_hits = tracker.get("short_sell_watchlist_hits", []) or []
@@ -271,6 +330,55 @@ def _has_official_stock_connect_flow(bundle: Dict[str, Any]) -> bool:
     return bool(southbound.get("top_active")) or southbound.get("net_buy") is not None
 
 
+def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
+    llm_sections = bundle.get("llm_sections", {}) or {}
+    overview = bundle.get("overview", {}) or {}
+    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
+
+    lines: List[str] = []
+    setup = str(llm_sections.get("deep_read_setup", "") or "").strip()
+    setup_chunks = _paragraph_chunks(setup, max_sentences=2, max_chars=360, limit=2)
+    if setup_chunks:
+        lines.append("#### Market Setup")
+        lines.extend(setup_chunks)
+    else:
+        lines.append("#### Market Setup")
+        lines.append(str(overview.get("theme", "") or "No LLM overnight setup was available; rely on the dashboard and attribution tables below."))
+
+    drivers = _compact_bullets(llm_sections.get("overnight_drivers", []) or [], limit=4, width=140)
+    residual_sentences = _split_sentences(setup)[len(_split_sentences(" ".join(setup_chunks))):]
+    if drivers or residual_sentences:
+        lines.append("")
+        lines.append("#### Key Drivers")
+        if drivers:
+            lines.extend(f"- {item}" for item in drivers)
+        else:
+            lines.extend(f"- {_truncate(item, 140)}" for item in residual_sentences[:4])
+
+    hk_implication = str(llm_sections.get("overnight_hk_implication", "") or "").strip()
+    hk_lines = _compact_bullets(hk_desk_view.get("lines", []) or [], limit=3, width=140)
+    lines.append("")
+    lines.append("#### Hong Kong Read-Through")
+    leadership = str(hk_desk_view.get("leadership", "") or "").strip()
+    if leadership:
+        lines.append(f"- **Desk lens:** {leadership}.")
+    if hk_implication:
+        lines.append(f"- **Opening implication:** {_truncate(hk_implication, 170)}")
+    for item in hk_lines:
+        lines.append(f"- **Cross-market read:** {item}")
+    if not leadership and not hk_implication and not hk_lines:
+        lines.append("- Hong Kong read-through was not conclusive from the available data.")
+
+    chart_read = (overview.get("chart_read", {}) or {})
+    watch_points = _compact_bullets((chart_read.get("fx", []) or []) + (chart_read.get("assets", []) or []), limit=4, width=150)
+    if watch_points:
+        lines.append("")
+        lines.append("#### Watch Points")
+        lines.extend(f"- {item}" for item in watch_points)
+
+    return "\n".join(lines)
+
+
 def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     hk_desk_view = bundle.get("hk_desk_view", {}) or {}
     llm_sections = bundle.get("llm_sections", {}) or {}
@@ -278,10 +386,12 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     lines: List[str] = []
     setup = str(llm_sections.get("hk_review_setup", "") or "").strip()
     if setup:
-        lines.append(setup)
+        lines.append("#### Local Tape Setup")
+        lines.extend(_paragraph_chunks(setup, max_sentences=2, max_chars=360, limit=2))
         lines.append("")
 
     leadership = hk_desk_view.get("leadership", "")
+    lines.append("#### Style and Local Leadership")
     if leadership:
         lines.append(f"- **Style leadership:** {leadership}.")
     else:
@@ -294,9 +404,18 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     if local_leadership:
         lines.append(f"- **LLM local leadership read:** {local_leadership}")
 
+    lines.append("")
+    lines.append("#### Flow Confirmation")
+    if _has_official_stock_connect_flow(bundle):
+        lines.append("- Official Stock Connect evidence is available; use Section 2.3 to confirm whether local money supports the price action.")
+    else:
+        lines.append("- Official Stock Connect confirmation is incomplete; treat ETF proxies and price leadership as fallback evidence only.")
+
     follow_through = str(llm_sections.get("hk_follow_through", "") or "").strip()
     if not follow_through:
         follow_through = "Confirm the opening read through Southbound active names, short-selling concentration, USD/CNH, and USD/HKD funding pressure."
+    lines.append("")
+    lines.append("#### Follow-Through Checklist")
     lines.append(f"- **Follow-through check:** {follow_through}")
 
     if not _has_official_stock_connect_flow(bundle):
@@ -623,7 +742,7 @@ def render_professional_report(
     global_date = layout["global_date"]
     hk_date = layout["hk_date"]
 
-    return f"""# Morning Research Workbench | {briefing_date}
+    report = f"""# Morning Research Workbench | {briefing_date}
 
 > Designed for a Hong Kong sell-side commute: Layer 1 `Scan`, Layer 2 `Deep Read`, Layer 3 `Thinking`  
 > Mode: `{day_mode.get('label', 'Trading day')}` | {day_mode.get('note', '')}
@@ -654,18 +773,13 @@ def render_professional_report(
 ## Layer 2 | Deep Read (20-30 min)
 
 ### 2.1 {overseas_title}
-{non_trading_lens}{deep_read_setup}
+{non_trading_lens}{_render_overseas_review_block(bundle)}
 
 {_render_non_trading_focus(bundle)}
 
-{_render_selected_news(bundle)}
+{_render_weekly_review(bundle)}
 
-- **Hong Kong desk lens:** {hk_desk_view.get('leadership', '')}
-{"".join(f"- {line}\n" for line in (hk_desk_view.get('lines', []) or []))}
-{"".join(f"- Driver: {line}\n" for line in (llm_sections.get('overnight_drivers', []) or []))}
-{"".join(f"- Hong Kong implication: {llm_sections.get('overnight_hk_implication', '')}\n" if llm_sections.get('overnight_hk_implication') else "")}
-{"".join(f"- {line}\n" for line in ((overview.get('chart_read', {}) or {}).get('fx', []) or []))}
-{"".join(f"- {line}\n" for line in ((overview.get('chart_read', {}) or {}).get('assets', []) or []))}
+{_render_selected_news(bundle)}
 
 ### 2.2 {hk_review_title}
 {non_trading_lens if not is_trading_day else ""}{_render_hk_review_block(bundle)}
@@ -727,3 +841,4 @@ def render_professional_report(
 
 {charts_section}
 """
+    return _clean_report_spacing(report)

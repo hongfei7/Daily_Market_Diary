@@ -57,6 +57,11 @@ def _bundle(pulse: str):
         "llm_sections": {
             "one_line_market_pulse": pulse,
             "deep_read_setup": pulse,
+            "overnight_drivers": ["Lower yields supported growth leadership.", "Softer dollar pressure helped offshore China sentiment."],
+            "overnight_hk_implication": "Hong Kong should confirm the setup through HSTECH leadership and stable USD/CNH.",
+            "hk_review_setup": "Hong Kong follow-through should be judged through style leadership rather than index direction alone. Flow confirmation matters because price action without Southbound support can fade quickly.",
+            "hk_local_leadership": "Growth is leading if HSTECH outperforms HSCEI.",
+            "hk_follow_through": "Watch Southbound active names, short-selling concentration, USD/CNH, and USD/HKD.",
             "task_meta": {
                 "tasks": {
                     "overnight_review": {"status": "ok"},
@@ -71,7 +76,14 @@ def _bundle(pulse: str):
         "high_frequency": [],
         "movers_digest": {"etf_flows": [], "flow_bullets": []},
         "flow_tracker": {},
-        "attribution": {"dominant_drivers": [], "risk_dashboard": {"score": 70, "bucket": "Risk-on", "components": []}},
+        "attribution": {
+            "dominant_drivers": [],
+            "risk_dashboard": {
+                "score": 70,
+                "bucket": "Risk-on",
+                "components": [{"label": "US beta", "delta": 1.4, "evidence": "S&P 500 +1.20%"}],
+            },
+        },
         "theme_deep_dive": {},
         "today_forward": {},
         "watchlists": {},
@@ -101,6 +113,14 @@ def main() -> None:
     assert "Report Quality and Validation" in report
     assert "LLM fact-check guardrail" in report
     assert "Quality score" in report
+    assert "**Composite risk score:** `70/100`" in report
+    assert "| Component | Score impact | Evidence |" in report
+    assert "- **Composite risk score:**" not in report
+    assert "#### Market Setup" in report
+    assert "#### Key Drivers" in report
+    assert "#### Hong Kong Read-Through" in report
+    assert "#### Style and Local Leadership" in report
+    assert "#### Flow Confirmation" in report
 
     print("Report quality test passed")
 
