@@ -80,17 +80,65 @@ def _source_as_of(item: Dict[str, Any]) -> str:
     return "N/A"
 
 
+def _compact_source_name(source: str, limit: int = 34) -> str:
+    text = str(source or "").strip()
+    if not text:
+        return ""
+    aliases = (
+        ("Hong Kong Monetary Authority", "HKMA"),
+        ("HKMA Daily Figures", "HKMA"),
+        ("HKEX Daily Quotations", "HKEX"),
+        ("HKEX Stock Connect", "HKEX Connect"),
+        ("Public Yahoo Finance", "Yahoo"),
+        ("Yahoo Finance", "Yahoo"),
+        ("Eastmoney Treasury Yield History", "Eastmoney"),
+    )
+    for needle, alias in aliases:
+        if needle.lower() in text.lower():
+            return alias
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip(" -|/")
+
+
+def _compact_source_as_of(item: Dict[str, Any]) -> str:
+    source = _compact_source_name(str(item.get("source", "") or ""))
+    as_of = str(item.get("as_of", "") or "").strip()
+    if source and as_of:
+        return f"{source} | {as_of}"
+    return source or as_of or "N/A"
+
+
 def _bundle_metric(bundle: Dict[str, Any], section: str, key: str) -> Dict[str, Any]:
     section_data = bundle.get(section, {}) or {}
     item = section_data.get(key, {}) if isinstance(section_data, dict) else {}
     return item if isinstance(item, dict) else {}
 
 
-def _truncate(text: str, limit: int = 110) -> str:
-    text = str(text or "").strip()
-    if len(text) <= limit:
-        return text
-    return text[: limit - 3].rstrip() + "..."
+def _truncate(text: str, limit: int = 110, suffix: str = " [trimmed]") -> str:
+    """Shorten report text without making it look like an unfinished sentence."""
+    normalized = " ".join(str(text or "").split())
+    if len(normalized) <= limit:
+        return normalized
+
+    if limit <= len(suffix) + 8:
+        return normalized[:limit].rstrip()
+
+    budget = limit - len(suffix)
+    candidate = normalized[:budget].rstrip()
+    min_boundary = max(18, int(budget * 0.55))
+
+    sentence_boundaries = [candidate.rfind(marker) for marker in (". ", "! ", "? ", "; ", ": ")]
+    sentence_boundary = max(sentence_boundaries)
+    if sentence_boundary >= min_boundary:
+        candidate = candidate[: sentence_boundary + 1]
+    else:
+        word_boundary = candidate.rfind(" ")
+        if word_boundary >= min_boundary:
+            candidate = candidate[:word_boundary]
+
+    candidate = candidate.rstrip(" ,;:-|")
+    return f"{candidate}{suffix}"
 
 
 def _make_table(headers: Sequence[str], rows: Iterable[Sequence[Any]]) -> str:

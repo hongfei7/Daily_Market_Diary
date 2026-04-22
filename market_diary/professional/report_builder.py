@@ -8,9 +8,9 @@ from professional.report_formatting import (
     _fmt_millions,
     _fmt_pct,
     _fmt_price,
+    _compact_source_as_of,
     _make_table,
     _report_setting,
-    _source_as_of,
     _status_label,
     _truncate,
 )
@@ -35,7 +35,7 @@ def _split_sentences(text: str) -> List[str]:
     return [part.strip() for part in parts if part.strip()]
 
 
-def _paragraph_chunks(text: str, max_sentences: int = 2, max_chars: int = 420, limit: int = 3) -> List[str]:
+def _paragraph_chunks(text: str, max_sentences: int = 1, max_chars: int = 240, limit: int = 3) -> List[str]:
     sentences = _split_sentences(text)
     if not sentences:
         return []
@@ -59,12 +59,62 @@ def _paragraph_chunks(text: str, max_sentences: int = 2, max_chars: int = 420, l
     return chunks[:limit]
 
 
+def _brief_points(text: str, limit: int = 3, width: int = 190) -> List[str]:
+    sentences = _split_sentences(text)
+    if not sentences:
+        stripped = str(text or "").strip()
+        sentences = [stripped] if stripped else []
+    return [_condense_sentence(sentence, width) for sentence in sentences[:limit] if str(sentence or "").strip()]
+
+
+def _condense_sentence(text: str, width: int) -> str:
+    sentence = " ".join(str(text or "").split()).strip()
+    if len(sentence) <= width:
+        return sentence
+
+    boundary_markers = [", while ", ", which ", ", but ", ", and ", "; ", ": "]
+    candidates: List[str] = []
+    for marker in boundary_markers:
+        pos = sentence.find(marker)
+        if 35 <= pos <= width:
+            candidates.append(sentence[:pos])
+    if candidates:
+        phrase = max(candidates, key=len).strip()
+    else:
+        phrase = _truncate(sentence, width, suffix="").strip()
+        phrase = re.sub(r"\b(?:could|can|would|may|might|should|will)(?:\s+\w+){0,2}$", "", phrase, flags=re.IGNORECASE).strip()
+        phrase = re.sub(r"\b(?:and|or|but|with|without|to|from|for|of|the|a|an)$", "", phrase, flags=re.IGNORECASE).strip()
+
+    if phrase and phrase[-1] not in ".!?":
+        phrase = phrase.rstrip(" ,;:-") + "."
+    return phrase
+
+
+def _render_labeled_points(
+    text: str,
+    labels: List[str],
+    *,
+    fallback: str = "",
+    limit: int = 3,
+    width: int = 190,
+) -> List[str]:
+    points = _brief_points(text, limit=limit, width=width)
+    if not points and fallback:
+        return [f"- **Desk read:** {fallback}"]
+
+    lines: List[str] = []
+    for idx, point in enumerate(points):
+        label = labels[idx] if idx < len(labels) else "Additional read"
+        lines.append(f"- **{label}:** {point}")
+    return lines
+
+
 def _compact_bullets(items: List[str], limit: int = 4, width: int = 150) -> List[str]:
     bullets: List[str] = []
     for item in items:
         text = str(item or "").strip()
         if text:
-            bullets.append(_truncate(text, width))
+            bullets.append(_truncate(text, width, suffix=""))
         if len(bullets) >= limit:
             break
     return bullets
@@ -99,8 +149,8 @@ def _render_news_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
         (
             item.get("grade", ""),
             item.get("sector", ""),
-            _truncate(item.get("title", ""), 70),
-            _truncate(item.get("why", ""), 74),
+            _truncate(item.get("title", ""), 70, suffix=""),
+            _truncate(item.get("why", ""), 74, suffix=""),
             item.get("horizon", ""),
         )
         for item in rows
@@ -113,7 +163,7 @@ def _render_watchlists(bundle: Dict[str, Any], item_limit: int | None = None, st
     effective_item_limit = item_limit if item_limit is not None else 0
     effective_story_limit = story_limit if story_limit is not None else _report_setting(bundle, "watchlist_story_limit", 2)
     for bucket, items in (bundle.get("watchlists", {}) or {}).items():
-        sections.append(f"### {bucket}")
+        sections.append(f"#### {bucket}")
         if not items:
             sections.append("No items were available.\n")
             continue
@@ -125,14 +175,18 @@ def _render_watchlists(bundle: Dict[str, Any], item_limit: int | None = None, st
                 _fmt_price(item.get("last_price")),
                 _fmt_pct(item.get("daily_change_pct")),
                 item.get("range_label", "N/A"),
-                _truncate(item.get("note", ""), 84),
+                _truncate(item.get("note", ""), 84, suffix=""),
             )
             for item in visible_items
         ]
         sections.append(_make_table(["Name", "Ticker", "Last", "1D", "Range position", "Morning note"], table_rows))
+        inserted_headline_gap = False
         for item in visible_items:
             news = item.get("recent_news", []) or []
             if news:
+                if not inserted_headline_gap:
+                    sections.append("")
+                    inserted_headline_gap = True
                 sections.append(f"**Recent headlines for {item.get('name', '')}:**")
                 for story in news[:effective_story_limit]:
                     title = story.get("title", "")
@@ -177,8 +231,8 @@ def _render_attribution(bundle: Dict[str, Any]) -> str:
             item.get("name", ""),
             item.get("direction", ""),
             item.get("score", ""),
-            _truncate(item.get("evidence", ""), 72),
-            _truncate(item.get("implication", ""), 90),
+            _truncate(item.get("evidence", ""), 72, suffix=""),
+            _truncate(item.get("implication", ""), 90, suffix=""),
         )
         for item in drivers[:6]
     ]
@@ -218,8 +272,8 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
                 item.get("metric", ""),
                 item.get("value", ""),
                 _status_label(str(item.get("status", ""))),
-                _source_as_of(item),
-                _truncate(item.get("note", ""), 76),
+                _compact_source_as_of(item),
+                _truncate(item.get("note", ""), 76, suffix=""),
             )
             for item in metrics
         ]
@@ -337,23 +391,22 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
 
     lines: List[str] = []
     setup = str(llm_sections.get("deep_read_setup", "") or "").strip()
-    setup_chunks = _paragraph_chunks(setup, max_sentences=2, max_chars=360, limit=2)
-    if setup_chunks:
-        lines.append("#### Market Setup")
-        lines.extend(setup_chunks)
-    else:
-        lines.append("#### Market Setup")
-        lines.append(str(overview.get("theme", "") or "No LLM overnight setup was available; rely on the dashboard and attribution tables below."))
+    lines.append("#### Market Setup")
+    lines.extend(
+        _render_labeled_points(
+            setup,
+            ["Core tape", "Main driver", "HK relevance"],
+            fallback=str(overview.get("theme", "") or "No LLM overnight setup was available; rely on the dashboard and attribution tables below."),
+            limit=3,
+            width=175,
+        )
+    )
 
     drivers = _compact_bullets(llm_sections.get("overnight_drivers", []) or [], limit=4, width=140)
-    residual_sentences = _split_sentences(setup)[len(_split_sentences(" ".join(setup_chunks))):]
-    if drivers or residual_sentences:
+    if drivers:
         lines.append("")
         lines.append("#### Key Drivers")
-        if drivers:
-            lines.extend(f"- {item}" for item in drivers)
-        else:
-            lines.extend(f"- {_truncate(item, 140)}" for item in residual_sentences[:4])
+        lines.extend(f"- {item}" for item in drivers)
 
     hk_implication = str(llm_sections.get("overnight_hk_implication", "") or "").strip()
     hk_lines = _compact_bullets(hk_desk_view.get("lines", []) or [], limit=3, width=140)
@@ -363,7 +416,7 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
     if leadership:
         lines.append(f"- **Desk lens:** {leadership}.")
     if hk_implication:
-        lines.append(f"- **Opening implication:** {_truncate(hk_implication, 170)}")
+        lines.append(f"- **Opening implication:** {_truncate(hk_implication, 150, suffix='')}")
     for item in hk_lines:
         lines.append(f"- **Cross-market read:** {item}")
     if not leadership and not hk_implication and not hk_lines:
@@ -387,7 +440,14 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     setup = str(llm_sections.get("hk_review_setup", "") or "").strip()
     if setup:
         lines.append("#### Local Tape Setup")
-        lines.extend(_paragraph_chunks(setup, max_sentences=2, max_chars=360, limit=2))
+        lines.extend(
+            _render_labeled_points(
+                setup,
+                ["Local read", "Verification point", "Risk to watch"],
+                limit=3,
+                width=170,
+            )
+        )
         lines.append("")
 
     leadership = hk_desk_view.get("leadership", "")
@@ -416,7 +476,7 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
         follow_through = "Confirm the opening read through Southbound active names, short-selling concentration, USD/CNH, and USD/HKD funding pressure."
     lines.append("")
     lines.append("#### Follow-Through Checklist")
-    lines.append(f"- **Follow-through check:** {follow_through}")
+    lines.append(f"- **Follow-through check:** {_truncate(follow_through, 170, suffix='')}")
 
     if not _has_official_stock_connect_flow(bundle):
         proxy_table = _render_hk_etf_proxy_table(bundle)
@@ -434,14 +494,22 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
     sections: List[str] = []
 
     if llm_sections.get("company_takeaway"):
-        sections.append(llm_sections.get("company_takeaway", ""))
+        sections.append("#### Company Event Takeaway")
+        sections.extend(
+            _render_labeled_points(
+                llm_sections.get("company_takeaway", ""),
+                ["Desk read", "Why it matters", "Follow-up"],
+                limit=3,
+                width=170,
+            )
+        )
         sections.append("")
 
     company_notes = llm_sections.get("company_notes", []) or []
     if company_notes:
         sections.append("#### LLM Quick Takes")
         for item in company_notes[:6]:
-            sections.append(f"- **{item.get('ticker', '')}** | {item.get('commentary', '')}")
+            sections.append(f"- **{item.get('ticker', '')}** | {_truncate(item.get('commentary', ''), 170, suffix='')}")
         sections.append("")
 
     announcements = company_events.get("announcements", []) or []
@@ -453,7 +521,7 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
                 item.get("ticker", ""),
                 item.get("event_type", ""),
                 item.get("release_time", ""),
-                _truncate(item.get("title", ""), 88),
+                _truncate(item.get("title", ""), 88, suffix=""),
             )
             for item in announcements[:8]
         ]
@@ -470,7 +538,7 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
                 item.get("ticker", ""),
                 item.get("company", ""),
                 item.get("time", ""),
-                _truncate(item.get("comparison", ""), 84),
+                _truncate(item.get("comparison", ""), 84, suffix=""),
             )
             for item in earnings[:6]
         ]
@@ -503,26 +571,37 @@ def _render_theme_deep_dive(bundle: Dict[str, Any]) -> str:
                 item.get("name", ""),
                 item.get("ticker", ""),
                 item.get("bucket", ""),
-                _truncate(item.get("note", ""), 86),
+                _truncate(item.get("note", ""), 86, suffix=""),
             )
         )
 
     blocks = [
-        f"- **Theme:** {section.get('theme', '')}",
-        f"- **Angle for the day:** {section.get('angle', '')}",
+        _make_table(
+            ["Field", "Read"],
+            [
+                ("Theme", section.get("theme", "") or "No rotating theme configured"),
+                ("Angle for the day", _truncate(section.get("angle", "") or "No theme angle was available.", 170, suffix="")),
+            ],
+        )
     ]
     if llm_sections.get("theme_paragraph"):
-        blocks.append("")
-        blocks.append(llm_sections.get("theme_paragraph", ""))
-    blocks.extend(
-        [
-        "- **Signals to keep in mind:**",
-        ]
-    )
-    blocks.extend(f"  - {line}" for line in (section.get("signals", []) or []))
+        blocks.append("\n**Theme desk read**")
+        blocks.extend(
+            _render_labeled_points(
+                llm_sections.get("theme_paragraph", ""),
+                ["Core thesis", "Evidence", "What to test"],
+                limit=3,
+                width=175,
+            )
+        )
+
+    signals = section.get("signals", []) or []
+    if signals:
+        blocks.append("\n**Signals to keep in mind**")
+        blocks.extend(f"- {_truncate(line, 140, suffix='')}" for line in signals[:5])
     if llm_sections.get("theme_watch_items"):
         blocks.append("\n**LLM watch items:**")
-        blocks.extend(f"- {line}" for line in (llm_sections.get("theme_watch_items", []) or [])[:5])
+        blocks.extend(f"- {_truncate(line, 150, suffix='')}" for line in (llm_sections.get("theme_watch_items", []) or [])[:5])
 
     if rows:
         blocks.append("\n**Related names to keep close:**")
@@ -532,7 +611,7 @@ def _render_theme_deep_dive(bundle: Dict[str, Any]) -> str:
     if upcoming:
         blocks.append("\n**Upcoming catalysts tied to the theme:**")
         blocks.extend(
-            f"- {item.get('date', '')} | {item.get('event', '')} | {_truncate(item.get('impact', ''), 100)}"
+            f"- {item.get('date', '')} | {item.get('event', '')} | {_truncate(item.get('impact', ''), 100, suffix='')}"
             for item in upcoming[:4]
         )
 
@@ -559,7 +638,7 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
             item.get("country", ""),
             item.get("event", ""),
             item.get("status", ""),
-            _truncate(item.get("detail", ""), 64),
+            _truncate(item.get("detail", ""), 64, suffix=""),
         )
         for item in (today_forward.get("today_macro", []) or [])[:5]
     ]
@@ -568,7 +647,7 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
             item.get("date", ""),
             item.get("time", ""),
             item.get("category", ""),
-            _truncate(item.get("event", ""), 60),
+            _truncate(item.get("event", ""), 60, suffix=""),
             item.get("importance", ""),
         )
         for item in (today_forward.get("today_catalysts", []) or [])[:6]
@@ -578,8 +657,8 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
         (
             item.get("date", ""),
             item.get("category", ""),
-            _truncate(item.get("event", ""), 62),
-            _truncate(item.get("impact", ""), 72),
+            _truncate(item.get("event", ""), 62, suffix=""),
+            _truncate(item.get("impact", ""), 72, suffix=""),
         )
         for item in (today_forward.get("next_catalysts", []) or [])[:8]
     ]
@@ -593,6 +672,26 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
     return "\n".join(output)
 
 
+def _render_macro_takeaway(text: str) -> str:
+    points = _render_labeled_points(
+        text,
+        ["Desk read", "Market sensitivity", "HK implication"],
+        fallback="No LLM macro interpretation was available; rely on the calendar table and released data below.",
+        limit=3,
+        width=175,
+    )
+    return "\n".join(points)
+
+
+def _render_macro_watchpoints(llm_sections: Dict[str, Any]) -> str:
+    watchpoints = llm_sections.get("macro_watchpoints", []) or []
+    if not watchpoints:
+        return ""
+    lines = ["\n**Macro watchpoints**"]
+    lines.extend(f"- {_truncate(line, 145, suffix='')}" for line in watchpoints[:4])
+    return "\n".join(lines)
+
+
 def _render_daily_one_chart(bundle: Dict[str, Any], daily_chart_rel_path: str) -> str:
     chart_meta = bundle.get("daily_one_chart", {}) or {}
     chart_path = daily_chart_rel_path or chart_meta.get("rel_path", "")
@@ -603,7 +702,15 @@ def _render_daily_one_chart(bundle: Dict[str, Any], daily_chart_rel_path: str) -
     caption = chart_meta.get("caption", "")
     source = chart_meta.get("source", "")
     source_line = f"\n\n_Source: {source}_" if source else ""
-    return f"**{title}**\n\n![Daily One Chart]({chart_path})\n\n{caption}{source_line}"
+    caption_lines = "\n".join(
+        _render_labeled_points(
+            caption,
+            ["Chart read", "Why it matters"],
+            limit=2,
+            width=175,
+        )
+    )
+    return f"**{title}**\n\n![Daily One Chart]({chart_path})\n\n{caption_lines}{source_line}"
 
 
 def _render_trend_pack(bundle: Dict[str, Any], trend_pack_rel_path: str) -> str:
@@ -616,7 +723,15 @@ def _render_trend_pack(bundle: Dict[str, Any], trend_pack_rel_path: str) -> str:
     caption = chart_meta.get("caption", "")
     source = chart_meta.get("source", "")
     source_line = f"\n\n_Source: {source}_" if source else ""
-    return f"**{title}**\n\n![Hong Kong Trend Pack]({chart_path})\n\n{caption}{source_line}"
+    caption_lines = "\n".join(
+        _render_labeled_points(
+            caption,
+            ["Trend read", "Why it matters"],
+            limit=2,
+            width=175,
+        )
+    )
+    return f"**{title}**\n\n![Hong Kong Trend Pack]({chart_path})\n\n{caption_lines}{source_line}"
 
 
 def _render_reflection_area(bundle: Dict[str, Any]) -> str:
@@ -627,11 +742,32 @@ def _render_reflection_area(bundle: Dict[str, Any]) -> str:
 
     lines = []
     if llm_sections.get("thinking_note"):
-        lines.append(f"- **Thinking note:** {llm_sections.get('thinking_note', '')}")
+        lines.extend(
+            _render_labeled_points(
+                llm_sections.get("thinking_note", ""),
+                ["Thinking note", "Action"],
+                limit=2,
+                width=170,
+            )
+        )
     if interview_answer:
-        lines.append(f"- **Suggested two-sentence market answer:** {interview_answer}")
+        lines.extend(
+            _render_labeled_points(
+                interview_answer,
+                ["Suggested market answer", "Second sentence"],
+                limit=2,
+                width=170,
+            )
+        )
     if risk_check:
-        lines.append(f"- **What could break the view:** {risk_check}")
+        lines.extend(
+            _render_labeled_points(
+                risk_check,
+                ["What could break the view", "Risk trigger"],
+                limit=2,
+                width=170,
+            )
+        )
     for prompt in prompts[:5]:
         lines.append(f"- {prompt}")
     lines.append("- My own view after the commute:")
@@ -792,9 +928,9 @@ def render_professional_report(
 {_render_flow_tracker(bundle)}
 
 ### 2.4 Macro and Policy Tracking
-{macro_takeaway}
+{_render_macro_takeaway(macro_takeaway)}
 
-{"".join(f"- Watchpoint: {line}\n" for line in (llm_sections.get('macro_watchpoints', []) or []))}
+{_render_macro_watchpoints(llm_sections)}
 {_render_macro_table(bundle)}
 
 #### Positioning and Risk Backdrop

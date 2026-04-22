@@ -17,7 +17,7 @@ COMMON_MOJIBAKE_REPLACEMENTS = {
     "\u00e2\u20ac\u009d": '"',
     "\u00e2\u20ac\u201c": "-",
     "\u00e2\u20ac\u201d": "-",
-    "\u00e2\u20ac\u00a6": "...",
+    "\u00e2\u20ac\u00a6": " ",
     "\u00e2\u201a\u00ac": "EUR ",
     "\u00c2\u00a0": " ",
     "\u00c2": "",
@@ -65,5 +65,18 @@ def normalize_news_text(
     text = re.sub(r"\s+\)", ")", text)
 
     if max_length > 0 and len(text) > max_length:
-        return text[: max_length - 3].rstrip() + "..."
+        suffix = " [trimmed]"
+        if max_length <= len(suffix) + 8:
+            return text[:max_length].rstrip()
+        budget = max_length - len(suffix)
+        candidate = text[:budget].rstrip()
+        min_boundary = max(18, int(budget * 0.55))
+        sentence_boundary = max(candidate.rfind(marker) for marker in (". ", "! ", "? ", "; ", ": "))
+        if sentence_boundary >= min_boundary:
+            candidate = candidate[: sentence_boundary + 1]
+        else:
+            word_boundary = candidate.rfind(" ")
+            if word_boundary >= min_boundary:
+                candidate = candidate[:word_boundary]
+        return candidate.rstrip(" ,;:-|") + suffix
     return text

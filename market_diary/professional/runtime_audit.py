@@ -27,6 +27,7 @@ REQUIRED_REPORT_SECTION_GROUPS = [
 ]
 
 FORBIDDEN_PHRASES = [
+    "...",
     "Pending adapter",
     "not wired in this sprint",
     "waiting for a locked public historical source",

@@ -128,6 +128,12 @@ jobs:
           echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
           echo "Briefing date: $BRIEFING_DATE"
 
+      - name: Audit generated briefing
+        env:
+          TZ: Asia/Shanghai
+        run: |
+          python scripts/audit_professional_run.py --report-date "$BRIEFING_DATE"
+
       - name: Send briefing email
         env:
           REPORT_EMAIL_TO: hongfei_wu7@outlook.com

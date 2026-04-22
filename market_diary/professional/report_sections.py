@@ -4,11 +4,11 @@ from typing import Any, Dict, List, Sequence
 
 from professional.report_formatting import (
     _bundle_metric,
+    _compact_source_as_of,
     _fmt_alert_pct,
     _fmt_pct,
     _fmt_price,
     _make_table,
-    _source_as_of,
     _status_label,
     _summary_pct,
     _summary_price,
@@ -31,11 +31,11 @@ def _render_selected_news(bundle: Dict[str, Any]) -> str:
     items = llm_sections.get("selected_news", []) or []
     if not items:
         return ""
-    lines = ["**Curated overnight stories:**"]
-    for item in items[:5]:
-        lines.append(
-            f"- **{item.get('headline', '')}** | {item.get('why_it_matters', '')} | HK read-through: {item.get('hk_market_impact', '')}"
-        )
+    lines = ["**Curated overnight stories**"]
+    for idx, item in enumerate(items[:5], 1):
+        lines.append(f"{idx}. **{_truncate(item.get('headline', ''), 90, suffix='')}**")
+        lines.append(f"   Why it matters: {_truncate(item.get('why_it_matters', ''), 120, suffix='')}")
+        lines.append(f"   HK read-through: {_truncate(item.get('hk_market_impact', ''), 120, suffix='')}")
     return "\n".join(lines)
 
 
@@ -66,11 +66,11 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         if name == "China 10Y":
             price = china_10y_metric.get("display_value", "N/A")
             pct = china_10y_metric.get("change_display", "")
-            read = f"{note} | {_status_label(china_10y_metric.get('status', 'unavailable'))} | {_source_as_of(china_10y_metric)}"
+            read = f"{note} | {_status_label(china_10y_metric.get('status', 'unavailable'))} | {_compact_source_as_of(china_10y_metric)}"
         elif name == "CN-US 10Y spread":
             price = spread_metric.get("display_value", "N/A")
             pct = spread_metric.get("change_display", "")
-            read = f"{note} | {_status_label(spread_metric.get('status', 'unavailable'))} | {_source_as_of(spread_metric)}"
+            read = f"{note} | {_status_label(spread_metric.get('status', 'unavailable'))} | {_compact_source_as_of(spread_metric)}"
         else:
             price = _summary_price(bundle, category, name)
             pct = _summary_pct(bundle, category, name)
@@ -78,7 +78,7 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
 
         last_value = price if isinstance(price, str) else _fmt_price(price)
         move_value = pct if isinstance(pct, str) and pct else _fmt_alert_pct(pct)
-        table_rows.append((label, last_value, move_value, read))
+        table_rows.append((label, last_value, move_value, _truncate(read, 92, suffix="")))
 
     return _make_table(["Asset", "Last", "1D move", "Read"], table_rows)
 
@@ -119,8 +119,8 @@ def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
             item.get("metric", ""),
             item.get("value", ""),
             _status_label(str(item.get("status", ""))),
-            _source_as_of(item),
-            _truncate(item.get("note", ""), 88),
+            _compact_source_as_of(item),
+            _truncate(item.get("note", ""), 88, suffix=""),
         )
         for item in rows
     ]
@@ -141,7 +141,7 @@ def _render_risk_dashboard(bundle: Dict[str, Any]) -> str:
             (
                 item.get("label", ""),
                 f"{item.get('delta', 0):+}",
-                _truncate(item.get("evidence", ""), 80),
+                _truncate(item.get("evidence", ""), 80, suffix=""),
             )
             for item in components[:6]
         ]
@@ -164,7 +164,7 @@ def _render_non_trading_focus(bundle: Dict[str, Any]) -> str:
                 item.get("category", ""),
                 _fmt_price(item.get("price")),
                 _fmt_pct(item.get("change_pct")),
-                _truncate(item.get("interpretation", ""), 78),
+                _truncate(item.get("interpretation", ""), 78, suffix=""),
             )
             for item in still_moving[:6]
         ]
@@ -175,9 +175,9 @@ def _render_non_trading_focus(bundle: Dict[str, Any]) -> str:
         rows = [
             (
                 item.get("channel", ""),
-                _truncate(item.get("signal", ""), 66),
-                _truncate(item.get("why", ""), 82),
-                _truncate(item.get("next_check", ""), 82),
+                _truncate(item.get("signal", ""), 66, suffix=""),
+                _truncate(item.get("why", ""), 82, suffix=""),
+                _truncate(item.get("next_check", ""), 82, suffix=""),
             )
             for item in event_watch[:8]
         ]
@@ -188,7 +188,7 @@ def _render_non_trading_focus(bundle: Dict[str, Any]) -> str:
     if action_items:
         lines.append("\n**Still-moving actions to track**")
         for item in action_items[:5]:
-            lines.append(f"- **{item.get('bucket', '')}:** {_truncate(item.get('item', ''), 72)} | {_truncate(item.get('read', ''), 96)}")
+            lines.append(f"- **{item.get('bucket', '')}:** {_truncate(item.get('item', ''), 72, suffix='')} | {_truncate(item.get('read', ''), 96, suffix='')}")
 
     next_open = focus.get("next_open", []) or []
     if next_open:
@@ -214,7 +214,7 @@ def _render_weekly_review(bundle: Dict[str, Any]) -> str:
             (
                 item.get("asset", ""),
                 item.get("latest_move", "N/A"),
-                _truncate(item.get("read", ""), 78),
+                _truncate(item.get("read", ""), 78, suffix=""),
             )
             for item in cross_assets[:8]
         ]
@@ -227,7 +227,7 @@ def _render_weekly_review(bundle: Dict[str, Any]) -> str:
             (
                 item.get("signal", ""),
                 item.get("latest_move", "N/A"),
-                _truncate(item.get("read", ""), 78),
+                _truncate(item.get("read", ""), 78, suffix=""),
             )
             for item in hk_tape[:6]
         ]
@@ -246,7 +246,7 @@ def _render_weekly_review(bundle: Dict[str, Any]) -> str:
                 item.get("signal", ""),
                 item.get("weekly_change", "N/A"),
                 item.get("latest", "N/A"),
-                _truncate(item.get("read", ""), 86),
+                _truncate(item.get("read", ""), 86, suffix=""),
             )
             for item in trend_rows[:6]
         ]
@@ -255,20 +255,20 @@ def _render_weekly_review(bundle: Dict[str, Any]) -> str:
     flow_lines = weekly.get("flow_lines", []) or []
     if flow_lines:
         lines.append("\n**Flow and attribution clues**")
-        lines.extend(f"- {_truncate(line, 120)}" for line in flow_lines[:4])
+        lines.extend(f"- {_truncate(line, 120, suffix='')}" for line in flow_lines[:4])
 
     desk_questions = weekly.get("desk_questions", []) or []
     if desk_questions:
         lines.append("\n**Next-week desk questions**")
-        lines.extend(f"- {_truncate(line, 128)}" for line in desk_questions[:6])
+        lines.extend(f"- {_truncate(line, 128, suffix='')}" for line in desk_questions[:6])
 
     developments = weekly.get("developments", []) or []
     if developments:
         rows = [
             (
                 item.get("bucket", ""),
-                _truncate(item.get("item", ""), 64),
-                _truncate(item.get("read", ""), 88),
+                _truncate(item.get("item", ""), 64, suffix=""),
+                _truncate(item.get("read", ""), 88, suffix=""),
             )
             for item in developments[:6]
         ]
@@ -280,8 +280,8 @@ def _render_weekly_review(bundle: Dict[str, Any]) -> str:
         rows = [
             (
                 item.get("date", ""),
-                _truncate(item.get("event", ""), 64),
-                _truncate(item.get("read", ""), 88),
+                _truncate(item.get("event", ""), 64, suffix=""),
+                _truncate(item.get("read", ""), 88, suffix=""),
             )
             for item in next_week[:8]
         ]

@@ -1,5 +1,6 @@
 import os
 import shutil
+import tempfile
 
 from _bootstrap import ROOT  # noqa: F401
 
@@ -37,16 +38,18 @@ def main() -> None:
         },
     }
 
-    output_path = os.path.join("reports_professional", "charts", "test_hk_trend_pack_unit.png")
-    meta = generate_hk_trend_pack(bundle, output_path, trend_data=trend_data)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        chart_dir = os.path.join(tmpdir, "charts")
+        output_path = os.path.join(chart_dir, "test_hk_trend_pack_unit.png")
+        meta = generate_hk_trend_pack(bundle, output_path, trend_data=trend_data)
 
-    assert os.path.exists(output_path)
-    assert meta["title"] == "Hong Kong Trend Pack"
-    assert meta["path"] == "test_hk_trend_pack_unit.png"
-    assert meta["rel_path"] == "charts/test_hk_trend_pack_unit.png"
-    assert meta["weekly_summary"]["status"] == "ok"
-    assert meta["weekly_summary"]["rows"]
-    assert any(row["signal"] == "Southbound flow" for row in meta["weekly_summary"]["rows"])
+        assert os.path.exists(output_path)
+        assert meta["title"] == "Hong Kong Trend Pack"
+        assert meta["path"] == "test_hk_trend_pack_unit.png"
+        assert meta["rel_path"] == "charts/test_hk_trend_pack_unit.png"
+        assert meta["weekly_summary"]["status"] == "ok"
+        assert meta["weekly_summary"]["rows"]
+        assert any(row["signal"] == "Southbound flow" for row in meta["weekly_summary"]["rows"])
 
     cache_path = ROOT / "tmp_trend_pack_cache"
     if cache_path.exists():

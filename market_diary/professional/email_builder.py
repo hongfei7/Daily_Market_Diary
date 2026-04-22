@@ -2,12 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-
-def _truncate(text: str, limit: int = 140) -> str:
-    text = str(text or "").strip()
-    if len(text) <= limit:
-        return text
-    return text[: limit - 3].rstrip() + "..."
+from professional.report_formatting import _truncate
 
 
 def _hk_local_highlights(bundle: Dict[str, Any], limit: int = 3) -> List[Dict[str, str]]:

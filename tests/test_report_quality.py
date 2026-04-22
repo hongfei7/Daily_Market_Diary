@@ -70,7 +70,17 @@ def _bundle(pulse: str):
                 }
             },
         },
-        "must_watch": [],
+        "must_watch": [
+            {
+                "title": "Very long morning item",
+                "bucket": "Market",
+                "summary": (
+                    "This is a deliberately long summary designed to exercise the report renderer's "
+                    "length control while preserving a professional edit marker instead of making the "
+                    "sentence look unfinished at the end of the line."
+                ),
+            }
+        ],
         "macro_agenda": [],
         "sector_digest": {"graded_news": []},
         "high_frequency": [],
@@ -117,10 +127,15 @@ def main() -> None:
     assert "| Component | Score impact | Evidence |" in report
     assert "- **Composite risk score:**" not in report
     assert "#### Market Setup" in report
+    assert "- **Core tape:**" in report
     assert "#### Key Drivers" in report
     assert "#### Hong Kong Read-Through" in report
+    assert "- **Opening implication:**" in report
     assert "#### Style and Local Leadership" in report
     assert "#### Flow Confirmation" in report
+    assert "No rotating theme configured" in report
+    assert "..." not in report
+    assert "[trimmed]" in report
 
     print("Report quality test passed")
 

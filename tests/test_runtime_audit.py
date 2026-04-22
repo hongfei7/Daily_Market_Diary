@@ -70,6 +70,11 @@ def main() -> None:
         broken_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
         assert broken_audit["status"] == "error"
         assert any("Malformed markdown table" in item for item in broken_audit["errors"])
+
+        (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nThis line was clipped...\n", encoding="utf-8")
+        clipped_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        assert clipped_audit["status"] == "error"
+        assert any("..." in item for item in clipped_audit["errors"])
     finally:
         shutil.rmtree(root, ignore_errors=True)
 

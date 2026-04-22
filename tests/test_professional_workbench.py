@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 
 from _bootstrap import ROOT  # noqa: F401
 
@@ -246,59 +247,61 @@ def main():
         "interview_answer": "The setup is constructive but not euphoric. I would frame today as a data-sensitive Hong Kong open with growth leadership worth testing, not assuming.",
     }
 
-    dashboard_path = os.path.join("reports_professional", "charts", "test_dashboard.png")
-    generate_dashboard(bundle, dashboard_path)
-    assert os.path.exists(dashboard_path)
-    assert DASHBOARD_LAYOUT_VERSION == "4-panel-v2"
+    with tempfile.TemporaryDirectory() as tmpdir:
+        chart_dir = os.path.join(tmpdir, "charts")
+        dashboard_path = os.path.join(chart_dir, "test_dashboard.png")
+        generate_dashboard(bundle, dashboard_path)
+        assert os.path.exists(dashboard_path)
+        assert DASHBOARD_LAYOUT_VERSION == "4-panel-v2"
 
-    daily_chart_path = os.path.join("reports_professional", "charts", "test_daily_one_chart.png")
-    daily_meta = generate_daily_one_chart(bundle, daily_chart_path)
-    bundle["daily_one_chart"] = {**daily_meta, "rel_path": "charts/test_daily_one_chart.png"}
-    assert os.path.exists(daily_chart_path)
-    assert os.path.basename(dashboard_path) != os.path.basename(daily_chart_path)
+        daily_chart_path = os.path.join(chart_dir, "test_daily_one_chart.png")
+        daily_meta = generate_daily_one_chart(bundle, daily_chart_path)
+        bundle["daily_one_chart"] = {**daily_meta, "rel_path": "charts/test_daily_one_chart.png"}
+        assert os.path.exists(daily_chart_path)
+        assert os.path.basename(dashboard_path) != os.path.basename(daily_chart_path)
 
-    trend_pack_data = {
-        "southbound": [
-            {"date": "2026-04-08", "net_buy_hkd_bn": 1.2, "cumulative_hkd_bn": 1.2},
-            {"date": "2026-04-09", "net_buy_hkd_bn": -0.6, "cumulative_hkd_bn": 0.6},
-            {"date": "2026-04-10", "net_buy_hkd_bn": 2.0, "cumulative_hkd_bn": 2.6},
-            {"date": "2026-04-13", "net_buy_hkd_bn": 1.4, "cumulative_hkd_bn": 4.0},
-        ],
-        "liquidity": [
-            {"date": "2026-04-08", "hibor_1m": 2.05, "aggregate_balance_bn": 55.1},
-            {"date": "2026-04-09", "hibor_1m": 2.09, "aggregate_balance_bn": 54.8},
-            {"date": "2026-04-10", "hibor_1m": 2.16, "aggregate_balance_bn": 54.5},
-            {"date": "2026-04-13", "hibor_1m": 2.23, "aggregate_balance_bn": 54.4},
-        ],
-        "leadership": {
-            "dates": ["2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13"],
-            "series": {
-                "HSI": [100.0, 100.6, 101.1, 101.4],
-                "HSCEI": [100.0, 100.4, 100.8, 100.9],
-                "HSTECH": [100.0, 101.0, 101.9, 102.2],
+        trend_pack_data = {
+            "southbound": [
+                {"date": "2026-04-08", "net_buy_hkd_bn": 1.2, "cumulative_hkd_bn": 1.2},
+                {"date": "2026-04-09", "net_buy_hkd_bn": -0.6, "cumulative_hkd_bn": 0.6},
+                {"date": "2026-04-10", "net_buy_hkd_bn": 2.0, "cumulative_hkd_bn": 2.6},
+                {"date": "2026-04-13", "net_buy_hkd_bn": 1.4, "cumulative_hkd_bn": 4.0},
+            ],
+            "liquidity": [
+                {"date": "2026-04-08", "hibor_1m": 2.05, "aggregate_balance_bn": 55.1},
+                {"date": "2026-04-09", "hibor_1m": 2.09, "aggregate_balance_bn": 54.8},
+                {"date": "2026-04-10", "hibor_1m": 2.16, "aggregate_balance_bn": 54.5},
+                {"date": "2026-04-13", "hibor_1m": 2.23, "aggregate_balance_bn": 54.4},
+            ],
+            "leadership": {
+                "dates": ["2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13"],
+                "series": {
+                    "HSI": [100.0, 100.6, 101.1, 101.4],
+                    "HSCEI": [100.0, 100.4, 100.8, 100.9],
+                    "HSTECH": [100.0, 101.0, 101.9, 102.2],
+                },
             },
-        },
-        "ah_heatmap": {
-            "dates": ["2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13"],
-            "names": ["CRRC", "China Railway"],
-            "matrix": [[80.0, 81.0, 82.0, 82.5], [62.5, 63.0, 63.8, 64.2]],
-        },
-    }
-    trend_pack_path = os.path.join("reports_professional", "charts", "test_hk_trend_pack.png")
-    trend_pack_meta = generate_hk_trend_pack(bundle, trend_pack_path, trend_data=trend_pack_data)
-    bundle["trend_pack"] = {**trend_pack_meta, "rel_path": "charts/test_hk_trend_pack.png"}
-    assert os.path.exists(trend_pack_path)
-    assert os.path.basename(trend_pack_path) != os.path.basename(daily_chart_path)
-    assert trend_pack_meta["weekly_summary"]["status"] == "ok"
-    assert trend_pack_meta["weekly_summary"]["rows"]
+            "ah_heatmap": {
+                "dates": ["2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13"],
+                "names": ["CRRC", "China Railway"],
+                "matrix": [[80.0, 81.0, 82.0, 82.5], [62.5, 63.0, 63.8, 64.2]],
+            },
+        }
+        trend_pack_path = os.path.join(chart_dir, "test_hk_trend_pack.png")
+        trend_pack_meta = generate_hk_trend_pack(bundle, trend_pack_path, trend_data=trend_pack_data)
+        bundle["trend_pack"] = {**trend_pack_meta, "rel_path": "charts/test_hk_trend_pack.png"}
+        assert os.path.exists(trend_pack_path)
+        assert os.path.basename(trend_pack_path) != os.path.basename(daily_chart_path)
+        assert trend_pack_meta["weekly_summary"]["status"] == "ok"
+        assert trend_pack_meta["weekly_summary"]["rows"]
 
-    report = render_professional_report(
-        bundle,
-        charts_section="Charts placeholder",
-        dashboard_rel_path="charts/test_dashboard.png",
-        daily_chart_rel_path="charts/test_daily_one_chart.png",
-        trend_pack_rel_path="charts/test_hk_trend_pack.png",
-    )
+        report = render_professional_report(
+            bundle,
+            charts_section="Charts placeholder",
+            dashboard_rel_path="charts/test_dashboard.png",
+            daily_chart_rel_path="charts/test_daily_one_chart.png",
+            trend_pack_rel_path="charts/test_hk_trend_pack.png",
+        )
     assert "Morning Research Workbench" in report
     assert "Layer 1 | Scan" in report
     assert "One-Line Market Pulse" in report

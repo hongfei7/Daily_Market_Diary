@@ -18,6 +18,7 @@ RED = "#b42318"
 AMBER = "#b54708"
 BLUE = "#0b4f71"
 DASHBOARD_LAYOUT_VERSION = "4-panel-v2"
+CHART_CLIP_MARK = "~"
 
 
 def _parse_float(value: Any) -> float | None:
@@ -49,7 +50,7 @@ def _wrap_text(value: Any, width: int, max_lines: int = 2) -> str:
         return ""
     clipped = lines[:max_lines]
     if len(lines) > max_lines and clipped:
-        clipped[-1] = textwrap.shorten(clipped[-1], width=max(10, width - 2), placeholder="...")
+        clipped[-1] = textwrap.shorten(clipped[-1], width=max(10, width - 2), placeholder=CHART_CLIP_MARK)
     return "\n".join(clipped)
 
 
@@ -69,7 +70,7 @@ def _wrap_segments(value: Any, primary_width: int = 18, secondary_width: int = 2
             break
     lines = lines[:max_lines]
     if len(parts) > max_lines or len(lines) == max_lines and len(textwrap.wrap(text, width=secondary_width, break_long_words=False, break_on_hyphens=False)) > max_lines:
-        lines[-1] = textwrap.shorten(lines[-1], width=max(12, secondary_width - 2), placeholder="...")
+        lines[-1] = textwrap.shorten(lines[-1], width=max(12, secondary_width - 2), placeholder=CHART_CLIP_MARK)
     return "\n".join(lines)
 
 
@@ -161,12 +162,12 @@ def _name_label(item: Dict[str, Any], max_width: int = 18) -> str:
     name = str(item.get("name", "") or "").strip()
     if ticker:
         return ticker
-    return textwrap.shorten(name or "N/A", width=max_width, placeholder="...")
+    return textwrap.shorten(name or "N/A", width=max_width, placeholder=CHART_CLIP_MARK)
 
 
 def _name_note(item: Dict[str, Any], max_width: int = 20) -> str:
     name = str(item.get("name", "") or item.get("ticker", "") or item.get("code", "") or "").strip()
-    return textwrap.shorten(name or "N/A", width=max_width, placeholder="...")
+    return textwrap.shorten(name or "N/A", width=max_width, placeholder=CHART_CLIP_MARK)
 
 
 def _hk_metric_cards(bundle: Dict[str, Any]) -> List[Dict[str, str]]:
@@ -202,8 +203,8 @@ def _draw_metric_cards(ax, cards: List[Dict[str, str]]) -> None:
     y = 0.71
     for idx, card in enumerate(cards[:6]):
         chip_text, chip_color = _status_chip(card["status"])
-        value_text = textwrap.shorten(str(card["value"] or "N/A").replace("|", " / "), width=38, placeholder="...")
-        as_of_text = textwrap.shorten(str(card.get("as_of") or ""), width=24, placeholder="...") if card.get("as_of") else ""
+        value_text = textwrap.shorten(str(card["value"] or "N/A").replace("|", " / "), width=38, placeholder=CHART_CLIP_MARK)
+        as_of_text = textwrap.shorten(str(card.get("as_of") or ""), width=24, placeholder=CHART_CLIP_MARK) if card.get("as_of") else ""
         row_face = "#f8fafc" if idx % 2 == 0 else "#fdfefe"
         ax.add_patch(
             FancyBboxPatch(
@@ -312,7 +313,7 @@ def _draw_flow_focus(ax, bundle: Dict[str, Any]) -> None:
     title, subtitle, rows, xlabel = _flow_focus(bundle)
     _panel(ax)
     _panel_title(ax, title, subtitle)
-    labels = [textwrap.shorten(item[0], width=12, placeholder="...") for item in rows][:6]
+    labels = [textwrap.shorten(item[0], width=12, placeholder=CHART_CLIP_MARK) for item in rows][:6]
     values = [item[1] for item in rows][:6]
     tags = [item[2] for item in rows][:6]
     colors = [_bar_color(value) for value in values]
@@ -341,7 +342,7 @@ def _draw_flow_focus(ax, bundle: Dict[str, Any]) -> None:
         ax.text(
             0.98,
             idx,
-            _safe_text(textwrap.shorten(tag, width=30, placeholder="...")),
+            _safe_text(textwrap.shorten(tag, width=30, placeholder=CHART_CLIP_MARK)),
             transform=ax.get_yaxis_transform(),
             va="center",
             ha="right",
@@ -382,7 +383,7 @@ def _draw_catalysts(ax, bundle: Dict[str, Any]) -> None:
     y = 0.71
     for idx, (time_label, tag, headline) in enumerate(lines[:5]):
         tag_color = BLUE if tag.lower() in {"upcoming", "released", "macro", "central bank"} else AMBER
-        headline_text = textwrap.shorten(headline, width=74, placeholder="...")
+        headline_text = textwrap.shorten(headline, width=74, placeholder=CHART_CLIP_MARK)
         row_face = "#f8fafc" if idx % 2 == 0 else "#fdfefe"
         ax.add_patch(
             FancyBboxPatch(
@@ -447,7 +448,7 @@ def _draw_watchlist(ax, bundle: Dict[str, Any]) -> None:
     y = 0.68
     for bucket, name, change_text, range_text in rows:
         ax.text(0.03, y, bucket, transform=ax.transAxes, fontsize=10.2, color=SLATE)
-        ax.text(0.28, y, textwrap.shorten(name, width=24, placeholder="..."), transform=ax.transAxes, fontsize=11, color=INK)
+        ax.text(0.28, y, textwrap.shorten(name, width=24, placeholder=CHART_CLIP_MARK), transform=ax.transAxes, fontsize=11, color=INK)
         ax.text(0.63, y, change_text, transform=ax.transAxes, fontsize=10.5, color=GREEN if change_text.startswith("+") else RED if change_text.startswith("-") else SLATE, fontweight="bold")
         ax.text(0.77, y, _wrap_text(range_text, width=14, max_lines=1), transform=ax.transAxes, fontsize=10.0, color=INK)
         y -= 0.14
@@ -591,7 +592,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
         ha="left",
         color=INK,
     )
-    fig.text(0.045, 0.918, textwrap.shorten(theme, width=130, placeholder="..."), fontsize=11.6, color=SLATE)
+    fig.text(0.045, 0.918, textwrap.shorten(theme, width=130, placeholder=CHART_CLIP_MARK), fontsize=11.6, color=SLATE)
     fig.text(
         0.905,
         0.942,

@@ -264,6 +264,31 @@ def _extract_response_text(content: Any) -> str:
     return ""
 
 
+def _choice_finish_reason(response: Any) -> str:
+    try:
+        choices = getattr(response, "choices", []) or []
+        if not choices:
+            return ""
+        return str(getattr(choices[0], "finish_reason", "") or "").strip().lower()
+    except Exception:
+        return ""
+
+
+def _llm_response_looks_truncated(raw: str, finish_reason: str = "") -> bool:
+    """Detect provider-side truncation before partial JSON can be cached."""
+    text = str(raw or "").strip()
+    reason = str(finish_reason or "").strip().lower()
+    if reason in {"length", "max_tokens"}:
+        return True
+    if not text:
+        return False
+    if text.endswith(("...", "…")):
+        return True
+    if text.count("{") > text.count("}"):
+        return True
+    return False
+
+
 def _is_retryable_error(message: str) -> bool:
     lowered = (message or "").lower()
     retry_markers = [
@@ -662,6 +687,10 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                 )
                 raw = _extract_response_text(response.choices[0].message.content)
                 last_raw_excerpt = raw[:240].replace("\n", " ").strip()
+                finish_reason = _choice_finish_reason(response)
+                if _llm_response_looks_truncated(raw, finish_reason):
+                    reason = finish_reason or "trailing ellipsis or unbalanced JSON"
+                    raise ValueError(f"LLM response appears truncated ({reason}); increase max_tokens or reduce prompt context.")
                 parsed = _extract_json_object(raw)
                 coerced = _coerce_task_payload(task_name, parsed)
                 if not _payload_has_content(coerced):

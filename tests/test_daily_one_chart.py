@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 
 from _bootstrap import ROOT  # noqa: F401
 
@@ -39,56 +40,58 @@ def main() -> None:
         },
     }
 
-    output_path = os.path.join("reports_professional", "charts", "test_daily_one_chart_unit.png")
-    meta = generate_daily_one_chart(bundle, output_path)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        chart_dir = os.path.join(tmpdir, "charts")
+        output_path = os.path.join(chart_dir, "test_daily_one_chart_unit.png")
+        meta = generate_daily_one_chart(bundle, output_path)
 
-    assert os.path.exists(output_path)
-    assert meta["kind"] == "short_selling"
-    assert meta["path"] == "test_daily_one_chart_unit.png"
+        assert os.path.exists(output_path)
+        assert meta["kind"] == "short_selling"
+        assert meta["path"] == "test_daily_one_chart_unit.png"
 
-    stock_connect_bundle = {
-        "meta": {"briefing_date": "2026-04-14"},
-        "market_summary": {"Equities": {}, "FX": {}, "Commodities": {}},
-        "hk_local": {"short_selling_ratio": {"value": 10.0}, "turnover_vs_20d": {"value": 1.0}},
-        "flow_tracker": {
-            "stock_connect": {
-                "data": {
-                    "southbound": {
-                        "top_active": [
-                            {"ticker": "03690.HK", "name": "MEITUAN-W", "net_buy": 500.0, "total_turnover": 1300.0},
-                            {"ticker": "00700.HK", "name": "TENCENT", "net_buy": 400.0, "total_turnover": 2000.0},
+        stock_connect_bundle = {
+            "meta": {"briefing_date": "2026-04-14"},
+            "market_summary": {"Equities": {}, "FX": {}, "Commodities": {}},
+            "hk_local": {"short_selling_ratio": {"value": 10.0}, "turnover_vs_20d": {"value": 1.0}},
+            "flow_tracker": {
+                "stock_connect": {
+                    "data": {
+                        "southbound": {
+                            "top_active": [
+                                {"ticker": "03690.HK", "name": "MEITUAN-W", "net_buy": 500.0, "total_turnover": 1300.0},
+                                {"ticker": "00700.HK", "name": "TENCENT", "net_buy": 400.0, "total_turnover": 2000.0},
+                            ]
+                        }
+                    }
+                }
+            },
+            "attribution": {"dominant_drivers": [], "risk_dashboard": {"score": 52.0, "bucket": "Mixed", "components": []}},
+        }
+        stock_connect_path = os.path.join(chart_dir, "test_daily_one_chart_stockconnect.png")
+        stock_connect_meta = generate_daily_one_chart(stock_connect_bundle, stock_connect_path)
+        assert os.path.exists(stock_connect_path)
+        assert stock_connect_meta["kind"] == "stock_connect"
+
+        ah_bundle = {
+            "meta": {"briefing_date": "2026-04-14"},
+            "market_summary": {"Equities": {}, "FX": {}, "Commodities": {}},
+            "hk_local": {"short_selling_ratio": {"value": 10.0}, "turnover_vs_20d": {"value": 1.0}},
+            "flow_tracker": {
+                "ah_premium": {
+                    "data": {
+                        "top_premium": [
+                            {"name": "CRRC", "premium_pct": 82.5},
+                            {"name": "China Railway", "premium_pct": 64.2},
                         ]
                     }
                 }
-            }
-        },
-        "attribution": {"dominant_drivers": [], "risk_dashboard": {"score": 52.0, "bucket": "Mixed", "components": []}},
-    }
-    stock_connect_path = os.path.join("reports_professional", "charts", "test_daily_one_chart_stockconnect.png")
-    stock_connect_meta = generate_daily_one_chart(stock_connect_bundle, stock_connect_path)
-    assert os.path.exists(stock_connect_path)
-    assert stock_connect_meta["kind"] == "stock_connect"
-
-    ah_bundle = {
-        "meta": {"briefing_date": "2026-04-14"},
-        "market_summary": {"Equities": {}, "FX": {}, "Commodities": {}},
-        "hk_local": {"short_selling_ratio": {"value": 10.0}, "turnover_vs_20d": {"value": 1.0}},
-        "flow_tracker": {
-            "ah_premium": {
-                "data": {
-                    "top_premium": [
-                        {"name": "CRRC", "premium_pct": 82.5},
-                        {"name": "China Railway", "premium_pct": 64.2},
-                    ]
-                }
-            }
-        },
-        "attribution": {"dominant_drivers": [], "risk_dashboard": {"score": 52.0, "bucket": "Mixed", "components": []}},
-    }
-    ah_path = os.path.join("reports_professional", "charts", "test_daily_one_chart_ah.png")
-    ah_meta = generate_daily_one_chart(ah_bundle, ah_path)
-    assert os.path.exists(ah_path)
-    assert ah_meta["kind"] == "ah_premium"
+            },
+            "attribution": {"dominant_drivers": [], "risk_dashboard": {"score": 52.0, "bucket": "Mixed", "components": []}},
+        }
+        ah_path = os.path.join(chart_dir, "test_daily_one_chart_ah.png")
+        ah_meta = generate_daily_one_chart(ah_bundle, ah_path)
+        assert os.path.exists(ah_path)
+        assert ah_meta["kind"] == "ah_premium"
     print("Daily One Chart test passed")
 
 
