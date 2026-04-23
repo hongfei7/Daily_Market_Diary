@@ -7703,23 +7703,14 @@
     "interview_answer": "The April 21 Hang Seng move lacks conviction given thin turnover and FXI's sharp decline, so treat it as conditional rather than confirmed growth leadership. Today's confirmation test hinges on whether FXI stabilizes and whether US Retail Sales and Powell provide relief from the rates-driven headwind rather than extending it."
   },
   "fact_check": {
-    "status": "warning",
-    "summary": "Checked 6 numeric claims; 1 numeric mismatch(es), 0 logic warning(s).",
+    "status": "ok",
+    "summary": "Checked 6 numeric claims; 0 numeric mismatch(es), 0 logic warning(s); 0 critical, 0 review.",
     "numeric_claims_checked": 6,
-    "numeric_mismatches": [
-      {
-        "field": "tasks.overnight_review.drivers[2]",
-        "label": "US 10Y",
-        "claimed": 0.99,
-        "expected": 4.292,
-        "tolerance": 0.429,
-        "snippet": "US 10Y yield rose +0.99% to 4.292%, pressuring duration-"
-      }
-    ],
+    "numeric_mismatches": [],
     "logic_warnings": []
   },
   "report_quality": {
-    "score": 92.2,
+    "score": 94.7,
     "grade": "A",
     "status": "production_ready",
     "components": [
@@ -7753,10 +7744,10 @@
       },
       {
         "name": "Fact-check guardrail",
-        "score": 75.0,
+        "score": 100.0,
         "weight": 0.1,
-        "weighted_score": 7.5,
-        "read": "Checked 6 numeric claims; 1 numeric mismatch(es), 0 logic warning(s)."
+        "weighted_score": 10.0,
+        "read": "Checked 6 numeric claims; 0 numeric mismatch(es), 0 logic warning(s); 0 critical, 0 review."
       }
     ],
     "adapter_status": [
@@ -7777,9 +7768,7 @@
         "status": "ok"
       }
     ],
-    "warnings": [
-      "LLM fact-check guardrail produced warnings; review the validation table before relying on narrative sections."
-    ]
+    "warnings": []
   },
   "daily_one_chart": {
     "path": "daily_one_chart_2026-04-22.png",

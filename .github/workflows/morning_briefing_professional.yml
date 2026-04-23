@@ -94,6 +94,7 @@ jobs:
           python tests/test_llm_enhancer_resilience.py
           python tests/test_llm_pipeline.py
           python tests/test_email_delivery.py
+          python tests/test_fact_checker.py
           python tests/test_text_normalizer.py
           python tests/test_chart_appendix.py
           python tests/test_news_cache.py

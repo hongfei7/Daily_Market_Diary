@@ -15,11 +15,13 @@ REPORT_BODY = """# Morning Research Workbench | 2026-04-14
 ![Research Dashboard](charts/dashboard_2026-04-14.png)
 
 ### 1.2 Global Asset Price Dashboard
+
 | Asset | Last | Read |
 | --- | --- | --- |
 | China 10Y | 1.79% | China local rates anchor \\| Live public |
 
 ### 1.3 Hong Kong Key Data Quick Check
+
 | Check | Value | Status |
 | --- | --- | --- |
 | Southbound / Northbound net flow | Southbound +HK$2.2bn \\| Northbound N/A | Live public |
@@ -75,6 +77,16 @@ def main() -> None:
         clipped_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
         assert clipped_audit["status"] == "error"
         assert any("..." in item for item in clipped_audit["errors"])
+
+        (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nThis line was clipped [trimmed]\n", encoding="utf-8")
+        trimmed_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        assert trimmed_audit["status"] == "error"
+        assert any("[trimmed]" in item for item in trimmed_audit["errors"])
+
+        (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nUnexpected non-English token: 찜흙\n", encoding="utf-8")
+        language_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        assert language_audit["status"] == "error"
+        assert any("non-English" in item for item in language_audit["errors"])
     finally:
         shutil.rmtree(root, ignore_errors=True)
 

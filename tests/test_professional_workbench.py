@@ -128,8 +128,8 @@ def _minimal_fixture():
             "data": {
                 "main_board_turnover": {"display_value": "HK$207.9bn", "status": "live_local", "source": "HKEX Daily Quotations", "as_of": "2026-04-13", "note": "Participation was active."},
                 "turnover_vs_20d": {"display_value": "1.18x | +18% vs 20D", "status": "live_local", "source": "HKEX Daily Quotations", "as_of": "2026-04-13", "note": "Trailing 20-session average turnover was HK$176.3bn."},
-                "hibor_1m": {"display_value": "2.23%", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "Funding conditions were stable."},
-                "aggregate_balance": {"display_value": "HK$54.4bn", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "Liquidity remained ample."},
+                "hibor_1m": {"display_value": "2.23%", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "1M HIBOR is the cleanest quick read for Hong Kong funding conditions and equity-duration pressure."},
+                "aggregate_balance": {"display_value": "HK$54.4bn", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "Aggregate Balance helps frame whether linked-rate liquidity conditions are tight or comfortable."},
                 "base_rate": {"display_value": "4.00%", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "Base-rate anchor remained unchanged."},
                 "linked_exchange_band": {"display_value": "7.7500 to 7.8500", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "Official USD/HKD band."},
                 "short_selling_ratio": {"display_value": "N/A", "status": "unavailable", "source": "HKEX Short Selling Turnover Report", "as_of": "", "note": "Only a morning-close snapshot was available."},
@@ -252,7 +252,7 @@ def main():
         dashboard_path = os.path.join(chart_dir, "test_dashboard.png")
         generate_dashboard(bundle, dashboard_path)
         assert os.path.exists(dashboard_path)
-        assert DASHBOARD_LAYOUT_VERSION == "4-panel-v2"
+        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v5"
 
         daily_chart_path = os.path.join(chart_dir, "test_daily_one_chart.png")
         daily_meta = generate_daily_one_chart(bundle, daily_chart_path)
@@ -324,9 +324,14 @@ def main():
     assert "Market data quality" in report
     assert "Live local" in report
     assert "China 10Y" in report
+    assert "| Time | Region | Event | Status | Desk read |" in report
+    assert "Attention:" in report
     assert "Pending adapter" not in report
     assert "No extra leadership read was generated" not in report
     assert "No extra follow-through check was generated" not in report
+    assert "Aggregate Balance helps frame whether linked-rate liquidity conditions are tight or comfortable." in report
+    assert "funding conditions and equity-duration pressure." in report
+    assert "conditions are tight or\n" not in report
 
     print("Professional workbench test passed")
 

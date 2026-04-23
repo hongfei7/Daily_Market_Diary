@@ -7,7 +7,7 @@
 
 > Market data quality: Coverage: `31/32` | Missing: `1`
 
-> Report quality: `92.2/100` | Grade `A` | Status `production ready`
+> Report quality: `94.7/100` | Grade `A` | Status `production ready`
 
 
 ## Visual Dashboard
@@ -19,6 +19,7 @@
 Risk-Off conditions persist with USD strength and higher yields creating a credibility test for the Hang Seng's modest April 21 gains, where thin turnover (0.74x 20D) and FXI's -1.46% decline signal weak cross-border conviction despite value/financial leadership.
 
 ### 1.2 Global Asset Price Dashboard
+
 | Asset | Last | 1D move | Read |
 | --- | --- | --- | --- |
 | S&P 500 | 7,064.01 | -0.63% | US large-cap risk appetite |
@@ -27,8 +28,8 @@ Risk-Off conditions persist with USD strength and higher yields creating a credi
 | Hang Seng TECH | 4.9500 | +0.28% | Hong Kong growth / platform read-through |
 | CSI 300 | 4,757.44 | +0.61% | Mainland large-cap tone |
 | US 10Y | 4.2920 | +0.99% | Global discount-rate anchor |
-| China 10Y | 1.75% | -1.2bp | China local rates anchor \| Live public \| Eastmoney Treasury Yield History \| 2026-04-21 |
-| CN-US 10Y spread | -254.9bp | -5.2bp | Relative carry and macro-pressure gauge \| Live public \| Eastmoney Treasury Yield History \| 2026-04-21 |
+| China 10Y | 1.75% | -1.2bp | China local rates anchor \| Live public \| Eastmoney \| 2026-04-21 |
+| CN-US 10Y spread | -254.9bp | -5.2bp | Relative carry and macro-pressure gauge \| Live public \| Eastmoney \| 2026-04-21 |
 | DXY | 98.41 | +0.37% | Dollar liquidity impulse |
 | USD/CNH | 6.8010 | +0.00% | Offshore China risk appetite |
 | USD/HKD | 7.8299 | -0.02% | Linked-exchange regime stress check |
@@ -38,16 +39,17 @@ Risk-Off conditions persist with USD strength and higher yields creating a credi
 | VIX | 19.50 | **+3.34%** | US stress barometer |
 
 ### 1.3 Hong Kong Key Data Quick Check
+
 | Check | Value | Status | Source / as of | Why it matters |
 | --- | --- | --- | --- | --- |
-| Main Board turnover vs 20D | 0.74x \| -26% vs 20D | Live local | HKEX Daily Quotations \| 2026-04-21 | Trailing 20-session average turnover was HK$278.1bn. |
-| Southbound / Northbound net flow | Southbound Net HK$3.7bn \| turnover HK$82.7bn \| Northbound Turnover HK$301.0bn \| net unavailable | Live local | HKEX Stock Connect Historical Daily \| 2026-04-21 | Southbound net buy is calculated from HKEX disclosed buy and sell turnover. |
-| Short-selling ratio | 15.00% | Live local | HKEX Daily Quotations - Short Selling Turnover \| 2026-04-21 | Official HKEX stock-level short-selling table, aggregated as a share of total market... |
-| AH premium index | 29.03% | Live public | Public Yahoo Finance quotes - calculated A/H premium \| 2026-04-21 | Simple average across 20 A/H pairs; use dispersion rather than the average alone. |
-| USD/HKD spot vs band | 7.8299 \| band 7.7500 to 7.8500 | Live quote + local | Yahoo Finance + HKMA linked band \| 2026-04-21 | Inside the linked-exchange band without immediate boundary stress. Official Convertib... |
-| HIBOR 1M | 2.44% | Live local | HKMA Daily Figures - Interbank Liquidity \| 2026-04-21 | 1M HIBOR is the cleanest quick read for Hong Kong funding conditions and equity-durat... |
-| Aggregate Balance | HK$53.9bn | Live local | HKMA Daily Figures - Interbank Liquidity \| 2026-04-21 | Aggregate Balance helps frame whether linked-rate liquidity conditions are tight or c... |
-| Hong Kong leadership | Leadership was broad and balanced | Proxy fallback | HSI / HSCEI / HSTECH relative performance \| 2026-04-21 | Use HSI / HSCEI / HSTECH relative moves as the opening style read. |
+| Main Board turnover vs 20D | 0.74x \| -26% vs 20D | Live local | HKEX \| 2026-04-21 | Trailing 20-session average turnover was HK$278.1bn. |
+| Southbound / Northbound net flow | Southbound Net HK$3.7bn \| turnover HK$82.7bn \| Northbound Turnover HK$301.0bn \| net unavailable | Live local | HKEX Connect \| 2026-04-21 | Southbound net buy is calculated from HKEX disclosed buy and sell turnover. |
+| Short-selling ratio | 15.00% | Live local | HKEX \| 2026-04-21 | Official HKEX stock-level short-selling table, aggregated as a share of total market turnover. |
+| AH premium index | 29.03% | Live public | Yahoo \| 2026-04-21 | Simple average across 20 A/H pairs; use dispersion rather than the average alone. |
+| USD/HKD spot vs band | 7.8299 \| band 7.7500 to 7.8500 | Live quote + local | Yahoo \| 2026-04-21 | Inside the linked-exchange band without immediate boundary stress. Official Convertibility Undertakings define the linked-rate stress boundaries for USD/HKD. |
+| HIBOR 1M | 2.44% | Live local | HKMA \| 2026-04-21 | 1M HIBOR is the cleanest quick read for Hong Kong funding conditions and equity-duration pressure. |
+| Aggregate Balance | HK$53.9bn | Live local | HKMA \| 2026-04-21 | Aggregate Balance helps frame whether linked-rate liquidity conditions are tight or comfortable. |
+| Hong Kong leadership | Leadership was broad and balanced | Proxy fallback | HSI / HSCEI / HSTECH relative perf \| 2026-04-21 | Use HSI / HSCEI / HSTECH relative moves as the opening style read. |
 
 ### 1.4 Risk Dashboard
 **Composite risk score:** `24.9/100` | **Regime:** `Risk-off`
@@ -63,75 +65,88 @@ Risk-Off conditions persist with USD strength and higher yields creating a credi
 
 ### 1.5 Morning Checklist
 1. **INTC -6.33%**
-   Mover attribution | Announcement / expectations | Guidance reset and margin pressure
+ Mover attribution | Announcement / expectations | Guidance reset and margin pressure
 2. **Risk-Off backdrop with USD stronger, higher yields pressured valuations, and Oil outperformed Gold**
-   Overnight regime | Start by deciding whether the day is about Risk-Off conditions or a style pivot.
+ Overnight regime | Start by deciding whether the day is about Risk-Off conditions or a style pivot.
 3. **CPI MoM (Released)**
-   Macro / policy | Rates expectations, the dollar, and growth-equity valuation | Industries: Technology, Internet, Brokers
+ Macro / policy | Rates expectations, the dollar, and growth-equity valuation | Industries: Technology, Internet, Brokers
 4. **Trade Balance (Released)**
-   Macro / policy | Watch whether it changes the day's core market narrative | Industries: To be assessed
+ Macro / policy | Watch whether it changes the day's core market narrative | Industries: To be assessed
 5. **Retail Sales MoM (Upcoming)**
-   Macro / policy | Consumer resilience, growth expectations, and risk-asset pricing | Industries: Consumer, E-commerce, Consum...
+ Macro / policy | Consumer resilience, growth expectations, and risk-asset pricing | Industries: Consumer, E-commerce, Consumer discretionary
 
 ## Layer 2 | Deep Read (20-30 min)
 
 ### 2.1 Overnight Overseas Market Review
 #### Market Setup
-Risk-Off dominated the April 21 session as US and European equities fell on higher yields and tech-sector weakness, while the USD strengthened against a mixed FX basket. The most significant cross-asset divergence was Oil versus Gold, with oil supported by ongoing Iran-conflict supply concerns and gold selling off as a safe-haven.
-Hong Kong indices managed modest gains despite thin turnover, though the offshore China proxy FXI fell sharply, suggesting the local move lacked broad cross-border conviction.
+**Core tape.** Risk-Off dominated the April 21 session as US and European equities fell on higher yields and tech-sector weakness, while the USD strengthened against a mixed FX basket.
+**Main driver.** The most significant cross-asset divergence was Oil versus Gold, with oil supported by ongoing Iran-conflict supply concerns and gold selling off as a safe-haven.
+**HK relevance.** Hong Kong indices managed modest gains despite thin turnover, though the offshore China proxy FXI fell sharply, suggesting the local move lacked broad cross-border conviction.
 
 #### Key Drivers
 - Intel's -6.33% guidance reset weighed on tech/growth sentiment globally, though Hong Kong growth names held relatively better.
-- Iran conflict escalation is sustaining an elevated oil price regime, with traders expecting supply disruptions to persist months after an...
+- Iran conflict escalation is sustaining an elevated oil price regime, with traders expecting supply disruptions to persist months.
 - US 10Y yield rose +0.99% to 4.292%, pressuring duration-sensitive sectors and amplifying the risk-off tone in rates-sensitive assets.
 - DXY +0.37% confirms a defensive dollar regime, which historically correlates with weaker cross-border EM/China allocation.
 
 #### Hong Kong Read-Through
-- **Desk lens:** Leadership was broad and balanced.
-- **Opening implication:** The Hong Kong open on April 22 faces a credibility test—the local Hang Seng gains need FXI and HSTECH to confirm rather than fade. If oil holds and Retail Sales data d...
+**Desk lens.** Leadership was broad and balanced.
+**Opening implication.** The Hong Kong open on April 22 faces a credibility test - the local Hang Seng gains need FXI and HSTECH to confirm rather than fade. If oil holds and Retail Sales data does not deepen the Risk-Off narrative, energy names may lead.
 - **Cross-market read:** Hang Seng +0.77% / HSCEI +0.61% / HSTECH +0.28%.
 - **Cross-market read:** Offshore China proxy FXI -1.46% and USD/CNH +0.00% frame cross-border risk appetite.
 - **Cross-market read:** USD/HKD last traded around 7.8299, which keeps the Hong Kong funding lens in focus.
 
 #### Watch Points
 - USD composite moved higher by +0.17pct intraday, with a 0.34pct range.
-- Main turning points appeared around 2026-04-21 08:05 peak / 2026-04-21 08:25 peak / 2026-04-21 08:40 trough, suggesting event-driven repricing rath...
+- Main turning points appeared around 2026-04-21 08:05 peak / 2026-04-21 08:25 peak / 2026-04-21 08:40 trough, suggesting event-driven repricing.
 - The biggest cross-asset divergence was Oil versus Gold, a spread of 5.792pct.
 - Gold moved -1.37pct intraday with a 2.616pct high-low range.
 
 
-**Curated overnight stories:**
-- **INTC -6.33%: Guidance reset and margin pressure** | Intel's guidance reset signals ongoing execution challenges in semiconductors. The margin pressure narrative adds to the growth-valuation concerns already present in Risk-Off sessions. | HK read-through: Most relevant for Hong Kong tech and semiconductor names. Could pressure Hang Seng Tech Index and related ETFs given sentiment linkage to US chip sector.
-- **GE sees fuel prices higher than they are now through the summer due to the Iran conflict** | Iran conflict implications extend beyond immediate headlines. Sustained fuel price elevation reshapes cost assumptions for industrials and transport sectors through mid-2026. | HK read-through: Affects Hong Kong-listed airlines, shipping, and energy-linked names. Also reinforces the Oil-outperformed-Gold theme that dominated the April 21 session.
-- **Oil Traders Say Billion-Barrel Hole Will Linger Long After War** | Traders expect supply disruption to persist months after any Hormuz resolution. Some assess flows may never return to normal, supporting an elevated oil price regime into medium term. | HK read-through: Supports sustained energy-sector allocation calls. Relevant for PetroChina, CNOOC, and broader energy exposure in Hang Seng Composite.
-- **CPI MoM Released; Retail Sales MoM upcoming** | Released CPI data already moved rates expectations and dollar direction in the completed session. Upcoming Retail Sales will test consumer resilience assumptions and shift growth-equity pricing. | HK read-through: Critical for Hong Kong-linked consumer, e-commerce, and consumer-discretionary names. Data-dependent: stronger reading eases Risk-Off, weaker reinforces it.
-- **Trump administration discussing currency swap line with United Arab Emirates** | Dollar liquidity provision to a key oil-trading hub has implications for petrodollar flows and USD sentiment. Could signal policy intent around currency stability amid Iran-related disruptions. | HK read-through: Secondary impact on HKD-linked dynamics and offshore CNH sentiment. Worth monitoring for USD/CNH direction heading into Hong Kong open.
+**Curated overnight stories**
+1. **INTC -6.33%: Guidance reset and margin pressure**
+ Why it matters: Intel's guidance reset signals ongoing execution challenges in semiconductors. The margin pressure narrative adds to the growth-valuation concerns already present in.
+ HK read-through: Most relevant for Hong Kong tech and semiconductor names. Could pressure Hang Seng Tech Index and related ETFs given sentiment linkage to US chip sector.
+2. **GE sees fuel prices higher than they are now through the summer due to the Iran conflict**
+ Why it matters: Iran conflict implications extend beyond immediate headlines. Sustained fuel price elevation reshapes cost assumptions for industrials and transport sectors through mid-2026.
+ HK read-through: Affects Hong Kong-listed airlines, shipping, and energy-linked names. Also reinforces the Oil-outperformed-Gold theme that dominated the April 21 session.
+3. **Oil Traders Say Billion-Barrel Hole Will Linger Long After War**
+ Why it matters: Traders expect supply disruption to persist months after any Hormuz resolution. Some assess flows may never return to normal, supporting an elevated oil price regime into.
+ HK read-through: Supports sustained energy-sector allocation calls. Relevant for PetroChina, CNOOC, and broader energy exposure in Hang Seng Composite.
+4. **CPI MoM Released; Retail Sales MoM upcoming**
+ Why it matters: Released CPI data already moved rates expectations and dollar direction in the completed session.
+ HK read-through: Critical for Hong Kong-linked consumer, e-commerce, and consumer-discretionary names. Data-dependent: stronger reading eases Risk-Off, weaker reinforces it.
+5. **Trump administration discussing currency swap line with United Arab Emirates**
+ Why it matters: Dollar liquidity provision to a key oil-trading hub has implications for petrodollar flows and USD sentiment.
+ HK read-through: Secondary impact on HKD-linked dynamics and offshore CNH sentiment. Worth monitoring for USD/CNH direction heading into Hong Kong open.
 
 ### 2.2 Hong Kong / A-share Previous-Day Review
 #### Local Tape Setup
-The April 21 session delivered a mixed local read: HSI (+0.77%) and HSCEI (+0.61%) outperformed HSTECH (+0.28%) and FXI (-1.46%), suggesting a value-versus-growth split within the Hong Kong-China complex.
-Southbound flow of HK$3.7bn net买入 was concentrated in financials (China Mobile +HK$1.07bn, CCB +HK$0.79bn, ICBC +HK$0.80bn) rather than internet names, while BABA-W and Tencent saw net selling, and SZSE Southbound was a net seller. Main Board turnover was 0.74x the 20-session average, confirming light participation that makes the index move easier to fade.
+**Local read.** The April 21 session delivered a mixed local read: HSI (+0.77%) and HSCEI (+0.61%) outperformed HSTECH (+0.28%) and FXI (-1.46%), suggesting a value-versus-growth split within the Hong Kong-China complex.
+**Verification point.** Southbound flow of HK$3.7bn net was concentrated in financials (China Mobile +HK$1.07bn, CCB +HK$0.79bn, ICBC +HK$0.80bn) rather than internet names, while BABA-W and Tencent saw net selling.
+**Risk to watch.** Main Board turnover was 0.74x the 20-session average, confirming light participation that makes the index move easier to fade.
 
 #### Style and Local Leadership
-- **Style leadership:** Leadership was broad and balanced.
+**Style leadership.** Leadership was broad and balanced.
 - **Cross-market read:** Hang Seng +0.77% / HSCEI +0.61% / HSTECH +0.28%.
 - **Cross-market read:** Offshore China proxy FXI -1.46% and USD/CNH +0.00% frame cross-border risk appetite.
 - **Cross-market read:** USD/HKD last traded around 7.8299, which keeps the Hong Kong funding lens in focus.
-- **LLM local leadership read:** Value/SOE-led: HSCEI (+0.61%) outperformed HSTECH (+0.28%), and Southbound net buying was in financials rather than internet names.
+**LLM local leadership read.** Value/SOE-led: HSCEI (+0.61%) outperformed HSTECH (+0.28%), and Southbound net buying was in financials rather than internet names.
 
 #### Flow Confirmation
-- Official Stock Connect evidence is available; use Section 2.3 to confirm whether local money supports the price action.
+Official Stock Connect evidence is available; use Section 2.3 to confirm whether local money supports the price action.
 
 #### Follow-Through Checklist
-- **Follow-through check:** Confirm whether FXI recovers on April 22 and whether HSTECH ETF (3033.HK) volume picks up above 0.84x; short-selling ratio at 15% and ETF outflows in 2828.HK and 2800.HK suggest institutional positioning is not yet rotating back to HK growth. Southbound net buy in financials needs to be tested against whether this is defensive positioning or genuine value re-rating.
+**Follow-through check.** Confirm whether FXI recovers on April 22 and whether HSTECH ETF (3033.HK) volume picks up above 0.84x.
 
 ### 2.3 Flow Tracker and Attribution
 #### Cross-Asset Attribution v1
+
 | Driver | Direction | Score | Evidence | HK implication |
 | --- | --- | --- | --- | --- |
 | Hong Kong participation | drag | 2.62 | Main Board turnover was 0.74x the 20-session average. | Thin turnover makes index moves easier to fade. |
 | Oil and geopolitics | supportive | 1.32 | Oil moved -1.65%. | Split the read between energy/cyclicals support and margin/geopolitical pressure. |
-| Rates impulse | drag | 1.19 | US 10Y yield proxy moved +0.99%. | Lower yields help long-duration growth; higher yields pressure valuation-sensitive sect... |
+| Rates impulse | drag | 1.19 | US 10Y yield proxy moved +0.99%. | Lower yields help long-duration growth; higher yields pressure valuation-sensitive |
 | Dollar / CNH pressure | drag | 0.55 | DXY +0.37% / USD-CNH +0.00% | A stable or softer CNH makes Hong Kong follow-through more credible. |
 
 #### Flow Tracker
@@ -142,16 +157,18 @@ Southbound flow of HK$3.7bn net买入 was concentrated in financials (China Mobi
 - AH premium: simple covered-pair average +29.03%; widest premium: China Communications Construction 86.42%.
 
 ##### Key Flow / Funding Metrics
+
 | Metric | Value | Status | Source / as of | Read |
 | --- | --- | --- | --- | --- |
-| Southbound / Northbound net flow | Southbound Net HK$3.7bn \| turnover HK$82.7bn \| Northbound Turnover HK$301.0bn \| net unavailable | Live local | HKEX Stock Connect Historical Daily \| 2026-04-21 | Southbound net buy is calculated from HKEX disclosed buy and sell turnover. |
-| Main Board turnover vs 20D | 0.74x \| -26% vs 20D | Live local | HKEX Daily Quotations \| 2026-04-21 | Trailing 20-session average turnover was HK$278.1bn. |
-| Short-selling ratio | 15.00% | Live local | HKEX Daily Quotations - Short Selling Turnover \| 2026-04-21 | Official HKEX stock-level short-selling table, aggregated as a share of t... |
-| AH premium index | 29.03% | Live public | Public Yahoo Finance quotes - calculated A/H premium \| 2026-04-21 | Simple average across 20 A/H pairs; use dispersion rather than the averag... |
-| HIBOR 1M | 2.44% | Live local | HKMA Daily Figures - Interbank Liquidity \| 2026-04-21 | 1M HIBOR is the cleanest quick read for Hong Kong funding conditions and... |
-| Aggregate Balance | HK$53.9bn | Live local | HKMA Daily Figures - Interbank Liquidity \| 2026-04-21 | Aggregate Balance helps frame whether linked-rate liquidity conditions ar... |
+| Southbound / Northbound net flow | Southbound Net HK$3.7bn \| turnover HK$82.7bn \| Northbound Turnover HK$301.0bn \| net unavailable | Live local | HKEX Connect \| 2026-04-21 | Southbound net buy is calculated from HKEX disclosed buy and sell turnover. |
+| Main Board turnover vs 20D | 0.74x \| -26% vs 20D | Live local | HKEX \| 2026-04-21 | Trailing 20-session average turnover was HK$278.1bn. |
+| Short-selling ratio | 15.00% | Live local | HKEX \| 2026-04-21 | Official HKEX stock-level short-selling table, aggregated as a share of total market turnover. |
+| AH premium index | 29.03% | Live public | Yahoo \| 2026-04-21 | Simple average across 20 A/H pairs; use dispersion rather than the average alone. |
+| HIBOR 1M | 2.44% | Live local | HKMA \| 2026-04-21 | 1M HIBOR is the cleanest quick read for Hong Kong funding conditions and equity-duration pressure. |
+| Aggregate Balance | HK$53.9bn | Live local | HKMA \| 2026-04-21 | Aggregate Balance helps frame whether linked-rate liquidity conditions are tight or comfortable. |
 
 ##### Stock Connect Southbound Active Names
+
 | Rank | Ticker | Name | Buy | Sell | Net buy |
 | --- | --- | --- | --- | --- | --- |
 | 4 | 00941.HK | CHINA MOBILE | HK$1,631.2mn | HK$564.5mn | HK$1,066.7mn |
@@ -161,6 +178,7 @@ Southbound flow of HK$3.7bn net买入 was concentrated in financials (China Mobi
 | 4 | 06166.HK | CIG | HK$1,154.7mn | HK$886.2mn | HK$268.5mn |
 
 ##### AH Premium Dispersion
+
 | Name | A ticker | H ticker | Premium | As of |
 | --- | --- | --- | --- | --- |
 | China Communications Construction | 601800.SS | 1800.HK | +86.42% | 2026-04-21 |
@@ -170,6 +188,7 @@ Southbound flow of HK$3.7bn net买入 was concentrated in financials (China Mobi
 | New China Life | 601336.SS | 1336.HK | +46.08% | 2026-04-21 |
 
 ##### HKEX Short-Selling Watch
+
 | Ticker | Name | Short ratio | Short turnover | Total turnover |
 | --- | --- | --- | --- | --- |
 | 00388.HK | HKEX | 12.22% | HK$0.3bn | HK$2.3bn |
@@ -181,21 +200,26 @@ Southbound flow of HK$3.7bn net买入 was concentrated in financials (China Mobi
 - **Short-value leaders:** 03033.HK CSOP HS TECH (HK$2.8bn); 02800.HK TRACKER FUND (HK$2.4bn); 00700.HK TENCENT (HK$1.3bn); 09988.HK BABA-W (HK$1.0bn).
 
 ### 2.4 Macro and Policy Tracking
-The completed session confirmed a Risk-Off regime: VIX at 19.5 (+3.34%) signals elevated volatility demand, while USD strength and a rising US 10Y yield at 4.292% (+0.99%) pressured duration-sensitive valuations. Notably, oil outperformed gold (WTI +0.89% vs Gold -1.17%), a divergence that may reflect supply-specific dynamics rather than a pure risk appetite shift. The US CPI print for the reference period came in at 0.3% MoM, matching the consensus forecast after a prior 0.4% reading—neither sufficiently cool to ease Fed cut expectations nor hot enough to reprice aggressive tightening. China Trade Balance, already released, printed USD 85.2bn versus a USD 79.0bn forecast, a meaningful beat that will be assessed for whether it shifts the day's core narrative. The immediate HK risk drivers for the next session are: (1) US Retail Sales at 20:30 HKT (forecast 0.3% vs prior 0.6%), where a softer print could provide relief to growth proxies; (2) Fed Chair Powell's 22:00 remarks on the economic outlook, where any hawkish deviation from current pricing could extend the yield-driven headwind for tech and internet names; and (3) PBOC OMO liquidity operations at 10:00, where the absence of a cut at the Loan Prime Rate (forecast unchanged at 3.45%) will reinforce the baseline for domestic rate-sensitive sectors. The Risk-Off backdrop with elevated VIX argues for disciplined sizing and tighter stop protocols heading into these catalysts.
+**Desk read.** The completed session confirmed a Risk-Off regime: VIX at 19.5 (+3.34%) signals elevated volatility demand, while USD strength and a rising US 10Y yield at 4.292% (+0.99%) pressured duration-sensitive valuations.
 
-- Watchpoint: US 10Y yield direction after Powell remarks and any surprise in Retail Sales.
-- Watchpoint: VIX sustained elevation above 19—further spike would reinforce defensive positioning.
-- Watchpoint: HK tech and internet sector leadership if growth proxies weaken on softer consumer data.
-- Watchpoint: DXY response to Retail Sales and whether USD strength persists into HK open.
+**Market sensitivity.** Notably, oil outperformed gold (WTI +0.89% vs Gold -1.17%), a divergence that may reflect supply-specific dynamics rather than a pure risk appetite shift.
 
-| Time | Country | Event | Status | Impact | Industries | Attention |
-| --- | --- | --- | --- | --- | --- | --- |
-| 20:30 | US | CPI MoM | Released | Rates expectations, the dollar, and growth-equity valuation | Technology, Internet, Brokers | 5 |
-| 09:30 | China | Trade Balance | Released | Watch whether it changes the day's core market narrative | To be assessed | 3 |
-| 20:30 | US | Retail Sales MoM | Upcoming | Consumer resilience, growth expectations, and risk-asset pricing | Consumer, E-commerce, Consumer discretionary | 5 |
-| 09:20 | China | Loan Prime Rate | Upcoming | Watch whether it changes the day's core market narrative | To be assessed | 3 |
-| 22:00 | Federal Reserve | Jerome Powell: Economic outlook remarks | Central bank | Policy path, liquidity conditions, and cross-asset risk appetite | Technology, Financials, Gold | 5 |
-| 10:00 | PBOC | Open Market Operations Desk: Daily liquidity operation window | Central bank | Policy path, liquidity conditions, and cross-asset risk appetite | Technology, Financials, Gold | 3 |
+**HK implication.** The US CPI print for the reference period came in at 0.3% MoM, matching the consensus forecast after a prior 0.4% reading - neither sufficiently cool to ease Fed cut expectations nor hot enough to reprice aggressive tightening.
+
+**Macro watchpoints**
+- US 10Y yield direction after Powell remarks and any surprise in Retail Sales.
+- VIX sustained elevation above 19 - further spike would reinforce defensive positioning.
+- HK tech and internet sector leadership if growth proxies weaken on softer consumer data.
+- DXY response to Retail Sales and whether USD strength persists into HK open.
+
+| Time | Region | Event | Status | Desk read |
+| --- | --- | --- | --- | --- |
+| 20:30 | US | CPI MoM | Released | Impact: Rates expectations, the dollar, and growth-equity valuation \| Attention: 5/5 \| Industries: Technology, Internet, Brokers |
+| 09:30 | China | Trade Balance | Released | Impact: Watch whether it changes the day's core market narrative \| Attention: 3/5 \| Industries: To be assessed |
+| 20:30 | US | Retail Sales MoM | Upcoming | Impact: Consumer resilience, growth expectations, and risk-asset pricing \| Attention: 5/5 \| Industries: Consumer, E-commerce, Consumer discretionary |
+| 09:20 | China | Loan Prime Rate | Upcoming | Impact: Watch whether it changes the day's core market narrative \| Attention: 3/5 \| Industries: To be assessed |
+| 22:00 | Federal Reserve | Jerome Powell: Economic outlook remarks | Central bank | Impact: Policy path, liquidity conditions, and cross-asset risk appetite \| Attention: 5/5 \| Industries: Technology, Financials, Gold |
+| 10:00 | PBOC | Open Market Operations Desk: Daily liquidity operation window | Central bank | Impact: Policy path, liquidity conditions, and cross-asset risk appetite \| Attention: 3/5 \| Industries: Technology, Financials, Gold |
 
 #### Positioning and Risk Backdrop
 - Options activity centered on KWEB Call, with Vol/OI at 1.88x and a bullish bias.
@@ -205,28 +229,33 @@ The completed session confirmed a Risk-Off regime: VIX at 19.5 (+3.34%) signals 
 
 
 ### 2.5 Key Company and Sector Events
+
 | Grade | Sector | Headline | Why it matters | Horizon |
 | --- | --- | --- | --- | --- |
-| A | Autos and EV | Here’s what will really matter to Tesla investors when the company... | This can directly reshape earnings forecasts and the valuation framework | Short-term catalyst |
-| A | Industrials | GE sees fuel prices higher than they are now through the summer due... | This can directly reshape earnings forecasts and the valuation framework | Short-term catalyst |
-| A | Autos and EV | Oil Traders Say Billion-Barrel Hole Will Linger Long After War | Capital allocation or shareholder-return events can trigger a valuation... | Medium-term trend |
-| B | China Internet | From AI shopping to video, Alibaba is making the investments analys... | Assess whether the story can propagate through the China Internet value... | Monitor |
+| A | Autos and EV | Here's what will really matter to Tesla investors when the company | This can directly reshape earnings forecasts and the valuation framework | Short-term catalyst |
+| A | Industrials | GE sees fuel prices higher than they are now through the summer due | This can directly reshape earnings forecasts and the valuation framework | Short-term catalyst |
+| A | Autos and EV | Oil Traders Say Billion-Barrel Hole Will Linger Long After War | Capital allocation or shareholder-return events can trigger a valuation | Medium-term trend |
+| B | China Internet | From AI shopping to video, Alibaba is making the investments | Assess whether the story can propagate through the China Internet value | Monitor |
 | B | Financials | Optiver Taps Former Citadel Trader for Options Expansion | Assess whether the story can propagate through the Financials value chain | Monitor |
-| C | Financials | Men’s Wearhouse Owner Files Confidentially for IPO | Assess whether the story can propagate through the Financials value chain | Monitor |
-| C | Autos and EV | Ambassador James F. Jeffrey on Trump extends Iran truce, blockade | Assess whether the story can propagate through the Autos and EV value c... | Monitor |
-| C | Semiconductors and AI | US Stock Futures Rise as Trump Extends Iran Truce: Markets Wrap | Assess whether the story can propagate through the Semiconductors and A... | Monitor |
+| C | Financials | Men's Wearhouse Owner Files Confidentially for IPO | Assess whether the story can propagate through the Financials value chain | Monitor |
+| C | Autos and EV | Ambassador James F. Jeffrey on Trump extends Iran truce, blockade | Assess whether the story can propagate through the Autos and EV value | Monitor |
+| C | Semiconductors and AI | US Stock Futures Rise as Trump Extends Iran Truce: Markets Wrap | Assess whether the story can propagate through the Semiconductors and AI | Monitor |
 
-Risk-off sentiment dominated the session with USD strength and higher yields compressing valuations broadly. Oil outperformed Gold as the Iran conflict keeps energy markets on edge. The session's most actionable item for HK markets is Morgan Stanley's upgrade of 9988.HK (Alibaba) to Overweight with a target raise to 105, signaling conviction in the AI investment story and potentially resetting China Internet sentiment. Tencent (0700.HK) reports after-market; consensus sits at 4.15 HKD EPS and 163.2bn HKD revenue. HKEX (0388.HK) reports pre-market on April 22 with estimates of 2.81 HKD EPS and 6.0bn HKD revenue; the governance update on auditor change rules is worth monitoring for any operational implications. A cluster of eight small/mid-cap profit warnings on the tape (Johnson Electric, Yue Yuen, Tsugami China, Bojun Education, Wisdom Education, Longcheer, Yidu Tech, Tianqi Lithium) suggests earnings season pressure outside core coverage; sector spread across industrials, footwear, education, and lithium names warrants checking for peer contagion. China Mobile (0941.HK) closed near the top of its 52-week range at 100% range position on defensive flow; short-term momentum is clear but leaves less room for upside surprises. GE Aerospace's fuel price commentary (higher through summer) could read through to energy-intensive HK industrials. Tesla earnings tonight will set short-term tone for Autos/EV names; oil supply disruption risks remain a medium-term variable for EV demand commentary.
+#### Company Event Takeaway
+**Desk read.** Risk-off sentiment dominated the session with USD strength and higher yields compressing valuations broadly.
+**Why it matters.** Oil outperformed Gold as the Iran conflict keeps energy markets on edge.
+**Follow-up.** The session's most actionable item for HK markets is Morgan Stanley's upgrade of 9988.HK (Alibaba) to Overweight with a target raise to 105, signaling conviction in the AI investment story and potentially resetting.
 
 #### LLM Quick Takes
-- **9988.HK** | Morgan Stanley upgrade from Equal Weight to Overweight with target 92 to 105 is the clearest rating action. Signals conviction in AI investment story and cloud growth trajectory. Could catalyze sector rotation into China Internet names; watch for follow-through from other banks.
-- **0700.HK** | Reports after-market April 21. Consensus EPS 4.15 HKD and revenue 163.2bn HKD. Risk-off session may have set a lower floor for positioning ahead of results; a beat could reverse sentiment quickly given heavy index weight.
-- **0388.HK** | Reports pre-market April 22. Estimates: EPS 2.81 HKD, revenue 6.0bn HKD. Recently strengthened auditor change rules; governance tone matters for institutional confidence. Mid-range positioning at 63.4% suggests neutral setup ahead of results.
-- **0941.HK** | Closed at top of 52-week range (100% range position) on defensive flow amid risk-off. Up 2.32% today. Strong momentum but limited buffer for disappointment; dividend and capex signals will matter more than price action near-term.
-- **1299.HK** | Slight underperformance at -0.84% in risk-off session. Range position at 29.7% suggests downside cushion. Wealth demand and mainland visitor read-through remain key catalysts; current price leaves room for either sentiment improvement or further pressure.
+- **9988.HK** | Morgan Stanley upgrade from Equal Weight to Overweight with target 92 to 105 is the clearest rating action.
+- **0700.HK** | Reports after-market April 21. Consensus EPS 4.15 HKD and revenue 163.2bn HKD. Risk-off session may have set a lower floor for positioning ahead of results
+- **0388.HK** | Reports pre-market April 22. Estimates: EPS 2.81 HKD, revenue 6.0bn HKD. Recently strengthened auditor change rules
+- **0941.HK** | Closed at top of 52-week range (100% range position) on defensive flow amid risk-off. Up 2.32% today. Strong momentum but limited buffer for disappointment
+- **1299.HK** | Slight underperformance at -0.84% in risk-off session. Range position at 29.7% suggests downside cushion.
 - **00179.HK** | Profit warning issued April 21 (Grade A). Johnson Electric sector leadership makes it worth monitoring for industrials peer contagion.
 
 #### HKEX Announcements
+
 | Grade | Ticker | Type | Release time | Title |
 | --- | --- | --- | --- | --- |
 | A | 00179.HK | Profit warning | 2026-04-21 | Profit warning / alert announcement |
@@ -239,6 +268,7 @@ Risk-off sentiment dominated the session with USD strength and higher yields com
 | A | 09696.HK | Profit warning | 2026-04-20 | Profit warning / alert announcement |
 
 #### Earnings / Results Watch
+
 | Ticker | Company | Timing | Expectation framing |
 | --- | --- | --- | --- |
 | 0700.HK | Tencent Holdings | After Market Close | EPS est. 4.15 HKD \| revenue est. 163.2bn HKD |
@@ -251,13 +281,15 @@ Risk-off sentiment dominated the session with USD strength and higher yields com
 - IPO / grey-market / first-day performance should be wired to a dedicated Hong Kong ECM adapter.
 
 ### 2.6 Coverage Pools
-### Core coverage
+#### Core coverage
+
 | Name | Ticker | Last | 1D | Range position | Morning note |
 | --- | --- | --- | --- | --- | --- |
-| Meituan | 3690.HK | 86.45 | +1.53% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information... |
-| HKEX | 0388.HK | 417.20 | +1.36% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information... |
-| Tencent | 0700.HK | 519.00 | -0.67% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information... |
-| Alibaba | 9988.HK | 136.30 | -0.51% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information... |
+| Meituan | 3690.HK | 86.45 | +1.53% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information |
+| HKEX | 0388.HK | 417.20 | +1.36% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information |
+| Tencent | 0700.HK | 519.00 | -0.67% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information |
+| Alibaba | 9988.HK | 136.30 | -0.51% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information |
+
 **Recent headlines for Meituan:**
 - [Alibaba Stock Is Getting Hit Again, but Qwen and Cloud Growth Are Surging](https://www.marketbeat.com/originals/alibaba-stock-is-getting-hit-again-but-qwen-and-cloud-growth-are-surging/?utm_source=yahoofinance&utm_medium=yahoofinance) (MarketBeat)
 - [JD.com Stock Falls as Profits Dive Despite Rising Revenue](https://www.barrons.com/articles/jd-com-earnings-stock-price-1dec392c?siteid=yhoof2&yptr=yahoo) (Barrons.com)
@@ -265,18 +297,20 @@ Risk-off sentiment dominated the session with USD strength and higher yields com
 - [HKEX strengthens governance with tougher auditor change rules](https://www.internationalaccountingbulletin.com/news/hkex-strengthens-governance-with-tougher-auditor-change-rules/) (International Accounting Bulletin)
 - [Trading in Metals Contracts on London Metal Exchange Restarted](https://www.wsj.com/finance/commodities-futures/trading-in-metals-contracts-on-london-metal-exchange-halted-ab53f06c?siteid=yhoof2&yptr=yahoo) (The Wall Street Journal)
 **Recent headlines for Tencent:**
-- [Alibaba’s Happy Oyster AI Puts 3D Game Simulation At Center Stage](https://finance.yahoo.com/markets/stocks/articles/alibaba-happy-oyster-ai-puts-170446750.html) (Simply Wall St.)
-- [AI’s Token Economy Revolution Creates New China Tech Winners](https://finance.yahoo.com/news/ais-token-economy-revolution-creates-new-china-tech-winners-035211861.html) (Bloomberg)
+- [Alibaba's Happy Oyster AI Puts 3D Game Simulation At Center Stage](https://finance.yahoo.com/markets/stocks/articles/alibaba-happy-oyster-ai-puts-170446750.html) (Simply Wall St.)
+- [AI's Token Economy Revolution Creates New China Tech Winners](https://finance.yahoo.com/news/ais-token-economy-revolution-creates-new-china-tech-winners-035211861.html) (Bloomberg)
 **Recent headlines for Alibaba:**
 - [Alibaba (BABA) Declines More Than Market: Some Information for Investors](https://finance.yahoo.com/markets/stocks/articles/alibaba-baba-declines-more-market-214505960.html) (Zacks)
 - [Microsoft must face $2.8 billion UK lawsuit over cloud computing licences](https://finance.yahoo.com/sectors/technology/articles/microsoft-must-face-2-8-164222406.html) (Reuters)
 
-### Priority follow-up
+#### Priority follow-up
+
 | Name | Ticker | Last | 1D | Range position | Morning note |
 | --- | --- | --- | --- | --- | --- |
-| China Mobile | 0941.HK | 83.70 | +2.32% | Top of range | Short-term price strength is clear; fresh catalysts could trigger broader group f... |
-| AIA | 1299.HK | 82.80 | -0.84% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information... |
-| BYD Company | 1211.HK | 109.10 | -0.82% | Top of range | The name sits near the top of its recent range, so watch for profit-taking under... |
+| China Mobile | 0941.HK | 83.70 | +2.32% | Top of range | Short-term price strength is clear; fresh catalysts could trigger broader group |
+| AIA | 1299.HK | 82.80 | -0.84% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information |
+| BYD Company | 1211.HK | 109.10 | -0.82% | Top of range | The name sits near the top of its recent range, so watch for profit-taking under |
+
 **Recent headlines for China Mobile:**
 - [Deutsche Telekom exploring merger with T-Mobile, Bloomberg News reports](https://finance.yahoo.com/markets/stocks/articles/deutsche-telekom-exploring-merger-t-182010144.html) (Reuters)
 - [China Mobile (SEHK:941): A Closer Look at Valuation After Steady Share Price Gains This Year](https://finance.yahoo.com/news/china-mobile-sehk-941-closer-154022664.html) (Simply Wall St.)
@@ -287,24 +321,32 @@ Risk-off sentiment dominated the session with USD strength and higher yields com
 - [Is BYD (SEHK:1211) Still Fairly Priced After Recent Electric Vehicle Market Headlines](https://finance.yahoo.com/markets/stocks/articles/byd-sehk-1211-still-fairly-140336704.html) (Simply Wall St.)
 - [Ford CEO Jim Farley takes unexpected turn on EVs](https://www.thestreet.com/automotive/did-ford-ceo-jim-farley-just-take-a-shot-at-tesla) (TheStreet)
 
-### Learning watchlist
+#### Learning watchlist
+
 | Name | Ticker | Last | 1D | Range position | Morning note |
 | --- | --- | --- | --- | --- | --- |
-| Tracker Fund of Hong Kong | 2800.HK | 26.66 | +0.83% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information... |
-| HSCEI ETF | 2828.HK | 91.02 | +0.57% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information... |
-| Hang Seng TECH ETF | 3033.HK | 4.9500 | +0.28% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information... |
+| Tracker Fund of Hong Kong | 2800.HK | 26.66 | +0.83% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information |
+| HSCEI ETF | 2828.HK | 91.02 | +0.57% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information |
+| Hang Seng TECH ETF | 3033.HK | 4.9500 | +0.28% | Mid-range | Positioning is neutral for now, so use it mainly to monitor marginal information |
 
 ## Layer 3 | Thinking (10-15 min)
 
 ### 3.1 Rotating Theme Deep Dive
-- **Theme:** Innovative Biotech and Out-Licensing
-- **Angle for the day:** Watch whether clinical data, approvals, and licensing momentum are still supporting the innovative-healthcare rerating story.
 
-The Risk-Off backdrop from Monday's session - USD strength, 10Y at 4.292%, VIX +3.34% - creates a harder environment for growth and long-duration positioning. The weekly Innovative Biotech/Out-Licensing theme remains worth tracking, not as a new entry case but as a watchlist builder: Teleflex (US-listed) attracting CVC/GTCR take-private interest signals continued appetite for healthcare assets with licensing optionality, and the question is whether this propagates into Chinese CDMO/CRO names and their partners if sentiment stabilizes. Gold -1.17% and oil +0.89% (Oil outperforming Gold) fit the broader defensive but commodity-supported narrative. For HK names, China Mobile (0941.HK) is at the top of its range on Tuesday strength; short-term price action is constructive, but the Risk-Off tape argues against aggressive add-on here without a clear catalyst trigger. Meituan (3690.HK) is mid-range and neutral-positioned - useful as a daily read on platform consumption demand rather than a directional call. The Tracker Fund (2800.HK) at mid-range is similarly a flow monitor rather than a trade. Fast follow-ups for Wednesday: US CPI (hotter-than-expected 0.3% MoM released) reinforces the rates and dollar narrative at the open, China Trade Balance beat (USD 85.2bn vs 79bn forecast) could add a intra-day offset if the market processes it as domestic resilience, and US Retail Sales (forecast 0.3%) will test whether consumer sentiment holds. Keep sizing tight given VIX; use moves in Teleflex-linked names and any CDMO/CRO price response to gauge whether the biotech rerating story can survive a Risk-Off tape.
-- **Signals to keep in mind:**
-  - CVC, GTCR Weigh Take-Private of Medical Equipment Provider Teleflex: Assess whether the story can propagate through the Healthcare value chain
-  - VIX +3.34%: Higher volatility argues for tighter sizing and tighter stops.
-  - Gold -1.17%: Keep tracking it to confirm whether the core daily narrative is holding.
+| Field | Read |
+| --- | --- |
+| Theme | Innovative Biotech and Out-Licensing |
+| Angle for the day | Watch whether clinical data, approvals, and licensing momentum are still supporting the innovative-healthcare rerating story. |
+
+**Theme desk read**
+**Core thesis.** The Risk-Off backdrop from Monday's session - USD strength, 10Y at 4.292%, VIX +3.34% - creates a harder environment for growth and long-duration positioning.
+**Evidence.** The weekly Innovative Biotech/Out-Licensing theme remains worth tracking, not as a new entry case but as a watchlist builder.
+**What to test.** Gold -1.17% and oil +0.89% (Oil outperforming Gold) fit the broader defensive but commodity-supported narrative.
+
+**Signals to keep in mind**
+- CVC, GTCR Weigh Take-Private of Medical Equipment Provider Teleflex: Assess whether the story can propagate through the Healthcare value
+- VIX +3.34%: Higher volatility argues for tighter sizing and tighter stops.
+- Gold -1.17%: Keep tracking it to confirm whether the core daily narrative is holding.
 
 **LLM watch items:**
 - Teleflex (US-listed) follow-through: if take-private story gains traction, map into Chinese CDMO/CRO names and their licensing partners for spillover.
@@ -314,11 +356,12 @@ The Risk-Off backdrop from Monday's session - USD strength, 10Y at 4.292%, VIX +
 - VIX at 19.5 (+3.34%): elevated volatility supports tighter stops and reduced position sizing across the board.
 
 **Related names to keep close:**
+
 | Name | Ticker | Bucket | Morning read |
 | --- | --- | --- | --- |
-| Meituan | 3690.HK | Core coverage | Positioning is neutral for now, so use it mainly to monitor marginal information ch... |
-| China Mobile | 0941.HK | Priority follow-up | Short-term price strength is clear; fresh catalysts could trigger broader group fol... |
-| Tracker Fund of Hong Kong | 2800.HK | Learning watchlist | Positioning is neutral for now, so use it mainly to monitor marginal information ch... |
+| Meituan | 3690.HK | Core coverage | Positioning is neutral for now, so use it mainly to monitor marginal information |
+| China Mobile | 0941.HK | Priority follow-up | Short-term price strength is clear; fresh catalysts could trigger broader group |
+| Tracker Fund of Hong Kong | 2800.HK | Learning watchlist | Positioning is neutral for now, so use it mainly to monitor marginal information |
 
 **Relevant headlines:**
 - [CVC, GTCR Weigh Take-Private of Medical Equipment Provider Teleflex](https://www.bloomberg.com/news/articles/2026-04-21/cvc-gtcr-weigh-take-private-of-medical-equipment-provider-teleflex)
@@ -328,6 +371,7 @@ The Risk-Off backdrop from Monday's session - USD strength, 10Y at 4.292%, VIX +
 - Corporate / event: Meituan: Order trends and margin commentary is the cleanest same-day catalyst to prepare for.
 
 **Same-day macro docket**
+
 | Time | Country | Event | Status | Detail |
 | --- | --- | --- | --- | --- |
 | 20:30 | US | CPI MoM | Released | Actual 0.3% / Forecast 0.2% / Prior 0.4% |
@@ -337,24 +381,26 @@ The Risk-Off backdrop from Monday's session - USD strength, 10Y at 4.292%, VIX +
 | 22:00 | Federal Reserve | Jerome Powell: Economic outlook remarks | Central bank | speech |
 
 **Same-day catalyst list**
+
 | Date | Time | Category | Event | Importance |
 | --- | --- | --- | --- | --- |
-| 2026-04-22 |  | Core coverage | Meituan: Order trends and margin commentary | 3 |
-| 2026-04-22 |  | Core coverage | HKEX: Turnover data and IPO pipeline updates | 3 |
-| 2026-04-22 |  | Core coverage | Tencent: Game grossing trends and ad-demand checks | 3 |
-| 2026-04-22 |  | Core coverage | Alibaba: Cloud demand and GMV updates | 3 |
-| 2026-04-22 |  | Priority follow-up | China Mobile: Capex updates and dividend policy signals | 3 |
-| 2026-04-22 |  | Priority follow-up | AIA: NBV trends and agency momentum | 3 |
+| 2026-04-22 | | Core coverage | Meituan: Order trends and margin commentary | 3 |
+| 2026-04-22 | | Core coverage | HKEX: Turnover data and IPO pipeline updates | 3 |
+| 2026-04-22 | | Core coverage | Tencent: Game grossing trends and ad-demand checks | 3 |
+| 2026-04-22 | | Core coverage | Alibaba: Cloud demand and GMV updates | 3 |
+| 2026-04-22 | | Priority follow-up | China Mobile: Capex updates and dividend policy signals | 3 |
+| 2026-04-22 | | Priority follow-up | AIA: NBV trends and agency momentum | 3 |
 
 **Next few sessions**
+
 | Date | Category | Event | Impact |
 | --- | --- | --- | --- |
 | 2026-04-22 | Core coverage | Meituan: Order trends and margin commentary | High-frequency read on local services demand and platform competition |
-| 2026-04-22 | Core coverage | HKEX: Turnover data and IPO pipeline updates | Direct proxy for Hong Kong market turnover, listings, and southbound... |
+| 2026-04-22 | Core coverage | HKEX: Turnover data and IPO pipeline updates | Direct proxy for Hong Kong market turnover, listings, and southbound |
 | 2026-04-22 | Core coverage | Tencent: Game grossing trends and ad-demand checks | Core offshore China platform proxy for gaming, ads, and AI monetization |
 | 2026-04-22 | Core coverage | Alibaba: Cloud demand and GMV updates | Key read-through for China consumption, cloud, and platform regulation |
-| 2026-04-22 | Priority follow-up | China Mobile: Capex updates and dividend policy signals | Defensive SOE benchmark for yield trade and domestic digital-infrastr... |
-| 2026-04-22 | Priority follow-up | AIA: NBV trends and agency momentum | Read-through for wealth demand, mainland visitor activity, and HK fin... |
+| 2026-04-22 | Priority follow-up | China Mobile: Capex updates and dividend policy signals | Defensive SOE benchmark for yield trade and domestic |
+| 2026-04-22 | Priority follow-up | AIA: NBV trends and agency momentum | Read-through for wealth demand, mainland visitor activity, and HK |
 | 2026-04-22 | Priority follow-up | BYD Company: Weekly sales data and model rollout cadence | Hong Kong-listed proxy for EV volumes, export mix, and price competition |
 | 2026-04-22 | Learning watchlist | Tracker Fund of Hong Kong: Index-turnover shifts and ETF flows | Clean listed proxy for broad HSI positioning and passive flows |
 
@@ -363,7 +409,8 @@ The Risk-Off backdrop from Monday's session - USD strength, 10Y at 4.292%, VIX +
 
 ![Daily One Chart](charts/daily_one_chart_2026-04-22.png)
 
-Market short-selling reached 15.00% of turnover. The point is not that the market is weak; the point is whether pressure is concentrated in ETFs and crowded Hong Kong growth expressions.
+**Chart read.** Market short-selling reached 15.00% of turnover.
+**Why it matters.** The point is not that the market is weak; the point is whether pressure is concentrated in ETFs and crowded Hong Kong growth expressions.
 
 _Source: HKEX Daily Quotations - Short Selling Turnover_
 
@@ -372,14 +419,17 @@ _Source: HKEX Daily Quotations - Short Selling Turnover_
 
 ![Hong Kong Trend Pack](charts/hk_trend_pack_2026-04-22.png)
 
-Four historical lenses: Southbound cumulative flow, HKMA funding and liquidity, HSI/HSCEI/HSTECH relative leadership, and A/H premium dispersion.
+**Trend read.** Four historical lenses: Southbound cumulative flow, HKMA funding and liquidity, HSI/HSCEI/HSTECH relative leadership, and A/H premium dispersion.
 
 _Source: HKEX Stock Connect, HKMA liquidity data, and public Yahoo Finance quotes_
 
 ### 3.5 Personal View Pad
-- **Thinking note:** The April 21 session delivered a split read: local Hang Seng indices held firmer on financials and SOE inflows, but the FXI decline (-1.46%) and HSTECH underperformance (+0.28%) versus HSCEI (+0.61%) argue the move was thin-volume defensiveness rather than durable rotation to growth. Southbound flow of HK$3.7bn net was concentrated in China Mobile (+HK$1.07bn), CCB (+HK$0.79bn), and ICBC (+HK$0.80bn), while BABA and Tencent saw net selling—consistent with defensive rebalancing rather than a conviction call on China internet. ETF outflows in 2828.HK and 2800.HK, combined with the 15% short-selling ratio and VIX at 19.5, keep the burden of proof on follow-through. Watch whether FXI recovers on April 22; if it does not, treat the Hang Seng gain as a local, low-conviction response to Risk-Off rather than a leadership signal. The overnight catalysts (US Retail Sales at 20:30 HKT, Powell at 22:00 HKT) are the next credible test for whether rates-driven headwinds ease or extend.
-- **Suggested two-sentence market answer:** The April 21 Hang Seng move lacks conviction given thin turnover and FXI's sharp decline, so treat it as conditional rather than confirmed growth leadership. Today's confirmation test hinges on whether FXI stabilizes and whether US Retail Sales and Powell provide relief from the rates-driven headwind rather than extending it.
-- **What could break the view:** A sharp VIX spike above 20, a hawkish Powell deviation, or weaker-than-expected Retail Sales (forecast 0.3%) could reinforce the Risk-Off narrative and quickly reverse the Hang Seng's modest April 21 gains. USD/CNH direction and the failure of FXI to recover remain the most direct signals that local resilience is fading. ETF outflows in tracker products suggest institutional positioning is not rotating back to HK growth.
+- **Thinking note:** The April 21 session delivered a split read: local Hang Seng indices held firmer on financials and SOE inflows.
+- **Action:** Southbound flow of HK$3.7bn net was concentrated in China Mobile (+HK$1.07bn), CCB (+HK$0.79bn), and ICBC (+HK$0.80bn).
+- **Suggested market answer:** The April 21 Hang Seng move lacks conviction given thin turnover and FXI's sharp decline, so treat it as conditional rather than confirmed growth leadership.
+- **Second sentence:** Today's confirmation test hinges on whether FXI stabilizes and whether US Retail Sales and Powell provide relief from the rates-driven headwind rather than extending it.
+- **What could break the view:** A sharp VIX spike above 20, a hawkish Powell deviation, or weaker-than-expected Retail Sales (forecast 0.3%) could reinforce the Risk-Off narrative and quickly reverse.
+- **Risk trigger:** USD/CNH direction and the failure of FXI to recover remain the most direct signals that local resilience is fading.
 - Does the overnight tape still read as `Risk-Off`, or do I expect a different Hong Kong cash-session outcome?
 - Is today's Hong Kong setup better described as `Leadership was broad and balanced`, and does that match my current mental model?
 - What was the most important overnight surprise, and does it change my base case?
@@ -400,25 +450,21 @@ _Source: HKEX Stock Connect, HKMA liquidity data, and public Yahoo Finance quote
 
 
 ### Report Quality and Validation
-- **Quality score:** 92.2/100 | **Grade:** A | **Status:** production ready
+- **Quality score:** 94.7/100 | **Grade:** A | **Status:** production ready
+
 | Component | Score | Weight | Read |
 | --- | --- | --- | --- |
 | Market data coverage | 96.9 | 0.3 | 31/32 core market fields available. |
 | Hong Kong local metrics | 82.3 | 0.25 | 8 live, 3 proxy, 0 unavailable local checks. |
 | Key public adapters | 100.0 | 0.2 | 4/4 key adapters were available or partially available. |
 | LLM task health | 100.0 | 0.15 | 7/7 LLM tasks succeeded or used validated cache; 0 error(s). |
-| Fact-check guardrail | 75.0 | 0.1 | Checked 6 numeric claims; 1 numeric mismatch(es), 0 logic warning(s). |
-
-**Quality warnings**
-- LLM fact-check guardrail produced warnings; review the validation table before relying on narrative sections.
+| Fact-check guardrail | 100.0 | 0.1 | Checked 6 numeric claims; 0 numeric mismatch(es), 0 logic warning(s); 0 critical, 0 review. |
 
 **LLM fact-check guardrail**
-- Checked 6 numeric claims; 1 numeric mismatch(es), 0 logic warning(s).
-| Field | Claim | Claimed | Expected | Snippet |
-| --- | --- | --- | --- | --- |
-| tasks.overnight_review.drivers[2] | US 10Y | 0.99 | 4.292 | US 10Y yield rose +0.99% to 4.292%, pressuring duration- |
+- Checked 6 numeric claims; 0 numeric mismatch(es), 0 logic warning(s); 0 critical, 0 review.
 
 **Adapter status**
+
 | Adapter | Status |
 | --- | --- |
 | Stock Connect | ok |
@@ -427,15 +473,15 @@ _Source: HKEX Stock Connect, HKMA liquidity data, and public Yahoo Finance quote
 | China rates | ok |
 
 ### Source Links
-- [Here’s what will really matter to Tesla investors when the company reports earnings](https://www.marketwatch.com/story/heres-what-will-really-matter-to-tesla-investors-when-it-reports-earnings-ba621f85?mod=mw_rss_topstories) (wsj_markets)
+- [Here's what will really matter to Tesla investors when the company reports earnings](https://www.marketwatch.com/story/heres-what-will-really-matter-to-tesla-investors-when-it-reports-earnings-ba621f85?mod=mw_rss_topstories) (wsj_markets)
 - [GE sees fuel prices higher than they are now through the summer due to the Iran conflict](https://www.marketwatch.com/story/ges-profit-beats-by-wide-margin-sending-its-stock-into-positive-territory-for-the-year-8463b635?mod=mw_rss_topstories) (wsj_markets)
 - [Oil Traders Say Billion-Barrel Hole Will Linger Long After War](https://www.bloomberg.com/news/videos/2026-04-21/oil-traders-say-billion-barrel-hole-will-linger-post-war-video) (bloomberg_markets)
 - [From AI shopping to video, Alibaba is making the investments analysts want to see](https://www.cnbc.com/2026/04/19/baba-makes-ai-investments-stock-analysts-want-to-see.html) (cnbc_markets)
 - [Optiver Taps Former Citadel Trader for Options Expansion](https://www.bloomberg.com/news/articles/2026-04-21/optiver-taps-former-citadel-trader-for-options-expansion) (bloomberg_markets)
-- [Men’s Wearhouse Owner Files Confidentially for IPO](https://www.bloomberg.com/news/articles/2026-04-21/men-s-wearhouse-owner-files-confidentially-for-ipo) (bloomberg_markets)
+- [Men's Wearhouse Owner Files Confidentially for IPO](https://www.bloomberg.com/news/articles/2026-04-21/men-s-wearhouse-owner-files-confidentially-for-ipo) (bloomberg_markets)
 - [Ambassador James F. Jeffrey on Trump extends Iran truce, blockade](https://www.bloomberg.com/news/videos/2026-04-21/fmr-deputy-natsec-advisor-on-iran-ceasefire-extension-video) (bloomberg_markets)
 - [US Stock Futures Rise as Trump Extends Iran Truce: Markets Wrap](https://www.bloomberg.com/news/articles/2026-04-21/stock-market-today-dow-s-p-live-updates) (bloomberg_markets)
-- [Memory Stock Valuations Spark Debate Over ‘Supercycle’ Potential](https://www.bloomberg.com/news/articles/2026-04-21/memory-stock-valuations-spark-debate-over-supercycle-potential) (bloomberg_markets)
+- [Memory Stock Valuations Spark Debate Over 'Supercycle' Potential](https://www.bloomberg.com/news/articles/2026-04-21/memory-stock-valuations-spark-debate-over-supercycle-potential) (bloomberg_markets)
 - [BHP Says It Has Concluded Iron Ore Sales Negotiations With CMRG](https://www.bloomberg.com/news/articles/2026-04-21/bhp-says-it-has-concluded-iron-ore-sales-negotiations-with-cmrg) (bloomberg_markets)
 - [CVC, GTCR Weigh Take-Private of Medical Equipment Provider Teleflex](https://www.bloomberg.com/news/articles/2026-04-21/cvc-gtcr-weigh-take-private-of-medical-equipment-provider-teleflex) (bloomberg_markets)
 - [Commodity Traders Reap Billions in Profit as War Upends Markets](https://www.bloomberg.com/news/articles/2026-04-21/commodity-traders-reap-billions-in-profit-as-war-upends-markets) (bloomberg_markets)
@@ -448,6 +494,7 @@ _Source: HKEX Stock Connect, HKMA liquidity data, and public Yahoo Finance quote
 This appendix is professional-path only. It keeps a traceable index of the report visuals and the deterministic chart cues used to frame the morning note, without injecting the legacy intraday chart pack.
 
 ### Visual Index
+
 | Visual | Path | Role |
 | --- | --- | --- |
 | Visual Dashboard | `charts/dashboard_2026-04-22.png` | Cross-asset regime board and Hong Kong local tape snapshot. |
@@ -463,6 +510,7 @@ This appendix is professional-path only. It keeps a traceable index of the repor
 - Cross-asset: Bitcoin moved +0.30pct intraday with a 2.629pct high-low range.
 
 ### Risk Dashboard Components
+
 | Component | Score impact | Evidence |
 | --- | --- | --- |
 | US beta | -3.8 | S&P 500 -0.63% |

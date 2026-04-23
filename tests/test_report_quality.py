@@ -127,15 +127,15 @@ def main() -> None:
     assert "| Component | Score impact | Evidence |" in report
     assert "- **Composite risk score:**" not in report
     assert "#### Market Setup" in report
-    assert "- **Core tape:**" in report
+    assert "**Core tape.**" in report
     assert "#### Key Drivers" in report
     assert "#### Hong Kong Read-Through" in report
-    assert "- **Opening implication:**" in report
+    assert "**Opening implication.**" in report
     assert "#### Style and Local Leadership" in report
     assert "#### Flow Confirmation" in report
     assert "No rotating theme configured" in report
     assert "..." not in report
-    assert "[trimmed]" in report
+    assert "[trimmed]" not in report
 
     print("Report quality test passed")
 

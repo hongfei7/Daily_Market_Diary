@@ -104,9 +104,15 @@ def _fact_check_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
     status = fact_check.get("status", "skipped")
     if status == "skipped":
         return 75.0, fact_check.get("summary", "Fact check was skipped.")
-    mismatches = len(fact_check.get("numeric_mismatches", []) or [])
-    warnings = len(fact_check.get("logic_warnings", []) or [])
-    penalty = mismatches * 25.0 + warnings * 12.5
+    mismatches = fact_check.get("numeric_mismatches", []) or []
+    warnings = fact_check.get("logic_warnings", []) or []
+    critical = sum(1 for item in mismatches if item.get("severity", "critical") == "critical")
+    review = (
+        sum(1 for item in mismatches if item.get("severity", "critical") == "review")
+        + sum(1 for item in warnings if item.get("severity", "review") == "review")
+    )
+    info = sum(1 for item in warnings if item.get("severity") == "info")
+    penalty = critical * 25.0 + review * 12.5 + info * 4.0
     score = max(0.0, 100.0 - penalty)
     return score, fact_check.get("summary", "Fact-check diagnostics were available.")
 

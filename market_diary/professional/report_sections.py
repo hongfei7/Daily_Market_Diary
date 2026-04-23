@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List, Sequence
 
 from professional.report_formatting import (
@@ -16,13 +17,31 @@ from professional.report_formatting import (
 )
 
 
+def _safe_sentence_clip(text: Any, limit: int = 160) -> str:
+    sentence = " ".join(str(text or "").split()).strip()
+    if len(sentence) <= limit:
+        return sentence
+    phrase = _truncate(sentence, limit, suffix="").strip()
+    phrase = re.sub(r"\b(?:could|can|would|may|might|should|will)(?:\s+\w+){0,2}$", "", phrase, flags=re.IGNORECASE).strip()
+    phrase = re.sub(
+        r"\b(?:after|before|during|into|onto|above|below|around|than|via|through|against|despite)\s+(?:any|the|a|an|this|that|these|those|current|next)?$",
+        "",
+        phrase,
+        flags=re.IGNORECASE,
+    ).strip()
+    phrase = re.sub(r"\b(?:and|or|but|with|without|to|from|for|of|the|a|an|because|whether|if)$", "", phrase, flags=re.IGNORECASE).strip()
+    if phrase and phrase[-1] not in ".!?":
+        phrase = phrase.rstrip(" ,;:-|") + "."
+    return phrase
+
+
 def _render_top_items(items: List[Dict[str, Any]], limit: int = 6) -> str:
     if not items:
         return "1. No priority items were available."
     lines = []
     for idx, item in enumerate(items[:limit], 1):
         lines.append(f"{idx}. **{item.get('title', '')}**")
-        lines.append(f"   {item.get('bucket', '')} | {_truncate(item.get('summary', ''), 110)}")
+        lines.append(f"   {item.get('bucket', '')} | {_safe_sentence_clip(item.get('summary', ''), 175)}")
     return "\n".join(lines)
 
 
@@ -34,8 +53,8 @@ def _render_selected_news(bundle: Dict[str, Any]) -> str:
     lines = ["**Curated overnight stories**"]
     for idx, item in enumerate(items[:5], 1):
         lines.append(f"{idx}. **{_truncate(item.get('headline', ''), 90, suffix='')}**")
-        lines.append(f"   Why it matters: {_truncate(item.get('why_it_matters', ''), 120, suffix='')}")
-        lines.append(f"   HK read-through: {_truncate(item.get('hk_market_impact', ''), 120, suffix='')}")
+        lines.append(f"   Why it matters: {_safe_sentence_clip(item.get('why_it_matters', ''), 175)}")
+        lines.append(f"   HK read-through: {_safe_sentence_clip(item.get('hk_market_impact', ''), 175)}")
     return "\n".join(lines)
 
 
@@ -120,7 +139,7 @@ def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
             item.get("value", ""),
             _status_label(str(item.get("status", ""))),
             _compact_source_as_of(item),
-            _truncate(item.get("note", ""), 88, suffix=""),
+            _truncate(item.get("note", ""), 220),
         )
         for item in rows
     ]

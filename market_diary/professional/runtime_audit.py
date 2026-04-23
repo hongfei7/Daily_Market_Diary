@@ -28,11 +28,14 @@ REQUIRED_REPORT_SECTION_GROUPS = [
 
 FORBIDDEN_PHRASES = [
     "...",
+    "[trimmed]",
     "Pending adapter",
     "not wired in this sprint",
     "waiting for a locked public historical source",
     "No stable historical public flow endpoint was selected in this sprint",
 ]
+
+NON_ENGLISH_SCRIPT_RE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]+")
 
 
 def _count_unescaped_pipes(text: str) -> int:
@@ -69,6 +72,35 @@ def _audit_tables(report_text: str) -> List[str]:
         for row_idx, row in enumerate(block[1:], start=2):
             if _count_unescaped_pipes(row) != expected:
                 errors.append(f"Malformed markdown table near row {row_idx} of a table block: `{row[:120]}`")
+                break
+    return errors
+
+
+def _audit_table_spacing(report_text: str) -> List[str]:
+    errors: List[str] = []
+    lines = report_text.splitlines()
+    index = 0
+    while index < len(lines):
+        if not lines[index].strip().startswith("|"):
+            index += 1
+            continue
+        start = index
+        while index < len(lines) and lines[index].strip().startswith("|"):
+            index += 1
+        if start > 0 and lines[start - 1].strip():
+            errors.append(f"Markdown table is not separated from previous block near line {start + 1}.")
+        if index < len(lines) and lines[index].strip():
+            errors.append(f"Markdown table is not separated from following block near line {index + 1}.")
+    return errors
+
+
+def _audit_english_only(report_text: str) -> List[str]:
+    errors: List[str] = []
+    for line_number, line in enumerate(report_text.splitlines(), start=1):
+        match = NON_ENGLISH_SCRIPT_RE.search(line)
+        if match:
+            errors.append(f"Report contains non-English CJK/Kana/Hangul text near line {line_number}: `{line[:120]}`")
+            if len(errors) >= 5:
                 break
     return errors
 
@@ -123,6 +155,8 @@ def audit_generated_run(
             errors.append(f"Report still contains forbidden placeholder phrase: {phrase}")
 
     errors.extend(_audit_tables(report_text))
+    errors.extend(_audit_table_spacing(report_text))
+    errors.extend(_audit_english_only(report_text))
 
     image_refs = re.findall(r"!\[[^\]]*\]\(([^)]+)\)", report_text)
     if len(image_refs) >= 2 and image_refs[0] == image_refs[-1]:

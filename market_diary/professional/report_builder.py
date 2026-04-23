@@ -31,8 +31,24 @@ def _split_sentences(text: str) -> List[str]:
     normalized = re.sub(r"\s+", " ", str(text or "")).strip()
     if not normalized:
         return []
+    protected = {
+        "vs.": "vs<prd>",
+        "Vs.": "Vs<prd>",
+        "e.g.": "e<prd>g<prd>",
+        "i.e.": "i<prd>e<prd>",
+        "U.S.": "U<prd>S<prd>",
+        "U.K.": "U<prd>K<prd>",
+    }
+    for needle, replacement in protected.items():
+        normalized = normalized.replace(needle, replacement)
     parts = re.split(r"(?<=[.!?])\s+(?=[A-Z0-9`$])", normalized)
-    return [part.strip() for part in parts if part.strip()]
+    restored = []
+    for part in parts:
+        for needle, replacement in protected.items():
+            part = part.replace(replacement, needle)
+        if part.strip():
+            restored.append(part.strip())
+    return restored
 
 
 def _paragraph_chunks(text: str, max_sentences: int = 1, max_chars: int = 240, limit: int = 3) -> List[str]:
@@ -83,6 +99,12 @@ def _condense_sentence(text: str, width: int) -> str:
     else:
         phrase = _truncate(sentence, width, suffix="").strip()
         phrase = re.sub(r"\b(?:could|can|would|may|might|should|will)(?:\s+\w+){0,2}$", "", phrase, flags=re.IGNORECASE).strip()
+        phrase = re.sub(
+            r"\b(?:after|before|during|into|onto|above|below|around|than|via|through|against|despite)\s+(?:any|the|a|an|this|that|these|those|current|next)?$",
+            "",
+            phrase,
+            flags=re.IGNORECASE,
+        ).strip()
         phrase = re.sub(r"\b(?:and|or|but|with|without|to|from|for|of|the|a|an)$", "", phrase, flags=re.IGNORECASE).strip()
 
     if phrase and phrase[-1] not in ".!?":
@@ -109,12 +131,31 @@ def _render_labeled_points(
     return lines
 
 
+def _render_labeled_paragraphs(
+    text: str,
+    labels: List[str],
+    *,
+    fallback: str = "",
+    limit: int = 3,
+    width: int = 230,
+) -> List[str]:
+    points = _brief_points(text, limit=limit, width=width)
+    if not points and fallback:
+        points = [fallback]
+
+    lines: List[str] = []
+    for idx, point in enumerate(points):
+        label = labels[idx] if idx < len(labels) else "Additional read"
+        lines.append(f"**{label}.** {point}")
+    return lines
+
+
 def _compact_bullets(items: List[str], limit: int = 4, width: int = 150) -> List[str]:
     bullets: List[str] = []
     for item in items:
         text = str(item or "").strip()
         if text:
-            bullets.append(_truncate(text, width, suffix=""))
+            bullets.append(_condense_sentence(text, width))
         if len(bullets) >= limit:
             break
     return bullets
@@ -122,25 +163,66 @@ def _compact_bullets(items: List[str], limit: int = 4, width: int = 150) -> List
 
 def _clean_report_spacing(text: str) -> str:
     """Keep generated markdown readable without changing table rows."""
-    cleaned = re.sub(r"\n{4,}", "\n\n\n", text)
+    replacements = {
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u2013": " - ",
+        "\u2014": " - ",
+        "\u2015": " - ",
+        "\u00a0": " ",
+        "\u200b": "",
+        "\ufeff": "",
+    }
+    cleaned = text
+    for source, target in replacements.items():
+        cleaned = cleaned.replace(source, target)
+    cleaned = re.sub(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]+", "", cleaned)
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
+
+    spaced_lines: List[str] = []
+    previous_was_table = False
+    for line in cleaned.splitlines():
+        is_table = line.strip().startswith("|")
+        if is_table and spaced_lines and spaced_lines[-1].strip() and not spaced_lines[-1].strip().startswith("|"):
+            spaced_lines.append("")
+        if previous_was_table and line.strip() and not is_table:
+            spaced_lines.append("")
+        spaced_lines.append(line.rstrip())
+        previous_was_table = is_table
+
+    cleaned = "\n".join(spaced_lines)
+    cleaned = re.sub(r"\n{4,}", "\n\n\n", cleaned)
     return cleaned.strip() + "\n"
 
 
 def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
     rows = (bundle.get("macro_agenda", []) or [])[: limit or _report_setting(bundle, "top_macro_events", 6)]
+    if not rows:
+        return "No macro agenda items were available."
     table_rows = [
         (
             item.get("time", ""),
             item.get("country", ""),
-            item.get("event", ""),
+            _truncate(item.get("event", ""), 74),
             item.get("status", ""),
-            item.get("impact", ""),
-            ", ".join(item.get("affected_industries", [])),
-            item.get("attention", ""),
+            _truncate(
+                " | ".join(
+                    str(part)
+                    for part in (
+                        f"Impact: {item.get('impact', '')}" if item.get("impact") else "",
+                        f"Attention: {item.get('attention')}/5" if item.get("attention") not in (None, "") else "",
+                        f"Industries: {', '.join(item.get('affected_industries', []))}" if item.get("affected_industries") else "",
+                    )
+                    if part
+                ),
+                170,
+            ),
         )
         for item in rows
     ]
-    return _make_table(["Time", "Country", "Event", "Status", "Impact", "Industries", "Attention"], table_rows)
+    return _make_table(["Time", "Region", "Event", "Status", "Desk read"], table_rows)
 
 
 def _render_news_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
@@ -273,7 +355,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
                 item.get("value", ""),
                 _status_label(str(item.get("status", ""))),
                 _compact_source_as_of(item),
-                _truncate(item.get("note", ""), 76, suffix=""),
+                _truncate(item.get("note", ""), 220),
             )
             for item in metrics
         ]
@@ -393,12 +475,12 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
     setup = str(llm_sections.get("deep_read_setup", "") or "").strip()
     lines.append("#### Market Setup")
     lines.extend(
-        _render_labeled_points(
+        _render_labeled_paragraphs(
             setup,
             ["Core tape", "Main driver", "HK relevance"],
             fallback=str(overview.get("theme", "") or "No LLM overnight setup was available; rely on the dashboard and attribution tables below."),
             limit=3,
-            width=175,
+            width=225,
         )
     )
 
@@ -414,13 +496,13 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
     lines.append("#### Hong Kong Read-Through")
     leadership = str(hk_desk_view.get("leadership", "") or "").strip()
     if leadership:
-        lines.append(f"- **Desk lens:** {leadership}.")
+        lines.append(f"**Desk lens.** {leadership}.")
     if hk_implication:
-        lines.append(f"- **Opening implication:** {_truncate(hk_implication, 150, suffix='')}")
+        lines.append(f"**Opening implication.** {_condense_sentence(hk_implication, 260)}")
     for item in hk_lines:
         lines.append(f"- **Cross-market read:** {item}")
     if not leadership and not hk_implication and not hk_lines:
-        lines.append("- Hong Kong read-through was not conclusive from the available data.")
+        lines.append("Hong Kong read-through was not conclusive from the available data.")
 
     chart_read = (overview.get("chart_read", {}) or {})
     watch_points = _compact_bullets((chart_read.get("fx", []) or []) + (chart_read.get("assets", []) or []), limit=4, width=150)
@@ -441,11 +523,11 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     if setup:
         lines.append("#### Local Tape Setup")
         lines.extend(
-            _render_labeled_points(
+            _render_labeled_paragraphs(
                 setup,
                 ["Local read", "Verification point", "Risk to watch"],
                 limit=3,
-                width=170,
+                width=220,
             )
         )
         lines.append("")
@@ -453,30 +535,30 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     leadership = hk_desk_view.get("leadership", "")
     lines.append("#### Style and Local Leadership")
     if leadership:
-        lines.append(f"- **Style leadership:** {leadership}.")
+        lines.append(f"**Style leadership.** {leadership}.")
     else:
-        lines.append("- **Style leadership:** Check HSI, HSCEI, and HSTECH first to separate broad-beta, old-economy, and growth leadership.")
+        lines.append("**Style leadership.** Check HSI, HSCEI, and HSTECH first to separate broad-beta, old-economy, and growth leadership.")
 
     for line in (hk_desk_view.get("lines", []) or [])[:3]:
         lines.append(f"- **Cross-market read:** {line}")
 
     local_leadership = str(llm_sections.get("hk_local_leadership", "") or "").strip()
     if local_leadership:
-        lines.append(f"- **LLM local leadership read:** {local_leadership}")
+        lines.append(f"**LLM local leadership read.** {local_leadership}")
 
     lines.append("")
     lines.append("#### Flow Confirmation")
     if _has_official_stock_connect_flow(bundle):
-        lines.append("- Official Stock Connect evidence is available; use Section 2.3 to confirm whether local money supports the price action.")
+        lines.append("Official Stock Connect evidence is available; use Section 2.3 to confirm whether local money supports the price action.")
     else:
-        lines.append("- Official Stock Connect confirmation is incomplete; treat ETF proxies and price leadership as fallback evidence only.")
+        lines.append("Official Stock Connect confirmation is incomplete; treat ETF proxies and price leadership as fallback evidence only.")
 
     follow_through = str(llm_sections.get("hk_follow_through", "") or "").strip()
     if not follow_through:
         follow_through = "Confirm the opening read through Southbound active names, short-selling concentration, USD/CNH, and USD/HKD funding pressure."
     lines.append("")
     lines.append("#### Follow-Through Checklist")
-    lines.append(f"- **Follow-through check:** {_truncate(follow_through, 170, suffix='')}")
+    lines.append(f"**Follow-through check.** {_condense_sentence(follow_through, 260)}")
 
     if not _has_official_stock_connect_flow(bundle):
         proxy_table = _render_hk_etf_proxy_table(bundle)
@@ -496,11 +578,11 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
     if llm_sections.get("company_takeaway"):
         sections.append("#### Company Event Takeaway")
         sections.extend(
-            _render_labeled_points(
+            _render_labeled_paragraphs(
                 llm_sections.get("company_takeaway", ""),
                 ["Desk read", "Why it matters", "Follow-up"],
                 limit=3,
-                width=170,
+                width=220,
             )
         )
         sections.append("")
@@ -587,11 +669,11 @@ def _render_theme_deep_dive(bundle: Dict[str, Any]) -> str:
     if llm_sections.get("theme_paragraph"):
         blocks.append("\n**Theme desk read**")
         blocks.extend(
-            _render_labeled_points(
+            _render_labeled_paragraphs(
                 llm_sections.get("theme_paragraph", ""),
                 ["Core thesis", "Evidence", "What to test"],
                 limit=3,
-                width=175,
+                width=225,
             )
         )
 
@@ -673,21 +755,21 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
 
 
 def _render_macro_takeaway(text: str) -> str:
-    points = _render_labeled_points(
+    points = _render_labeled_paragraphs(
         text,
         ["Desk read", "Market sensitivity", "HK implication"],
         fallback="No LLM macro interpretation was available; rely on the calendar table and released data below.",
         limit=3,
-        width=175,
+        width=230,
     )
-    return "\n".join(points)
+    return "\n\n".join(points)
 
 
 def _render_macro_watchpoints(llm_sections: Dict[str, Any]) -> str:
     watchpoints = llm_sections.get("macro_watchpoints", []) or []
     if not watchpoints:
         return ""
-    lines = ["\n**Macro watchpoints**"]
+    lines = ["**Macro watchpoints**"]
     lines.extend(f"- {_truncate(line, 145, suffix='')}" for line in watchpoints[:4])
     return "\n".join(lines)
 
@@ -703,11 +785,11 @@ def _render_daily_one_chart(bundle: Dict[str, Any], daily_chart_rel_path: str) -
     source = chart_meta.get("source", "")
     source_line = f"\n\n_Source: {source}_" if source else ""
     caption_lines = "\n".join(
-        _render_labeled_points(
+        _render_labeled_paragraphs(
             caption,
             ["Chart read", "Why it matters"],
             limit=2,
-            width=175,
+            width=220,
         )
     )
     return f"**{title}**\n\n![Daily One Chart]({chart_path})\n\n{caption_lines}{source_line}"
@@ -724,11 +806,11 @@ def _render_trend_pack(bundle: Dict[str, Any], trend_pack_rel_path: str) -> str:
     source = chart_meta.get("source", "")
     source_line = f"\n\n_Source: {source}_" if source else ""
     caption_lines = "\n".join(
-        _render_labeled_points(
+        _render_labeled_paragraphs(
             caption,
             ["Trend read", "Why it matters"],
             limit=2,
-            width=175,
+            width=220,
         )
     )
     return f"**{title}**\n\n![Hong Kong Trend Pack]({chart_path})\n\n{caption_lines}{source_line}"
@@ -806,7 +888,7 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
                 item.get("name", ""),
                 item.get("score", ""),
                 item.get("weight", ""),
-                _truncate(str(item.get("read", "")).replace("|", "/"), 86),
+                _condense_sentence(str(item.get("read", "")).replace("|", "/"), 120),
             )
             for item in components
         ]
@@ -825,15 +907,17 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
         if mismatches:
             rows = [
                 (
+                    item.get("severity", "critical"),
                     item.get("field", ""),
                     item.get("label", ""),
+                    item.get("claim_type", ""),
                     item.get("claimed", ""),
                     item.get("expected", ""),
                     _truncate(item.get("snippet", ""), 70),
                 )
                 for item in mismatches[:6]
             ]
-            lines.append(_make_table(["Field", "Claim", "Claimed", "Expected", "Snippet"], rows))
+            lines.append(_make_table(["Severity", "Field", "Claim", "Type", "Claimed", "Expected", "Snippet"], rows))
         if logic_warnings:
             lines.extend(f"- Logic warning: {item.get('message', '')}" for item in logic_warnings[:6])
 
@@ -931,6 +1015,7 @@ def render_professional_report(
 {_render_macro_takeaway(macro_takeaway)}
 
 {_render_macro_watchpoints(llm_sections)}
+
 {_render_macro_table(bundle)}
 
 #### Positioning and Risk Backdrop
