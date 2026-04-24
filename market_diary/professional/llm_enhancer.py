@@ -8,7 +8,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from modules.llm_client import api_key_available, get_client
+from market_diary.modules.llm_client import api_key_available, get_client
 
 
 LLM_SYSTEM_PROMPT = """You are a senior analyst at a Hong Kong Chinese securities research institute.

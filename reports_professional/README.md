@@ -10,10 +10,12 @@ Each report date is stored as a self-contained folder:
 archive/YYYY-MM-DD/
 |-- morning_briefing.md
 |-- charts/
-`-- raw/
+`-- raw/  # optional, only when raw bundle archiving is explicitly enabled
 ```
 
 Root-level generated files are runtime output. Browse the organized `archive/` folder on GitHub.
+Raw bundles are uploaded as workflow artifacts by default. They are committed
+only for runs staged with `scripts/stage_report_archive.py --include-raw-bundle`.
 
 The same structure is used for daily trading reports, Sunday weekly reviews, weekend event-watch reports, and holiday reopen playbooks.
 

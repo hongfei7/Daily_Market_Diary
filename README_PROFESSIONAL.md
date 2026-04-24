@@ -18,7 +18,17 @@ This is the upgraded morning-briefing pipeline for the project. It is designed f
 market_diary/
 |-- main_professional.py
 |-- professional/
-|   |-- analytics.py
+|   |-- analytics.py                  # bundle orchestrator
+|   |-- analytics_briefing.py         # catalysts, source links, must-watch list
+|   |-- analytics_flows.py            # movers, ETF/short-sell/options, flow tracker
+|   |-- analytics_hk_checks.py        # Hong Kong quick-check table
+|   |-- analytics_macro.py            # macro calendar scoring
+|   |-- analytics_market.py           # market snapshot and overview helpers
+|   |-- analytics_narrative.py        # theme, today-forward, non-trading, weekly review
+|   |-- analytics_public_flow.py      # public Stock Connect / A-H fallback enrichment
+|   |-- analytics_sector.py           # sector and company news digest
+|   |-- analytics_trackers.py         # high-frequency trackers
+|   |-- analytics_watchlist.py        # watchlist price/news snapshots
 |   |-- attribution.py
 |   |-- config.py
 |   |-- daily_one_chart.py
@@ -27,6 +37,7 @@ market_diary/
 |   |-- fact_checker.py
 |   |-- llm_enhancer.py
 |   |-- models.py
+|   |-- report_blocks.py
 |   |-- report_builder.py
 |   |-- report_formatting.py
 |   |-- report_layout.py
@@ -55,12 +66,20 @@ Each run writes to `reports_professional/`:
 - `charts/features_YYYY-MM-DD.json`: extracted chart features
 - `raw/YYYY-MM-DD_bundle.json`: structured research bundle
 
-Final markdown reports and their production chart assets are archived in `reports_professional/` so they can be read directly on GitHub. Raw bundles, email previews, runtime caches, and test-generated chart probes remain ignored.
+Final markdown reports and their production chart assets can be archived in `reports_professional/` so they can be read directly on GitHub. Raw bundles, email previews, runtime caches, and test-generated chart probes remain ignored unless raw bundle archiving is explicitly requested.
 
 ## Run
 
 ```bash
 python market_diary/main_professional.py --review-date 2026-04-13 --no-llm
+```
+
+After an editable install, the same entrypoint is available as:
+
+```bash
+python -m pip install -r requirements.lock
+python -m pip install -e . --no-deps
+market-diary-professional --review-date 2026-04-13 --no-llm
 ```
 
 Useful flags:
@@ -88,8 +107,22 @@ See [docs/README.md](docs/README.md) for the supporting documentation index.
 ## Test
 
 ```bash
-python tests/test_professional_workbench.py
+python scripts/run_tests.py
 python scripts/audit_repo_hygiene.py
 ```
 
-This regression test validates the professional bundle, dashboard, and markdown renderer without depending on the full live run.
+The shared regression runner mirrors the GitHub Actions smoke suite. Add
+`--pytest` to also run pytest collection locally.
+
+The analytics layer is intentionally split into narrow modules so changes to
+macro scoring, Hong Kong checks, public-flow enrichment, narrative framing, or
+watchlist fetching can be tested without touching the bundle orchestrator.
+
+## Publishing
+
+Scheduled GitHub Actions runs generate, audit, email, and upload the briefing
+as an artifact. They do not commit generated files back to `main` by default.
+
+Manual workflow runs can publish the GitHub-readable archive by enabling
+`publish_archive`. Enable `include_raw_bundle` only when the raw JSON should be
+kept as repository audit evidence; otherwise it stays in the workflow artifact.

@@ -12,7 +12,7 @@ import pandas as pd
 import requests
 import yfinance as yf
 
-from modules.text_normalizer import normalize_news_text
+from market_diary.modules.text_normalizer import normalize_news_text
 
 
 NEWS_REQUEST_TIMEOUT = (

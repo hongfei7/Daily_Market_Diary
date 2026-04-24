@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "daily-market-diary"
+version = "3.0.0"
+description = "Professional morning research briefing workbench for Hong Kong market monitoring."
+readme = "README_PROFESSIONAL.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "openai>=1.0.0",
+    "requests>=2.31.0",
+    "feedparser>=6.0.0",
+    "yfinance>=0.2.0",
+    "beautifulsoup4>=4.12.0",
+    "python-dateutil>=2.8.0",
+]
+
+[project.scripts]
+market-diary = "market_diary.main:main"
+market-diary-professional = "market_diary.main_professional:main"
+
+[tool.setuptools]
+packages = [
+    "market_diary",
+    "market_diary.modules",
+    "market_diary.professional",
+]

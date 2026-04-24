@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from professional.report_formatting import _truncate
+from market_diary.professional.report_formatting import _truncate
 
 
 def _hk_local_highlights(bundle: Dict[str, Any], limit: int = 3) -> List[Dict[str, str]]:

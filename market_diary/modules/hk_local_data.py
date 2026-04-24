@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from modules.local_metrics import (
+from market_diary.modules.local_metrics import (
     build_metric,
     format_hkd_billions,
     format_percent,

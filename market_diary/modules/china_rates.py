@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from modules.local_metrics import build_metric, format_bp, format_percent, parse_target_date, unavailable_metric
+from market_diary.modules.local_metrics import build_metric, format_bp, format_percent, parse_target_date, unavailable_metric
 
 
 EASTMONEY_TREASURY_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"

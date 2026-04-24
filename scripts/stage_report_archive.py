@@ -76,7 +76,11 @@ def _copy_raw_files(report_date: str, destination: Path) -> List[Path]:
     return copied
 
 
-def build_date_archive(report_date: str, include_all_charts: bool = False) -> List[Path]:
+def build_date_archive(
+    report_date: str,
+    include_all_charts: bool = False,
+    include_raw_bundle: bool = False,
+) -> List[Path]:
     report_path = ARCHIVE_DIR / f"{report_date}_morning_briefing.md"
     if not report_path.exists():
         raise FileNotFoundError(f"Report not found: {report_path}")
@@ -112,8 +116,9 @@ def build_date_archive(report_date: str, include_all_charts: bool = False) -> Li
         if src.exists() and src.is_file():
             archived.add(_copy_file(src, date_dir / "charts" / src.name))
 
-    for raw_path in _copy_raw_files(report_date, date_dir):
-        archived.add(raw_path)
+    if include_raw_bundle:
+        for raw_path in _copy_raw_files(report_date, date_dir):
+            archived.add(raw_path)
 
     readme = ARCHIVE_DIR / "README.md"
     if readme.exists():
@@ -131,6 +136,11 @@ def main(argv: List[str] | None = None) -> int:
         action="store_true",
         help="Archive every non-test chart currently in reports_professional/charts. Use in a fresh CI run.",
     )
+    parser.add_argument(
+        "--include-raw-bundle",
+        action="store_true",
+        help="Also copy raw bundle JSON into the Git-tracked archive. Raw output is otherwise kept as an artifact.",
+    )
     args = parser.parse_args(argv)
 
     staged: Set[Path] = set()
@@ -142,7 +152,12 @@ def main(argv: List[str] | None = None) -> int:
         report_dates = [args.report_date]
 
     for report_date in report_dates:
-        for path in build_date_archive(report_date, include_all_charts=args.include_all_charts):
+        staged.add(ARCHIVE_ROOT / report_date)
+        for path in build_date_archive(
+            report_date,
+            include_all_charts=args.include_all_charts,
+            include_raw_bundle=args.include_raw_bundle,
+        ):
             staged.add(path)
     for path in build_report_gallery():
         staged.add(path)

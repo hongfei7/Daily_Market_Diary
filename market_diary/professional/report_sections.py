@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Sequence
 
-from professional.report_formatting import (
+from market_diary.professional.report_formatting import (
     _bundle_metric,
     _compact_source_as_of,
     _fmt_alert_pct,

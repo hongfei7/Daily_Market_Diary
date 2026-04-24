@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 import yfinance as yf
 
-from modules.adapter_shortsell import fetch_short_sell_data
+from market_diary.modules.adapter_shortsell import fetch_short_sell_data
 
 YFINANCE_TIMEOUT = float(os.environ.get("DMD_YFINANCE_TIMEOUT_SECONDS", "6"))
 

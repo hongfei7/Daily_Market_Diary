@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from modules.adapter_hkex_announce import fetch_hkex_announcements
-from modules.text_normalizer import normalize_news_text
+from market_diary.modules.adapter_hkex_announce import fetch_hkex_announcements
+from market_diary.modules.text_normalizer import normalize_news_text
 
 try:
     import feedparser

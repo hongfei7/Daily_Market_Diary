@@ -3,6 +3,7 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -10,9 +11,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-from modules.data_fetcher import fetch_market_data, fetch_news
-from modules.llm_client import generate_report
-from modules.chart_features import extract_chart_features, features_to_prompt_block
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from market_diary.modules.data_fetcher import fetch_market_data, fetch_news
+from market_diary.modules.llm_client import generate_report
+from market_diary.modules.chart_features import extract_chart_features, features_to_prompt_block
 
 
 # -----------------------------

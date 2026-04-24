@@ -16,35 +16,39 @@ import os
 import queue
 import sys
 import threading
+from pathlib import Path
 from typing import Any, Dict
 
-from modules.adapter_ah_premium import fetch_ah_premium_data
-from modules.adapter_stockconnect import fetch_stock_connect_data
-from modules.chart_features import extract_chart_features
-from modules.china_rates import fetch_china_rates_data
-from modules.data_fetcher import fetch_market_data, fetch_news
-from modules.hk_local_data import fetch_hk_local_data
-from modules.macro_calendar import fetch_macro_data
-from modules.market_movers import fetch_movers_data
-from modules.risk_radar import fetch_risk_data
-from modules.sector_news import fetch_sector_data
-from professional.analytics import build_professional_bundle
-from professional.chart_appendix import render_chart_appendix
-from professional.config import load_professional_config
-from professional.daily_one_chart import generate_daily_one_chart
-from professional.dashboard import generate_dashboard
-from professional.date_policy import (
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from market_diary.modules.adapter_ah_premium import fetch_ah_premium_data
+from market_diary.modules.adapter_stockconnect import fetch_stock_connect_data
+from market_diary.modules.chart_features import extract_chart_features
+from market_diary.modules.china_rates import fetch_china_rates_data
+from market_diary.modules.data_fetcher import fetch_market_data, fetch_news
+from market_diary.modules.hk_local_data import fetch_hk_local_data
+from market_diary.modules.macro_calendar import fetch_macro_data
+from market_diary.modules.market_movers import fetch_movers_data
+from market_diary.modules.risk_radar import fetch_risk_data
+from market_diary.modules.sector_news import fetch_sector_data
+from market_diary.professional.analytics import build_professional_bundle
+from market_diary.professional.chart_appendix import render_chart_appendix
+from market_diary.professional.config import load_professional_config
+from market_diary.professional.daily_one_chart import generate_daily_one_chart
+from market_diary.professional.dashboard import generate_dashboard
+from market_diary.professional.date_policy import (
     build_day_mode,
     previous_calendar_day as _previous_calendar_day,
     previous_hk_trading_day as _previous_hk_trading_day,
     previous_weekday as _previous_weekday,
     resolve_report_dates,
 )
-from professional.fact_checker import run_fact_check
-from professional.llm_enhancer import generate_llm_sections
-from professional.report_quality import build_report_quality
-from professional.report_builder import render_professional_report
-from professional.trend_pack import collect_hk_trend_pack_data, generate_hk_trend_pack, summarize_hk_trend_pack_data
+from market_diary.professional.fact_checker import run_fact_check
+from market_diary.professional.llm_enhancer import generate_llm_sections
+from market_diary.professional.report_quality import build_report_quality
+from market_diary.professional.report_builder import render_professional_report
+from market_diary.professional.trend_pack import collect_hk_trend_pack_data, generate_hk_trend_pack, summarize_hk_trend_pack_data
 
 
 DEFAULT_DATA_STEP_TIMEOUT_SECONDS = float(os.environ.get("DMD_DATA_STEP_TIMEOUT_SECONDS", "90"))

@@ -12,9 +12,9 @@ import numpy as np
 import requests
 import yfinance as yf
 
-from modules.adapter_ah_premium import AH_UNIVERSE
-from modules.adapter_stockconnect import fetch_stock_connect_data
-from modules.hk_local_data import HKMA_LIQUIDITY_URL, REQUEST_TIMEOUT, USER_AGENT
+from market_diary.modules.adapter_ah_premium import AH_UNIVERSE
+from market_diary.modules.adapter_stockconnect import fetch_stock_connect_data
+from market_diary.modules.hk_local_data import HKMA_LIQUIDITY_URL, REQUEST_TIMEOUT, USER_AGENT
 
 
 INK = "#102a43"

@@ -1,0 +1,346 @@
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from market_diary.professional.analytics_market import _format_signed, _get_row, build_market_snapshot
+
+
+def _theme_rotation_entry(report_date: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    weekday = datetime.strptime(report_date, "%Y-%m-%d").weekday()
+    rotations = ((config.get("thinking", {}) or {}).get("rotation", []) or [])
+    for entry in rotations:
+        if int(entry.get("weekday", -1)) == weekday:
+            return entry
+    return rotations[0] if rotations else {
+        "theme": "Hong Kong Market Structure and Flows",
+        "angle": "Track whether style leadership and cross-border flows remain supportive.",
+        "keywords": ["hong kong", "flow", "turnover"],
+    }
+
+
+def build_theme_deep_dive(
+    report_date: str,
+    config: Dict[str, Any],
+    sector_digest: Dict[str, Any],
+    watchlists: Dict[str, List[Dict[str, Any]]],
+    high_frequency: List[Dict[str, Any]],
+    catalysts: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    entry = _theme_rotation_entry(report_date, config)
+    keywords = [str(keyword).lower() for keyword in entry.get("keywords", [])]
+
+    matched_news: List[Dict[str, Any]] = []
+    for item in (sector_digest or {}).get("graded_news", []) or []:
+        text = " ".join(
+            [
+                str(item.get("sector", "")),
+                str(item.get("title", "")),
+                str(item.get("summary", "")),
+                str(item.get("why", "")),
+            ]
+        ).lower()
+        if any(keyword in text for keyword in keywords):
+            matched_news.append(item)
+
+    related_names: List[Dict[str, Any]] = []
+    for bucket, items in (watchlists or {}).items():
+        for item in items:
+            text = " ".join(
+                [
+                    str(item.get("name", "")),
+                    str(item.get("ticker", "")),
+                    str(item.get("bucket", bucket)),
+                    str(item.get("note", "")),
+                    str(item.get("upcoming_catalyst", "")),
+                    str(item.get("thesis", "")),
+                ]
+            ).lower()
+            if any(keyword in text for keyword in keywords):
+                related_names.append(item)
+
+    if not related_names:
+        for bucket_items in (watchlists or {}).values():
+            related_names.extend(bucket_items[:1])
+            if len(related_names) >= 3:
+                break
+
+    matched_catalysts: List[Dict[str, Any]] = []
+    for item in catalysts:
+        text = " ".join([str(item.get("event", "")), str(item.get("impact", "")), str(item.get("category", ""))]).lower()
+        if any(keyword in text for keyword in keywords):
+            matched_catalysts.append(item)
+
+    signal_lines: List[str] = []
+    for news in matched_news[:2]:
+        signal_lines.append(f"{news.get('title', '')}: {news.get('why', '')}")
+    for tracker in high_frequency[:2]:
+        signal_lines.append(
+            f"{tracker.get('label', '')} {_format_signed(tracker.get('change_pct'))}: {tracker.get('interpretation', '')}"
+        )
+    if not signal_lines:
+        signal_lines.append("No clean thematic signal matched the current rotation, so use the section mainly as a checklist.")
+
+    return {
+        "theme": entry.get("theme", ""),
+        "angle": entry.get("angle", ""),
+        "signals": signal_lines[:4],
+        "news": matched_news[:3],
+        "related_names": related_names[:4],
+        "upcoming": matched_catalysts[:4],
+    }
+
+
+def build_today_forward(
+    report_date: str,
+    macro_agenda: List[Dict[str, Any]],
+    catalysts: List[Dict[str, Any]],
+    day_mode: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    today = report_date
+    today_macro = [item for item in macro_agenda if item.get("date", today) == today][:6]
+    today_catalysts = [item for item in catalysts if item.get("date", today) == today][:8]
+    next_catalysts = catalysts[:10]
+    is_trading_day = bool((day_mode or {}).get("is_trading_day", True))
+
+    focus_lines = []
+    if not is_trading_day:
+        focus_lines.append(
+            "Non-trading review: use today's calendar to prepare the next Hong Kong open rather than treating the last cash tape as a fresh signal."
+        )
+    if today_macro:
+        focus_lines.append(
+            f"Macro: {today_macro[0].get('event', '')} is the first item to anchor the open and the rates/FX response."
+        )
+    if today_catalysts:
+        focus_lines.append(
+            f"Corporate / event: {today_catalysts[0].get('event', '')} is the cleanest same-day catalyst to prepare for."
+        )
+    if not focus_lines:
+        focus_lines.append("The calendar is relatively light, so the market may trade more off positioning and overnight headlines.")
+
+    return {
+        "today_macro": today_macro,
+        "today_catalysts": today_catalysts,
+        "next_catalysts": next_catalysts,
+        "focus_lines": focus_lines,
+    }
+
+
+def build_reflection_prompts(config: Dict[str, Any], overview: Dict[str, Any], hk_desk_view: Dict[str, Any]) -> List[str]:
+    prompts = ((config.get("thinking", {}) or {}).get("reflection_prompts", []) or [])
+    dynamic = [
+        f"Does the overnight tape still read as `{overview.get('risk_regime', 'Neutral')}`, or do I expect a different Hong Kong cash-session outcome?",
+        f"Is today's Hong Kong setup better described as `{hk_desk_view.get('leadership', 'broad leadership')}`, and does that match my current mental model?",
+    ]
+    return dynamic + [str(prompt) for prompt in prompts]
+
+
+def build_non_trading_focus(
+    day_mode: Dict[str, Any],
+    date_semantics: Dict[str, Any],
+    overview: Dict[str, Any],
+    macro_agenda: List[Dict[str, Any]],
+    sector_digest: Dict[str, Any],
+    high_frequency: List[Dict[str, Any]],
+    catalysts: List[Dict[str, Any]],
+    risk_data: Dict[str, Any],
+) -> Dict[str, Any]:
+    if bool((day_mode or {}).get("is_trading_day", True)) or (day_mode or {}).get("mode") == "weekly_review":
+        return {}
+
+    active_categories = {"FX", "Commodities", "Crypto", "Rates", "Vol"}
+    still_moving = [
+        item
+        for item in high_frequency
+        if item.get("category") in active_categories and item.get("price") is not None
+    ][:6]
+
+    action_items: List[Dict[str, Any]] = []
+    for item in ((risk_data or {}).get("geopolitical_risks", []) or [])[:3]:
+        action_items.append(
+            {
+                "bucket": "Geopolitics",
+                "item": f"{item.get('region', '')}: {item.get('event', '')}",
+                "read": item.get("impact", "Watch risk-premium transmission into oil, gold, FX, and China proxies."),
+            }
+        )
+    for item in (sector_digest.get("graded_news", []) or [])[:3]:
+        action_items.append(
+            {
+                "bucket": "Policy / company tape",
+                "item": item.get("title", ""),
+                "read": item.get("why", ""),
+            }
+        )
+    for item in (macro_agenda or [])[:3]:
+        action_items.append(
+            {
+                "bucket": item.get("status", "Macro"),
+                "item": item.get("event", ""),
+                "read": item.get("impact", ""),
+            }
+        )
+
+    event_watch: List[Dict[str, Any]] = []
+    for item in still_moving[:4]:
+        event_watch.append(
+            {
+                "channel": item.get("category", ""),
+                "signal": f"{item.get('label', '')} {_format_signed(item.get('change_pct'))}",
+                "why": item.get("interpretation", ""),
+                "next_check": "Keep this as the bridge signal until the next Hong Kong cash close confirms or rejects it.",
+            }
+        )
+    for item in (macro_agenda or [])[:3]:
+        event_watch.append(
+            {
+                "channel": item.get("status", "Macro"),
+                "signal": item.get("event", ""),
+                "why": item.get("impact", ""),
+                "next_check": "Check the rates, FX, and China-proxy reaction after release or official communication.",
+            }
+        )
+    for item in ((risk_data or {}).get("geopolitical_risks", []) or [])[:2]:
+        event_watch.append(
+            {
+                "channel": "Geopolitics",
+                "signal": f"{item.get('region', '')}: {item.get('event', '')}",
+                "why": item.get("impact", "Potential risk-premium transmission into oil, gold, FX, and China proxies."),
+                "next_check": "Map any escalation first into oil, gold, USD, CNH, and HK growth-beta sensitivity.",
+            }
+        )
+    for item in (catalysts or [])[:3]:
+        event_watch.append(
+            {
+                "channel": item.get("category", "Catalyst"),
+                "signal": item.get("event", ""),
+                "why": item.get("impact", ""),
+                "next_check": "Prepare the base-case and risk-case talking points before the next open.",
+            }
+        )
+
+    next_open = [
+        "Refresh HKEX turnover, Stock Connect, short-selling, and AH dispersion once the next HK cash session closes.",
+        "Use USD/CNH, USD/HKD, DXY, oil, gold, and crypto as bridge signals before cash markets reopen.",
+        "Prepare one base case and one risk case for the next Hong Kong open instead of over-reading stale cash-market moves.",
+    ]
+    if catalysts:
+        next_open.insert(0, f"First dated catalyst to prepare: {catalysts[0].get('date', '')} | {catalysts[0].get('event', '')}.")
+
+    return {
+        "summary": (
+            f"No fresh Hong Kong cash-market session is assumed for {date_semantics.get('review_date')}; "
+            f"HK local tape is {date_semantics.get('hk_cash_role')} from {date_semantics.get('hk_data_date')}."
+        ),
+        "still_moving": still_moving,
+        "event_watch": event_watch[:8],
+        "action_items": action_items[:6],
+        "next_open": next_open[:5],
+        "market_regime": overview.get("theme", ""),
+    }
+
+
+def build_weekly_review(
+    day_mode: Dict[str, Any],
+    date_semantics: Dict[str, Any],
+    overview: Dict[str, Any],
+    summary: Dict[str, Any],
+    hk_desk_view: Dict[str, Any],
+    high_frequency: List[Dict[str, Any]],
+    sector_digest: Dict[str, Any],
+    macro_agenda: List[Dict[str, Any]],
+    catalysts: List[Dict[str, Any]],
+    flow_tracker: Dict[str, Any],
+    attribution: Dict[str, Any],
+) -> Dict[str, Any]:
+    del high_frequency
+    if (day_mode or {}).get("mode") != "weekly_review":
+        return {}
+
+    rows = build_market_snapshot(summary)
+    selected_labels = ["S&P 500", "Nasdaq 100", "Hang Seng Index", "Hang Seng TECH", "DXY", "US 10Y", "Gold", "VIX"]
+    cross_assets = []
+    for label in selected_labels:
+        row = _get_row(rows, label)
+        if row:
+            cross_assets.append(
+                {
+                    "asset": label,
+                    "latest_move": _format_signed(row.get("change_pct")),
+                    "read": row.get("question", ""),
+                }
+            )
+
+    hk_rows = []
+    for label in ["Hang Seng Index", "HSCEI", "Hang Seng TECH", "China proxy (FXI)", "USD/CNH", "USD/HKD"]:
+        row = _get_row(rows, label)
+        if row:
+            hk_rows.append(
+                {
+                    "signal": label,
+                    "latest_move": _format_signed(row.get("change_pct")),
+                    "read": row.get("question", ""),
+                }
+            )
+
+    developments = []
+    for item in (sector_digest.get("graded_news", []) or [])[:4]:
+        developments.append(
+            {
+                "bucket": item.get("grade", "News"),
+                "item": item.get("title", ""),
+                "read": item.get("why", ""),
+            }
+        )
+    for item in (macro_agenda or [])[:3]:
+        developments.append(
+            {
+                "bucket": item.get("status", "Macro"),
+                "item": item.get("event", ""),
+                "read": item.get("impact", ""),
+            }
+        )
+
+    next_week = [
+        {
+            "date": item.get("date", ""),
+            "event": item.get("event", ""),
+            "read": item.get("impact", ""),
+        }
+        for item in (catalysts or [])[:8]
+    ]
+
+    flow_lines = []
+    conclusion = (flow_tracker or {}).get("conclusion")
+    if conclusion:
+        flow_lines.append(conclusion)
+    for item in ((attribution or {}).get("dominant_drivers", []) or [])[:3]:
+        flow_lines.append(f"{item.get('driver', '')}: {item.get('interpretation', '')}")
+
+    desk_questions = [
+        "Did Southbound flow confirm the index move, or was the week mainly offshore beta without local money follow-through?",
+        "Did HIBOR and Aggregate Balance point to benign funding, or should tighter HKD liquidity be part of next week's risk case?",
+        "Was leadership broad enough beyond HSTECH / platform beta, or was the week concentrated in a narrow style pocket?",
+        "Which dated macro, policy, earnings, or IPO catalyst can realistically change the next-week narrative?",
+        "What single data point would invalidate the base-case market pulse by Monday or Tuesday morning?",
+    ]
+
+    return {
+        "window": {
+            "start": day_mode.get("period_start", ""),
+            "end": day_mode.get("period_end", ""),
+            "review_date": date_semantics.get("review_date", ""),
+        },
+        "summary": (
+            f"Weekly review window: {day_mode.get('period_start', '')} to {day_mode.get('period_end', '')}. "
+            f"Core regime: {overview.get('theme', '')}. Hong Kong leadership: {hk_desk_view.get('leadership', '')}."
+        ),
+        "cross_assets": cross_assets,
+        "hk_tape": hk_rows,
+        "developments": developments[:6],
+        "next_week": next_week,
+        "flow_lines": flow_lines[:4],
+        "desk_questions": desk_questions,
+        "method_note": "Weekly mode uses the last completed cash tape, available cross-asset snapshots, and Hong Kong Trend Pack evidence when generated.",
+    }
