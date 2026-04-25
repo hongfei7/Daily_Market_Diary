@@ -2,7 +2,7 @@
 
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
-- Latest report: [2026-04-24 Morning Briefing](./archive/2026-04-24/morning_briefing.md)
+- Latest report: [2026-04-26 Morning Briefing](./archive/2026-04-26/morning_briefing.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -21,6 +21,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-26 | Weekly Review | Risk-On week for Hong Kong (HSI +0.24%) was confirmed by southbound flow (+HK$16.8bn cumulative), USD softness (DXY... | 90.4/100 | [Report](archive/2026-04-26/morning_briefing.md) | [Dashboard](archive/2026-04-26/charts/dashboard_2026-04-26.png) | [One Chart](archive/2026-04-26/charts/daily_one_chart_2026-04-26.png) | [Trend Pack](archive/2026-04-26/charts/hk_trend_pack_2026-04-26.png) | [Bundle](archive/2026-04-26/raw/2026-04-26_bundle.json) |
 | 2026-04-24 | Trading Daily | Risk-Off session on April 23 saw HSTECH (-1.98%) underperform HSCEI (-1.59%) with 19% short-selling and ETF-led flo... | 92.6/100 | [Report](archive/2026-04-24/morning_briefing.md) | [Dashboard](archive/2026-04-24/charts/dashboard_2026-04-24.png) | [One Chart](archive/2026-04-24/charts/daily_one_chart_2026-04-24.png) | [Trend Pack](archive/2026-04-24/charts/hk_trend_pack_2026-04-24.png) | [Bundle](archive/2026-04-24/raw/2026-04-24_bundle.json) |
 | 2026-04-23 | Trading Daily | Risk-On with a stronger USD gave Nasdaq a +1.73% lead but HSTECH (+0.12%) lagged both HSI and HSCEI on light turnov... | 90.1/100 | [Report](archive/2026-04-23/morning_briefing.md) | [Dashboard](archive/2026-04-23/charts/dashboard_2026-04-23.png) | [One Chart](archive/2026-04-23/charts/daily_one_chart_2026-04-23.png) | [Trend Pack](archive/2026-04-23/charts/hk_trend_pack_2026-04-23.png) | [Bundle](archive/2026-04-23/raw/2026-04-23_bundle.json) |
 | 2026-04-22 | Trading Daily | Risk-Off conditions persist with USD strength and higher yields creating a credibility test for the Hang Seng's mod... | 94.7/100 | [Report](archive/2026-04-22/morning_briefing.md) | [Dashboard](archive/2026-04-22/charts/dashboard_2026-04-22.png) | [One Chart](archive/2026-04-22/charts/daily_one_chart_2026-04-22.png) | [Trend Pack](archive/2026-04-22/charts/hk_trend_pack_2026-04-22.png) | [Bundle](archive/2026-04-22/raw/2026-04-22_bundle.json) |
