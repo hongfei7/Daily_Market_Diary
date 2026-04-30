@@ -2,7 +2,7 @@
 
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
-- Latest report: [2026-04-27 Morning Briefing](./archive/2026-04-27/morning_briefing.md)
+- Latest report: [2026-04-30 Morning Briefing](./archive/2026-04-30/morning_briefing.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -21,6 +21,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-30 | Trading Daily | Hong Kong followed through on Risk-Off with HSI -0.95% and HSTECH -2.15%, but FXI's +0.25% divergence and value rot... | 92.6/100 | [Report](archive/2026-04-30/morning_briefing.md) | [Dashboard](archive/2026-04-30/charts/dashboard_2026-04-30.png) | [One Chart](archive/2026-04-30/charts/daily_one_chart_2026-04-30.png) | [Trend Pack](archive/2026-04-30/charts/hk_trend_pack_2026-04-30.png) | [Bundle](archive/2026-04-30/raw/2026-04-30_bundle.json) |
 | 2026-04-27 | Weekend Event Watch | Risk-On weekend setup is constructive for Monday's open - Nasdaq momentum, VIX contraction, and crypto outperformin... | 90.4/100 | [Report](archive/2026-04-27/morning_briefing.md) | [Dashboard](archive/2026-04-27/charts/dashboard_2026-04-27.png) | [One Chart](archive/2026-04-27/charts/daily_one_chart_2026-04-27.png) | [Trend Pack](archive/2026-04-27/charts/hk_trend_pack_2026-04-27.png) | [Bundle](archive/2026-04-27/raw/2026-04-27_bundle.json) |
 | 2026-04-26 | Weekly Review | Risk-On week for Hong Kong (HSI +0.24%) was confirmed by southbound flow (+HK$16.8bn cumulative), USD softness (DXY... | 90.4/100 | [Report](archive/2026-04-26/morning_briefing.md) | [Dashboard](archive/2026-04-26/charts/dashboard_2026-04-26.png) | [One Chart](archive/2026-04-26/charts/daily_one_chart_2026-04-26.png) | [Trend Pack](archive/2026-04-26/charts/hk_trend_pack_2026-04-26.png) | [Bundle](archive/2026-04-26/raw/2026-04-26_bundle.json) |
 | 2026-04-24 | Trading Daily | Risk-Off session on April 23 saw HSTECH (-1.98%) underperform HSCEI (-1.59%) with 19% short-selling and ETF-led flo... | 92.6/100 | [Report](archive/2026-04-24/morning_briefing.md) | [Dashboard](archive/2026-04-24/charts/dashboard_2026-04-24.png) | [One Chart](archive/2026-04-24/charts/daily_one_chart_2026-04-24.png) | [Trend Pack](archive/2026-04-24/charts/hk_trend_pack_2026-04-24.png) | [Bundle](archive/2026-04-24/raw/2026-04-24_bundle.json) |
