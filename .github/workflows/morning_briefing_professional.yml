@@ -125,7 +125,20 @@ jobs:
         env:
           TZ: Asia/Shanghai
         run: |
-          python scripts/audit_professional_run.py --report-date "$BRIEFING_DATE"
+          set +e
+          mkdir -p reports_professional
+          AUDIT_LOG="reports_professional/audit_${BRIEFING_DATE}.txt"
+          python scripts/audit_professional_run.py --report-date "$BRIEFING_DATE" > "$AUDIT_LOG" 2>&1
+          AUDIT_STATUS=$?
+          cat "$AUDIT_LOG"
+          {
+            echo "### Runtime audit"
+            echo
+            echo '```text'
+            cat "$AUDIT_LOG"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$AUDIT_STATUS"
 
       - name: Send briefing email
         env:
@@ -187,4 +200,5 @@ jobs:
             reports_professional/charts/*.png
             reports_professional/charts/*.json
             reports_professional/raw/*.json
+            reports_professional/audit_*.txt
           retention-days: 30

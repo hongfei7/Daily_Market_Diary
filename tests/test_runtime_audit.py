@@ -76,12 +76,19 @@ def main() -> None:
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nThis line was clipped...\n", encoding="utf-8")
         clipped_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
         assert clipped_audit["status"] == "error"
-        assert any("..." in item for item in clipped_audit["errors"])
+        assert any("clipped text" in item for item in clipped_audit["errors"])
+
+        (root / "2026-04-14_morning_briefing.md").write_text(
+            REPORT_BODY + "\nA headline may contain an ellipsis... without being clipped.\n",
+            encoding="utf-8",
+        )
+        natural_ellipsis_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        assert natural_ellipsis_audit["status"] == "ok"
 
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nThis line was clipped [trimmed]\n", encoding="utf-8")
         trimmed_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
         assert trimmed_audit["status"] == "error"
-        assert any("[trimmed]" in item for item in trimmed_audit["errors"])
+        assert any("clipped text" in item for item in trimmed_audit["errors"])
 
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nUnexpected non-English token: 찜흙\n", encoding="utf-8")
         language_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)

@@ -27,8 +27,6 @@ REQUIRED_REPORT_SECTION_GROUPS = [
 ]
 
 FORBIDDEN_PHRASES = [
-    "...",
-    "[trimmed]",
     "Pending adapter",
     "not wired in this sprint",
     "waiting for a locked public historical source",
@@ -36,6 +34,7 @@ FORBIDDEN_PHRASES = [
 ]
 
 NON_ENGLISH_SCRIPT_RE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]+")
+CLIPPED_CELL_RE = re.compile(r"(\.\.\.|…|\[trimmed\])\s*(?:\||$)", re.IGNORECASE)
 
 
 def _count_unescaped_pipes(text: str) -> int:
@@ -105,6 +104,16 @@ def _audit_english_only(report_text: str) -> List[str]:
     return errors
 
 
+def _audit_clipped_text(report_text: str) -> List[str]:
+    errors: List[str] = []
+    for line_number, line in enumerate(report_text.splitlines(), start=1):
+        if CLIPPED_CELL_RE.search(line.rstrip()):
+            errors.append(f"Report appears to contain clipped text near line {line_number}: `{line[:120]}`")
+            if len(errors) >= 5:
+                break
+    return errors
+
+
 def _load_json(path: Path) -> Dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         payload = json.load(handle)
@@ -157,6 +166,7 @@ def audit_generated_run(
     errors.extend(_audit_tables(report_text))
     errors.extend(_audit_table_spacing(report_text))
     errors.extend(_audit_english_only(report_text))
+    errors.extend(_audit_clipped_text(report_text))
 
     image_refs = re.findall(r"!\[[^\]]*\]\(([^)]+)\)", report_text)
     if len(image_refs) >= 2 and image_refs[0] == image_refs[-1]:
