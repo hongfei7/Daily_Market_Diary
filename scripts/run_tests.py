@@ -30,6 +30,7 @@ SYSTEM_TESTS = [
     "tests/test_llm_enhancer_resilience.py",
     "tests/test_llm_pipeline.py",
     "tests/test_email_delivery.py",
+    "tests/test_editorial_guards.py",
     "tests/test_fact_checker.py",
     "tests/test_text_normalizer.py",
     "tests/test_chart_appendix.py",

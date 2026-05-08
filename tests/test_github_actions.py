@@ -75,6 +75,7 @@ def check_project_imports() -> bool:
         "professional.report_quality",
         "professional.report_builder",
         "professional.report_layout",
+        "professional.relevance",
         "professional.report_sections",
         "professional.report_text",
         "professional.runtime_audit",

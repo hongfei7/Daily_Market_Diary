@@ -120,8 +120,16 @@ def main() -> None:
     assert bad["report_quality"]["warnings"]
 
     report = render_professional_report(good, charts_section="_No charts._")
+    assert "Executive Summary" in report
+    assert "**Market pulse:**" in report
+    assert "**Hong Kong lens:**" in report
+    assert "Today's Core Names" in report
+    assert "Personal View Pad" not in report
+    assert "Learning watchlist" not in report
     assert "Report Quality and Validation" in report
-    assert "LLM fact-check guardrail" in report
+    assert "Report Metadata" in report
+    assert "Date policy:" not in report.split("## Visual Dashboard")[0]
+    assert "Narrative fact-check guardrail" in report
     assert "Quality score" in report
     assert "**Composite risk score:** `70/100`" in report
     assert "| Component | Score impact | Evidence |" in report
@@ -133,9 +141,22 @@ def main() -> None:
     assert "**Opening implication.**" in report
     assert "#### Style and Local Leadership" in report
     assert "#### Flow Confirmation" in report
-    assert "No rotating theme configured" in report
+    assert "No rotating theme was set for this run" in report
     assert "..." not in report
     assert "[trimmed]" not in report
+    assert "Proxy fallback" not in report
+    assert "No dedicated Daily One Chart image was available" not in report
+    assert "No dedicated Hong Kong Trend Pack image was available" not in report
+    assert "should be wired" not in report
+
+    internal = _bundle("S&P 500 rose 1.20% as softer dollar pressure and lower yields supported risk-on sentiment.")
+    internal["llm_sections"]["thinking_note"] = "Treat the open as constructive but conditional."
+    internal["report_config"] = {"show_internal_reflection": True}
+    internal["fact_check"] = run_fact_check(internal)
+    internal["report_quality"] = build_report_quality(internal)
+    internal_report = render_professional_report(internal, charts_section="_No charts._")
+    assert "Desk Notes (Internal)" in internal_report
+    assert "Thinking note" in internal_report
 
     print("Report quality test passed")
 

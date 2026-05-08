@@ -89,14 +89,14 @@ def _adapter_score(bundle: Dict[str, Any]) -> Tuple[float, str, List[Dict[str, s
 def _llm_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
     task_meta = (((bundle.get("llm_sections", {}) or {}).get("task_meta", {}) or {}).get("tasks", {}) or {})
     if not task_meta:
-        return 55.0, "LLM overlay was not run or did not provide task metadata."
+        return 55.0, "Narrative overlay was not run or did not provide task metadata."
     scores = [_status_score(meta.get("status")) for meta in task_meta.values() if isinstance(meta, dict)]
     if not scores:
-        return 55.0, "LLM task metadata was empty."
+        return 55.0, "Narrative overlay task metadata was empty."
     ok_count = sum(1 for meta in task_meta.values() if isinstance(meta, dict) and meta.get("status") in {"ok", "cached"})
     error_count = sum(1 for meta in task_meta.values() if isinstance(meta, dict) and meta.get("status") == "error")
     score = sum(scores) / len(scores) * 100.0
-    return score, f"{ok_count}/{len(scores)} LLM tasks succeeded or used validated cache; {error_count} error(s)."
+    return score, f"{ok_count}/{len(scores)} narrative overlay tasks succeeded or used validated cache; {error_count} error(s)."
 
 
 def _fact_check_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
@@ -138,7 +138,7 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
         _component("Market data coverage", market_score, 0.30, market_read),
         _component("Hong Kong local metrics", local_score, 0.25, local_read),
         _component("Key public adapters", adapter_score, 0.20, adapter_read),
-        _component("LLM task health", llm_score, 0.15, llm_read),
+        _component("Narrative overlay health", llm_score, 0.15, llm_read),
         _component("Fact-check guardrail", fact_score, 0.10, fact_read),
     ]
     score = sum(item["weighted_score"] for item in components)
@@ -149,7 +149,7 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
             warnings.append(f"{item['name']} is weak: {item['read']}")
     fact_check = bundle.get("fact_check", {}) or {}
     if fact_check.get("status") == "warning":
-        warnings.append("LLM fact-check guardrail produced warnings; review the validation table before relying on narrative sections.")
+        warnings.append("Narrative fact-check guardrail produced warnings; review the validation table before relying on narrative sections.")
 
     return {
         "score": round(score, 1),

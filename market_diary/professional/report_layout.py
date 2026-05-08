@@ -101,9 +101,9 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
         "day_mode": day_mode,
         "llm_sections": llm_sections,
         "dashboard_md": dashboard_md,
-        "market_quality_block": f"{market_quality_line}\n" if market_quality_line else "",
-        "date_policy_block": f"{date_policy_line}\n" if date_policy_line else "",
-        "quality_line": quality_line,
+        "appendix_meta_block": "".join(
+            block for block in (f"{date_policy_line}\n" if date_policy_line else "", f"{market_quality_line}\n" if market_quality_line else "", quality_line) if block
+        ),
         "pulse": pulse,
         "deep_read_setup": deep_read_setup,
         "macro_takeaway": llm_sections.get("macro_takeaway", ""),

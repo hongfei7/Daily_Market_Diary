@@ -10,7 +10,7 @@ class _FakeTicker:
     news = [
         {
             "content": {
-                "title": "<b>New AI order</b>",
+                "title": "<b>Nvidia lands new AI order</b>",
                 "summary": "Demand&nbsp;<i>accelerated</i>",
                 "provider": {"displayName": "Mock News"},
                 "pubDate": "2026-04-13T12:00:00Z",
@@ -60,7 +60,7 @@ def test_watchlist_digest_uses_ticker_snapshot_and_normalizes_news() -> None:
     assert item["daily_change_pct"] == 8.33
     assert item["range_label"] == "Top of range"
     assert "Short-term price strength" in item["note"]
-    assert item["recent_news"][0]["title"] == "New AI order"
+    assert item["recent_news"][0]["title"] == "Nvidia lands new AI order"
     assert item["recent_news"][0]["summary"] == "Demand accelerated"
     assert item["recent_news"][0]["source"] == "Mock News"
     assert item["recent_news"][0]["url"] == "https://example.com/news"

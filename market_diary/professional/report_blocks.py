@@ -9,11 +9,12 @@ from market_diary.professional.report_formatting import (
     _fmt_pct,
     _fmt_price,
     _make_table,
+    _report_flag,
     _report_setting,
     _status_label,
     _truncate,
 )
-from market_diary.professional.report_sections import _pick_metrics_by_name
+from market_diary.professional.report_sections import _pick_metrics_by_name, _resolved_hk_leadership, _safe_sentence_clip
 from market_diary.professional.report_text import (
     _compact_bullets,
     _condense_sentence,
@@ -25,7 +26,7 @@ from market_diary.professional.report_text import (
 def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
     rows = (bundle.get("macro_agenda", []) or [])[: limit or _report_setting(bundle, "top_macro_events", 6)]
     if not rows:
-        return "No macro agenda items were available."
+        return "The macro calendar was light for this run."
     table_rows = [
         (
             item.get("time", ""),
@@ -50,8 +51,50 @@ def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str
     return _make_table(["Time", "Region", "Event", "Status", "Desk read"], table_rows)
 
 
+def _render_executive_summary(bundle: Dict[str, Any], pulse: str) -> str:
+    llm_sections = bundle.get("llm_sections", {}) or {}
+    must_watch = bundle.get("must_watch", []) or []
+    leadership = _resolved_hk_leadership(bundle)
+    lines: List[str] = []
+
+    pulse_text = _safe_sentence_clip(pulse, 190)
+    if pulse_text:
+        lines.append(f"- **Market pulse:** {pulse_text}")
+
+    hk_implication = _safe_sentence_clip(llm_sections.get("overnight_hk_implication", ""), 180)
+    if hk_implication:
+        lines.append(f"- **Hong Kong lens:** {leadership}. {hk_implication}")
+    elif leadership:
+        lines.append(f"- **Hong Kong lens:** {leadership}.")
+
+    catalyst_titles: List[str] = []
+    for item in must_watch:
+        title = str(item.get("title", "")).strip()
+        if not title or title == pulse:
+            continue
+        if title in catalyst_titles:
+            continue
+        catalyst_titles.append(title)
+        if len(catalyst_titles) >= 2:
+            break
+    if catalyst_titles:
+        lines.append(f"- **Top catalysts:** {'; '.join(catalyst_titles)}.")
+
+    if not lines:
+        return "- **Executive summary pending:** rely on the section headlines and key tables below."
+    return "\n".join(lines)
+
+
 def _render_news_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
-    rows = (bundle.get("sector_digest", {}) or {}).get("graded_news", [])[ : limit or _report_setting(bundle, "top_news_items", 8)]
+    raw_rows = (bundle.get("sector_digest", {}) or {}).get("graded_news", []) or []
+    rows = [
+        item
+        for item in raw_rows
+        if item.get("grade") in {"A", "B"}
+        and (str(item.get("sector", "")).lower() != "other" or float(item.get("score", 0) or 0) >= 4.0)
+    ][: limit or _report_setting(bundle, "top_news_items", 8)]
+    if not rows:
+        return "No high-conviction sector story cleared the main-report relevance gate for this run."
     table_rows = [
         (
             item.get("grade", ""),
@@ -65,28 +108,50 @@ def _render_news_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
     return _make_table(["Grade", "Sector", "Headline", "Why it matters", "Horizon"], table_rows)
 
 
-def _render_watchlists(bundle: Dict[str, Any], item_limit: int | None = None, story_limit: int | None = None) -> str:
+def _render_watchlists(
+    bundle: Dict[str, Any],
+    item_limit: int | None = None,
+    story_limit: int | None = None,
+    bucket_order: List[str] | None = None,
+) -> str:
     sections: List[str] = []
-    effective_item_limit = item_limit if item_limit is not None else 0
+    effective_item_limit = item_limit if item_limit is not None else _report_setting(bundle, "quick_watchlist_items_per_bucket", 2)
     effective_story_limit = story_limit if story_limit is not None else _report_setting(bundle, "watchlist_story_limit", 2)
-    for bucket, items in (bundle.get("watchlists", {}) or {}).items():
+    watchlists = bundle.get("watchlists", {}) or {}
+    ordered_buckets = bucket_order or list(watchlists.keys())
+    for bucket in ordered_buckets:
+        items = watchlists.get(bucket, []) or []
         sections.append(f"#### {bucket}")
         if not items:
-            sections.append("No items were available.\n")
+            sections.append("No names were highlighted in this bucket for the current run.\n")
             continue
         visible_items = items[:effective_item_limit] if effective_item_limit > 0 else items
-        table_rows = [
-            (
-                item.get("name", ""),
-                item.get("ticker", ""),
-                _fmt_price(item.get("last_price")),
-                _fmt_pct(item.get("daily_change_pct")),
-                item.get("range_label", "N/A"),
-                _truncate(item.get("note", ""), 84, suffix=""),
-            )
-            for item in visible_items
-        ]
-        sections.append(_make_table(["Name", "Ticker", "Last", "1D", "Range position", "Morning note"], table_rows))
+        has_quote_detail = any(item.get("last_price") is not None or item.get("daily_change_pct") is not None for item in visible_items)
+        if has_quote_detail:
+            table_rows = [
+                (
+                    item.get("name", ""),
+                    item.get("ticker", ""),
+                    _fmt_price(item.get("last_price")),
+                    _fmt_pct(item.get("daily_change_pct")),
+                    item.get("range_label", "N/A"),
+                    _safe_sentence_clip(item.get("note", ""), 110),
+                )
+                for item in visible_items
+            ]
+            sections.append(_make_table(["Name", "Ticker", "Last", "1D", "Range position", "Morning note"], table_rows))
+        else:
+            table_rows = [
+                (
+                    item.get("name", ""),
+                    item.get("ticker", ""),
+                    _safe_sentence_clip(item.get("note", ""), 120),
+                )
+                for item in visible_items
+            ]
+            sections.append("_Quote fields were not refreshed for this bucket; the table keeps only coverage and action notes._")
+            sections.append("")
+            sections.append(_make_table(["Name", "Ticker", "Morning note"], table_rows))
         inserted_headline_gap = False
         for item in visible_items:
             news = item.get("recent_news", []) or []
@@ -110,7 +175,7 @@ def _render_watchlists(bundle: Dict[str, Any], item_limit: int | None = None, st
 def _render_flows(bundle: Dict[str, Any]) -> str:
     bullets = (bundle.get("movers_digest", {}) or {}).get("flow_bullets", []) or []
     if not bullets:
-        return "- No flow or positioning signals were available."
+        return "- Flow and positioning detail was limited in this run."
     flow_tracker_keywords = (
         "Stock Connect",
         "AH premium",
@@ -132,7 +197,7 @@ def _render_attribution(bundle: Dict[str, Any]) -> str:
     attribution = bundle.get("attribution", {}) or {}
     drivers = attribution.get("dominant_drivers", []) or []
     if not drivers:
-        return "- No cross-asset attribution drivers were available."
+        return "- Cross-asset attribution did not surface a dominant driver set for this run."
     rows = [
         (
             item.get("name", ""),
@@ -149,10 +214,10 @@ def _render_attribution(bundle: Dict[str, Any]) -> str:
 def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     tracker = bundle.get("flow_tracker", {}) or {}
     if not tracker:
-        return "No dedicated flow tracker data were available."
+        return "Dedicated local-flow detail was limited for this run."
 
     lines: List[str] = ["##### Flow Takeaways"]
-    summary = tracker.get("summary", "Flow evidence was not conclusive.")
+    summary = tracker.get("summary", "Flow evidence was mixed rather than decisive.")
     if summary:
         lines.append(f"- {summary}")
 
@@ -160,33 +225,6 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     if flow_bullets:
         lines.extend(f"- {item}" for item in flow_bullets[:3])
     lines.append("")
-
-    metrics = tracker.get("key_metrics", []) or []
-    metrics = _pick_metrics_by_name(
-        metrics,
-        (
-            "Southbound / Northbound net flow",
-            "Main Board turnover vs 20D",
-            "Short-selling ratio",
-            "AH premium index",
-            "HIBOR 1M",
-            "Aggregate Balance",
-        ),
-    )
-    if metrics:
-        rows = [
-            (
-                item.get("metric", ""),
-                item.get("value", ""),
-                _status_label(str(item.get("status", ""))),
-                _compact_source_as_of(item),
-                _truncate(item.get("note", ""), 220),
-            )
-            for item in metrics
-        ]
-        lines.append("##### Key Flow / Funding Metrics")
-        lines.append(_make_table(["Metric", "Value", "Status", "Source / as of", "Read"], rows))
-        lines.append("")
 
     stock_connect = (tracker.get("stock_connect", {}) or {}).get("data", {}) or {}
     southbound_active = ((stock_connect.get("southbound", {}) or {}).get("top_active", []) or [])[:5]
@@ -207,7 +245,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
         lines.append("")
     else:
         status = (tracker.get("stock_connect", {}) or {}).get("status", "unavailable")
-        lines.append(f"- Southbound active-name detail was not available from the public adapter. Status: `{status}`.")
+        lines.append(f"- Southbound active-name detail was not disclosed in the current public feed. Status: `{status}`.")
         lines.append("")
 
     ah_premium = (tracker.get("ah_premium", {}) or {}).get("data", {}) or {}
@@ -228,7 +266,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
         lines.append("")
     else:
         status = (tracker.get("ah_premium", {}) or {}).get("status", "unavailable")
-        lines.append(f"- A/H premium dispersion was unavailable from the public quote model. Status: `{status}`.")
+        lines.append(f"- A/H premium dispersion was not refreshed in the current public quote set. Status: `{status}`.")
         lines.append("")
 
     watch_hits = tracker.get("short_sell_watchlist_hits", []) or []
@@ -260,8 +298,8 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     if not southbound_active:
         proxy_table = _render_hk_etf_proxy_table(bundle)
         if "No Hong Kong or offshore-China ETF proxy data" not in proxy_table:
-            lines.append("##### ETF Proxy Fallback")
-            lines.append("_Use this only when official Stock Connect / local-flow data are incomplete._")
+            lines.append("##### ETF Proxy Read")
+            lines.append("_Use this only when official Stock Connect / local-flow detail is incomplete._")
             lines.append(proxy_table)
     return "\n".join(lines).strip()
 
@@ -280,7 +318,7 @@ def _render_hk_etf_proxy_table(bundle: Dict[str, Any]) -> str:
                 )
             )
     if not rows:
-        return "No Hong Kong or offshore-China ETF proxy data were available."
+        return "ETF proxy detail was not available for this run."
     return _make_table(["Ticker", "Last", "1D", "Volume ratio", "Flow bias"], rows)
 
 
@@ -289,6 +327,20 @@ def _has_official_stock_connect_flow(bundle: Dict[str, Any]) -> bool:
     stock_connect = (tracker.get("stock_connect", {}) or {}).get("data", {}) or {}
     southbound = stock_connect.get("southbound", {}) or {}
     return bool(southbound.get("top_active")) or southbound.get("net_buy") is not None
+
+
+def _is_low_signal_market_line(line: str) -> bool:
+    text = str(line or "").strip()
+    if not text:
+        return True
+    na_count = text.count("N/A")
+    return na_count >= 2 or "last traded around N/A" in text
+
+
+def _compact_hk_read_lines(lines: List[str], limit: int = 3) -> tuple[List[str], int]:
+    visible = [line for line in lines if not _is_low_signal_market_line(line)]
+    suppressed = max(0, len(lines) - len(visible))
+    return visible[:limit], suppressed
 
 
 def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
@@ -303,7 +355,7 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
         _render_labeled_paragraphs(
             setup,
             ["Core tape", "Main driver", "HK relevance"],
-            fallback=str(overview.get("theme", "") or "No LLM overnight setup was available; rely on the dashboard and attribution tables below."),
+            fallback=str(overview.get("theme", "") or "Use the dashboard and attribution tables below as the primary read."),
             limit=3,
             width=225,
         )
@@ -316,7 +368,7 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
         lines.extend(f"- {item}" for item in drivers)
 
     hk_implication = str(llm_sections.get("overnight_hk_implication", "") or "").strip()
-    hk_lines = _compact_bullets(hk_desk_view.get("lines", []) or [], limit=3, width=140)
+    hk_lines, suppressed_hk_lines = _compact_hk_read_lines(_compact_bullets(hk_desk_view.get("lines", []) or [], limit=5, width=140), limit=3)
     lines.append("")
     lines.append("#### Hong Kong Read-Through")
     leadership = str(hk_desk_view.get("leadership", "") or "").strip()
@@ -326,8 +378,12 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
         lines.append(f"**Opening implication.** {_condense_sentence(hk_implication, 260)}")
     for item in hk_lines:
         lines.append(f"- **Cross-market read:** {item}")
+    if suppressed_hk_lines:
+        lines.append(
+            "- **Coverage note:** Hong Kong quote coverage was limited, so low-signal index / FX lines are suppressed; use Stock Connect and A/H premium as the firmer evidence."
+        )
     if not leadership and not hk_implication and not hk_lines:
-        lines.append("Hong Kong read-through was not conclusive from the available data.")
+        lines.append("Hong Kong read-through remains tentative on the available evidence.")
 
     chart_read = (overview.get("chart_read", {}) or {})
     watch_points = _compact_bullets((chart_read.get("fx", []) or []) + (chart_read.get("assets", []) or []), limit=4, width=150)
@@ -357,26 +413,27 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
         )
         lines.append("")
 
-    leadership = hk_desk_view.get("leadership", "")
+    leadership = _resolved_hk_leadership(bundle)
     lines.append("#### Style and Local Leadership")
     if leadership:
         lines.append(f"**Style leadership.** {leadership}.")
     else:
         lines.append("**Style leadership.** Check HSI, HSCEI, and HSTECH first to separate broad-beta, old-economy, and growth leadership.")
 
-    for line in (hk_desk_view.get("lines", []) or [])[:3]:
+    hk_lines, suppressed_hk_lines = _compact_hk_read_lines(hk_desk_view.get("lines", []) or [], limit=3)
+    for line in hk_lines:
         lines.append(f"- **Cross-market read:** {line}")
-
-    local_leadership = str(llm_sections.get("hk_local_leadership", "") or "").strip()
-    if local_leadership:
-        lines.append(f"**LLM local leadership read.** {local_leadership}")
+    if suppressed_hk_lines:
+        lines.append(
+            "- **Coverage note:** Low-signal index / FX lines were suppressed because quote coverage was incomplete; flow confirmation below carries more weight for this run."
+        )
 
     lines.append("")
     lines.append("#### Flow Confirmation")
     if _has_official_stock_connect_flow(bundle):
         lines.append("Official Stock Connect evidence is available; use Section 2.3 to confirm whether local money supports the price action.")
     else:
-        lines.append("Official Stock Connect confirmation is incomplete; treat ETF proxies and price leadership as fallback evidence only.")
+        lines.append("Official Stock Connect confirmation is incomplete; use ETF proxies and price leadership only as secondary evidence.")
 
     follow_through = str(llm_sections.get("hk_follow_through", "") or "").strip()
     if not follow_through:
@@ -389,7 +446,7 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
         proxy_table = _render_hk_etf_proxy_table(bundle)
         if "No Hong Kong or offshore-China ETF proxy data" not in proxy_table:
             lines.append("")
-            lines.append("**ETF proxy fallback, only if official local-flow data are incomplete:**")
+            lines.append("**ETF proxy read, only if official local-flow data are incomplete:**")
             lines.append(proxy_table)
 
     return "\n".join(lines)
@@ -434,7 +491,7 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
         ]
         sections.append(_make_table(["Grade", "Ticker", "Type", "Release time", "Title"], rows))
     else:
-        sections.append("No HKEX announcement items were available from the public adapter.")
+        sections.append("No material HKEX announcement items were captured in the current public feed.")
     sections.append("")
 
     earnings = company_events.get("earnings", []) or []
@@ -451,7 +508,7 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
         ]
         sections.append(_make_table(["Ticker", "Company", "Timing", "Expectation framing"], rows))
     else:
-        sections.append("No earnings items were available.")
+        sections.append("No earnings items were scheduled in the current window.")
 
     ratings = company_events.get("ratings", []) or []
     sections.append("\n#### Rating Changes")
@@ -461,10 +518,10 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
             for item in ratings[:6]
         )
     else:
-        sections.append("- No rating-change items were available.")
+        sections.append("- No rating-change items were highlighted in the current sell-side feed.")
 
     sections.append("\n#### IPO Watch")
-    sections.append(f"- {company_events.get('ipo_watch', 'No IPO watch items were available.')}")
+    sections.append(f"- {company_events.get('ipo_watch', 'IPO monitoring was not part of this run.')}")
     return "\n".join(sections)
 
 
@@ -478,7 +535,7 @@ def _render_theme_deep_dive(bundle: Dict[str, Any]) -> str:
                 item.get("name", ""),
                 item.get("ticker", ""),
                 item.get("bucket", ""),
-                _truncate(item.get("note", ""), 86, suffix=""),
+                _safe_sentence_clip(item.get("note", ""), 105),
             )
         )
 
@@ -486,8 +543,8 @@ def _render_theme_deep_dive(bundle: Dict[str, Any]) -> str:
         _make_table(
             ["Field", "Read"],
             [
-                ("Theme", section.get("theme", "") or "No rotating theme configured"),
-                ("Angle for the day", _truncate(section.get("angle", "") or "No theme angle was available.", 170, suffix="")),
+                ("Theme", section.get("theme", "") or "No rotating theme was set for this run"),
+                ("Angle for the day", _truncate(section.get("angle", "") or "No dedicated theme angle was set for this run.", 170, suffix="")),
             ],
         )
     ]
@@ -537,7 +594,7 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
     today_forward = bundle.get("today_forward", {}) or {}
     lines = [f"- {line}" for line in (today_forward.get("focus_lines", []) or [])]
     if not lines:
-        lines = ["- No same-day focus lines were available."]
+        lines = ["- The session does not carry a separate same-day focus overlay beyond the catalyst tables below."]
 
     macro_rows = [
         (
@@ -549,6 +606,7 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
         )
         for item in (today_forward.get("today_macro", []) or [])[:5]
     ]
+    seen_events = set()
     catalyst_rows = [
         (
             item.get("date", ""),
@@ -557,9 +615,12 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
             _truncate(item.get("event", ""), 60, suffix=""),
             item.get("importance", ""),
         )
-        for item in (today_forward.get("today_catalysts", []) or [])[:6]
+        for item in (today_forward.get("today_catalysts", []) or [])
+        if item.get("event") and not (item.get("event") in seen_events or seen_events.add(item.get("event")))
     ]
+    catalyst_rows = catalyst_rows[:4]
 
+    seen_next = set()
     next_rows = [
         (
             item.get("date", ""),
@@ -567,15 +628,17 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
             _truncate(item.get("event", ""), 62, suffix=""),
             _truncate(item.get("impact", ""), 72, suffix=""),
         )
-        for item in (today_forward.get("next_catalysts", []) or [])[:8]
+        for item in (today_forward.get("next_catalysts", []) or [])
+        if item.get("event") and not (item.get("event") in seen_next or seen_next.add(item.get("event")))
     ]
+    next_rows = next_rows[:4]
 
     output = ["\n".join(lines), "\n**Same-day macro docket**"]
-    output.append(_make_table(["Time", "Country", "Event", "Status", "Detail"], macro_rows) if macro_rows else "No same-day macro items were available.")
+    output.append(_make_table(["Time", "Country", "Event", "Status", "Detail"], macro_rows) if macro_rows else "No same-day macro items were scheduled.")
     output.append("\n**Same-day catalyst list**")
-    output.append(_make_table(["Date", "Time", "Category", "Event", "Importance"], catalyst_rows) if catalyst_rows else "No same-day catalysts were available.")
+    output.append(_make_table(["Date", "Time", "Category", "Event", "Importance"], catalyst_rows) if catalyst_rows else "No same-day catalysts were highlighted.")
     output.append("\n**Next few sessions**")
-    output.append(_make_table(["Date", "Category", "Event", "Impact"], next_rows) if next_rows else "No forward catalysts were available.")
+    output.append(_make_table(["Date", "Category", "Event", "Impact"], next_rows) if next_rows else "No forward catalyst list was populated.")
     return "\n".join(output)
 
 
@@ -583,7 +646,7 @@ def _render_macro_takeaway(text: str) -> str:
     points = _render_labeled_paragraphs(
         text,
         ["Desk read", "Market sensitivity", "HK implication"],
-        fallback="No LLM macro interpretation was available; rely on the calendar table and released data below.",
+        fallback="Use the calendar table and released data below as the primary macro read.",
         limit=3,
         width=230,
     )
@@ -603,7 +666,7 @@ def _render_daily_one_chart(bundle: Dict[str, Any], daily_chart_rel_path: str) -
     chart_meta = bundle.get("daily_one_chart", {}) or {}
     chart_path = daily_chart_rel_path or chart_meta.get("rel_path", "")
     if not chart_path:
-        return "No dedicated Daily One Chart image was available. This section should not reuse the Visual Dashboard."
+        return "No dedicated Daily One Chart was produced for this run."
 
     title = chart_meta.get("title", "Daily One Chart")
     caption = chart_meta.get("caption", "")
@@ -624,7 +687,7 @@ def _render_trend_pack(bundle: Dict[str, Any], trend_pack_rel_path: str) -> str:
     chart_meta = bundle.get("trend_pack", {}) or {}
     chart_path = trend_pack_rel_path or chart_meta.get("rel_path", "")
     if not chart_path:
-        return "No dedicated Hong Kong Trend Pack image was available."
+        return "No dedicated Hong Kong Trend Pack was produced for this run."
 
     title = chart_meta.get("title", "Hong Kong Trend Pack")
     caption = chart_meta.get("caption", "")
@@ -683,10 +746,16 @@ def _render_reflection_area(bundle: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _render_internal_notes(bundle: Dict[str, Any]) -> str:
+    if not _report_flag(bundle, "show_internal_reflection", False):
+        return ""
+    return _render_reflection_area(bundle)
+
+
 def _render_sources(bundle: Dict[str, Any], limit: int | None = None) -> str:
     links = (bundle.get("source_links", []) or [])[: limit or _report_setting(bundle, "top_source_links", 15)]
     if not links:
-        return "- No traceable links were available."
+        return "- Source links were not attached for this run."
     lines = []
     for item in links:
         if item.get("url"):
@@ -725,8 +794,8 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
         lines.extend(f"- {item}" for item in warnings[:6])
 
     if fact_check:
-        lines.append("\n**LLM fact-check guardrail**")
-        lines.append(f"- {fact_check.get('summary', 'No fact-check summary was available.')}")
+        lines.append("\n**Narrative fact-check guardrail**")
+        lines.append(f"- {fact_check.get('summary', 'Fact-check summary was not attached for this run.')}")
         mismatches = fact_check.get("numeric_mismatches", []) or []
         logic_warnings = fact_check.get("logic_warnings", []) or []
         if mismatches:

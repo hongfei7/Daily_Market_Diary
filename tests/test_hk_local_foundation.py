@@ -81,7 +81,7 @@ def main() -> None:
         assert hk_local_payload["data"]["turnover_vs_20d"]["status"] == "live_local"
         assert hk_local_payload["data"]["hibor_1m"]["status"] == "live_local"
         assert hk_local_payload["data"]["southbound_net_flow"]["status"] == "live_local"
-        assert hk_local_payload["data"]["northbound_net_flow"]["display_value"].endswith("net unavailable")
+        assert hk_local_payload["data"]["northbound_net_flow"]["display_value"].endswith("net not reported")
         assert hk_local_payload["data"]["ah_premium_index"]["status"] == "live_public"
         assert hk_local_payload["meta"]["available_metrics"] >= 4
 

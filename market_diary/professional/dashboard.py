@@ -17,7 +17,7 @@ GREEN = "#1f7a3e"
 RED = "#b42318"
 AMBER = "#b54708"
 BLUE = "#0b4f71"
-DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v5"
+DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v6"
 CHART_CLIP_MARK = "~"
 
 
@@ -84,6 +84,8 @@ def _status_chip(status: str) -> Tuple[str, str]:
         return "PROXY", BLUE
     if normalized == "fallback":
         return "FALLBACK", AMBER
+    if normalized == "coverage":
+        return "GATED", AMBER
     return "UNAVAIL", RED
 
 
@@ -197,14 +199,29 @@ def _hk_metric_cards(bundle: Dict[str, Any]) -> List[Dict[str, str]]:
         ("A/H premium", hk_local.get("ah_premium_index", {})),
     ]
     cards: List[Dict[str, str]] = []
+    hidden_count = 0
     for label, metric in ordered:
+        status = str(metric.get("status", "unavailable") or "unavailable")
+        if status == "unavailable":
+            hidden_count += 1
+            continue
         cards.append(
             {
                 "label": label,
                 "value": str(metric.get("display_value", "N/A") or "N/A"),
-                "status": str(metric.get("status", "unavailable") or "unavailable"),
+                "status": status,
                 "note": str(metric.get("note", "") or ""),
                 "as_of": str(metric.get("as_of", "") or ""),
+            }
+        )
+    if hidden_count:
+        cards.append(
+            {
+                "label": "Suppressed checks",
+                "value": f"{hidden_count} not refreshed",
+                "status": "coverage",
+                "note": "Unavailable local fields are kept out of the visual read.",
+                "as_of": "",
             }
         )
     return cards
@@ -213,7 +230,7 @@ def _hk_metric_cards(bundle: Dict[str, Any]) -> List[Dict[str, str]]:
 def _draw_metric_cards(ax, cards: List[Dict[str, str]]) -> None:
     ax.axis("off")
     _panel(ax)
-    _panel_title(ax, "Hong Kong local tape", "Funding, flow, and relative value at a glance")
+    _panel_title(ax, "Hong Kong local tape", "Refreshed local evidence; missing fields are gated")
 
     tile_w = 0.435
     tile_h = 0.168
@@ -289,6 +306,75 @@ def _draw_metric_cards(ax, cards: List[Dict[str, str]]) -> None:
                 color=SLATE,
                 va="bottom",
             )
+
+
+def _available_data_labels(bundle: Dict[str, Any]) -> List[str]:
+    labels: List[str] = []
+    flow_tracker = bundle.get("flow_tracker", {}) or {}
+    stock_connect = flow_tracker.get("stock_connect", {}) or {}
+    stock_connect_data = stock_connect.get("data", {}) or {}
+    if stock_connect.get("status") in {"ok", "partial"} or ((stock_connect_data.get("southbound", {}) or {}).get("top_active")):
+        labels.append("Stock Connect")
+    ah_premium = flow_tracker.get("ah_premium", {}) or {}
+    if ah_premium.get("status") in {"ok", "partial"} or ((ah_premium.get("data", {}) or {}).get("top_premium")):
+        labels.append("A/H premium")
+    china_rates = bundle.get("china_rates", {}) or {}
+    if any((item or {}).get("status") not in {None, "", "unavailable"} for item in china_rates.values() if isinstance(item, dict)):
+        labels.append("China rates")
+    company_events = bundle.get("company_events", {}) or {}
+    if (company_events.get("hkex_meta", {}) or {}).get("status") in {"ok", "partial"} or company_events.get("announcements"):
+        labels.append("HKEX news")
+    return labels
+
+
+def _coverage_header_text(bundle: Dict[str, Any]) -> str:
+    quality = (bundle.get("meta", {}) or {}).get("market_quality", {}) or {}
+    available = quality.get("available")
+    total = quality.get("total")
+    if isinstance(available, int) and isinstance(total, int) and total > 0:
+        return f"{available}/{total} fields"
+    labels = _available_data_labels(bundle)
+    if labels:
+        return ", ".join(labels[:3])
+    return "Limited coverage"
+
+
+def _draw_evidence_coverage(ax, bundle: Dict[str, Any]) -> None:
+    ax.set_axis_off()
+    _panel_title(ax, "Evidence coverage", "Use refreshed evidence first; keep missing quote fields out of the read")
+    labels = _available_data_labels(bundle)
+    if not labels:
+        labels = ["No major public adapter refreshed"]
+
+    y = 0.66
+    for label in labels[:5]:
+        ax.add_patch(
+            FancyBboxPatch(
+                (0.055, y),
+                0.88,
+                0.105,
+                boxstyle="round,pad=0.012,rounding_size=0.02",
+                transform=ax.transAxes,
+                linewidth=0.85,
+                edgecolor="#d9e2ec",
+                facecolor="#f8fafc",
+            )
+        )
+        ax.add_patch(Rectangle((0.055, y), 0.012, 0.105, transform=ax.transAxes, linewidth=0, facecolor=GREEN))
+        ax.text(0.09, y + 0.066, label, transform=ax.transAxes, fontsize=11.4, color=INK, fontweight="bold", va="center")
+        ax.text(0.09, y + 0.028, "Available for the main read", transform=ax.transAxes, fontsize=8.9, color=SLATE, va="center")
+        y -= 0.13
+
+    ax.text(
+        0.055,
+        0.10,
+        _safe_text(_wrap_text("Read order today: local flow and A/H dispersion carry more weight than unavailable broad index quotes.", width=76, max_lines=2)),
+        transform=ax.transAxes,
+        fontsize=9.4,
+        color=AMBER,
+        fontweight="bold",
+        linespacing=1.25,
+    )
 
 
 def _flow_focus(bundle: Dict[str, Any]) -> Tuple[str, str, List[Tuple[str, float, str]], str]:
@@ -698,7 +784,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     risk_bucket = risk_dashboard.get("bucket", regime)
     leadership = ((bundle.get("hk_desk_view", {}) or {}).get("leadership", "") or "Leadership unavailable").strip()
     quality = (bundle.get("meta", {}) or {}).get("market_quality", {}) or {}
-    quality_text = f"{quality.get('available', 'N/A')}/{quality.get('total', 'N/A')} fields"
+    quality_text = _coverage_header_text(bundle)
     mode_label = str(((bundle.get("day_mode", {}) or {}).get("label", "") or "Trading day"))
 
     regime_color = GREEN if regime.lower() == "risk-on" else RED if regime.lower() == "risk-off" else AMBER
@@ -733,38 +819,11 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
 
     ax_regime = fig.add_subplot(grid[0, 0])
     _panel(ax_regime)
-    _panel_title(ax_regime, "Global regime board", "The cross-asset tape that frames the Hong Kong open")
     rows = _top_snapshot_rows(bundle)[:8]
     if not rows:
-        ax_regime.set_axis_off()
-        ax_regime.text(
-            0.06,
-            0.58,
-            "Market snapshot unavailable",
-            transform=ax_regime.transAxes,
-            fontsize=15.5,
-            fontweight="bold",
-            color=INK,
-        )
-        ax_regime.text(
-            0.06,
-            0.48,
-            "No reliable 1D cross-asset moves were available.\nUse the markdown dashboard table and source-status fields.",
-            transform=ax_regime.transAxes,
-            fontsize=10.5,
-            color=SLATE,
-            linespacing=1.45,
-        )
-        ax_regime.text(
-            0.06,
-            0.32,
-            "This panel is intentionally blank rather than plotting proxy data as fact.",
-            transform=ax_regime.transAxes,
-            fontsize=9.4,
-            color=AMBER,
-            fontweight="bold",
-        )
+        _draw_evidence_coverage(ax_regime, bundle)
     else:
+        _panel_title(ax_regime, "Global regime board", "The cross-asset tape that frames the Hong Kong open")
         labels = [_dashboard_label(row.get("label", "")) for row in rows]
         values = [float(row.get("change_pct", 0) or 0) for row in rows]
         colors = [_bar_color(value) for value in values]

@@ -1,4 +1,4 @@
-"""Deterministic fact checks for LLM-generated report sections."""
+"""Deterministic fact checks for narrative report sections."""
 
 from __future__ import annotations
 
@@ -245,7 +245,7 @@ def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
     if not texts:
         return {
             "status": "skipped",
-            "summary": "No LLM-generated text was available for validation.",
+            "summary": "No narrative overlay text was available for validation.",
             "numeric_claims_checked": 0,
             "numeric_mismatches": [],
             "logic_warnings": [],

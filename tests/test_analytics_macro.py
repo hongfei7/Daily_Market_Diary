@@ -64,7 +64,7 @@ def test_macro_agenda_builds_and_sorts_event_types() -> None:
     central_bank = next(item for item in agenda if item["status"] == "Central bank")
     upcoming = next(item for item in agenda if item["status"] == "Upcoming")
     assert central_bank["event"] == "Chair: Policy Outlook"
-    assert upcoming["affected_industries"] == ["To be assessed"]
+    assert upcoming["affected_industries"] == ["Market-wide"]
 
 
 def main() -> None:

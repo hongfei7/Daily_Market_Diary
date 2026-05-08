@@ -33,6 +33,7 @@ DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
         "top_high_frequency_items": 8,
         "top_catalysts": 10,
         "top_source_links": 15,
+        "show_internal_reflection": False,
     },
     "llm": {
         "enabled": True,

@@ -6,15 +6,16 @@ from market_diary.professional.report_blocks import (
     _render_attribution,
     _render_company_events,
     _render_daily_one_chart,
+    _render_executive_summary,
     _render_flow_tracker,
     _render_flows,
     _render_hk_review_block,
+    _render_internal_notes,
     _render_macro_table,
     _render_macro_takeaway,
     _render_macro_watchpoints,
     _render_news_table,
     _render_overseas_review_block,
-    _render_reflection_area,
     _render_report_quality,
     _render_sources,
     _render_theme_deep_dive,
@@ -46,14 +47,10 @@ def render_professional_report(
     meta = layout["meta"]
     overview = layout["overview"]
     day_mode = layout["day_mode"]
-    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
     llm_sections = layout["llm_sections"]
     dashboard_md = layout["dashboard_md"]
-    market_quality_block = layout["market_quality_block"]
-    date_policy_block = layout["date_policy_block"]
-    quality_line = layout["quality_line"]
+    appendix_meta_block = layout["appendix_meta_block"]
     pulse = layout["pulse"]
-    deep_read_setup = layout["deep_read_setup"]
     macro_takeaway = layout["macro_takeaway"]
     is_trading_day = layout["is_trading_day"]
     layer_one_title = layout["layer_one_title"]
@@ -67,15 +64,17 @@ def render_professional_report(
     review_date = layout["review_date"]
     global_date = layout["global_date"]
     hk_date = layout["hk_date"]
+    internal_notes = _render_internal_notes(bundle)
 
     report = f"""# Morning Research Workbench | {briefing_date}
 
 > Designed for a Hong Kong sell-side commute: Layer 1 `Scan`, Layer 2 `Deep Read`, Layer 3 `Thinking`  
 > Mode: `{day_mode.get('label', 'Trading day')}` | {day_mode.get('note', '')}
 > Briefing date: `{briefing_date}` | Review date: `{review_date}` | Global request: `{global_date}` | HK/China request: `{hk_date}` | Market effective date: `{meta.get('effective_date', '')}` | Generated at: `{meta.get('generated_at', '')}`
-{date_policy_block}
-{market_quality_block}
-{quality_line}
+
+## Executive Summary
+
+{_render_executive_summary(bundle, pulse)}
 
 ## Visual Dashboard
 
@@ -133,8 +132,8 @@ def render_professional_report(
 
 {_render_company_events(bundle)}
 
-### 2.6 Coverage Pools
-{_render_watchlists(bundle)}
+### 2.6 Today's Core Names
+{_render_watchlists(bundle, item_limit=2, story_limit=1, bucket_order=["Core coverage", "Priority follow-up"])}
 
 ## Layer 3 | Thinking (10-15 min)
 
@@ -150,10 +149,10 @@ def render_professional_report(
 ### 3.4 Hong Kong Trend Pack
 {_render_trend_pack(bundle, trend_pack_rel_path)}
 
-### 3.5 Personal View Pad
-{_render_reflection_area(bundle)}
-
 ## Traceable Appendix
+
+### Report Metadata
+{appendix_meta_block}
 
 ### Key Questions to Keep in Mind
 {"".join(f"- {line}\n" for line in (overview.get('questions', []) or []))}
@@ -163,6 +162,8 @@ def render_professional_report(
 
 ### Source Links
 {_render_sources(bundle)}
+
+{"### Desk Notes (Internal)\n" + internal_notes + "\n" if internal_notes else ""}
 
 ## Supplementary Visual Appendix
 

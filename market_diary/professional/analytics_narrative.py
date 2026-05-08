@@ -44,7 +44,10 @@ def build_theme_deep_dive(
             matched_news.append(item)
 
     related_names: List[Dict[str, Any]] = []
+    focus_buckets = {"Core coverage", "Priority follow-up"}
     for bucket, items in (watchlists or {}).items():
+        if bucket not in focus_buckets:
+            continue
         for item in items:
             text = " ".join(
                 [
@@ -60,7 +63,9 @@ def build_theme_deep_dive(
                 related_names.append(item)
 
     if not related_names:
-        for bucket_items in (watchlists or {}).values():
+        for bucket, bucket_items in (watchlists or {}).items():
+            if bucket not in focus_buckets:
+                continue
             related_names.extend(bucket_items[:1])
             if len(related_names) >= 3:
                 break

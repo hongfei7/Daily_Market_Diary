@@ -35,7 +35,7 @@ REPORT_BODY = """# Morning Research Workbench | 2026-04-14
 
 ### Report Quality and Validation
 - **Quality score:** 90.0/100
-**LLM fact-check guardrail**
+**Narrative fact-check guardrail**
 **Adapter status**
 """
 

@@ -12,6 +12,21 @@ def _report_setting(bundle: Dict[str, Any], key: str, default: int) -> int:
         return default
 
 
+def _report_flag(bundle: Dict[str, Any], key: str, default: bool = False) -> bool:
+    report_config = (bundle.get("report_config", {}) or {})
+    value = report_config.get(key, default)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    text = str(value or "").strip().lower()
+    if text in {"1", "true", "yes", "on"}:
+        return True
+    if text in {"0", "false", "no", "off"}:
+        return False
+    return default
+
+
 def _fmt_pct(value: Any) -> str:
     if value is None:
         return "N/A"
@@ -62,7 +77,7 @@ def _status_label(status: str) -> str:
         "stale_public": "Stale public",
         "live_quote": "Live quote",
         "live_hybrid": "Live quote + local",
-        "proxy": "Proxy fallback",
+        "proxy": "Proxy",
         "unavailable": "Unavailable",
     }
     return mapping.get(str(status or ""), str(status or "Unavailable").replace("_", " ").title())

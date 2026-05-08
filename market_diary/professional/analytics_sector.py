@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Tuple
 
 from market_diary.modules.text_normalizer import normalize_news_text
+from market_diary.professional.relevance import build_coverage_profiles, is_relevant_sector_story
 
 
 SECTOR_LABELS = {
@@ -53,6 +54,7 @@ def build_sector_news_digest(sector_data: Dict[str, Any], config: Dict[str, Any]
         for item in bucket_items:
             coverage_terms.append(item.get("name", ""))
             coverage_terms.append(item.get("ticker", "").split(".")[0])
+    coverage_profiles = build_coverage_profiles(watchlists)
 
     graded_news: List[Dict[str, Any]] = []
     sector_news = (sector_data or {}).get("sector_news", {}) or {}
@@ -62,6 +64,8 @@ def build_sector_news_digest(sector_data: Dict[str, Any], config: Dict[str, Any]
             title = normalize_news_text(news.get("title", ""), strip_html_tags=True)
             summary = normalize_news_text(news.get("summary", ""), strip_html_tags=True)
             text = f"{title} {summary}"
+            if not is_relevant_sector_story(title, summary, sector_label, coverage_profiles):
+                continue
             score = float(news.get("importance_score", 0.0))
             if _contains_coverage(text, coverage_terms):
                 score += 1.5

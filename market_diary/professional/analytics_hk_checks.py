@@ -21,14 +21,14 @@ def _summarize_hk_etf_proxy(movers_data: Dict[str, Any]) -> str:
                 f"{ticker} {item.get('change_pct', 0):+.2f}% on {item.get('volume_ratio', 1):.2f}x volume ({item.get('estimated_flow_direction', 'n/a')})"
             )
     if not hk_flows:
-        return "No live Hong Kong ETF proxy was available."
+        return "Hong Kong ETF proxy detail was not refreshed for this run."
     return "; ".join(hk_flows[:3])
 
 
 def _usdhkd_band_read(price: Any) -> str:
     level = _parse_float(price)
     if level is None:
-        return "No live USD/HKD quote was available."
+        return "USD/HKD spot was not refreshed in the current quote set."
     if level >= 7.845:
         return "Close to the weak-side Convertibility Undertaking; keep HKMA liquidity operations in focus."
     if level <= 7.755:
@@ -96,7 +96,7 @@ def build_hk_quick_checks(
         usdhkd_as_of = usdhkd_item.get("As Of", "")
 
     turnover_display = turnover_ratio_metric.get("display_value") or turnover_metric.get("display_value", "N/A")
-    turnover_note = turnover_ratio_metric.get("note") or turnover_metric.get("note") or "Turnover context was unavailable."
+    turnover_note = turnover_ratio_metric.get("note") or turnover_metric.get("note") or "Turnover context was not refreshed for this run."
     flow_value = "N/A"
     flow_note = southbound_metric.get("note", "") or northbound_metric.get("note", "")
     flow_status = "unavailable"
@@ -123,7 +123,7 @@ def build_hk_quick_checks(
             metric="HIBOR 1M",
             value=hibor_metric.get("display_value", "N/A"),
             status=hibor_metric.get("status", "unavailable"),
-            note=hibor_metric.get("note", "Hong Kong funding data was unavailable."),
+            note=hibor_metric.get("note", "Hong Kong funding data was not refreshed for this run."),
             source=hibor_metric.get("source", ""),
             as_of=hibor_metric.get("as_of", ""),
         ),
@@ -131,7 +131,7 @@ def build_hk_quick_checks(
             metric="Aggregate Balance",
             value=aggregate_metric.get("display_value", "N/A"),
             status=aggregate_metric.get("status", "unavailable"),
-            note=aggregate_metric.get("note", "Aggregate Balance data was unavailable."),
+            note=aggregate_metric.get("note", "Aggregate Balance data was not refreshed for this run."),
             source=aggregate_metric.get("source", ""),
             as_of=aggregate_metric.get("as_of", ""),
         ),
@@ -139,7 +139,7 @@ def build_hk_quick_checks(
             metric="Base Rate / linked band",
             value=f"Base rate {base_rate_metric.get('display_value', 'N/A')} | band {band_metric.get('display_value', 'N/A')}",
             status=base_rate_metric.get("status", band_metric.get("status", "unavailable")),
-            note=base_rate_metric.get("note", "") or band_metric.get("note", "") or "Linked-rate policy context was unavailable.",
+            note=base_rate_metric.get("note", "") or band_metric.get("note", "") or "Linked-rate policy context was not refreshed for this run.",
             source=base_rate_metric.get("source", "") or band_metric.get("source", ""),
             as_of=base_rate_metric.get("as_of", "") or band_metric.get("as_of", ""),
         ),
@@ -155,7 +155,7 @@ def build_hk_quick_checks(
             metric="Short-selling ratio",
             value=short_selling_metric.get("display_value", "N/A"),
             status=short_selling_metric.get("status", "unavailable"),
-            note=short_selling_metric.get("note", "Short-selling ratio was unavailable."),
+            note=short_selling_metric.get("note", "Short-selling ratio was not refreshed for this run."),
             source=short_selling_metric.get("source", ""),
             as_of=short_selling_metric.get("as_of", ""),
         ),
@@ -163,7 +163,7 @@ def build_hk_quick_checks(
             metric="Southbound / Northbound net flow",
             value=flow_value,
             status=flow_status,
-            note=flow_note or "Stock Connect public data were unavailable or incomplete for this report date.",
+            note=flow_note or "Stock Connect public data were incomplete for this report date.",
             source=flow_source,
             as_of=flow_as_of,
         ),
@@ -195,7 +195,7 @@ def build_hk_quick_checks(
             metric="HK ETF flow proxy",
             value=_summarize_hk_etf_proxy(movers_data),
             status="proxy",
-            note="Use only as a fallback lens when official Stock Connect flow evidence is incomplete.",
+            note="Use only as a secondary lens when official Stock Connect flow evidence is incomplete.",
             source="Hong Kong ETF volume proxy",
             as_of="",
         ),

@@ -44,7 +44,16 @@ def test_narrative_builds_theme_forward_and_non_trading_focus() -> None:
                 "note": "AI services optionality",
                 "upcoming_catalyst": "Earnings",
             }
-        ]
+        ],
+        "Learning watchlist": [
+            {
+                "ticker": "2800.HK",
+                "name": "Tracker Fund of Hong Kong",
+                "bucket": "Learning watchlist",
+                "thesis": "AI platform beta proxy",
+                "note": "AI platform beta proxy",
+            }
+        ],
     }
     high_frequency = [
         {"label": "VIX", "category": "Vol", "price": 16.2, "change_pct": -3.5, "interpretation": "Vol compression supports risk."},
@@ -59,6 +68,7 @@ def test_narrative_builds_theme_forward_and_non_trading_focus() -> None:
     assert theme["theme"] == "AI platform demand"
     assert theme["news"][0]["title"] == "AI platform orders accelerate"
     assert theme["related_names"][0]["ticker"] == "0700.HK"
+    assert all(item["bucket"] != "Learning watchlist" for item in theme["related_names"])
     assert any("VIX -3.50%" in line for line in theme["signals"])
 
     today = build_today_forward(

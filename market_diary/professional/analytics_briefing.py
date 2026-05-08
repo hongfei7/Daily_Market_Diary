@@ -6,6 +6,13 @@ from typing import Any, Dict, List, Optional, Tuple
 from market_diary.professional.analytics_market import _format_signed
 
 
+def _clears_main_news_gate(news: Dict[str, Any]) -> bool:
+    grade = news.get("grade")
+    sector = str(news.get("sector", "") or "").lower()
+    score = float(news.get("score", 0) or 0)
+    return grade in {"A", "B"} and (sector != "other" or score >= 4.0)
+
+
 def build_catalyst_calendar(
     report_date: str,
     macro_agenda: List[Dict[str, Any]],
@@ -113,7 +120,7 @@ def build_source_links(
     story_limit = int((report_config or {}).get("watchlist_story_limit", 2))
     total_limit = int((report_config or {}).get("top_source_links", 15))
 
-    for news in sector_digest.get("graded_news", [])[: max(news_limit, 1) + 4]:
+    for news in [item for item in sector_digest.get("graded_news", []) if _clears_main_news_gate(item)][: max(news_limit, 1) + 4]:
         url = news.get("url")
         if url and url not in seen:
             seen.add(url)
@@ -183,7 +190,7 @@ def build_must_watch(
             }
         )
 
-    for news in sector_digest.get("graded_news", [])[:top_news]:
+    for news in [item for item in sector_digest.get("graded_news", []) if _clears_main_news_gate(item)][:top_news]:
         items.append(
             {
                 "bucket": "News / announcements",
@@ -277,5 +284,5 @@ def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[
         "ratings": (sector_digest or {}).get("sell_side", []) or [],
         "announcements": announcement_rows,
         "hkex_meta": ((sector_data or {}).get("hkex_announcements", {}) or {}).get("meta", {}) or {},
-        "ipo_watch": "IPO / grey-market / first-day performance should be wired to a dedicated Hong Kong ECM adapter.",
+        "ipo_watch": "IPO and grey-market monitoring is not yet part of the standard production pack.",
     }

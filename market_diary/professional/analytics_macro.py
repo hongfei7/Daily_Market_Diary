@@ -10,7 +10,7 @@ def _macro_profile(indicator: str, config: Dict[str, Any]) -> Dict[str, Any]:
             return profile
     return {
         "impact": "Watch whether it changes the day's core market narrative",
-        "industries": ["To be assessed"],
+        "industries": ["Market-wide"],
         "beat_direction": "If the print beats, check whether the market reprices materially",
         "miss_direction": "If the print misses, watch for a style or rates pivot",
     }

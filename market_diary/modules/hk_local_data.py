@@ -242,7 +242,7 @@ def _stock_connect_metric(
         value = float(net_buy) * 1_000_000.0
         note = f"{label} net buy is calculated from HKEX disclosed buy and sell turnover."
     elif total_turnover is not None:
-        display_value = f"Turnover {format_hkd_billions(float(total_turnover) * 1_000_000.0)} | net unavailable"
+        display_value = f"Turnover {format_hkd_billions(float(total_turnover) * 1_000_000.0)} | net not reported"
         value = float(total_turnover) * 1_000_000.0
         note = f"{label} total turnover is available; net-buy is not disclosed in this public daily file."
     else:
@@ -317,27 +317,27 @@ def fetch_hk_local_data(
         "ah_premium_index": unavailable_metric(
             report_date,
             "Public Yahoo Finance quotes - calculated A/H premium",
-            "A/H premium could not be calculated from public quotes for the requested date window.",
+            "A/H premium could not be derived from the configured public quote window.",
         ),
         "hibor_1m": unavailable_metric(
             report_date,
             HKMA_SOURCE,
-            "HKMA liquidity record was unavailable for this date.",
+            "HKMA liquidity record was not refreshed for this date.",
         ),
         "aggregate_balance": unavailable_metric(
             report_date,
             HKMA_SOURCE,
-            "HKMA liquidity record was unavailable for this date.",
+            "HKMA liquidity record was not refreshed for this date.",
         ),
         "base_rate": unavailable_metric(
             report_date,
             HKMA_SOURCE,
-            "HKMA liquidity record was unavailable for this date.",
+            "HKMA liquidity record was not refreshed for this date.",
         ),
         "linked_exchange_band": unavailable_metric(
             report_date,
             HKMA_SOURCE,
-            "HKMA liquidity record was unavailable for this date.",
+            "HKMA liquidity record was not refreshed for this date.",
         ),
     }
 

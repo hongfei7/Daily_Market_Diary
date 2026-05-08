@@ -252,7 +252,7 @@ def main():
         dashboard_path = os.path.join(chart_dir, "test_dashboard.png")
         generate_dashboard(bundle, dashboard_path)
         assert os.path.exists(dashboard_path)
-        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v5"
+        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v6"
 
         daily_chart_path = os.path.join(chart_dir, "test_daily_one_chart.png")
         daily_meta = generate_daily_one_chart(bundle, daily_chart_path)

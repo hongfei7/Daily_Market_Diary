@@ -36,7 +36,7 @@ def test_public_flow_enrichment_fills_only_unavailable_metrics() -> None:
     assert "Net HK$4.0bn" in enriched["southbound_net_flow"]["display_value"]
     assert "turnover HK$20.0bn" in enriched["southbound_net_flow"]["display_value"]
     assert enriched["northbound_net_flow"]["status"] == "partial_public"
-    assert "Turnover RMB15.0bn | net unavailable" in enriched["northbound_net_flow"]["display_value"]
+    assert "Turnover RMB15.0bn | net not reported" in enriched["northbound_net_flow"]["display_value"]
     assert enriched["ah_premium_index"]["display_value"] == "32.40%"
 
 

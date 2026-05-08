@@ -7,6 +7,7 @@ import yfinance as yf
 
 from market_diary.modules.text_normalizer import normalize_news_text
 from market_diary.professional.models import WatchlistDefinition, WatchlistSnapshot
+from market_diary.professional.relevance import watchlist_story_relevance
 
 
 def _strip_html(text: str) -> str:
@@ -51,10 +52,15 @@ def _fetch_single_watchlist(definition: WatchlistDefinition, news_limit: int) ->
             content = raw.get("content", {}) if isinstance(raw, dict) else {}
             if not content:
                 continue
+            title = normalize_news_text(content.get("title", ""), strip_html_tags=True)
+            summary = _strip_html(content.get("summary") or content.get("description") or "")
+            relevance = watchlist_story_relevance(definition.name, definition.ticker, definition.sector, title, summary)
+            if relevance < 2.0:
+                continue
             recent_news.append(
                 {
-                    "title": normalize_news_text(content.get("title", ""), strip_html_tags=True),
-                    "summary": _strip_html(content.get("summary") or content.get("description") or ""),
+                    "title": title,
+                    "summary": summary,
                     "source": normalize_news_text(
                         (content.get("provider") or {}).get("displayName", "Yahoo Finance"),
                         strip_html_tags=False,
@@ -64,15 +70,16 @@ def _fetch_single_watchlist(definition: WatchlistDefinition, news_limit: int) ->
                 }
             )
         snapshot.recent_news = recent_news
-    except Exception as exc:
-        snapshot.note = f"Fetch failed: {type(exc).__name__}"
+    except Exception:
+        if snapshot.last_price is None and snapshot.daily_change_pct is None:
+            snapshot.note = "Quote detail was not refreshed in the current public data run."
 
     move = snapshot.daily_change_pct
     pos = snapshot.range_position_pct
     if snapshot.note:
         return snapshot
     if move is None:
-        snapshot.note = "No market snapshot was available; consider wiring in a dedicated data source."
+        snapshot.note = "Market snapshot detail was not refreshed in the current public data run."
     elif move >= 2:
         snapshot.note = "Short-term price strength is clear; fresh catalysts could trigger broader group follow-through."
     elif move <= -2:

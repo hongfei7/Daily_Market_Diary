@@ -78,7 +78,7 @@ def enrich_hk_local_with_public_flow(
                 turnover_hkd = float(total_turnover) * 1_000_000.0
                 metrics["southbound_net_flow"] = _public_metric(
                     value=turnover_hkd,
-                    display_value=f"Turnover {_format_hkd_billions(turnover_hkd)} | net unavailable",
+                    display_value=f"Turnover {_format_hkd_billions(turnover_hkd)} | net not reported",
                     source=source,
                     as_of=as_of,
                     note="HKEX public file provided Southbound turnover, but not a comparable full-day net-buy figure.",
@@ -103,7 +103,7 @@ def enrich_hk_local_with_public_flow(
                 turnover_rmb = float(total_turnover) * 1_000_000.0
                 metrics["northbound_net_flow"] = _public_metric(
                     value=turnover_rmb,
-                    display_value=f"Turnover {_format_rmb_billions(turnover_rmb)} | net unavailable",
+                    display_value=f"Turnover {_format_rmb_billions(turnover_rmb)} | net not reported",
                     source=source,
                     as_of=as_of,
                     note="HKEX public file provided Northbound turnover, but not a comparable full-day net-buy figure.",

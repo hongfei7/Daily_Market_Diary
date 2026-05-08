@@ -13,7 +13,8 @@
     "watchlist_workers": 4,
     "top_macro_events": 6,
     "top_news_items": 8,
-    "top_movers": 6
+    "top_movers": 6,
+    "show_internal_reflection": false
   },
   "watchlists": {
     "core_coverage": [

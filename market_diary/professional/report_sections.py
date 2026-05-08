@@ -15,6 +15,7 @@ from market_diary.professional.report_formatting import (
     _summary_price,
     _truncate,
 )
+from market_diary.professional.relevance import canonical_hk_leadership, is_relevant_llm_story
 
 
 def _safe_sentence_clip(text: Any, limit: int = 160) -> str:
@@ -37,7 +38,7 @@ def _safe_sentence_clip(text: Any, limit: int = 160) -> str:
 
 def _render_top_items(items: List[Dict[str, Any]], limit: int = 6) -> str:
     if not items:
-        return "1. No priority items were available."
+        return "1. **Priority list pending**\n   Checklist items were not populated for this run."
     lines = []
     for idx, item in enumerate(items[:limit], 1):
         lines.append(f"{idx}. **{item.get('title', '')}**")
@@ -47,7 +48,11 @@ def _render_top_items(items: List[Dict[str, Any]], limit: int = 6) -> str:
 
 def _render_selected_news(bundle: Dict[str, Any]) -> str:
     llm_sections = bundle.get("llm_sections", {}) or {}
-    items = llm_sections.get("selected_news", []) or []
+    items = [
+        item
+        for item in (llm_sections.get("selected_news", []) or [])
+        if is_relevant_llm_story(item.get("headline", ""), item.get("hk_market_impact", ""))
+    ]
     if not items:
         return ""
     lines = ["**Curated overnight stories**"]
@@ -78,6 +83,7 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
     ]
 
     table_rows = []
+    hidden_assets: List[str] = []
     china_10y_metric = _bundle_metric(bundle, "china_rates", "china_10y")
     spread_metric = _bundle_metric(bundle, "china_rates", "cn_us_10y_spread")
 
@@ -97,9 +103,21 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
 
         last_value = price if isinstance(price, str) else _fmt_price(price)
         move_value = pct if isinstance(pct, str) and pct else _fmt_alert_pct(pct)
+        if str(last_value).strip() == "N/A" and str(move_value).strip() in {"", "N/A"}:
+            hidden_assets.append(label)
+            continue
         table_rows.append((label, last_value, move_value, _truncate(read, 92, suffix="")))
 
-    return _make_table(["Asset", "Last", "1D move", "Read"], table_rows)
+    if not table_rows:
+        return "Market snapshot coverage was limited for this run; use the local-flow and rates tables below as the firmer evidence."
+    lines: List[str] = []
+    if hidden_assets:
+        lines.append(
+            f"_Coverage gate: {len(hidden_assets)} unavailable market fields are suppressed from the main table; source status remains in the appendix._"
+        )
+        lines.append("")
+    lines.append(_make_table(["Asset", "Last", "1D move", "Read"], table_rows))
+    return "\n".join(lines)
 
 
 def _pick_metrics_by_name(items: List[Dict[str, Any]], preferred_names: Sequence[str]) -> List[Dict[str, Any]]:
@@ -118,6 +136,12 @@ def _pick_metrics_by_name(items: List[Dict[str, Any]], preferred_names: Sequence
     return selected
 
 
+def _resolved_hk_leadership(bundle: Dict[str, Any]) -> str:
+    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
+    llm_sections = bundle.get("llm_sections", {}) or {}
+    return canonical_hk_leadership(hk_desk_view.get("leadership", ""), llm_sections.get("hk_local_leadership", ""))
+
+
 def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
     rows = bundle.get("hk_quick_checks", []) or []
     rows = _pick_metrics_by_name(
@@ -133,17 +157,27 @@ def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
             "Hong Kong leadership",
         ),
     )
-    table_rows = [
-        (
-            item.get("metric", ""),
-            item.get("value", ""),
-            _status_label(str(item.get("status", ""))),
-            _compact_source_as_of(item),
-            _truncate(item.get("note", ""), 220),
+    hidden_count = sum(1 for item in rows if str(item.get("status", "")).lower() == "unavailable")
+    rows = [item for item in rows if str(item.get("status", "")).lower() != "unavailable"]
+    if not rows:
+        return "Hong Kong local checks did not refresh enough main-table evidence for this run; use Section 2.3 for any available public-flow detail."
+    table_rows = []
+    for item in rows:
+        table_rows.append(
+            (
+                item.get("metric", ""),
+                _resolved_hk_leadership(bundle) if item.get("metric") == "Hong Kong leadership" else item.get("value", ""),
+                _status_label(str(item.get("status", ""))),
+                _compact_source_as_of(item),
+                _truncate(item.get("note", ""), 220),
+            )
         )
-        for item in rows
-    ]
-    return _make_table(["Check", "Value", "Status", "Source / as of", "Why it matters"], table_rows)
+    lines: List[str] = []
+    if hidden_count:
+        lines.append(f"_Coverage gate: {hidden_count} unavailable local checks are suppressed here and retained in validation metadata._")
+        lines.append("")
+    lines.append(_make_table(["Check", "Value", "Status", "Source / as of", "Why it matters"], table_rows))
+    return "\n".join(lines)
 
 
 def _render_risk_dashboard(bundle: Dict[str, Any]) -> str:
