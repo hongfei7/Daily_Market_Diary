@@ -23,12 +23,22 @@ def _run_git_add(paths: Iterable[Path]) -> None:
     subprocess.run(["git", "add", "-f", *normalized], cwd=str(ROOT), check=True)
 
 
-def _report_paths(report_date: str | None, all_reports: bool) -> List[Path]:
+def _runtime_report_dates() -> Set[str]:
+    return {path.name.replace("_morning_briefing.md", "") for path in ARCHIVE_DIR.glob("*_morning_briefing.md")}
+
+
+def _archived_report_dates() -> Set[str]:
+    if not ARCHIVE_ROOT.exists():
+        return set()
+    return {path.name for path in ARCHIVE_ROOT.iterdir() if path.is_dir()}
+
+
+def _report_dates(report_date: str | None, all_reports: bool) -> List[str]:
     if all_reports:
-        return sorted(ARCHIVE_DIR.glob("*_morning_briefing.md"))
+        return sorted(_runtime_report_dates() | _archived_report_dates())
     if not report_date:
         raise ValueError("--report-date is required unless --all is used")
-    return [ARCHIVE_DIR / f"{report_date}_morning_briefing.md"]
+    return [report_date]
 
 
 def referenced_archive_files(report_path: Path) -> List[Path]:
@@ -76,14 +86,24 @@ def _copy_raw_files(report_date: str, destination: Path) -> List[Path]:
     return copied
 
 
+def _existing_archive_files(report_date: str) -> List[Path]:
+    date_dir = ARCHIVE_ROOT / report_date
+    if not date_dir.exists():
+        return []
+    return sorted(path for path in date_dir.rglob("*") if path.is_file())
+
+
 def build_date_archive(
     report_date: str,
     include_all_charts: bool = False,
     include_raw_bundle: bool = False,
 ) -> List[Path]:
     report_path = ARCHIVE_DIR / f"{report_date}_morning_briefing.md"
+    archived_report_path = ARCHIVE_ROOT / report_date / "morning_briefing.md"
     if not report_path.exists():
-        raise FileNotFoundError(f"Report not found: {report_path}")
+        if archived_report_path.exists():
+            return _existing_archive_files(report_date)
+        raise FileNotFoundError(f"Report not found in runtime output or archive: {report_path}")
 
     date_dir = ARCHIVE_ROOT / report_date
     if date_dir.exists():
@@ -92,7 +112,6 @@ def build_date_archive(
 
     archived: Set[Path] = set()
     archived.add(_copy_markdown(report_path, date_dir / "morning_briefing.md"))
-    archived.add(_copy_markdown(report_path, date_dir / "README.md"))
 
     if include_all_charts:
         chart_paths = [
@@ -145,12 +164,7 @@ def main(argv: List[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     staged: Set[Path] = set()
-    if args.all:
-        report_dates = [path.name.replace("_morning_briefing.md", "") for path in _report_paths(None, True)]
-    else:
-        if not args.report_date:
-            raise ValueError("--report-date is required unless --all is used")
-        report_dates = [args.report_date]
+    report_dates = _report_dates(args.report_date, args.all)
 
     for report_date in report_dates:
         staged.add(ARCHIVE_ROOT / report_date)

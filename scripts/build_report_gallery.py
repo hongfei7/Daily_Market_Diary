@@ -106,15 +106,6 @@ def _rel_target(target: Optional[Path], base: Path) -> str:
     return os.path.relpath(target, start=base).replace("\\", "/")
 
 
-def _rewrite_report_links(text: str, prefix: str) -> str:
-    normalized_prefix = prefix.rstrip("/")
-    return re.sub(
-        r"(?P<label>!?\[[^\]]+\])\((?P<target>(?:charts|raw)/[^)]+)\)",
-        lambda match: f"{match.group('label')}({normalized_prefix}/{match.group('target')})",
-        text,
-    )
-
-
 def _gallery_table(entries: Iterable[ReportEntry], base: Path) -> str:
     rows = [
         "| Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |",
@@ -128,7 +119,7 @@ def _gallery_table(entries: Iterable[ReportEntry], base: Path) -> str:
                     entry.mode,
                     entry.pulse.replace("|", "/"),
                     entry.quality,
-                    _rel_link(entry.report_path, base, "Report"),
+                    _rel_link(entry.report_path.parent / "README.md", base, "Report"),
                     _rel_link(entry.dashboard_path, base, "Dashboard"),
                     _rel_link(entry.daily_chart_path, base, "One Chart"),
                     _rel_link(entry.trend_pack_path, base, "Trend Pack"),
@@ -208,8 +199,6 @@ def _dashboard_preview(entry: ReportEntry, base: Path) -> str:
 
 def _date_readme(entry: ReportEntry) -> str:
     date_dir = entry.report_path.parent
-    report_text = entry.report_path.read_text(encoding="utf-8", errors="replace")
-    report_body = _rewrite_report_links(report_text, ".")
     asset_lines = _landing_asset_lines(entry, date_dir)
     dashboard_preview = _dashboard_preview(entry, date_dir)
     return f"""# Archived Professional Report | {entry.date}
@@ -219,6 +208,7 @@ This is the GitHub landing page for the archived report dated `{entry.date}`.
 - Report date: `{entry.date}`
 - Report mode: `{entry.mode}`
 - Quality: `{entry.quality}`
+- One-line pulse: {entry.pulse}
 - Latest published entry: [latest/README.md](../../latest/README.md)
 - Archive gallery: [archive/README.md](../README.md)
 - Direct markdown file: [morning_briefing.md](./morning_briefing.md)
@@ -226,9 +216,11 @@ This is the GitHub landing page for the archived report dated `{entry.date}`.
 
 {dashboard_preview}
 
----
+## How to use this folder
 
-{report_body}
+1. Start with the dashboard preview for a quick visual read.
+2. Open [morning_briefing.md](./morning_briefing.md) for the full report text.
+3. Use `charts/` and `raw/` only when you need supporting assets or audit data.
 """
 
 
@@ -240,8 +232,6 @@ No archived reports are available yet.
 """
 
     latest = entries[0]
-    latest_text = latest.report_path.read_text(encoding="utf-8", errors="replace")
-    report_body = _rewrite_report_links(latest_text, f"../archive/{latest.date}")
     latest_base = report_root / "latest"
     asset_lines = _landing_asset_lines(latest, latest_base)
     dashboard_preview = _dashboard_preview(latest, latest_base)
@@ -252,15 +242,18 @@ This is the stable GitHub entry for the newest archived report.
 - Report date: `{latest.date}`
 - Report mode: `{latest.mode}`
 - Quality: `{latest.quality}`
+- One-line pulse: {latest.pulse}
 - Archived folder: [archive/{latest.date}](../archive/{latest.date}/README.md)
 - Direct markdown file: [morning_briefing.md](../archive/{latest.date}/morning_briefing.md)
 {chr(10).join(asset_lines)}
 
 {dashboard_preview}
 
----
+## Quick start
 
-{report_body}
+1. Open the archived landing page for navigation and context: [archive/{latest.date}/README.md](../archive/{latest.date}/README.md)
+2. Open [morning_briefing.md](../archive/{latest.date}/morning_briefing.md) if you want the full markdown report.
+3. Use the chart and bundle links above when you need the production assets behind the report.
 """
 
 

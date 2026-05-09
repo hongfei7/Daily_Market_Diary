@@ -60,16 +60,24 @@ Weekly pulse with clean Hong Kong follow-through and next-week preparation.
         assert "Weekly Review" in root_index
         assert "82.4/100" in root_index
         assert "Weekly pulse with clean Hong Kong follow-through" in root_index
+        assert "[Report](archive/2026-04-19/README.md)" in root_index
+        assert "archive/2026-04-19/README.md" in root_index
         assert "archive/2026-04-19/charts/dashboard_2026-04-19.png" in root_index
+        assert "[Report](2026-04-19/README.md)" in archive_index
         assert "2026-04-19/charts/dashboard_2026-04-19.png" in archive_index
         assert "2026-04-19/raw/2026-04-19_bundle.json" in archive_index
         assert "stable GitHub entry" in latest_index
         assert "../archive/2026-04-19/README.md" in latest_index
         assert "![Dashboard](../archive/2026-04-19/charts/dashboard_2026-04-19.png)" in latest_index
+        assert "One-line pulse: Weekly pulse with clean Hong Kong follow-through and next-week preparation." in latest_index
+        assert "Quick start" in latest_index
+        assert "# Morning Research Workbench" not in latest_index
         assert "GitHub landing page for the archived report dated `2026-04-19`" in date_index
         assert "../../latest/README.md" in date_index
         assert "![Dashboard](charts/dashboard_2026-04-19.png)" in date_index
         assert "[morning_briefing.md](./morning_briefing.md)" in date_index
+        assert "How to use this folder" in date_index
+        assert "# Morning Research Workbench" not in date_index
 
 
 def main() -> None:
