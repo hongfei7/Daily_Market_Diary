@@ -1,11 +1,64 @@
 from __future__ import annotations
 
+from collections import OrderedDict
 from datetime import date, datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 
 def parse_target_date(value: str) -> date:
     return datetime.strptime(value, "%Y-%m-%d").date()
+
+
+def append_error_record(
+    errors: Optional[List[Dict[str, str]]],
+    *,
+    source: str,
+    message: str,
+    error_type: str = "Error",
+    context: str = "",
+) -> None:
+    if errors is None:
+        return
+    errors.append(
+        {
+            "source": source,
+            "message": message,
+            "error_type": error_type,
+            "context": context,
+        }
+    )
+
+
+def summarize_error_records(errors: Optional[List[Dict[str, str]]], limit: int = 20) -> List[str]:
+    if not errors:
+        return []
+
+    grouped: "OrderedDict[tuple[str, str, str], List[str]]" = OrderedDict()
+    for item in errors:
+        source = str((item or {}).get("source", "")).strip() or "Unknown source"
+        error_type = str((item or {}).get("error_type", "")).strip() or "Error"
+        message = str((item or {}).get("message", "")).strip() or "No message"
+        context = str((item or {}).get("context", "")).strip()
+        key = (source, error_type, message)
+        grouped.setdefault(key, [])
+        if context:
+            grouped[key].append(context)
+
+    output: List[str] = []
+    for (source, error_type, message), contexts in grouped.items():
+        if not contexts:
+            output.append(f"{source}: {error_type}: {message}")
+            continue
+        if len(contexts) == 1:
+            output.append(f"{source} [{contexts[0]}]: {error_type}: {message}")
+            continue
+
+        preview = ", ".join(contexts[:3])
+        remainder = len(contexts) - 3
+        context_summary = preview if remainder <= 0 else f"{preview}, +{remainder} more"
+        output.append(f"{source}: {error_type}: {message} (x{len(contexts)}; contexts: {context_summary})")
+
+    return output[: max(int(limit), 1)]
 
 
 def normalize_as_of(value: Any) -> Optional[date]:
@@ -123,4 +176,3 @@ def format_ratio(value: Optional[float], digits: int = 2) -> str:
     if value is None:
         return "N/A"
     return f"{value:.{digits}f}x"
-

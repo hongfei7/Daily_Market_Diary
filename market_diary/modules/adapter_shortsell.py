@@ -162,9 +162,10 @@ def _rank_rows(rows: Iterable[Dict[str, Any]], key: str, limit: int) -> List[Dic
     )[:limit]
 
 
-def _fetch_for_day(day: date) -> Optional[Dict[str, Any]]:
+def _fetch_for_day(day: date, session: Optional[requests.Session] = None) -> Optional[Dict[str, Any]]:
     url = _day_quotation_url(day)
-    response = _session().get(url, timeout=REQUEST_TIMEOUT)
+    http = session or _session()
+    response = http.get(url, timeout=REQUEST_TIMEOUT)
     response.raise_for_status()
     raw_html = response.text
     section = _extract_section(raw_html)
@@ -199,10 +200,11 @@ def fetch_short_sell_data(
 
     target = _parse_date(report_date)
     last_error = ""
+    session = _session()
     for offset in range(max(lookback_days, 0) + 1):
         day = target - timedelta(days=offset)
         try:
-            snapshot = _fetch_for_day(day)
+            snapshot = _fetch_for_day(day, session=session)
         except Exception as exc:
             last_error = f"{type(exc).__name__}: {exc}"
             continue

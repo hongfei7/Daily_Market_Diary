@@ -11,6 +11,43 @@ from professional.date_policy import build_day_mode, build_report_mode, previous
 from professional.report_builder import render_professional_report
 
 
+def test_report_omits_absent_visual_sections_until_assets_exist() -> None:
+    config = load_professional_config()
+    bundle = build_professional_bundle(
+        report_date="2026-04-18",
+        briefing_date="2026-04-19",
+        global_market_date="2026-04-18",
+        hk_data_date="2026-04-17",
+        config=config,
+        market_data={"summary": {}, "meta": {"requested_date": "2026-04-18", "effective_date": "2026-04-17"}},
+        chart_features={},
+        macro_data={"calendar": {"released": [], "upcoming": []}, "central_bank_events": []},
+        sector_data={},
+        movers_data={},
+        risk_data={},
+        news_headlines=[],
+    )
+
+    report_without_visuals = render_professional_report(bundle, charts_section="")
+    assert "### 3.3 Daily One Chart" not in report_without_visuals
+    assert "### 3.4 Hong Kong Trend Pack" not in report_without_visuals
+
+    bundle["daily_one_chart"] = {
+        "title": "Daily One Chart",
+        "rel_path": "charts/test_daily_one_chart.png",
+        "caption": "Chart read. Daily lens.",
+    }
+    bundle["trend_pack"] = {
+        "title": "Hong Kong Trend Pack",
+        "rel_path": "charts/test_hk_trend_pack.png",
+        "caption": "Trend read. Weekly lens.",
+    }
+
+    report_with_visuals = render_professional_report(bundle, charts_section="")
+    assert "### 3.3 Daily One Chart" in report_with_visuals
+    assert "### 3.4 Hong Kong Trend Pack" in report_with_visuals
+
+
 def main() -> None:
     config = load_professional_config()
 
@@ -106,6 +143,8 @@ def main() -> None:
     assert "Hong Kong Last Cash-Tape Quick Check (Reference)" in report
     assert "Last Available Hong Kong / A-share Tape (Reference Only)" in report
     assert "last-available reference" in report
+    assert "### 3.3 Daily One Chart" not in report
+    assert "### 3.4 Hong Kong Trend Pack" not in report
 
     weekly_bundle = build_professional_bundle(
         report_date="2026-04-18",
@@ -129,6 +168,7 @@ def main() -> None:
     assert "Weekly Cross-Asset Review" in weekly_report
     assert "Next-week desk questions" in weekly_report
     assert "Non-Trading Focus Map" not in weekly_report
+    assert "### 3.4 Hong Kong Trend Pack" not in weekly_report
 
     weekly_bundle["weekly_review"]["trend_summary"] = {
         "status": "ok",
@@ -142,9 +182,15 @@ def main() -> None:
             }
         ],
     }
+    weekly_bundle["trend_pack"] = {
+        "title": "Hong Kong Trend Pack",
+        "rel_path": "charts/test_hk_trend_pack.png",
+        "caption": "Trend read. Weekly lens.",
+    }
     weekly_report_with_trends = render_professional_report(weekly_bundle, charts_section="")
     assert "Five-session trend evidence" in weekly_report_with_trends
     assert "Southbound flow" in weekly_report_with_trends
+    assert "### 3.4 Hong Kong Trend Pack" in weekly_report_with_trends
 
     print("Date semantics test passed")
 

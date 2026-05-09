@@ -31,6 +31,55 @@ from market_diary.professional.attribution import build_attribution
 from market_diary.professional.date_policy import build_date_semantics, build_report_mode
 
 
+def _default_source_status(payload: Optional[Dict[str, Any]], fallback_ok: bool = False) -> str:
+    if isinstance(payload, dict):
+        status = str(payload.get("status", "") or "").strip()
+        if status:
+            return status
+    return "ok" if fallback_ok else "unavailable"
+
+
+def _market_data_status(market_data: Dict[str, Any]) -> str:
+    status = str((market_data or {}).get("status", "") or "").strip()
+    if status:
+        return status
+    quality = ((market_data or {}).get("quality", {}) or {})
+    quality_status = str(quality.get("status", "") or "").strip()
+    if quality_status:
+        return quality_status
+    summary = ((market_data or {}).get("summary", {}) or {})
+    return "ok" if summary else "unavailable"
+
+
+def _sector_data_status(sector_data: Dict[str, Any]) -> str:
+    hkex_status = str((((sector_data or {}).get("hkex_announcements", {}) or {}).get("status", "")) or "").strip()
+    if hkex_status in {"error", "timeout", "partial"}:
+        return hkex_status
+    if (
+        (sector_data or {}).get("sector_news")
+        or (sector_data or {}).get("earnings_calendar")
+        or (sector_data or {}).get("analyst_changes")
+        or hkex_status == "ok"
+    ):
+        return "ok"
+    return "unavailable"
+
+
+def _movers_data_status(movers_data: Dict[str, Any]) -> str:
+    short_sell_status = str((((movers_data or {}).get("short_sell", {}) or {}).get("status", "")) or "").strip()
+    if short_sell_status in {"error", "timeout", "partial"}:
+        return short_sell_status
+    if (
+        ((movers_data or {}).get("premarket_movers", {}) or {}).get("gainers")
+        or ((movers_data or {}).get("premarket_movers", {}) or {}).get("losers")
+        or (movers_data or {}).get("etf_flows")
+        or (movers_data or {}).get("unusual_options")
+        or short_sell_status == "ok"
+    ):
+        return "ok"
+    return "unavailable"
+
+
 def build_professional_bundle(
     report_date: str,
     config: Dict[str, Any],
@@ -169,4 +218,13 @@ def build_professional_bundle(
         "raw_news_headlines": news_headlines[:20],
         "risk": risk_data,
         "report_config": report_config,
+        "source_health_inputs": {
+            "market_data": {"status": _market_data_status(market_data)},
+            "sector_news": {"status": _sector_data_status(sector_data)},
+            "movers": {"status": _movers_data_status(movers_data)},
+            "stock_connect": {"status": _default_source_status(stock_connect_data)},
+            "ah_premium": {"status": _default_source_status(ah_premium_data)},
+            "hk_local": {"status": _default_source_status(hk_local_data, fallback_ok=bool(hk_local_metrics))},
+            "china_rates": {"status": _default_source_status(china_rates_data, fallback_ok=bool(china_rate_metrics))},
+        },
     }

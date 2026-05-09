@@ -215,9 +215,10 @@ def _aggregate_markets(markets: List[Dict[str, Any]], direction: str) -> Dict[st
     }
 
 
-def _fetch_for_day(day: date) -> Optional[Dict[str, Any]]:
+def _fetch_for_day(day: date, session: Optional[requests.Session] = None) -> Optional[Dict[str, Any]]:
     url = HKEX_STOCK_CONNECT_TEMPLATE.format(yyyymmdd=day.strftime("%Y%m%d"))
-    response = _session().get(url, timeout=REQUEST_TIMEOUT)
+    http = session or _session()
+    response = http.get(url, timeout=REQUEST_TIMEOUT)
     response.raise_for_status()
     payload = _extract_payload(response.text)
     markets = [_parse_tab(tab) for tab in payload]
@@ -236,10 +237,11 @@ def _fetch_for_day(day: date) -> Optional[Dict[str, Any]]:
 def fetch_stock_connect_data(report_date: str, lookback_days: int = LOOKBACK_DAYS) -> Dict[str, Any]:
     target = _parse_date(report_date)
     last_error = ""
+    session = _session()
     for offset in range(max(lookback_days, 0) + 1):
         day = target - timedelta(days=offset)
         try:
-            snapshot = _fetch_for_day(day)
+            snapshot = _fetch_for_day(day, session=session)
         except Exception as exc:
             last_error = f"{type(exc).__name__}: {exc}"
             continue

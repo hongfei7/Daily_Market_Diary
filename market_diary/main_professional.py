@@ -54,6 +54,10 @@ from market_diary.professional.trend_pack import collect_hk_trend_pack_data, gen
 DEFAULT_DATA_STEP_TIMEOUT_SECONDS = float(os.environ.get("DMD_DATA_STEP_TIMEOUT_SECONDS", "90"))
 
 
+def _error_summary(exc: BaseException) -> str:
+    return f"{type(exc).__name__}: {exc}"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate the professional morning research briefing.")
     parser.add_argument("--date", type=str, default="", help="Compatibility override: use the same completed date for review, global, and Hong Kong local data.")
@@ -110,10 +114,15 @@ def _run_external_step(
     result_queue: "queue.Queue[tuple[str, Any]]" = queue.Queue(maxsize=1)
 
     def _target() -> None:
+        outcome: tuple[str, Any]
         try:
-            result_queue.put(("ok", func()), block=False)
-        except Exception as exc:
-            result_queue.put(("error", exc), block=False)
+            outcome = ("ok", func())
+        except BaseException as exc:
+            outcome = ("error", exc)
+        try:
+            result_queue.put(outcome, block=False)
+        except queue.Full:
+            pass
 
     worker = threading.Thread(target=_target, name=f"dmd-{label}", daemon=True)
     worker.start()
@@ -121,20 +130,38 @@ def _run_external_step(
 
     if worker.is_alive():
         print(f"[runtime] {label} timed out after {timeout_seconds:.0f}s; using structured fallback.")
-        return {**fallback, "status": "timeout", "error": f"{label} timed out after {timeout_seconds:.0f}s"}
+        return {
+            **fallback,
+            "status": "timeout",
+            "error": f"{label} timed out after {timeout_seconds:.0f}s",
+            "error_type": "TimeoutError",
+            "step": label,
+        }
 
     try:
         status, payload = result_queue.get_nowait()
     except queue.Empty:
-        return {**fallback, "status": "error", "error": f"{label} returned no payload"}
+        return {
+            **fallback,
+            "status": "error",
+            "error": f"{label} returned no payload",
+            "error_type": "RuntimeError",
+            "step": label,
+        }
 
     if status == "ok" and isinstance(payload, dict):
         return payload
     if status == "ok":
         return {"status": "ok", "data": payload}
 
-    print(f"[runtime] {label} failed: {type(payload).__name__}: {payload}")
-    return {**fallback, "status": "error", "error": str(payload)}
+    print(f"[runtime] {label} failed: {_error_summary(payload)}")
+    return {
+        **fallback,
+        "status": "error",
+        "error": str(payload),
+        "error_type": type(payload).__name__,
+        "step": label,
+    }
 
 
 def _fallback_market_payload(date_value: str) -> Dict[str, Any]:
@@ -386,9 +413,19 @@ def main() -> None:
         china_rates_data=payload.get("china_rates", {}) or {},
     )
 
+    day_mode = (bundle.get("day_mode", {}) or {})
+    skip_all_charts = bool(args.skip_charts)
+    should_render_dashboard = not skip_all_charts and not args.skip_dashboard
+    should_render_daily_chart = not skip_all_charts and not args.skip_daily_chart
+    should_render_trend_pack = (
+        not skip_all_charts
+        and not args.skip_trend_pack
+        and day_mode.get("mode") == "weekly_review"
+    )
+
     trend_pack_data: Dict[str, Any] | None = None
     trend_cache_dir = os.path.join(output_dir, "raw", "trend_cache")
-    if not args.skip_trend_pack and (bundle.get("day_mode", {}) or {}).get("mode") == "weekly_review":
+    if should_render_trend_pack:
         trend_pack_data = _run_external_step(
             "trend-pack-data",
             lambda: collect_hk_trend_pack_data(bundle, cache_dir=trend_cache_dir),
@@ -407,14 +444,14 @@ def main() -> None:
     bundle["report_quality"] = build_report_quality(bundle)
 
     dashboard_rel_path = ""
-    if not args.skip_dashboard:
+    if should_render_dashboard:
         chart_dir = os.path.join(output_dir, "charts")
         os.makedirs(chart_dir, exist_ok=True)
         dashboard_name = generate_dashboard(bundle, os.path.join(chart_dir, f"dashboard_{output_label}.png"))
         dashboard_rel_path = f"charts/{dashboard_name}"
 
     daily_chart_rel_path = ""
-    if not args.skip_daily_chart:
+    if should_render_daily_chart:
         chart_dir = os.path.join(output_dir, "charts")
         os.makedirs(chart_dir, exist_ok=True)
         daily_chart_name = generate_daily_one_chart(bundle, os.path.join(chart_dir, f"daily_one_chart_{output_label}.png"))
@@ -425,7 +462,7 @@ def main() -> None:
         daily_chart_rel_path = bundle["daily_one_chart"]["rel_path"]
 
     trend_pack_rel_path = ""
-    if not args.skip_trend_pack:
+    if should_render_trend_pack:
         chart_dir = os.path.join(output_dir, "charts")
         os.makedirs(chart_dir, exist_ok=True)
         trend_pack_meta = generate_hk_trend_pack(

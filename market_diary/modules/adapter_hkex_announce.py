@@ -134,10 +134,17 @@ def _grade(score: float) -> str:
     return "C"
 
 
-def _parse_predefined(category_key: str, target: date, max_age_days: int, watch_terms: Dict[str, Set[str]]) -> List[Dict[str, Any]]:
+def _parse_predefined(
+    category_key: str,
+    target: date,
+    max_age_days: int,
+    watch_terms: Dict[str, Set[str]],
+    session: Optional[requests.Session] = None,
+) -> List[Dict[str, Any]]:
     category = PREDEFINED_CATEGORIES[category_key]
     url = HKEXNEWS_PREDEFINED_TEMPLATE.format(category_id=category["id"])
-    response = _session().get(url, timeout=REQUEST_TIMEOUT)
+    http = session or _session()
+    response = http.get(url, timeout=REQUEST_TIMEOUT)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
     rows: List[Dict[str, Any]] = []
@@ -175,8 +182,14 @@ def _parse_predefined(category_key: str, target: date, max_age_days: int, watch_
     return rows
 
 
-def _parse_profit_warnings(target: date, max_age_days: int, watch_terms: Dict[str, Set[str]]) -> List[Dict[str, Any]]:
-    response = _session().get(HKEX_PROFIT_WARNING_URL, timeout=REQUEST_TIMEOUT)
+def _parse_profit_warnings(
+    target: date,
+    max_age_days: int,
+    watch_terms: Dict[str, Set[str]],
+    session: Optional[requests.Session] = None,
+) -> List[Dict[str, Any]]:
+    http = session or _session()
+    response = http.get(HKEX_PROFIT_WARNING_URL, timeout=REQUEST_TIMEOUT)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
     rows: List[Dict[str, Any]] = []
@@ -232,15 +245,16 @@ def fetch_hkex_announcements(
         "top_announcements": [],
     }
     errors: List[str] = []
+    session = _session()
 
     for category_key in PREDEFINED_CATEGORIES:
         try:
-            data[category_key] = _parse_predefined(category_key, target, max_age_days, watch_terms)[:limit]
+            data[category_key] = _parse_predefined(category_key, target, max_age_days, watch_terms, session=session)[:limit]
         except Exception as exc:
             errors.append(f"{category_key}: {type(exc).__name__}: {exc}")
 
     try:
-        data["profit_warnings"] = _parse_profit_warnings(target, max_age_days, watch_terms)[:limit]
+        data["profit_warnings"] = _parse_profit_warnings(target, max_age_days, watch_terms, session=session)[:limit]
     except Exception as exc:
         errors.append(f"profit_warnings: {type(exc).__name__}: {exc}")
 

@@ -34,6 +34,9 @@ def build_email_text(bundle: Dict[str, Any]) -> str:
     today_forward = bundle.get("today_forward", {}) or {}
     hk_local_highlights = _hk_local_highlights(bundle)
     report_quality = bundle.get("report_quality", {}) or {}
+    runtime_guidance = report_quality.get("runtime_guidance", []) or []
+    runtime_guidance_summary = report_quality.get("runtime_guidance_summary", "")
+    release_recommendation = report_quality.get("release_recommendation", {}) or {}
 
     lines = [
         f"Hong Kong Morning Briefing | {meta.get('briefing_date', meta.get('report_date', ''))}",
@@ -44,6 +47,12 @@ def build_email_text(bundle: Dict[str, Any]) -> str:
     ]
     if report_quality:
         lines.append(f"Report quality: {report_quality.get('score', 'N/A')}/100 | Grade {report_quality.get('grade', 'N/A')}")
+        if report_quality.get("runtime_summary"):
+            lines.append(f"Run health: {report_quality.get('runtime_summary')}")
+        if release_recommendation:
+            lines.append(
+                f"Release recommendation: {release_recommendation.get('label', 'N/A')} | {release_recommendation.get('reason', '')}"
+            )
     lines.extend(["", "Top checklist:"])
 
     for idx, item in enumerate((bundle.get("must_watch", []) or [])[:5], 1):
@@ -61,6 +70,14 @@ def build_email_text(bundle: Dict[str, Any]) -> str:
         for item in hk_local_highlights:
             lines.append(f"- {item['metric']}: {item['value']}")
 
+    if runtime_guidance:
+        lines.append("")
+        if runtime_guidance_summary:
+            lines.append(f"Guidance summary: {runtime_guidance_summary}")
+        lines.append("Use guidance:")
+        for item in runtime_guidance[:3]:
+            lines.append(f"- {str(item.get('level', 'advisory')).upper()}: {item.get('message', '')}")
+
     lines.append("")
     lines.append("The full markdown report and dashboard image are attached.")
     return "\n".join(lines)
@@ -74,6 +91,9 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
     today_forward = bundle.get("today_forward", {}) or {}
     hk_local_highlights = _hk_local_highlights(bundle)
     report_quality = bundle.get("report_quality", {}) or {}
+    runtime_guidance = report_quality.get("runtime_guidance", []) or []
+    runtime_guidance_summary = report_quality.get("runtime_guidance_summary", "")
+    release_recommendation = report_quality.get("release_recommendation", {}) or {}
 
     quality_parts: List[str] = []
     if quality.get("available") and quality.get("total"):
@@ -84,6 +104,12 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
         quality_parts.append(f"Missing {len(quality.get('missing', []))}")
     if report_quality:
         quality_parts.append(f"Report quality {report_quality.get('score', 'N/A')}/100 ({report_quality.get('grade', 'N/A')})")
+    if report_quality.get("runtime_summary"):
+        quality_parts.append(f"Run health {report_quality.get('runtime_summary')}")
+    if runtime_guidance_summary:
+        quality_parts.append(f"Guidance {runtime_guidance_summary}")
+    if release_recommendation:
+        quality_parts.append(f"Release {release_recommendation.get('label', 'N/A')}")
 
     checklist_items = []
     for item in (bundle.get("must_watch", []) or [])[:5]:
@@ -98,6 +124,12 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
     hk_local_items = []
     for item in hk_local_highlights:
         hk_local_items.append(f"<li><strong>{item['metric']}</strong>: {item['value']}</li>")
+
+    guidance_items = []
+    for item in runtime_guidance[:3]:
+        guidance_items.append(
+            f"<li><strong>{str(item.get('level', 'advisory')).capitalize()}</strong>: {item.get('message', '')}</li>"
+        )
 
     dashboard_block = (
         f'<div style="margin:16px 0;"><img src="cid:{dashboard_cid}" alt="Research dashboard" style="max-width:100%; border:1px solid #d0d7de; border-radius:8px;"></div>'
@@ -118,6 +150,7 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
       <p style="margin:0 0 12px 0; color:#59636e;">Global markets through: {meta.get('global_market_date', meta.get('effective_date', ''))} | HK/China local data through: {meta.get('hk_data_date', meta.get('data_through', ''))}</p>
       <p style="font-size:18px; margin:0 0 16px 0;"><strong>{pulse}</strong></p>
       <p style="margin:0 0 16px 0; color:#59636e;">{ " | ".join(quality_parts) if quality_parts else "Market-quality diagnostics were not available." }</p>
+      {"<p style='margin:0 0 16px 0;'><strong>Release recommendation:</strong> " + release_recommendation.get('label', 'N/A') + " | " + release_recommendation.get('reason', '') + "</p>" if release_recommendation else ""}
       {dashboard_block}
       <h2 style="font-size:18px; margin:20px 0 8px 0;">Deep-read setup</h2>
       <p style="margin:0 0 16px 0;">{deep_read}</p>
@@ -130,6 +163,7 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
         {''.join(focus_items) if focus_items else '<li>No same-day focus items were available.</li>'}
       </ul>
       {"<h2 style='font-size:18px; margin:20px 0 8px 0;'>Hong Kong local checks</h2><ul style='padding-left:20px; margin:0 0 16px 0;'>" + ''.join(hk_local_items) + "</ul>" if hk_local_items else ""}
+      {"<h2 style='font-size:18px; margin:20px 0 8px 0;'>Use guidance</h2><ul style='padding-left:20px; margin:0 0 16px 0;'>" + ''.join(guidance_items) + "</ul>" if guidance_items else ""}
       <h2 style="font-size:18px; margin:20px 0 8px 0;">Suggested market answer</h2>
       <p style="margin:0 0 8px 0;">{interview_answer or 'Use the attached full report for a more detailed view.'}</p>
       <p style="margin:16px 0 0 0; color:#59636e;">The full markdown report and dashboard image are attached for desktop follow-up.</p>

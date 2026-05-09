@@ -65,6 +65,10 @@ def render_professional_report(
     global_date = layout["global_date"]
     hk_date = layout["hk_date"]
     internal_notes = _render_internal_notes(bundle)
+    daily_chart_block = _render_daily_one_chart(bundle, daily_chart_rel_path)
+    trend_pack_block = _render_trend_pack(bundle, trend_pack_rel_path)
+    daily_chart_section = f"### 3.3 Daily One Chart\n{daily_chart_block}\n\n" if daily_chart_block else ""
+    trend_pack_section = f"### 3.4 Hong Kong Trend Pack\n{trend_pack_block}\n\n" if trend_pack_block else ""
 
     report = f"""# Morning Research Workbench | {briefing_date}
 
@@ -143,13 +147,7 @@ def render_professional_report(
 ### 3.2 {today_ahead_title}
 {_render_today_forward(bundle)}
 
-### 3.3 Daily One Chart
-{_render_daily_one_chart(bundle, daily_chart_rel_path)}
-
-### 3.4 Hong Kong Trend Pack
-{_render_trend_pack(bundle, trend_pack_rel_path)}
-
-## Traceable Appendix
+{daily_chart_section}{trend_pack_section}## Traceable Appendix
 
 ### Report Metadata
 {appendix_meta_block}

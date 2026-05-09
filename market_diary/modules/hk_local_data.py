@@ -12,11 +12,13 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from market_diary.modules.local_metrics import (
+    append_error_record,
     build_metric,
     format_hkd_billions,
     format_percent,
     format_ratio,
     parse_target_date,
+    summarize_error_records,
     unavailable_metric,
 )
 
@@ -77,11 +79,15 @@ def _day_quotation_url(day: date) -> str:
     return HKEX_DAY_QUOTATION_TEMPLATE.format(yymmdd=day.strftime("%y%m%d"))
 
 
-def _fetch_turnover_for_day(day: date) -> Optional[Dict[str, Any]]:
+def _fetch_turnover_for_day(day: date, errors: Optional[List[Dict[str, str]]] = None) -> Optional[Dict[str, Any]]:
     url = _day_quotation_url(day)
     try:
         buffer = _stream_buffer(url)
-    except Exception:
+    except requests.RequestException as exc:
+        append_error_record(errors, source=HKEX_SOURCE, message=str(exc), error_type=type(exc).__name__, context=day.isoformat())
+        return None
+    except Exception as exc:
+        append_error_record(errors, source=HKEX_SOURCE, message=str(exc), error_type=type(exc).__name__, context=day.isoformat())
         return None
 
     turnover_match = TURNOVER_PATTERN.search(buffer)
@@ -109,15 +115,16 @@ def _fetch_turnover_for_day(day: date) -> Optional[Dict[str, Any]]:
     }
 
 
-def _collect_turnover_history(target: date) -> List[Dict[str, Any]]:
+def _collect_turnover_history(target: date, errors: Optional[List[Dict[str, str]]] = None) -> List[Dict[str, Any]]:
     candidates = [target - timedelta(days=offset) for offset in range(TURNOVER_LOOKBACK_DAYS + 1)]
     snapshots: List[Dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=TURNOVER_MAX_WORKERS) as executor:
-        futures = {executor.submit(_fetch_turnover_for_day, day): day for day in candidates}
+        futures = {executor.submit(_fetch_turnover_for_day, day, errors): day for day in candidates}
         for future in as_completed(futures):
             try:
                 item = future.result()
-            except Exception:
+            except Exception as exc:
+                append_error_record(errors, source=HKEX_SOURCE, message=str(exc), error_type=type(exc).__name__, context=futures[future].isoformat())
                 item = None
             if item and item.get("date") and item["date"] <= target:
                 snapshots.append(item)
@@ -125,12 +132,19 @@ def _collect_turnover_history(target: date) -> List[Dict[str, Any]]:
     return snapshots
 
 
-def _fetch_hkma_record(target: date) -> Optional[Dict[str, Any]]:
+def _fetch_hkma_record(target: date, errors: Optional[List[Dict[str, str]]] = None) -> Optional[Dict[str, Any]]:
     try:
         response = requests.get(HKMA_LIQUIDITY_URL, headers=_headers(), timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         payload = response.json()
-    except Exception:
+    except requests.RequestException as exc:
+        append_error_record(errors, source=HKMA_SOURCE, message=str(exc), error_type=type(exc).__name__, context=target.isoformat())
+        return None
+    except ValueError as exc:
+        append_error_record(errors, source=HKMA_SOURCE, message=str(exc), error_type=type(exc).__name__, context=f"{target.isoformat()} invalid-json")
+        return None
+    except Exception as exc:
+        append_error_record(errors, source=HKMA_SOURCE, message=str(exc), error_type=type(exc).__name__, context=target.isoformat())
         return None
 
     records = ((payload.get("result", {}) or {}).get("records", []) or [])
@@ -144,12 +158,24 @@ def _fetch_hkma_record(target: date) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _fetch_short_sell_snapshot(target: date, turnover_map: Dict[date, float]) -> Dict[str, Any]:
+def _fetch_short_sell_snapshot(
+    target: date,
+    turnover_map: Dict[date, float],
+    errors: Optional[List[Dict[str, str]]] = None,
+) -> Dict[str, Any]:
     try:
         response = requests.get(HKEX_SHORT_SELL_URL, headers=_headers(), timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         html = response.text
-    except Exception:
+    except requests.RequestException as exc:
+        append_error_record(errors, source=HKEX_SHORT_SELL_SOURCE, message=str(exc), error_type=type(exc).__name__, context=target.isoformat())
+        return unavailable_metric(
+            target.isoformat(),
+            HKEX_SHORT_SELL_SOURCE,
+            "Short-selling report could not be retrieved from HKEX.",
+        )
+    except Exception as exc:
+        append_error_record(errors, source=HKEX_SHORT_SELL_SOURCE, message=str(exc), error_type=type(exc).__name__, context=target.isoformat())
         return unavailable_metric(
             target.isoformat(),
             HKEX_SHORT_SELL_SOURCE,
@@ -285,7 +311,8 @@ def fetch_hk_local_data(
     ah_premium_data: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     target = parse_target_date(report_date)
-    turnover_history = _collect_turnover_history(target)
+    errors: List[Dict[str, str]] = []
+    turnover_history = _collect_turnover_history(target, errors=errors)
     turnover_map = {item["date"]: float(item["turnover_hkd"]) for item in turnover_history}
 
     metrics: Dict[str, Dict[str, Any]] = {
@@ -368,12 +395,16 @@ def fetch_hk_local_data(
                 note=f"Trailing 20-session average turnover was {format_hkd_billions(average_turnover)}.",
             )
 
-    metrics["short_selling_ratio"] = _short_sell_metric_from_payload(report_date, short_sell_data) or _fetch_short_sell_snapshot(target, turnover_map)
+    metrics["short_selling_ratio"] = _short_sell_metric_from_payload(report_date, short_sell_data) or _fetch_short_sell_snapshot(
+        target,
+        turnover_map,
+        errors=errors,
+    )
     metrics["southbound_net_flow"] = _stock_connect_metric(report_date, stock_connect_data, "southbound", "Southbound") or metrics["southbound_net_flow"]
     metrics["northbound_net_flow"] = _stock_connect_metric(report_date, stock_connect_data, "northbound", "Northbound") or metrics["northbound_net_flow"]
     metrics["ah_premium_index"] = _ah_premium_metric(report_date, ah_premium_data) or metrics["ah_premium_index"]
 
-    hkma_record = _fetch_hkma_record(target)
+    hkma_record = _fetch_hkma_record(target, errors=errors)
     if hkma_record:
         record_date = str(hkma_record.get("end_of_date", ""))
         hibor_1m = hkma_record.get("hibor_fixing_1m")
@@ -442,5 +473,6 @@ def fetch_hk_local_data(
             "available_metrics": available_count,
             "turnover_effective_date": turnover_history[0]["date"].isoformat() if turnover_history else "",
             "hkma_effective_date": str(hkma_record.get("end_of_date", "")) if hkma_record else "",
+            "errors": summarize_error_records(errors, limit=12),
         },
     }

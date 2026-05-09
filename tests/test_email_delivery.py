@@ -6,6 +6,7 @@ from _bootstrap import ROOT  # noqa: F401
 from professional.analytics import build_professional_bundle
 from professional.config import load_professional_config
 from professional.email_builder import build_email_html, build_email_subject, build_email_text
+from professional.report_quality import build_report_quality
 
 
 def _fixture():
@@ -83,6 +84,7 @@ def main() -> None:
         "deep_read_setup": "The market tone was constructive but not decisive, with the dollar softer and volatility contained.",
         "interview_answer": "The setup is mildly constructive. I would still want local flow confirmation before becoming more aggressive.",
     }
+    bundle["report_quality"] = build_report_quality(bundle)
 
     subject = build_email_subject(bundle)
     text = build_email_text(bundle)
@@ -90,10 +92,19 @@ def main() -> None:
 
     assert "Hong Kong Morning Briefing" in subject
     assert "Top checklist" in text
+    assert "Run health:" in text
+    assert "Release recommendation:" in text
+    assert "Guidance summary:" in text
+    assert "Use guidance:" in text
+    assert "- ADVISORY:" in text or "- BLOCKING:" in text
     assert "Deep-read setup" in html
     assert "cid:research_dashboard" in html
     assert "Hong Kong local checks" in text
     assert "Hong Kong local checks" in html
+    assert "Run health" in html
+    assert "Guidance" in html
+    assert "Release recommendation" in html
+    assert "Use guidance" in html
 
     print("Email delivery test passed")
 

@@ -666,7 +666,7 @@ def _render_daily_one_chart(bundle: Dict[str, Any], daily_chart_rel_path: str) -
     chart_meta = bundle.get("daily_one_chart", {}) or {}
     chart_path = daily_chart_rel_path or chart_meta.get("rel_path", "")
     if not chart_path:
-        return "No dedicated Daily One Chart was produced for this run."
+        return ""
 
     title = chart_meta.get("title", "Daily One Chart")
     caption = chart_meta.get("caption", "")
@@ -687,7 +687,7 @@ def _render_trend_pack(bundle: Dict[str, Any], trend_pack_rel_path: str) -> str:
     chart_meta = bundle.get("trend_pack", {}) or {}
     chart_path = trend_pack_rel_path or chart_meta.get("rel_path", "")
     if not chart_path:
-        return "No dedicated Hong Kong Trend Pack was produced for this run."
+        return ""
 
     title = chart_meta.get("title", "Hong Kong Trend Pack")
     caption = chart_meta.get("caption", "")
@@ -774,6 +774,28 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
     lines = [
         f"- **Quality score:** {quality.get('score', 'N/A')}/100 | **Grade:** {quality.get('grade', 'N/A')} | **Status:** {str(quality.get('status', 'N/A')).replace('_', ' ')}",
     ]
+
+    runtime_summary = str(quality.get("runtime_summary", "") or "").strip()
+    runtime_rows = quality.get("runtime_status", []) or []
+    runtime_guidance = quality.get("runtime_guidance", []) or []
+    runtime_guidance_summary = str(quality.get("runtime_guidance_summary", "") or "").strip()
+    release_recommendation = quality.get("release_recommendation", {}) or {}
+    if runtime_summary:
+        lines.append(f"- **Run summary:** {runtime_summary}")
+    if release_recommendation:
+        lines.append(
+            f"- **Release recommendation:** {release_recommendation.get('label', 'N/A')} | {release_recommendation.get('reason', '')}"
+        )
+    if runtime_rows:
+        lines.append(_make_table(["Source", "Status", "Bucket"], [(item.get("name", ""), item.get("status", ""), item.get("bucket", "")) for item in runtime_rows]))
+    if runtime_guidance:
+        if runtime_guidance_summary:
+            lines.append(f"\n**Desk-use guidance summary:** {runtime_guidance_summary}")
+        lines.append("\n**Desk-use guidance**")
+        lines.extend(
+            f"- **{str(item.get('level', 'advisory')).capitalize()}:** {item.get('message', '')}"
+            for item in runtime_guidance[:4]
+        )
 
     components = quality.get("components", []) or []
     if components:

@@ -105,19 +105,46 @@ def _bundle(pulse: str):
 
 def main() -> None:
     good = _bundle("S&P 500 rose 1.20% as softer dollar pressure and lower yields supported risk-on sentiment.")
+    good["source_health_inputs"] = {
+        "market_data": {"status": "ok"},
+        "sector_news": {"status": "ok"},
+        "movers": {"status": "ok"},
+        "stock_connect": {"status": "ok"},
+        "ah_premium": {"status": "ok"},
+        "hk_local": {"status": "ok"},
+        "china_rates": {"status": "ok"},
+    }
     good["fact_check"] = run_fact_check(good)
     good["report_quality"] = build_report_quality(good)
     assert good["fact_check"]["status"] == "ok"
     assert good["fact_check"]["numeric_claims_checked"] >= 1
     assert good["report_quality"]["score"] > 75
+    assert good["report_quality"]["runtime_summary"]
+    assert good["report_quality"]["runtime_status"]
+    assert good["report_quality"]["runtime_guidance"]
+    assert good["report_quality"]["runtime_guidance_summary"]
+    assert good["report_quality"]["release_recommendation"]["action"] == "send"
 
     bad = _bundle("S&P 500 rose 3.00% as a stronger dollar and higher yields supported risk-off sentiment.")
+    bad["source_health_inputs"] = {
+        "market_data": {"status": "error"},
+        "sector_news": {"status": "partial"},
+        "movers": {"status": "error"},
+        "stock_connect": {"status": "error"},
+        "ah_premium": {"status": "ok"},
+        "hk_local": {"status": "partial"},
+        "china_rates": {"status": "ok"},
+    }
     bad["fact_check"] = run_fact_check(bad)
     bad["report_quality"] = build_report_quality(bad)
     assert bad["fact_check"]["status"] == "warning"
     assert bad["fact_check"]["numeric_mismatches"]
     assert bad["fact_check"]["logic_warnings"]
     assert bad["report_quality"]["warnings"]
+    assert bad["report_quality"]["runtime_guidance"]
+    assert any(item.get("level") == "blocking" for item in bad["report_quality"]["runtime_guidance"])
+    assert any("Cross-asset framing is incomplete" in item.get("message", "") for item in bad["report_quality"]["runtime_guidance"])
+    assert bad["report_quality"]["release_recommendation"]["action"] == "manual_review"
 
     report = render_professional_report(good, charts_section="_No charts._")
     assert "Executive Summary" in report
@@ -131,6 +158,13 @@ def main() -> None:
     assert "Date policy:" not in report.split("## Visual Dashboard")[0]
     assert "Narrative fact-check guardrail" in report
     assert "Quality score" in report
+    assert "Run summary" in report
+    assert "Release recommendation" in report
+    assert "Send" in report
+    assert "| Source | Status | Bucket |" in report
+    assert "Desk-use guidance summary" in report
+    assert "Desk-use guidance" in report
+    assert "**Advisory:**" in report or "**Blocking:**" in report
     assert "**Composite risk score:** `70/100`" in report
     assert "| Component | Score impact | Evidence |" in report
     assert "- **Composite risk score:**" not in report

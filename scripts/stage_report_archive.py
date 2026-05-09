@@ -92,6 +92,7 @@ def build_date_archive(
 
     archived: Set[Path] = set()
     archived.add(_copy_markdown(report_path, date_dir / "morning_briefing.md"))
+    archived.add(_copy_markdown(report_path, date_dir / "README.md"))
 
     if include_all_charts:
         chart_paths = [

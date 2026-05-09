@@ -67,6 +67,8 @@ Each run writes to `reports_professional/`:
 - `raw/YYYY-MM-DD_bundle.json`: structured research bundle
 
 Final markdown reports and their production chart assets can be archived in `reports_professional/` so they can be read directly on GitHub. Raw bundles, email previews, runtime caches, and test-generated chart probes remain ignored unless raw bundle archiving is explicitly requested.
+The GitHub-facing archive exposes a stable `reports_professional/latest/README.md` entry for the newest report, and each `archive/YYYY-MM-DD/` folder also carries a `README.md` so the report renders as soon as you open that folder on GitHub.
+The directory is now split by purpose: `latest/` is the stable reader entry, `archive/` holds dated published reports, and root-level `charts/` plus `raw/` remain runtime workspace material rather than the primary GitHub browsing path.
 
 ## Run
 
@@ -86,8 +88,10 @@ Useful flags:
 
 - `--config PATH`: load a custom JSON config
 - `--output-dir PATH`: override the output directory
-- `--skip-charts`: skip chart generation
+- `--skip-charts`: skip dashboard, Daily One Chart, Hong Kong Trend Pack, and chart appendix generation
 - `--skip-dashboard`: skip dashboard generation
+- `--skip-daily-chart`: skip Daily One Chart generation
+- `--skip-trend-pack`: skip Hong Kong Trend Pack generation
 - `--no-llm`: disable the optional LLM overlay
 - `--debug`: save raw input payloads
 
@@ -126,3 +130,5 @@ as an artifact. They do not commit generated files back to `main` by default.
 Manual workflow runs can publish the GitHub-readable archive by enabling
 `publish_archive`. Enable `include_raw_bundle` only when the raw JSON should be
 kept as repository audit evidence; otherwise it stays in the workflow artifact.
+Publishing the archive also refreshes the stable `latest/` landing page and the
+per-date `README.md` entry pages.

@@ -1,8 +1,11 @@
 import os
 import sys
 from datetime import date, timedelta
+from unittest.mock import Mock
 
 from _bootstrap import ROOT  # noqa: F401
+
+import requests
 
 from modules import china_rates as china_rates_module
 from modules import hk_local_data as hk_local_module
@@ -34,8 +37,8 @@ def main() -> None:
     original_rows = china_rates_module._fetch_rows
 
     try:
-        hk_local_module._collect_turnover_history = lambda target: _turnover_history(date(2026, 4, 13))
-        hk_local_module._fetch_hkma_record = lambda target: {
+        hk_local_module._collect_turnover_history = lambda target, errors=None: _turnover_history(date(2026, 4, 13))
+        hk_local_module._fetch_hkma_record = lambda target, errors=None: {
             "end_of_date": "2026-04-13",
             "hibor_fixing_1m": 2.23244,
             "closing_balance": 54440,
@@ -43,7 +46,7 @@ def main() -> None:
             "cu_weakside": 7.85,
             "cu_strongside": 7.75,
         }
-        hk_local_module._fetch_short_sell_snapshot = lambda target, turnover_map: {
+        hk_local_module._fetch_short_sell_snapshot = lambda target, turnover_map, errors=None: {
             "value": 11.5,
             "display_value": "11.50%",
             "status": "live_local",
@@ -85,8 +88,8 @@ def main() -> None:
         assert hk_local_payload["data"]["ah_premium_index"]["status"] == "live_public"
         assert hk_local_payload["meta"]["available_metrics"] >= 4
 
-        hk_local_module._fetch_hkma_record = lambda target: None
-        hk_local_module._fetch_short_sell_snapshot = lambda target, turnover_map: {
+        hk_local_module._fetch_hkma_record = lambda target, errors=None: None
+        hk_local_module._fetch_short_sell_snapshot = lambda target, turnover_map, errors=None: {
             "value": None,
             "display_value": "N/A",
             "status": "unavailable",
@@ -103,6 +106,7 @@ def main() -> None:
         assert partial_payload["status"] == "ok"
         assert partial_payload["data"]["main_board_turnover"]["status"] == "live_local"
         assert partial_payload["data"]["hibor_1m"]["status"] == "unavailable"
+        assert partial_payload["meta"]["errors"] == []
 
         china_rates_module._fetch_rows = lambda: [
             {
@@ -131,6 +135,12 @@ def main() -> None:
         unavailable_payload = china_rates_module.fetch_china_rates_data("2026-04-13")
         assert unavailable_payload["data"]["china_10y"]["status"] == "unavailable"
         assert unavailable_payload["data"]["cn_us_10y_spread"]["status"] == "unavailable"
+
+        china_rates_module._fetch_rows = Mock(side_effect=requests.RequestException("eastmoney unavailable"))
+        error_payload = china_rates_module.fetch_china_rates_data("2026-04-13")
+        assert error_payload["status"] == "error"
+        assert error_payload["meta"]["errors"]
+        assert "eastmoney unavailable" in error_payload["meta"]["errors"][0]
     finally:
         hk_local_module._collect_turnover_history = original_turnover
         hk_local_module._fetch_hkma_record = original_hkma

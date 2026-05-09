@@ -2,20 +2,22 @@
 
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
-- Latest report: [2026-05-08 Morning Briefing](./archive/2026-05-08/morning_briefing.md)
+- Latest report: [Open the stable latest entry](./latest/README.md)
+- Latest archive folder: [2026-05-08](./archive/2026-05-08/README.md)
 
 Each report date is stored as a self-contained folder:
 
 ```text
 archive/YYYY-MM-DD/
+|-- README.md
 |-- morning_briefing.md
 |-- charts/
-`-- raw/  # optional, only when raw bundle archiving is explicitly enabled
+`-- raw/
 ```
 
-Root-level generated files are runtime output. Browse the organized `archive/` folder on GitHub.
-Raw bundles are uploaded as workflow artifacts by default. They are committed
-only for runs staged with `scripts/stage_report_archive.py --include-raw-bundle`.
+`latest/README.md` is the stable GitHub landing page for the newest published report.
+Each dated folder also includes a `README.md`, so opening that folder on GitHub renders the report immediately.
+Root-level generated files are runtime output. Browse `latest/` for the newest report or the organized `archive/` folder for history.
 
 The same structure is used for daily trading reports, Sunday weekly reviews, weekend event-watch reports, and holiday reopen playbooks.
 

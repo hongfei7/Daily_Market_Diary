@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Optional
@@ -9,6 +10,7 @@ from typing import Iterable, List, Optional
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_ROOT = ROOT / "reports_professional"
 ARCHIVE_ROOT = REPORT_ROOT / "archive"
+LATEST_ROOT = REPORT_ROOT / "latest"
 
 
 @dataclass(frozen=True)
@@ -94,8 +96,23 @@ def collect_report_entries(archive_root: Path = ARCHIVE_ROOT) -> List[ReportEntr
 def _rel_link(target: Optional[Path], base: Path, label: str) -> str:
     if target is None:
         return "N/A"
-    rel = target.relative_to(base).as_posix()
+    rel = os.path.relpath(target, start=base).replace("\\", "/")
     return f"[{label}]({rel})"
+
+
+def _rel_target(target: Optional[Path], base: Path) -> str:
+    if target is None:
+        return ""
+    return os.path.relpath(target, start=base).replace("\\", "/")
+
+
+def _rewrite_report_links(text: str, prefix: str) -> str:
+    normalized_prefix = prefix.rstrip("/")
+    return re.sub(
+        r"(?P<label>!?\[[^\]]+\])\((?P<target>(?:charts|raw)/[^)]+)\)",
+        lambda match: f"{match.group('label')}({normalized_prefix}/{match.group('target')})",
+        text,
+    )
 
 
 def _gallery_table(entries: Iterable[ReportEntry], base: Path) -> str:
@@ -125,10 +142,11 @@ def _gallery_table(entries: Iterable[ReportEntry], base: Path) -> str:
 
 def _root_readme(entries: List[ReportEntry], report_root: Path) -> str:
     latest = entries[0] if entries else None
-    latest_line = (
-        f"- Latest report: [{latest.date} Morning Briefing](./archive/{latest.date}/morning_briefing.md)"
+    latest_line = f"- Latest report: [Open the stable latest entry](./latest/README.md)" if latest else "- Latest report: not available yet."
+    latest_archive_line = (
+        f"- Latest archive folder: [{latest.date}](./archive/{latest.date}/README.md)"
         if latest
-        else "- Latest report: not available yet."
+        else "- Latest archive folder: not available yet."
     )
     table = _gallery_table(entries, report_root) if entries else "_No archived reports are available yet._"
     return f"""# Professional Report Archive
@@ -136,17 +154,21 @@ def _root_readme(entries: List[ReportEntry], report_root: Path) -> str:
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 {latest_line}
+{latest_archive_line}
 
 Each report date is stored as a self-contained folder:
 
 ```text
 archive/YYYY-MM-DD/
+|-- README.md
 |-- morning_briefing.md
 |-- charts/
 `-- raw/
 ```
 
-Root-level generated files are runtime output. Browse the organized `archive/` folder on GitHub.
+`latest/README.md` is the stable GitHub landing page for the newest published report.
+Each dated folder also includes a `README.md`, so opening that folder on GitHub renders the report immediately.
+Root-level generated files are runtime output. Browse `latest/` for the newest report or the organized `archive/` folder for history.
 
 The same structure is used for daily trading reports, Sunday weekly reviews, weekend event-watch reports, and holiday reopen playbooks.
 
@@ -162,7 +184,83 @@ def _archive_readme(entries: List[ReportEntry], archive_root: Path) -> str:
 
 This index is generated from archived report folders.
 
+Open a date folder directly on GitHub to read its `README.md` version of the report.
+Use `../latest/README.md` when you want the newest published report without checking dates first.
+
 {table}
+"""
+
+
+def _landing_asset_lines(entry: ReportEntry, base: Path) -> List[str]:
+    return [
+        f"- Dashboard: {_rel_link(entry.dashboard_path, base, 'Open image')}",
+        f"- Daily One Chart: {_rel_link(entry.daily_chart_path, base, 'Open image')}",
+        f"- Trend Pack: {_rel_link(entry.trend_pack_path, base, 'Open image')}",
+        f"- Raw bundle: {_rel_link(entry.raw_bundle_path, base, 'Open bundle')}",
+    ]
+
+
+def _dashboard_preview(entry: ReportEntry, base: Path) -> str:
+    if entry.dashboard_path is None:
+        return ""
+    return f"\n## Dashboard Preview\n\n![Dashboard]({_rel_target(entry.dashboard_path, base)})\n"
+
+
+def _date_readme(entry: ReportEntry) -> str:
+    date_dir = entry.report_path.parent
+    report_text = entry.report_path.read_text(encoding="utf-8", errors="replace")
+    report_body = _rewrite_report_links(report_text, ".")
+    asset_lines = _landing_asset_lines(entry, date_dir)
+    dashboard_preview = _dashboard_preview(entry, date_dir)
+    return f"""# Archived Professional Report | {entry.date}
+
+This is the GitHub landing page for the archived report dated `{entry.date}`.
+
+- Report date: `{entry.date}`
+- Report mode: `{entry.mode}`
+- Quality: `{entry.quality}`
+- Latest published entry: [latest/README.md](../../latest/README.md)
+- Archive gallery: [archive/README.md](../README.md)
+- Direct markdown file: [morning_briefing.md](./morning_briefing.md)
+{chr(10).join(asset_lines)}
+
+{dashboard_preview}
+
+---
+
+{report_body}
+"""
+
+
+def _latest_readme(entries: List[ReportEntry], report_root: Path) -> str:
+    if not entries:
+        return """# Latest Professional Report
+
+No archived reports are available yet.
+"""
+
+    latest = entries[0]
+    latest_text = latest.report_path.read_text(encoding="utf-8", errors="replace")
+    report_body = _rewrite_report_links(latest_text, f"../archive/{latest.date}")
+    latest_base = report_root / "latest"
+    asset_lines = _landing_asset_lines(latest, latest_base)
+    dashboard_preview = _dashboard_preview(latest, latest_base)
+    return f"""# Latest Professional Report
+
+This is the stable GitHub entry for the newest archived report.
+
+- Report date: `{latest.date}`
+- Report mode: `{latest.mode}`
+- Quality: `{latest.quality}`
+- Archived folder: [archive/{latest.date}](../archive/{latest.date}/README.md)
+- Direct markdown file: [morning_briefing.md](../archive/{latest.date}/morning_briefing.md)
+{chr(10).join(asset_lines)}
+
+{dashboard_preview}
+
+---
+
+{report_body}
 """
 
 
@@ -170,12 +268,21 @@ def build_report_gallery(report_root: Path = REPORT_ROOT, archive_root: Path = A
     entries = collect_report_entries(archive_root)
     report_root.mkdir(parents=True, exist_ok=True)
     archive_root.mkdir(parents=True, exist_ok=True)
+    latest_root = report_root / "latest"
+    latest_root.mkdir(parents=True, exist_ok=True)
 
     root_readme = report_root / "README.md"
     archive_readme = archive_root / "README.md"
+    latest_readme = latest_root / "README.md"
     root_readme.write_text(_root_readme(entries, report_root), encoding="utf-8")
     archive_readme.write_text(_archive_readme(entries, archive_root), encoding="utf-8")
-    return [root_readme, archive_readme]
+    latest_readme.write_text(_latest_readme(entries, report_root), encoding="utf-8")
+    written = [root_readme, archive_readme, latest_readme]
+    for entry in entries:
+        date_readme = entry.report_path.parent / "README.md"
+        date_readme.write_text(_date_readme(entry), encoding="utf-8")
+        written.append(date_readme)
+    return written
 
 
 def main() -> int:

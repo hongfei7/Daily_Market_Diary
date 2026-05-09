@@ -2,6 +2,9 @@
 
 This index is generated from archived report folders.
 
+Open a date folder directly on GitHub to read its `README.md` version of the report.
+Use `../latest/README.md` when you want the newest published report without checking dates first.
+
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2026-05-08 | Trading Daily | HK local participation was credible on May 7 (HSI +1.22%, HSTECH +1.08%, turnover 1.28x 20D average) but the offsho... | 90.4/100 | [Report](2026-05-08/morning_briefing.md) | [Dashboard](2026-05-08/charts/dashboard_2026-05-08.png) | [One Chart](2026-05-08/charts/daily_one_chart_2026-05-08.png) | [Trend Pack](2026-05-08/charts/hk_trend_pack_2026-05-08.png) | [Bundle](2026-05-08/raw/2026-05-08_bundle.json) |

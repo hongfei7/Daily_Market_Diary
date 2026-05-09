@@ -87,6 +87,7 @@ TASK_FEW_SHOTS: Dict[str, str] = {
 }
 
 TaskRunner = Callable[[str, Dict[str, Any], str], Tuple[Dict[str, Any], Dict[str, Any]]]
+LLM_CACHE_VERSION = "v2"
 
 
 def _api_key_present() -> bool:
@@ -234,6 +235,18 @@ def _resolve_model(llm_config: Dict[str, Any], task_name: str) -> Tuple[str, str
     return model, route_name
 
 
+def _provider_cap_for_model(provider_caps: Dict[str, Any], model_name: str) -> Optional[int]:
+    normalized = (model_name or "").strip().lower()
+    if "minimax" in normalized:
+        cap = provider_caps.get("minimax")
+        if cap is not None:
+            try:
+                return max(int(cap), 1)
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
 def _task_config(llm_config: Dict[str, Any], task_name: str) -> Dict[str, Any]:
     return ((llm_config.get("tasks", {}) or {}).get(task_name, {}) or {})
 
@@ -318,35 +331,45 @@ def _retry_delay_seconds(llm_config: Dict[str, Any], attempt: int, error_message
     return min(delay, max_delay)
 
 
-def _effective_max_workers(llm_config: Dict[str, Any]) -> int:
+def _effective_max_workers(llm_config: Dict[str, Any], task_names: Optional[List[str]] = None) -> int:
     requested = max(int(llm_config.get("max_workers", 4)), 1)
     provider_caps = (llm_config.get("provider_parallelism", {}) or {})
-    model_hint = (os.getenv("LLM_MODEL") or "").strip().lower()
+    selected_tasks = task_names or list((llm_config.get("tasks", {}) or {}).keys()) or ["default_model"]
 
-    if "minimax" in model_hint:
-        cap = provider_caps.get("minimax")
+    for task_name in selected_tasks:
+        resolved_task = task_name if task_name in (llm_config.get("tasks", {}) or {}) else "default_model"
+        model_name, _ = _resolve_model(llm_config, resolved_task)
+        cap = _provider_cap_for_model(provider_caps, model_name)
         if cap is not None:
-            try:
-                return max(1, min(requested, int(cap)))
-            except (TypeError, ValueError):
-                return requested
+            requested = min(requested, cap)
     return requested
 
 
-def _hash_context(task_name: str, context: Dict[str, Any], model: str) -> str:
-    payload = json.dumps({"task": task_name, "model": model, "context": context}, ensure_ascii=False, sort_keys=True)
+def _hash_context(task_name: str, context: Dict[str, Any], model: str, prompt: str) -> str:
+    payload = json.dumps(
+        {
+            "version": LLM_CACHE_VERSION,
+            "task": task_name,
+            "model": model,
+            "prompt": prompt,
+            "system_prompt": LLM_SYSTEM_PROMPT,
+            "context": context,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+    )
     return hashlib.md5(payload.encode("utf-8")).hexdigest()
 
 
-def _cache_path(cache_dir: str, task_name: str, context: Dict[str, Any], model: str) -> str:
-    digest = _hash_context(task_name, context, model)
+def _cache_path(cache_dir: str, task_name: str, context: Dict[str, Any], model: str, prompt: str) -> str:
+    digest = _hash_context(task_name, context, model, prompt)
     return os.path.join(cache_dir, f"{task_name}_{digest}.json")
 
 
-def _load_cache(cache_dir: str, task_name: str, context: Dict[str, Any], model: str) -> Optional[Dict[str, Any]]:
+def _load_cache(cache_dir: str, task_name: str, context: Dict[str, Any], model: str, prompt: str) -> Optional[Dict[str, Any]]:
     if not cache_dir:
         return None
-    path = _cache_path(cache_dir, task_name, context, model)
+    path = _cache_path(cache_dir, task_name, context, model, prompt)
     if not os.path.exists(path):
         return None
     try:
@@ -359,11 +382,11 @@ def _load_cache(cache_dir: str, task_name: str, context: Dict[str, Any], model: 
     return None
 
 
-def _save_cache(cache_dir: str, task_name: str, context: Dict[str, Any], model: str, payload: Dict[str, Any]) -> None:
+def _save_cache(cache_dir: str, task_name: str, context: Dict[str, Any], model: str, prompt: str, payload: Dict[str, Any]) -> None:
     if not cache_dir:
         return
     os.makedirs(cache_dir, exist_ok=True)
-    path = _cache_path(cache_dir, task_name, context, model)
+    path = _cache_path(cache_dir, task_name, context, model, prompt)
     with open(path, "w", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
 
@@ -661,7 +684,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
     def runner(task_name: str, context: Dict[str, Any], prompt: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         task_config = _task_config(llm_config, task_name)
         model, route_name = _resolve_model(llm_config, task_name)
-        cached = _load_cache(cache_dir, task_name, context, model)
+        cached = _load_cache(cache_dir, task_name, context, model, prompt)
         if cached is not None:
             coerced_cached = _coerce_task_payload(task_name, cached)
             if _payload_has_content(coerced_cached):
@@ -696,7 +719,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                 if not _payload_has_content(coerced):
                     excerpt = f" Raw excerpt: {last_raw_excerpt}" if last_raw_excerpt else ""
                     raise ValueError(f"LLM returned an empty or non-parseable structured payload.{excerpt}")
-                _save_cache(cache_dir, task_name, context, model, coerced)
+                _save_cache(cache_dir, task_name, context, model, prompt, coerced)
                 return coerced, {"status": "ok", "model": model, "route": route_name, "attempts": attempt}
             except Exception as exc:
                 last_error = f"{type(exc).__name__}: {exc}"
@@ -782,10 +805,11 @@ def generate_llm_sections(
     runner_fn = runner or _run_json_task_factory(llm_config, cache_dir)
 
     # Phase 1: independent tasks.
-    max_workers = _effective_max_workers(llm_config)
+    parallel_tasks = _parallel_phase_tasks(bundle, llm_config)
+    max_workers = _effective_max_workers(llm_config, parallel_tasks)
     futures = {}
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        for task_name in _parallel_phase_tasks(bundle, llm_config):
+        for task_name in parallel_tasks:
             should_run, reason = _task_condition(task_name, bundle)
             if not should_run:
                 task_meta["tasks"][task_name] = {"status": "skipped", "reason": reason}

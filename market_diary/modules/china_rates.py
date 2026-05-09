@@ -8,7 +8,15 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from market_diary.modules.local_metrics import build_metric, format_bp, format_percent, parse_target_date, unavailable_metric
+from market_diary.modules.local_metrics import (
+    append_error_record,
+    build_metric,
+    format_bp,
+    format_percent,
+    parse_target_date,
+    summarize_error_records,
+    unavailable_metric,
+)
 
 
 EASTMONEY_TREASURY_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
@@ -105,6 +113,7 @@ def _safe_float(value: Any) -> Optional[float]:
 
 
 def fetch_china_rates_data(report_date: str) -> Dict[str, Any]:
+    errors: List[Dict[str, str]] = []
     metrics: Dict[str, Dict[str, Any]] = {
         "china_10y": unavailable_metric(
             report_date,
@@ -120,19 +129,35 @@ def fetch_china_rates_data(report_date: str) -> Dict[str, Any]:
 
     try:
         rows = _fetch_rows()
-    except Exception as exc:
+    except requests.RequestException as exc:
+        append_error_record(errors, source=EASTMONEY_SOURCE, message=str(exc), error_type=type(exc).__name__, context=report_date)
         return {
             "status": "error",
             "data": metrics,
-            "meta": {"report_date": report_date, "error": f"{type(exc).__name__}: {exc}"},
+            "meta": {"report_date": report_date, "errors": summarize_error_records(errors)},
+        }
+    except ValueError as exc:
+        append_error_record(errors, source=EASTMONEY_SOURCE, message=str(exc), error_type=type(exc).__name__, context=f"{report_date} invalid-json")
+        return {
+            "status": "error",
+            "data": metrics,
+            "meta": {"report_date": report_date, "errors": summarize_error_records(errors)},
+        }
+    except Exception as exc:
+        append_error_record(errors, source=EASTMONEY_SOURCE, message=str(exc), error_type=type(exc).__name__, context=report_date)
+        return {
+            "status": "error",
+            "data": metrics,
+            "meta": {"report_date": report_date, "errors": summarize_error_records(errors)},
         }
 
     current, previous = _find_rows(report_date, rows)
     if current is None:
+        append_error_record(errors, source=EASTMONEY_SOURCE, message="no row matched the requested date", error_type="LookupError", context=report_date)
         return {
             "status": "error",
             "data": metrics,
-            "meta": {"report_date": report_date, "row_count": len(rows), "error": "No row matched the requested date."},
+            "meta": {"report_date": report_date, "row_count": len(rows), "errors": summarize_error_records(errors)},
         }
 
     current_date = _parse_row_date(current) or report_date
@@ -183,5 +208,6 @@ def fetch_china_rates_data(report_date: str) -> Dict[str, Any]:
             "effective_date": current_date,
             "previous_date": _parse_row_date(previous) if previous else "",
             "fetched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "errors": summarize_error_records(errors),
         },
     }
