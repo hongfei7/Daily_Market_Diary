@@ -124,10 +124,10 @@ watchlist fetching can be tested without touching the bundle orchestrator.
 
 ## Publishing
 
-Scheduled GitHub Actions runs generate, audit, email, and upload the briefing
-as an artifact. They do not commit generated files back to `main` by default.
+Scheduled GitHub Actions runs generate, audit, email, upload the briefing as an
+artifact, and commit the GitHub-readable archive back to `main`.
 
-Manual workflow runs can publish the GitHub-readable archive by enabling
+Manual workflow runs can also publish the GitHub-readable archive by enabling
 `publish_archive`. Enable `include_raw_bundle` only when the raw JSON should be
 kept as repository audit evidence; otherwise it stays in the workflow artifact.
 Publishing the archive also refreshes the stable `latest/` landing page and the

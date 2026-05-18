@@ -5,7 +5,10 @@ GitHub Actions smoke test for the professional morning-briefing pipeline.
 import os
 import sys
 
-from _bootstrap import MARKET_DIARY
+from _bootstrap import MARKET_DIARY, ROOT
+
+
+WORKFLOW_PATH = ROOT / ".github" / "workflows" / "morning_briefing_professional.yml"
 
 
 def check_basic_imports() -> bool:
@@ -116,6 +119,24 @@ def check_api_env() -> bool:
     return True
 
 
+def check_scheduled_archive_publish() -> bool:
+    print("=" * 60)
+    print("Test 4: Scheduled archive publishing")
+    print("=" * 60)
+
+    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    required_condition = "github.event_name == 'schedule' || github.event.inputs.publish_archive == 'true'"
+    required_raw_guard = 'github.event.inputs.include_raw_bundle'
+    if required_condition not in workflow:
+        print("FAIL scheduled runs must publish the report archive")
+        return False
+    if required_raw_guard not in workflow:
+        print("FAIL raw bundle input must be safe for scheduled runs")
+        return False
+    print("OK  scheduled runs publish the archive")
+    return True
+
+
 def main() -> int:
     print("\n" + "=" * 60)
     print("GitHub Actions Smoke Test")
@@ -125,6 +146,7 @@ def main() -> int:
         ("Third-party imports", check_basic_imports()),
         ("Project imports", check_project_imports()),
         ("API environment", check_api_env()),
+        ("Scheduled archive publishing", check_scheduled_archive_publish()),
     ]
 
     print("\n" + "=" * 60)
@@ -152,6 +174,10 @@ def test_project_imports() -> None:
 
 def test_api_env() -> None:
     assert check_api_env()
+
+
+def test_scheduled_archive_publish() -> None:
+    assert check_scheduled_archive_publish()
 
 
 if __name__ == "__main__":

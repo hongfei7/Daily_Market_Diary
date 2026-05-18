@@ -161,7 +161,7 @@ jobs:
             --to "$REPORT_EMAIL_TO"
 
       - name: Commit and push report archive
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_archive }}
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.publish_archive == 'true' }}
         env:
           TZ: Asia/Shanghai
         run: |
@@ -174,7 +174,7 @@ jobs:
           git merge --ff-only origin/main
 
           STAGE_ARGS=(--report-date "$BRIEFING_DATE" --include-all-charts)
-          if [ "${{ inputs.include_raw_bundle }}" = "true" ]; then
+          if [ "${{ github.event.inputs.include_raw_bundle }}" = "true" ]; then
             STAGE_ARGS+=(--include-raw-bundle)
           fi
           python scripts/stage_report_archive.py "${STAGE_ARGS[@]}"
