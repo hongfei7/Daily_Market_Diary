@@ -10,12 +10,14 @@ Daily_Market_Diary/
 |   `-- professional/                 # Research analytics, report modes, rendering, charts, LLM orchestration
 |-- reports_professional/
 |   |-- README.md                    # Generated report gallery for GitHub browsing
+|   |-- latest/
+|   |   `-- README.md                # Stable entry for the newest published report
 |   `-- archive/
 |       |-- README.md                # Generated archive index
 |       `-- YYYY-MM-DD/
 |           |-- morning_briefing.md   # GitHub-readable report
 |           |-- charts/               # Charts and chart feature JSON for that report date
-|           `-- raw/                  # Structured bundle/raw data for traceability
+|           `-- raw/                  # Optional raw bundle when explicitly published
 |-- scripts/                          # Operational helpers used locally and in GitHub Actions
 |-- tests/                            # Script-based regression tests
 |-- docs/                             # Project documentation
@@ -26,9 +28,9 @@ Daily_Market_Diary/
 
 - Root-level `reports_professional/*.md`, `reports_professional/charts/*`, and `reports_professional/raw/*` are runtime output.
 - GitHub-readable output must be copied into `reports_professional/archive/YYYY-MM-DD/`.
-- The archive folder is allowed to contain the report, charts, chart feature JSON, and raw bundle for traceability.
+- The archive folder is allowed to contain the report, charts, chart feature JSON, and an optional raw bundle for traceability.
 - Test-generated charts and email previews should not be archived.
-- `scripts/stage_report_archive.py` refreshes both report gallery indexes after each archive update.
+- `scripts/stage_report_archive.py` refreshes the root, latest, archive, and per-date gallery pages after each archive update.
 
 ## Report Modes
 

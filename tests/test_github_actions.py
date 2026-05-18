@@ -137,6 +137,33 @@ def check_scheduled_archive_publish() -> bool:
     return True
 
 
+def check_workflow_guardrails() -> bool:
+    print("=" * 60)
+    print("Test 5: Workflow guardrails")
+    print("=" * 60)
+
+    morning = WORKFLOW_PATH.read_text(encoding="utf-8")
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    combined = "\n".join([morning, ci])
+    required_actions = (
+        "actions/checkout@v6",
+        "actions/setup-python@v6",
+        "actions/upload-artifact@v6",
+    )
+    for action in required_actions:
+        if action not in combined:
+            print(f"FAIL missing modern GitHub Action: {action}")
+            return False
+    if "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24" in combined:
+        print("FAIL Node 24 forcing env should not be needed with v6 actions")
+        return False
+    if "python scripts/run_tests.py --pytest" not in morning:
+        print("FAIL morning workflow must run the full pytest-backed suite")
+        return False
+    print("OK  workflows use current actions and full regression coverage")
+    return True
+
+
 def main() -> int:
     print("\n" + "=" * 60)
     print("GitHub Actions Smoke Test")
@@ -147,6 +174,7 @@ def main() -> int:
         ("Project imports", check_project_imports()),
         ("API environment", check_api_env()),
         ("Scheduled archive publishing", check_scheduled_archive_publish()),
+        ("Workflow guardrails", check_workflow_guardrails()),
     ]
 
     print("\n" + "=" * 60)
@@ -178,6 +206,10 @@ def test_api_env() -> None:
 
 def test_scheduled_archive_publish() -> None:
     assert check_scheduled_archive_publish()
+
+
+def test_workflow_guardrails() -> None:
+    assert check_workflow_guardrails()
 
 
 if __name__ == "__main__":

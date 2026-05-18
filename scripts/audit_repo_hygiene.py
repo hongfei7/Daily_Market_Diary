@@ -116,7 +116,7 @@ def classify_path(path: str, status: str = "") -> Finding | None:
             "generated-output",
             "info" if planned_deletion else "warning",
             status,
-            "Generated reports should be emailed/uploaded as artifacts, not kept as source files.",
+            "Root-level runtime outputs should stay in artifacts or the explicit report archive, not source paths.",
         )
 
     if "/" not in normalized and fnmatch.fnmatch(normalized, ROOT_TEST_PATTERN):
