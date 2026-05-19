@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-05-08](./archive/2026-05-08/README.md)
+- Latest archive folder: [2026-05-19](./archive/2026-05-19/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-19 | Trading Daily | Risk-off session with growth-led decline (HSTECH -2.62%) and 18% short ratio keeps Hong Kong rebounds conditional p... | 94.7/100 | [Report](archive/2026-05-19/README.md) | [Dashboard](archive/2026-05-19/charts/dashboard_2026-05-19.png) | [One Chart](archive/2026-05-19/charts/daily_one_chart_2026-05-19.png) | N/A | N/A |
 | 2026-05-08 | Trading Daily | HK local participation was credible on May 7 (HSI +1.22%, HSTECH +1.08%, turnover 1.28x 20D average) but the offsho... | 90.4/100 | [Report](archive/2026-05-08/README.md) | [Dashboard](archive/2026-05-08/charts/dashboard_2026-05-08.png) | [One Chart](archive/2026-05-08/charts/daily_one_chart_2026-05-08.png) | [Trend Pack](archive/2026-05-08/charts/hk_trend_pack_2026-05-08.png) | [Bundle](archive/2026-05-08/raw/2026-05-08_bundle.json) |
 | 2026-05-07 | Trading Daily | Risk-On overnight with USD softness and lower yields was a constructive lead for Hong Kong, but the local tape - HS... | 94.7/100 | [Report](archive/2026-05-07/README.md) | [Dashboard](archive/2026-05-07/charts/dashboard_2026-05-07.png) | [One Chart](archive/2026-05-07/charts/daily_one_chart_2026-05-07.png) | [Trend Pack](archive/2026-05-07/charts/hk_trend_pack_2026-05-07.png) | [Bundle](archive/2026-05-07/raw/2026-05-07_bundle.json) |
 | 2026-05-06 | Trading Daily | Growth-led Hong Kong rebound (+2.05% HSTECH) found a tailwind from softer USD and lower yields overnight, but thin... | 89.7/100 | [Report](archive/2026-05-06/README.md) | [Dashboard](archive/2026-05-06/charts/dashboard_2026-05-06.png) | [One Chart](archive/2026-05-06/charts/daily_one_chart_2026-05-06.png) | [Trend Pack](archive/2026-05-06/charts/hk_trend_pack_2026-05-06.png) | [Bundle](archive/2026-05-06/raw/2026-05-06_bundle.json) |
