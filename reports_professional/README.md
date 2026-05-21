@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-05-20](./archive/2026-05-20/README.md)
+- Latest archive folder: [2026-05-21](./archive/2026-05-21/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-21 | Trading Daily | Risk-On backdrop with USD softer and lower yields supported a marginal HSTECH-led rally on May 20, but the offshore... | 94.7/100 | [Report](archive/2026-05-21/README.md) | [Dashboard](archive/2026-05-21/charts/dashboard_2026-05-21.png) | [One Chart](archive/2026-05-21/charts/daily_one_chart_2026-05-21.png) | N/A | N/A |
 | 2026-05-20 | Trading Daily | Risk-Off remains the dominant frame heading into Wednesday: elevated yields and a hot US CPI have reinforced dollar... | 92.6/100 | [Report](archive/2026-05-20/README.md) | [Dashboard](archive/2026-05-20/charts/dashboard_2026-05-20.png) | [One Chart](archive/2026-05-20/charts/daily_one_chart_2026-05-20.png) | N/A | N/A |
 | 2026-05-19 | Trading Daily | Risk-off session with growth-led decline (HSTECH -2.62%) and 18% short ratio keeps Hong Kong rebounds conditional p... | 94.7/100 | [Report](archive/2026-05-19/README.md) | [Dashboard](archive/2026-05-19/charts/dashboard_2026-05-19.png) | [One Chart](archive/2026-05-19/charts/daily_one_chart_2026-05-19.png) | N/A | N/A |
 | 2026-05-08 | Trading Daily | HK local participation was credible on May 7 (HSI +1.22%, HSTECH +1.08%, turnover 1.28x 20D average) but the offsho... | 90.4/100 | [Report](archive/2026-05-08/README.md) | [Dashboard](archive/2026-05-08/charts/dashboard_2026-05-08.png) | [One Chart](archive/2026-05-08/charts/daily_one_chart_2026-05-08.png) | [Trend Pack](archive/2026-05-08/charts/hk_trend_pack_2026-05-08.png) | [Bundle](archive/2026-05-08/raw/2026-05-08_bundle.json) |
