@@ -8,7 +8,13 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from market_diary.modules.llm_client import api_key_available, get_client
+from market_diary.modules.llm_client import (
+    api_key_available,
+    get_available_providers,
+    get_client,
+    get_default_model,
+    get_default_provider,
+)
 
 
 LLM_SYSTEM_PROMPT = """You are a senior analyst at a Hong Kong Chinese securities research institute.
@@ -225,14 +231,41 @@ def _route_config(llm_config: Dict[str, Any], route_name: str) -> Dict[str, Any]
     return ((llm_config.get("routes", {}) or {}).get(route_name, {}) or {})
 
 
+def _route_fallback_model(route: Dict[str, Any], provider: str = "") -> str:
+    fallback = route.get("fallback")
+    selected_provider = provider or get_default_provider()
+    if isinstance(fallback, dict):
+        model = (
+            fallback.get(selected_provider)
+            or fallback.get("default")
+            or get_default_model(selected_provider)
+        )
+        return str(model).strip() or get_default_model(selected_provider)
+    if fallback:
+        return str(fallback).strip() or get_default_model(selected_provider)
+    return get_default_model(selected_provider)
+
+
 def _resolve_model(llm_config: Dict[str, Any], task_name: str) -> Tuple[str, str]:
     task_config = ((llm_config.get("tasks", {}) or {}).get(task_name, {}) or {})
     route_name = str(task_config.get("route", "default_model"))
     route = _route_config(llm_config, route_name)
     env_name = route.get("env", "")
     env_value = os.getenv(env_name, "").strip() if env_name else ""
-    model = env_value or route.get("fallback") or os.getenv("LLM_MODEL", "MiniMax-M2.7")
+    model = env_value or _route_fallback_model(route)
     return model, route_name
+
+
+def _model_candidates(llm_config: Dict[str, Any], task_name: str) -> List[Tuple[str, str, str]]:
+    model, route_name = _resolve_model(llm_config, task_name)
+    primary_provider = get_default_provider()
+    candidates = [(primary_provider, model, route_name)]
+    available_providers = get_available_providers()
+    if primary_provider == "deepseek" and "minimax" in available_providers:
+        route = _route_config(llm_config, route_name)
+        fallback_model = _route_fallback_model(route, "minimax")
+        candidates.append(("minimax", fallback_model, f"{route_name}:fallback"))
+    return candidates
 
 
 def _provider_cap_for_model(provider_caps: Dict[str, Any], model_name: str) -> Optional[int]:
@@ -683,54 +716,82 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
 def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRunner:
     def runner(task_name: str, context: Dict[str, Any], prompt: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         task_config = _task_config(llm_config, task_name)
-        model, route_name = _resolve_model(llm_config, task_name)
-        cached = _load_cache(cache_dir, task_name, context, model, prompt)
-        if cached is not None:
-            coerced_cached = _coerce_task_payload(task_name, cached)
-            if _payload_has_content(coerced_cached):
-                return coerced_cached, {"status": "cached", "model": model, "route": route_name, "attempts": 0}
-
         retries = max(int(llm_config.get("max_retries", 2)), 0) + 1
         temperature = float(task_config.get("temperature", 0.2))
         max_tokens = int(task_config.get("max_tokens", 700))
         last_error = ""
         last_raw_excerpt = ""
+        last_model = ""
+        last_provider = ""
+        last_route = ""
+        total_attempts = 0
 
-        for attempt in range(1, retries + 1):
-            try:
-                client = get_client()
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=[
-                        {"role": "system", "content": LLM_SYSTEM_PROMPT},
-                        {"role": "user", "content": prompt},
-                    ],
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                )
-                raw = _extract_response_text(response.choices[0].message.content)
-                last_raw_excerpt = raw[:240].replace("\n", " ").strip()
-                finish_reason = _choice_finish_reason(response)
-                if _llm_response_looks_truncated(raw, finish_reason):
-                    reason = finish_reason or "trailing ellipsis or unbalanced JSON"
-                    raise ValueError(f"LLM response appears truncated ({reason}); increase max_tokens or reduce prompt context.")
-                parsed = _extract_json_object(raw)
-                coerced = _coerce_task_payload(task_name, parsed)
-                if not _payload_has_content(coerced):
-                    excerpt = f" Raw excerpt: {last_raw_excerpt}" if last_raw_excerpt else ""
-                    raise ValueError(f"LLM returned an empty or non-parseable structured payload.{excerpt}")
-                _save_cache(cache_dir, task_name, context, model, prompt, coerced)
-                return coerced, {"status": "ok", "model": model, "route": route_name, "attempts": attempt}
-            except Exception as exc:
-                last_error = f"{type(exc).__name__}: {exc}"
-                if attempt < retries and _is_retryable_error(last_error):
-                    time.sleep(_retry_delay_seconds(llm_config, attempt, last_error))
+        for provider, model, route_name in _model_candidates(llm_config, task_name):
+            last_model = model
+            last_provider = provider
+            last_route = route_name
+            cached = _load_cache(cache_dir, task_name, context, model, prompt)
+            if cached is not None:
+                coerced_cached = _coerce_task_payload(task_name, cached)
+                if _payload_has_content(coerced_cached):
+                    return coerced_cached, {
+                        "status": "cached",
+                        "model": model,
+                        "provider": provider,
+                        "route": route_name,
+                        "attempts": 0,
+                    }
+
+            for attempt in range(1, retries + 1):
+                total_attempts += 1
+                try:
+                    client = get_client(provider)
+                    response = client.chat.completions.create(
+                        model=model,
+                        messages=[
+                            {"role": "system", "content": LLM_SYSTEM_PROMPT},
+                            {"role": "user", "content": prompt},
+                        ],
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                    )
+                    raw = _extract_response_text(response.choices[0].message.content)
+                    last_raw_excerpt = raw[:240].replace("\n", " ").strip()
+                    finish_reason = _choice_finish_reason(response)
+                    if _llm_response_looks_truncated(raw, finish_reason):
+                        reason = finish_reason or "trailing ellipsis or unbalanced JSON"
+                        raise ValueError(
+                            f"LLM response appears truncated ({reason}); increase max_tokens or reduce prompt context."
+                        )
+                    parsed = _extract_json_object(raw)
+                    coerced = _coerce_task_payload(task_name, parsed)
+                    if not _payload_has_content(coerced):
+                        excerpt = f" Raw excerpt: {last_raw_excerpt}" if last_raw_excerpt else ""
+                        raise ValueError(f"LLM returned an empty or non-parseable structured payload.{excerpt}")
+                    _save_cache(cache_dir, task_name, context, model, prompt, coerced)
+                    status = (
+                        "ok"
+                        if route_name == _resolve_model(llm_config, task_name)[1]
+                        else "fallback_ok"
+                    )
+                    return coerced, {
+                        "status": status,
+                        "model": model,
+                        "provider": provider,
+                        "route": route_name,
+                        "attempts": total_attempts,
+                    }
+                except Exception as exc:
+                    last_error = f"{type(exc).__name__}: {exc}"
+                    if attempt < retries and _is_retryable_error(last_error):
+                        time.sleep(_retry_delay_seconds(llm_config, attempt, last_error))
 
         error_meta = {
             "status": "error",
-            "model": model,
-            "route": route_name,
-            "attempts": retries,
+            "model": last_model,
+            "provider": last_provider,
+            "route": last_route,
+            "attempts": total_attempts,
             "error": last_error,
         }
         if last_raw_excerpt:

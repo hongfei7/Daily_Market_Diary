@@ -61,6 +61,12 @@ jobs:
       - name: Debug environment
         env:
           TZ: Asia/Shanghai
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M2.7' }}
         run: |
           echo "=== Environment Info ==="
           echo "Event: $GITHUB_EVENT_NAME"
@@ -75,7 +81,7 @@ jobs:
           echo "=== API Key Check ==="
           python - <<'PY'
           import os
-          for k in ["MINIMAX_API_KEY", "OPENAI_API_KEY"]:
+          for k in ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY"]:
               v = (os.getenv(k) or "").strip()
               print(f"{k}: present={bool(v)}, len={len(v)}")
           for k in ["OPENAI_BASE_URL", "LLM_BASE_URL", "LLM_MODEL"]:
@@ -85,11 +91,12 @@ jobs:
       - name: Run system tests
         env:
           TZ: Asia/Shanghai
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: https://api.minimaxi.com/v1
-          LLM_BASE_URL: https://api.minimaxi.com/v1
-          LLM_MODEL: MiniMax-M2.7
+          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M2.7' }}
         run: |
           echo "Running system tests..."
           python scripts/run_tests.py --pytest
@@ -97,11 +104,12 @@ jobs:
       - name: Generate Morning Briefing
         env:
           TZ: Asia/Shanghai
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: https://api.minimaxi.com/v1
-          LLM_BASE_URL: https://api.minimaxi.com/v1
-          LLM_MODEL: MiniMax-M2.7
+          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M2.7' }}
         run: |
           BRIEFING_DATE="$(date +%F)"
           if [ -n "${{ github.event.inputs.date }}" ]; then

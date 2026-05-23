@@ -35,14 +35,16 @@ Running with `--no-llm` helps separate data or chart issues from model issues.
 
 Typical causes:
 
-- `MINIMAX_API_KEY` or `OPENAI_API_KEY` is missing.
+- `DEEPSEEK_API_KEY`, `MINIMAX_API_KEY`, or `OPENAI_API_KEY` is missing.
 - The upstream model endpoint is overloaded.
 - The configured `LLM_BASE_URL` is wrong.
 
 Fix:
 
 ```bash
-set MINIMAX_API_KEY=your_key_here
+set DEEPSEEK_API_KEY=your_key_here
+set LLM_BASE_URL=http://api.deepseek.com
+set LLM_MODEL=deepseek-v4-pro
 python market_diary/main_professional.py --date 2026-04-13
 ```
 

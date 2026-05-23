@@ -74,7 +74,7 @@ cp .env.example .env
 
 Then populate:
 
-- `MINIMAX_API_KEY` or `OPENAI_API_KEY`
+- `DEEPSEEK_API_KEY`, with `MINIMAX_API_KEY` or `OPENAI_API_KEY` as fallback
 - optional `LLM_BASE_URL`
 - optional `LLM_MODEL`
 

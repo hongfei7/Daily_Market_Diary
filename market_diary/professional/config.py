@@ -6,6 +6,13 @@ import os
 from typing import Any, Dict, Optional
 
 
+DEFAULT_LLM_ROUTE_FALLBACK = {
+    "deepseek": "deepseek-v4-pro",
+    "minimax": "MiniMax-M2.7",
+    "default": "MiniMax-M2.7",
+}
+
+
 DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
     "system": {
         "name": "Morning Research Workbench",
@@ -48,19 +55,19 @@ DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
         "routes": {
             "default_model": {
                 "env": "LLM_MODEL",
-                "fallback": "MiniMax-M2.7",
+                "fallback": copy.deepcopy(DEFAULT_LLM_ROUTE_FALLBACK),
             },
             "fast_model": {
                 "env": "LLM_FAST_MODEL",
-                "fallback": "MiniMax-M2.7",
+                "fallback": copy.deepcopy(DEFAULT_LLM_ROUTE_FALLBACK),
             },
             "deep_model": {
                 "env": "LLM_DEEP_MODEL",
-                "fallback": "MiniMax-M2.7",
+                "fallback": copy.deepcopy(DEFAULT_LLM_ROUTE_FALLBACK),
             },
             "future_deep_model": {
                 "env": "LLM_FUTURE_DEEP_MODEL",
-                "fallback": "Opus-4.6",
+                "fallback": copy.deepcopy(DEFAULT_LLM_ROUTE_FALLBACK),
             },
         },
         "tasks": {

@@ -102,7 +102,7 @@ def check_api_env() -> bool:
 
     from modules.llm_client import api_key_available
 
-    api_key = (os.getenv("MINIMAX_API_KEY") or os.getenv("OPENAI_API_KEY") or "").strip()
+    api_key = (os.getenv("DEEPSEEK_API_KEY") or os.getenv("MINIMAX_API_KEY") or os.getenv("OPENAI_API_KEY") or "").strip()
     if not api_key:
         if api_key_available():
             print("Local API key file detected; skipping remote client validation.")
@@ -160,6 +160,16 @@ def check_workflow_guardrails() -> bool:
     if "python scripts/run_tests.py --pytest" not in morning:
         print("FAIL morning workflow must run the full pytest-backed suite")
         return False
+    required_llm_config = (
+        "DEEPSEEK_API_KEY",
+        "deepseek-v4-pro",
+        "http://api.deepseek.com",
+        "MiniMax-M2.7",
+    )
+    for marker in required_llm_config:
+        if marker not in morning:
+            print(f"FAIL missing LLM provider fallback config: {marker}")
+            return False
     print("OK  workflows use current actions and full regression coverage")
     return True
 

@@ -7,6 +7,25 @@ from pathlib import Path
 from openai import OpenAI
 
 
+DEEPSEEK_API_KEY_ENV = "DEEPSEEK_API_KEY"
+DEEPSEEK_BASE_URL = "http://api.deepseek.com"
+DEEPSEEK_MODEL = "deepseek-v4-pro"
+MINIMAX_API_KEY_ENV = "MINIMAX_API_KEY"
+MINIMAX_BASE_URL = "https://api.minimaxi.com/v1"
+MINIMAX_MODEL = "MiniMax-M2.7"
+OPENAI_API_KEY_ENV = "OPENAI_API_KEY"
+
+_API_KEY_ENV_PROVIDERS = (
+    (DEEPSEEK_API_KEY_ENV, "deepseek"),
+    (MINIMAX_API_KEY_ENV, "minimax"),
+    (OPENAI_API_KEY_ENV, "minimax"),
+)
+_PROVIDER_API_KEY_ENVS = {
+    "deepseek": (DEEPSEEK_API_KEY_ENV,),
+    "minimax": (MINIMAX_API_KEY_ENV, OPENAI_API_KEY_ENV),
+}
+
+
 SYSTEM_PROMPT = """\
 CRITICAL OUTPUT RULES:
 1. Output only the final Markdown report body.
@@ -21,8 +40,14 @@ Write concise, professional, actionable English.
 """
 
 
-def _load_local_api_key() -> str:
+def _load_local_api_key_with_provider() -> tuple[str, str]:
     """Load a local development API key without printing or persisting it."""
+    named_providers = {
+        DEEPSEEK_API_KEY_ENV: "deepseek",
+        MINIMAX_API_KEY_ENV: "minimax",
+        OPENAI_API_KEY_ENV: "minimax",
+        "API_KEY": "minimax",
+    }
     candidates = [
         Path.cwd() / ".apikey",
         Path(__file__).resolve().parents[2] / ".apikey",
@@ -42,26 +67,83 @@ def _load_local_api_key() -> str:
                 continue
             if "=" in cleaned:
                 key, value = cleaned.split("=", 1)
-                if key.strip() in {"MINIMAX_API_KEY", "OPENAI_API_KEY", "API_KEY"} and value.strip():
-                    return value.strip().strip('"').strip("'")
-            return cleaned.strip('"').strip("'")
-    return ""
+                provider = named_providers.get(key.strip())
+                if provider and value.strip():
+                    return value.strip().strip('"').strip("'"), provider
+            return cleaned.strip('"').strip("'"), "minimax"
+    return "", ""
+
+
+def _load_local_api_key() -> str:
+    return _load_local_api_key_with_provider()[0]
+
+
+def _resolve_api_key(provider: str = "") -> tuple[str, str]:
+    if provider:
+        for env_name in _PROVIDER_API_KEY_ENVS.get(provider, ()):
+            value = (os.getenv(env_name) or "").strip()
+            if value:
+                return value, provider
+        local_key, local_provider = _load_local_api_key_with_provider()
+        if local_provider == provider:
+            return local_key, provider
+        return "", provider
+
+    for env_name, env_provider in _API_KEY_ENV_PROVIDERS:
+        value = (os.getenv(env_name) or "").strip()
+        if value:
+            return value, env_provider
+    return _load_local_api_key_with_provider()
+
+
+def get_default_base_url(provider: str = "") -> str:
+    """Return the provider base URL implied by env overrides or key priority."""
+    selected_provider = provider or get_default_provider()
+    explicit_base_url = (os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL") or "").strip()
+    if explicit_base_url and selected_provider == get_default_provider():
+        return explicit_base_url
+
+    if selected_provider == "deepseek":
+        return DEEPSEEK_BASE_URL
+    return MINIMAX_BASE_URL
+
+
+def get_default_provider() -> str:
+    """Return the provider selected by API-key priority."""
+    return _resolve_api_key()[1] or "minimax"
+
+
+def get_available_providers() -> list[str]:
+    """Return configured providers in priority order."""
+    providers = []
+    for provider in ("deepseek", "minimax"):
+        api_key, _ = _resolve_api_key(provider)
+        if api_key:
+            providers.append(provider)
+    return providers
+
+
+def get_default_model(provider: str = "") -> str:
+    """Return the model implied by configured provider priority."""
+    selected_provider = provider or get_default_provider()
+    if selected_provider == "deepseek":
+        return DEEPSEEK_MODEL
+    return MINIMAX_MODEL
 
 
 def api_key_available() -> bool:
     """Return whether an environment or local development API key is present."""
-    return bool((os.getenv("MINIMAX_API_KEY") or os.getenv("OPENAI_API_KEY") or _load_local_api_key() or "").strip())
+    return bool((_resolve_api_key()[0] or "").strip())
 
 
-def get_client() -> OpenAI:
+def get_client(provider: str = "") -> OpenAI:
     """Build an OpenAI-compatible client from environment variables."""
-    api_key = (os.getenv("MINIMAX_API_KEY") or os.getenv("OPENAI_API_KEY") or _load_local_api_key() or "").strip()
-    base_url = (os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL") or "").strip()
+    api_key, selected_provider = _resolve_api_key(provider)
+    api_key = api_key.strip()
+    base_url = get_default_base_url(selected_provider)
 
-    if not base_url:
-        base_url = "https://api.minimaxi.com/v1"
     if not api_key:
-        raise RuntimeError("API key missing: set MINIMAX_API_KEY or OPENAI_API_KEY")
+        raise RuntimeError("API key missing: set DEEPSEEK_API_KEY, MINIMAX_API_KEY, or OPENAI_API_KEY")
 
     return OpenAI(api_key=api_key, base_url=base_url)
 
@@ -101,11 +183,6 @@ def _sanitize_output(text: str) -> str:
 
 def generate_report(date_str, market_summary, news_headlines, chart_features_block: str = ""):
     """Generate a legacy market-diary style report through an OpenAI-compatible endpoint."""
-    try:
-        client = get_client()
-    except Exception as exc:
-        return f"Error: OpenAI client not initialized. {exc}"
-
     data_context = format_market_data_for_prompt(market_summary)
     news_context = "\n".join(news_headlines) if news_headlines else "No major news headlines fetched."
     chart_context = (
@@ -161,17 +238,34 @@ def generate_report(date_str, market_summary, news_headlines, chart_features_blo
 ## What to Watch Tomorrow
 """.strip()
 
-    try:
-        model_name = os.getenv("LLM_MODEL", "MiniMax-M2.7")
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.7,
+    primary_provider = get_default_provider()
+    providers = get_available_providers() or [primary_provider]
+    ordered_providers = [primary_provider] + [provider for provider in providers if provider != primary_provider]
+    last_error = ""
+
+    for provider in ordered_providers:
+        try:
+            client = get_client(provider)
+            if provider == primary_provider:
+                model_name = os.getenv("LLM_MODEL", get_default_model(provider))
+            else:
+                model_name = get_default_model(provider)
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.7,
+            )
+            raw = response.choices[0].message.content
+            return _sanitize_output(raw)
+        except Exception as exc:
+            last_error = f"{type(exc).__name__}: {exc}"
+
+    if not api_key_available():
+        return (
+            "Error: OpenAI client not initialized. "
+            "API key missing: set DEEPSEEK_API_KEY, MINIMAX_API_KEY, or OPENAI_API_KEY"
         )
-        raw = response.choices[0].message.content
-        return _sanitize_output(raw)
-    except Exception as exc:
-        return f"Error generating report: {exc}"
+    return f"Error generating report: {last_error}"

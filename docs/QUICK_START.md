@@ -10,12 +10,17 @@ pip install -r requirements.txt
 Optional LLM environment variables:
 
 ```bash
-export MINIMAX_API_KEY="your_api_key"
-export OPENAI_BASE_URL="https://api.minimaxi.com/v1"
+export DEEPSEEK_API_KEY="your_deepseek_api_key"
+export LLM_BASE_URL="http://api.deepseek.com"
+export LLM_MODEL="deepseek-v4-pro"
+```
+
+If DeepSeek is unavailable, the pipeline falls back to the existing MiniMax setup:
+
+```bash
+export MINIMAX_API_KEY="your_minimax_api_key"
 export LLM_BASE_URL="https://api.minimaxi.com/v1"
 export LLM_MODEL="MiniMax-M2.7"
-export LLM_FAST_MODEL="MiniMax-M2.7"
-export LLM_DEEP_MODEL="MiniMax-M2.7"
 ```
 
 The professional pipeline now uses a multi-call LLM design:
