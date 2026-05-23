@@ -28,20 +28,6 @@ def test_extract_json_object_accepts_code_fence_and_python_dict() -> None:
     assert pythonish_payload.get("hk_open_implication") == "Constructive."
 
 
-def test_effective_max_workers_caps_minimax_parallelism() -> None:
-    prior_model = os.environ.get("LLM_MODEL")
-    os.environ["LLM_MODEL"] = "MiniMax-M2.7"
-    try:
-        workers = _effective_max_workers({"max_workers": 4, "provider_parallelism": {"minimax": 1}}, ["news_selection"])
-    finally:
-        if prior_model is None:
-            os.environ.pop("LLM_MODEL", None)
-        else:
-            os.environ["LLM_MODEL"] = prior_model
-
-    assert workers == 1
-
-
 def _preserve_env(names):
     return {name: os.environ.get(name) for name in names}
 
@@ -52,6 +38,23 @@ def _restore_env(snapshot) -> None:
             os.environ.pop(name, None)
         else:
             os.environ[name] = value
+
+
+def test_effective_max_workers_caps_minimax_parallelism() -> None:
+    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL"]
+    prior_env = _preserve_env(env_names)
+    os.environ.pop("DEEPSEEK_API_KEY", None)
+    os.environ.pop("MINIMAX_API_KEY", None)
+    os.environ.pop("OPENAI_API_KEY", None)
+    os.environ["LLM_MODEL"] = "MiniMax-M2.7"
+    os.environ.pop("LLM_BASE_URL", None)
+    os.environ.pop("OPENAI_BASE_URL", None)
+    try:
+        workers = _effective_max_workers({"max_workers": 4, "provider_parallelism": {"minimax": 1}}, ["news_selection"])
+    finally:
+        _restore_env(prior_env)
+
+    assert workers == 1
 
 
 def test_effective_max_workers_caps_minimax_fallback_route() -> None:

@@ -250,7 +250,7 @@ def _resolve_model(llm_config: Dict[str, Any], task_name: str) -> Tuple[str, str
     task_config = ((llm_config.get("tasks", {}) or {}).get(task_name, {}) or {})
     route_name = str(task_config.get("route", "default_model"))
     route = _route_config(llm_config, route_name)
-    env_name = route.get("env", "")
+    env_name = route.get("env", "") or ("LLM_MODEL" if route_name == "default_model" else "")
     env_value = os.getenv(env_name, "").strip() if env_name else ""
     model = env_value or _route_fallback_model(route)
     return model, route_name
