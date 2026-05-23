@@ -7,7 +7,7 @@ from _bootstrap import ROOT  # noqa: F401
 from professional.analytics import build_professional_bundle
 from professional.config import load_professional_config
 from professional.daily_one_chart import generate_daily_one_chart
-from professional.dashboard import DASHBOARD_LAYOUT_VERSION, generate_dashboard
+from professional.dashboard import DASHBOARD_LAYOUT_VERSION, generate_dashboard, _regime_impact_color
 from professional.report_builder import render_professional_report
 from professional.trend_pack import generate_hk_trend_pack
 
@@ -252,7 +252,9 @@ def main():
         dashboard_path = os.path.join(chart_dir, "test_dashboard.png")
         generate_dashboard(bundle, dashboard_path)
         assert os.path.exists(dashboard_path)
-        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v6"
+        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v7"
+        assert _regime_impact_color("US 10Y", 0.6) != _regime_impact_color("S&P 500", 0.6)
+        assert _regime_impact_color("DXY", -0.3) == _regime_impact_color("S&P 500", 0.6)
 
         daily_chart_path = os.path.join(chart_dir, "test_daily_one_chart.png")
         daily_meta = generate_daily_one_chart(bundle, daily_chart_path)

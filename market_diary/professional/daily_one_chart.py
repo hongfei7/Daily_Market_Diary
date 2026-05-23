@@ -5,7 +5,7 @@ import textwrap
 from typing import Any, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch
+from matplotlib.patches import FancyBboxPatch, Rectangle
 
 
 INK = "#102a43"
@@ -39,6 +39,18 @@ def _safe_text(value: Any) -> str:
     return str(value or "").replace("$", r"\$")
 
 
+def _wrap_text(value: Any, width: int, max_lines: int) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    lines = textwrap.wrap(text, width=width, break_long_words=False, break_on_hyphens=False)
+    if len(lines) > max_lines and lines:
+        clipped = lines[:max_lines]
+        clipped[-1] = textwrap.shorten(clipped[-1], width=max(12, width - 2), placeholder="...")
+        return "\n".join(clipped)
+    return "\n".join(lines)
+
+
 def _summary_pct(bundle: Dict[str, Any], category: str, name: str) -> float | None:
     item = ((bundle.get("market_summary", {}) or {}).get(category, {}) or {}).get(name, {})
     if not isinstance(item, dict):
@@ -69,6 +81,40 @@ def _fmt_hkd_mn(value: Any) -> str:
     return f"HK${number:,.0f}mn"
 
 
+def _fmt_signed_hkd_mn(value: Any) -> str:
+    number = _parse_float(value)
+    if number is None:
+        return "N/A"
+    sign = "+" if number >= 0 else "-"
+    return f"{sign}HK${abs(number):,.0f}mn"
+
+
+def _fmt_signed_hkd_flow(value: Any) -> str:
+    number = _parse_float(value)
+    if number is None:
+        return "N/A"
+    sign = "+" if number >= 0 else "-"
+    if abs(number) >= 1_000:
+        return f"{sign}HK${abs(number) / 1_000:.1f}bn"
+    return f"{sign}HK${abs(number):,.0f}mn"
+
+
+def _fmt_hkd_bn_from_mn(value: Any) -> str:
+    number = _parse_float(value)
+    if number is None:
+        return "N/A"
+    return f"HK${number / 1_000:.1f}bn"
+
+
+def _fmt_hkd_flow(value: Any) -> str:
+    number = _parse_float(value)
+    if number is None:
+        return "N/A"
+    if abs(number) >= 1_000:
+        return f"HK${abs(number) / 1_000:.1f}bn"
+    return f"HK${abs(number):,.0f}mn"
+
+
 def _ticker_label(item: Dict[str, Any]) -> str:
     ticker = str(item.get("ticker", "") or "").strip()
     if ticker:
@@ -82,6 +128,27 @@ def _story_box_lines(story: Dict[str, Any]) -> List[str]:
     for key, value in story.get("data_points", []) or []:
         rows.append(f"{key}: {value}")
     return rows
+
+
+def _short_pressure_signal(short_rows: List[Dict[str, Any]], short_ratio: float | None) -> Dict[str, Any]:
+    ratios = [_parse_float(item.get("short_ratio_pct")) or 0 for item in short_rows]
+    names_above_20 = sum(1 for ratio in ratios if ratio >= 20)
+    top_ratio = max(ratios or [0])
+    chart_worthy = bool(short_rows) and short_ratio is not None and (
+        short_ratio >= 16.0 or names_above_20 >= 3 or top_ratio >= 25.0
+    )
+    if chart_worthy:
+        reason = "short pressure is broad or concentrated enough to lead the daily chart"
+    elif short_rows and short_ratio is not None and short_ratio >= 14.0:
+        reason = "short pressure is elevated but better treated as context unless concentration worsens"
+    else:
+        reason = "short pressure is not the dominant visual signal"
+    return {
+        "chart_worthy": chart_worthy,
+        "names_above_20": names_above_20,
+        "top_ratio": top_ratio,
+        "reason": reason,
+    }
 
 
 def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
@@ -102,19 +169,19 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
     brent = _summary_pct(bundle, "Commodities", "Brent Crude")
     oil = brent if brent is not None else _summary_pct(bundle, "Commodities", "Crude Oil")
     risk_dashboard = attribution.get("risk_dashboard", {}) or {}
+    short_signal = _short_pressure_signal(short_rows, short_ratio)
 
-    if short_rows and short_ratio is not None and short_ratio >= 14.0:
-        names_above_20 = sum(1 for item in short_rows if (_parse_float(item.get("short_ratio_pct")) or 0) >= 20)
+    if short_rows and short_ratio is not None and short_signal["chart_worthy"]:
         top_name = short_rows[0]
         return {
             "kind": "short_selling",
             "title": "Daily One Chart | HKEX short-selling pressure map",
-            "caption": f"Market short-selling reached {short_ratio:.2f}% of turnover. The point is not that the market is weak; the point is whether pressure is concentrated in ETFs and crowded Hong Kong growth expressions.",
+            "caption": f"Market short-selling reached {short_ratio:.2f}% of turnover. The chart leads today because the pressure is either broad, concentrated, or acute in the top name.",
             "source": "HKEX Daily Quotations - Short Selling Turnover",
             "takeaway": "Use the chart to separate broad hedging from single-name conviction shorts.",
             "data_points": [
                 ("Market short ratio", f"{short_ratio:.2f}%"),
-                ("Names above 20%", str(names_above_20)),
+                ("Names above 20%", str(short_signal["names_above_20"])),
                 ("Top pressure", f"{_ticker_label(top_name)} {(_parse_float(top_name.get('short_ratio_pct')) or 0):.1f}%"),
             ],
             "watch_points": [
@@ -137,8 +204,8 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
                 ("Top name net", _fmt_hkd_mn(top_name.get("net_buy"))),
             ],
             "watch_points": [
-                "Check whether buying is platform-led, SOE-led, or ETF-led.",
-                "A concentrated tape is useful for stock picking but less reliable as a broad market confirmation signal.",
+                "Check platform, SOE, and ETF mix.",
+                "Few-name flow is not broad confirmation.",
             ],
         }
 
@@ -275,8 +342,10 @@ def _plot_short_selling(ax, bundle: Dict[str, Any]) -> None:
     ax.axvline(20, color=RED, linewidth=1.2, linestyle="--")
     ax.invert_yaxis()
     ax.set_xlabel("Short-selling turnover / total turnover (%)")
+    max_ratio = max(ratios or [20])
+    ax.set_xlim(0, max(25, max_ratio + max(6.0, max_ratio * 0.32)))
     for idx, (ratio, value) in enumerate(zip(ratios, values)):
-        ax.text(ratio + 0.5, idx, f"{ratio:.1f}% | {_fmt_hkd_bn(value)}", va="center", fontsize=9.2, color=INK)
+        ax.text(ratio + 0.5, idx, f"{ratio:.1f}% | {_fmt_hkd_bn(value)}", va="center", fontsize=9.2, color=INK, clip_on=False)
 
 
 def _plot_turnover(ax, bundle: Dict[str, Any]) -> None:
@@ -346,25 +415,144 @@ def _plot_attribution(ax, bundle: Dict[str, Any]) -> None:
     ax.barh(labels, values, color=colors)
     ax.invert_yaxis()
     ax.set_xlabel("Attribution score")
+    max_value = max(values or [1])
+    ax.set_xlim(0, max_value + max(1.2, max_value * 0.22))
     for idx, item in enumerate(drivers):
         ax.text(values[idx] + 0.08, idx, item.get("direction", ""), va="center", fontsize=9, color=INK)
 
 
 def _plot_stock_connect(ax, bundle: Dict[str, Any]) -> None:
     stock_connect = (((bundle.get("flow_tracker", {}) or {}).get("stock_connect", {}) or {}).get("data", {}) or {})
-    rows = ((stock_connect.get("southbound", {}) or {}).get("top_active", []) or [])[:8]
+    southbound = stock_connect.get("southbound", {}) or {}
+    rows = (southbound.get("top_active", []) or [])[:5]
     if not rows:
         _plot_risk_score(ax, bundle)
         return
-    labels = [f"{item.get('ticker', '')}\n{item.get('name', '')}" for item in rows]
-    values = [(_parse_float(item.get("net_buy")) or 0) for item in rows]
-    colors = [GREEN if value >= 0 else RED for value in values]
-    ax.barh(labels, values, color=colors)
-    ax.axvline(0, color="#98a2b3", linewidth=1)
-    ax.invert_yaxis()
-    ax.set_xlabel("Net buy / sell (HKD mn)")
-    for idx, value in enumerate(values):
-        ax.text(value + (50 if value >= 0 else -50), idx, f"{value:+,.0f}", va="center", ha="left" if value >= 0 else "right", fontsize=9, color=INK)
+    ax.axis("off")
+
+    total_turnover = _parse_float(southbound.get("total_turnover")) or 0.0
+    buy_turnover = _parse_float(southbound.get("buy_turnover")) or 0.0
+    sell_turnover = _parse_float(southbound.get("sell_turnover")) or 0.0
+    net_buy = _parse_float(southbound.get("net_buy"))
+    active_rows: List[Dict[str, Any]] = []
+    for item in rows:
+        buy = _parse_float(item.get("buy_turnover")) or 0.0
+        sell = _parse_float(item.get("sell_turnover")) or 0.0
+        net = _parse_float(item.get("net_buy")) or 0.0
+        total = _parse_float(item.get("total_turnover")) or buy + sell or abs(net)
+        active_rows.append({**item, "_buy": buy, "_sell": sell, "_net": net, "_total": total})
+    active_total = sum(item["_total"] for item in active_rows)
+    top_total = max((item["_total"] for item in active_rows), default=0.0)
+    denominator = total_turnover or active_total
+    top_share = (top_total / denominator * 100) if denominator else None
+    buy_sell_total = max(buy_turnover + sell_turnover, 1.0)
+    buy_share = buy_turnover / buy_sell_total
+    sell_share = sell_turnover / buy_sell_total
+    positive_count = sum(1 for item in active_rows if item["_net"] >= 0)
+    negative_count = len(active_rows) - positive_count
+    max_abs_net = max(max((abs(item["_net"]) for item in active_rows), default=1.0), 1.0)
+
+    def card(x: float, y: float, w: float, h: float, face: str = "#f8fafc") -> None:
+        ax.add_patch(
+            FancyBboxPatch(
+                (x, y),
+                w,
+                h,
+                boxstyle="round,pad=0.012,rounding_size=0.018",
+                transform=ax.transAxes,
+                linewidth=0.9,
+                edgecolor=LINE,
+                facecolor=face,
+            )
+        )
+
+    net_color = GREEN if (net_buy or 0) >= 0 else RED
+    card(0.02, 0.775, 0.24, 0.145)
+    ax.text(0.045, 0.875, "SOUTHBOUND NET", transform=ax.transAxes, fontsize=8.5, color=SLATE, fontweight="bold", va="center")
+    ax.text(
+        0.045,
+        0.818,
+        _safe_text(_fmt_signed_hkd_flow(net_buy) if net_buy is not None else _hk_metric(bundle, "southbound_net_flow").get("display_value", "N/A")),
+        transform=ax.transAxes,
+        fontsize=18.0,
+        color=net_color,
+        fontweight="bold",
+        va="center",
+    )
+
+    card(0.30, 0.775, 0.39, 0.145)
+    ax.text(0.325, 0.875, "BUY / SELL TURNOVER MIX", transform=ax.transAxes, fontsize=8.5, color=SLATE, fontweight="bold", va="center")
+    mix_x, mix_y, mix_w, mix_h = 0.325, 0.815, 0.31, 0.030
+    ax.add_patch(Rectangle((mix_x, mix_y), mix_w, mix_h, transform=ax.transAxes, linewidth=0, facecolor="#e4e7ec"))
+    ax.add_patch(Rectangle((mix_x, mix_y), mix_w * buy_share, mix_h, transform=ax.transAxes, linewidth=0, facecolor=GREEN))
+    ax.add_patch(Rectangle((mix_x + mix_w * buy_share, mix_y), mix_w * sell_share, mix_h, transform=ax.transAxes, linewidth=0, facecolor=RED))
+    ax.text(0.325, 0.795, _safe_text(f"Buy {_fmt_hkd_bn_from_mn(buy_turnover)}"), transform=ax.transAxes, fontsize=9.2, color=GREEN, fontweight="bold", va="top")
+    ax.text(0.635, 0.795, _safe_text(f"Sell {_fmt_hkd_bn_from_mn(sell_turnover)}"), transform=ax.transAxes, fontsize=9.2, color=RED, fontweight="bold", va="top", ha="right")
+
+    card(0.73, 0.775, 0.23, 0.145)
+    concentration_value = top_share if top_share is not None else 0.0
+    concentration_label = "single-name heavy" if concentration_value >= 20 else "moderate" if concentration_value >= 12 else "distributed"
+    ax.text(0.755, 0.875, "CONCENTRATION", transform=ax.transAxes, fontsize=8.5, color=SLATE, fontweight="bold", va="center")
+    ax.text(0.755, 0.823, f"{concentration_value:.1f}%", transform=ax.transAxes, fontsize=17.0, color=BLUE, fontweight="bold", va="center")
+    ax.text(0.855, 0.823, concentration_label, transform=ax.transAxes, fontsize=9.2, color=SLATE, va="center")
+
+    ax.text(0.025, 0.692, "ACTIVE-NAME LEDGER", transform=ax.transAxes, fontsize=9.2, color=BLUE, fontweight="bold")
+    ax.text(0.045, 0.653, "Name", transform=ax.transAxes, fontsize=8.8, color=SLATE, fontweight="bold")
+    ax.text(0.310, 0.653, "Net flow", transform=ax.transAxes, fontsize=8.8, color=SLATE, fontweight="bold", ha="right")
+    ax.text(0.510, 0.653, "Direction", transform=ax.transAxes, fontsize=8.8, color=SLATE, fontweight="bold", ha="center")
+    ax.text(0.650, 0.653, "Active share", transform=ax.transAxes, fontsize=8.8, color=SLATE, fontweight="bold", ha="center")
+    ax.text(0.845, 0.653, "Buy / sell", transform=ax.transAxes, fontsize=8.8, color=SLATE, fontweight="bold", ha="center")
+
+    y = 0.575
+    row_h = 0.080
+    for rank, item in enumerate(active_rows, start=1):
+        ticker = _ticker_label(item)
+        name = str(item.get("name", "") or "").strip()
+        net = float(item["_net"])
+        buy = float(item["_buy"])
+        sell = float(item["_sell"])
+        total = float(item["_total"])
+        color = GREEN if net >= 0 else RED
+        card(0.02, y, 0.94, row_h, "#ffffff" if rank % 2 else "#f8fafc")
+        ax.add_patch(Rectangle((0.02, y), 0.008, row_h, transform=ax.transAxes, linewidth=0, facecolor=color))
+        ax.text(0.045, y + 0.050, f"{rank}. {ticker}", transform=ax.transAxes, fontsize=10.6, color=INK, va="center", fontweight="bold")
+        ax.text(0.045, y + 0.023, _safe_text(textwrap.shorten(name or "Name unavailable", width=18, placeholder="...")), transform=ax.transAxes, fontsize=8.6, color=SLATE, va="center")
+        ax.text(0.310, y + 0.040, _safe_text(_fmt_signed_hkd_mn(net)), transform=ax.transAxes, fontsize=10.2, color=color, va="center", ha="right", fontweight="bold")
+
+        baseline = 0.495
+        span = 0.095 * abs(net) / max_abs_net
+        ax.add_patch(Rectangle((baseline - 0.095, y + 0.032), 0.190, 0.018, transform=ax.transAxes, linewidth=0, facecolor="#e4e7ec"))
+        if net >= 0:
+            ax.add_patch(Rectangle((baseline, y + 0.032), span, 0.018, transform=ax.transAxes, linewidth=0, facecolor=GREEN))
+        else:
+            ax.add_patch(Rectangle((baseline - span, y + 0.032), span, 0.018, transform=ax.transAxes, linewidth=0, facecolor=RED))
+        ax.add_patch(Rectangle((baseline - 0.001, y + 0.026), 0.002, 0.030, transform=ax.transAxes, linewidth=0, facecolor="#98a2b3"))
+
+        active_share = total / denominator * 100 if denominator else 0.0
+        ax.text(0.650, y + 0.048, _safe_text(_fmt_hkd_flow(total)), transform=ax.transAxes, fontsize=9.3, color=INK, va="center", ha="center", fontweight="bold")
+        ax.text(0.650, y + 0.022, f"{active_share:.1f}% of tape", transform=ax.transAxes, fontsize=8.0, color=SLATE, va="center", ha="center")
+
+        bar_x = 0.765
+        bar_y = y + 0.032
+        bar_w = 0.085
+        mix_total = max(buy + sell, 1.0)
+        buy_w = bar_w * max(0.0, buy) / mix_total
+        sell_w = bar_w * max(0.0, sell) / mix_total
+        ax.add_patch(Rectangle((bar_x, bar_y), bar_w, 0.030, transform=ax.transAxes, linewidth=0, facecolor="#e4e7ec"))
+        ax.add_patch(Rectangle((bar_x, bar_y), buy_w, 0.030, transform=ax.transAxes, linewidth=0, facecolor=GREEN))
+        ax.add_patch(Rectangle((bar_x + buy_w, bar_y), sell_w, 0.030, transform=ax.transAxes, linewidth=0, facecolor=RED))
+        ax.text(0.955, y + 0.047, f"{buy:,.0f}/{sell:,.0f}", transform=ax.transAxes, fontsize=8.2, color=SLATE, va="center", ha="right")
+        y -= 0.095
+
+    read_color = RED if concentration_value >= 20 else AMBER if concentration_value >= 12 else BLUE
+    read = (
+        f"Read: {positive_count} net-bought / {negative_count} net-sold active names; "
+        f"top active share {concentration_value:.1f}%. "
+        f"{'Flow is concentrated; test single-name sustainability.' if concentration_value >= 12 else 'Flow is distributed; use breadth confirmation before extrapolating.'}"
+    )
+    card(0.02, 0.075, 0.94, 0.095, "#ffffff")
+    ax.add_patch(Rectangle((0.02, 0.075), 0.008, 0.095, transform=ax.transAxes, linewidth=0, facecolor=read_color))
+    ax.text(0.045, 0.123, _safe_text(_wrap_text(read, width=104, max_lines=2)), transform=ax.transAxes, fontsize=9.2, color=INK, va="center")
 
 
 def _plot_ah_premium(ax, bundle: Dict[str, Any]) -> None:
@@ -379,6 +567,8 @@ def _plot_ah_premium(ax, bundle: Dict[str, Any]) -> None:
     ax.barh(labels, values, color=colors)
     ax.invert_yaxis()
     ax.set_xlabel("A-share premium versus H-share (%)")
+    max_value = max(values or [40])
+    ax.set_xlim(0, max(100, max_value + max(10.0, max_value * 0.18)))
     for idx, value in enumerate(values):
         ax.text(value + 1.0, idx, f"{value:+.1f}%", va="center", fontsize=9, color=INK)
 
@@ -435,8 +625,8 @@ def _draw_side_panel(ax, story: Dict[str, Any]) -> None:
 
     ax.text(0.07, 0.24, "What to watch", transform=ax.transAxes, fontsize=11, fontweight="bold", color=INK)
     y = 0.17
-    for line in (story.get("watch_points", []) or [])[:3]:
-        ax.text(0.07, y, _safe_text(textwrap.fill(f"- {line}", width=34)), transform=ax.transAxes, fontsize=9.5, color=SLATE, va="top")
+    for line in (story.get("watch_points", []) or [])[:2]:
+        ax.text(0.07, y, _safe_text(_wrap_text(f"- {line}", width=34, max_lines=2)), transform=ax.transAxes, fontsize=9.1, color=SLATE, va="top")
         y -= 0.10
 
 

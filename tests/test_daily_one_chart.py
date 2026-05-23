@@ -72,6 +72,37 @@ def main() -> None:
         assert os.path.exists(stock_connect_path)
         assert stock_connect_meta["kind"] == "stock_connect"
 
+        moderate_short_bundle = {
+            "meta": {"briefing_date": "2026-04-14"},
+            "market_summary": {"Equities": {}, "FX": {}, "Commodities": {}},
+            "hk_local": {"short_selling_ratio": {"value": 14.5}, "turnover_vs_20d": {"value": 1.0}},
+            "flow_tracker": {
+                "short_sell_top_ratio": [
+                    {
+                        "ticker": "09988.HK",
+                        "code": "09988",
+                        "name": "BABA-W",
+                        "short_ratio_pct": 18.8,
+                        "short_turnover_hkd": 500_000_000,
+                    }
+                ],
+                "stock_connect": {
+                    "data": {
+                        "southbound": {
+                            "top_active": [
+                                {"ticker": "00700.HK", "name": "TENCENT", "net_buy": 700.0, "total_turnover": 2300.0}
+                            ]
+                        }
+                    }
+                },
+            },
+            "attribution": {"dominant_drivers": [], "risk_dashboard": {"score": 52.0, "bucket": "Mixed", "components": []}},
+        }
+        moderate_short_path = os.path.join(chart_dir, "test_daily_one_chart_moderate_short.png")
+        moderate_short_meta = generate_daily_one_chart(moderate_short_bundle, moderate_short_path)
+        assert os.path.exists(moderate_short_path)
+        assert moderate_short_meta["kind"] == "stock_connect"
+
         ah_bundle = {
             "meta": {"briefing_date": "2026-04-14"},
             "market_summary": {"Equities": {}, "FX": {}, "Commodities": {}},

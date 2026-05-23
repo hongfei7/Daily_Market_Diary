@@ -17,7 +17,7 @@ GREEN = "#1f7a3e"
 RED = "#b42318"
 AMBER = "#b54708"
 BLUE = "#0b4f71"
-DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v6"
+DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v7"
 CHART_CLIP_MARK = "~"
 
 
@@ -155,6 +155,23 @@ def _top_snapshot_rows(bundle: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 def _bar_color(value: float) -> str:
     return GREEN if value >= 0 else RED
+
+
+def _regime_impact_color(label: Any, value: float) -> str:
+    normalized = str(label or "").strip().lower()
+    if abs(value) < 0.05:
+        return "#667085"
+    if normalized in {"us 10y", "10y treasury"}:
+        return RED if value > 0 else GREEN
+    if normalized in {"dxy", "usd/cnh", "usd/hkd"}:
+        return RED if value > 0 else GREEN
+    if normalized in {"vix"}:
+        return RED if value > 0 else GREEN
+    if normalized in {"wti crude", "brent crude", "crude oil"}:
+        return RED if value > 0 else GREEN
+    if normalized in {"gold"}:
+        return AMBER if value > 0 else GREEN
+    return GREEN if value > 0 else RED
 
 
 def _dashboard_label(label: Any) -> str:
@@ -539,7 +556,7 @@ def _draw_flow_focus(ax, bundle: Dict[str, Any]) -> None:
     max_abs = max(max((abs(item[1]) for item in ranked), default=1.0), 1.0)
     y = 0.61
     for rank, (label, value, note) in enumerate(ranked, start=1):
-        bar_w = 0.30 * abs(value) / max_abs
+        bar_w = 0.22 * abs(value) / max_abs
         color = _bar_color(value)
         ax.add_patch(
             FancyBboxPatch(
@@ -555,8 +572,9 @@ def _draw_flow_focus(ax, bundle: Dict[str, Any]) -> None:
         )
         ax.text(0.07, y + 0.065, f"{rank}. {_safe_text(textwrap.shorten(label, width=18, placeholder=CHART_CLIP_MARK))}", transform=ax.transAxes, fontsize=11, color=INK, fontweight="bold")
         ax.text(0.07, y + 0.026, _safe_text(textwrap.shorten(note or "", width=26, placeholder=CHART_CLIP_MARK)), transform=ax.transAxes, fontsize=8.8, color=SLATE)
-        ax.add_patch(Rectangle((0.60, y + 0.035), bar_w, 0.032, transform=ax.transAxes, linewidth=0, facecolor=color))
-        ax.text(0.935, y + 0.052, _safe_text(_flow_value_text(value, xlabel)), transform=ax.transAxes, fontsize=10.7, color=color, fontweight="bold", ha="right", va="center")
+        ax.add_patch(Rectangle((0.56, y + 0.035), 0.24, 0.032, transform=ax.transAxes, linewidth=0, facecolor="#e4e7ec"))
+        ax.add_patch(Rectangle((0.56, y + 0.035), bar_w, 0.032, transform=ax.transAxes, linewidth=0, facecolor=color))
+        ax.text(0.925, y + 0.052, _safe_text(_flow_value_text(value, xlabel)), transform=ax.transAxes, fontsize=10.7, color=color, fontweight="bold", ha="right", va="center")
         y -= 0.13
 
 
@@ -823,10 +841,11 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     if not rows:
         _draw_evidence_coverage(ax_regime, bundle)
     else:
-        _panel_title(ax_regime, "Global regime board", "The cross-asset tape that frames the Hong Kong open")
-        labels = [_dashboard_label(row.get("label", "")) for row in rows]
+        _panel_title(ax_regime, "Global regime board", "Color = estimated HK risk impact; bars = raw 1D move")
+        raw_labels = [row.get("label", "") for row in rows]
+        labels = [_dashboard_label(label) for label in raw_labels]
         values = [float(row.get("change_pct", 0) or 0) for row in rows]
-        colors = [_bar_color(value) for value in values]
+        colors = [_regime_impact_color(label, value) for label, value in zip(raw_labels, values)]
         max_abs = max(max((abs(value) for value in values), default=1.0), 1.0)
         ax_regime.barh(labels, values, color=colors, height=0.56)
         ax_regime.axvline(0, color="#98a2b3", linewidth=1.0)
