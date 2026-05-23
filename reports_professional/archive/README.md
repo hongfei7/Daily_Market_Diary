@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-23 | Trading Daily | Intel's -6.33% guidance reset dominated the completed session while copper's +1.97% held the China risk theme, leav... | 92.6/100 | [Report](2026-05-23/README.md) | [Dashboard](2026-05-23/charts/dashboard_2026-05-23.png) | [One Chart](2026-05-23/charts/daily_one_chart_2026-05-23.png) | N/A | N/A |
 | 2026-05-22 | Trading Daily | A neutral, range-bound session with easing VIX and growth-led internal tape held, but elevated 18% short-selling, S... | 94.7/100 | [Report](2026-05-22/README.md) | [Dashboard](2026-05-22/charts/dashboard_2026-05-22.png) | [One Chart](2026-05-22/charts/daily_one_chart_2026-05-22.png) | N/A | N/A |
 | 2026-05-21 | Trading Daily | Risk-On backdrop with USD softer and lower yields supported a marginal HSTECH-led rally on May 20, but the offshore... | 94.7/100 | [Report](2026-05-21/README.md) | [Dashboard](2026-05-21/charts/dashboard_2026-05-21.png) | [One Chart](2026-05-21/charts/daily_one_chart_2026-05-21.png) | N/A | N/A |
 | 2026-05-20 | Trading Daily | Risk-Off remains the dominant frame heading into Wednesday: elevated yields and a hot US CPI have reinforced dollar... | 92.6/100 | [Report](2026-05-20/README.md) | [Dashboard](2026-05-20/charts/dashboard_2026-05-20.png) | [One Chart](2026-05-20/charts/daily_one_chart_2026-05-20.png) | N/A | N/A |
