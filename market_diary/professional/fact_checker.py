@@ -204,6 +204,33 @@ def _contains_any(text: str, phrases: Iterable[str]) -> bool:
     return any(phrase in lowered for phrase in phrases)
 
 
+def _contains_unhedged_any(text: str, phrases: Iterable[str]) -> bool:
+    """Return true only when a phrase is not part of a conditional watchpoint."""
+    conditional_markers = [
+        "could",
+        "if ",
+        "may ",
+        "might",
+        "monitor",
+        "scenario",
+        "watch",
+        "watchpoint",
+        "would",
+    ]
+    lowered = text.lower()
+    for phrase in phrases:
+        start = 0
+        while True:
+            idx = lowered.find(phrase, start)
+            if idx == -1:
+                break
+            context = lowered[max(0, idx - 80) : min(len(lowered), idx + len(phrase) + 80)]
+            if not any(marker in context for marker in conditional_markers):
+                return True
+            start = idx + len(phrase)
+    return False
+
+
 def _logic_warnings(bundle: Dict[str, Any], full_text: str) -> List[Dict[str, str]]:
     warnings: List[Dict[str, str]] = []
     text = full_text.lower()
@@ -220,16 +247,16 @@ def _logic_warnings(bundle: Dict[str, Any], full_text: str) -> List[Dict[str, st
 
     dxy = _parse_pct(_summary_item(bundle, "FX", "DXY").get("Pct Change"))
     if dxy is not None:
-        if dxy > 0.30 and _contains_any(text, ["softer dollar", "weaker dollar", "dollar softened"]):
+        if dxy > 0.30 and _contains_unhedged_any(text, ["softer dollar", "weaker dollar", "dollar softened"]):
             warnings.append({"type": "fx_logic", "severity": "review", "message": "Narrative says the dollar softened, but DXY was materially higher."})
-        if dxy < -0.30 and _contains_any(text, ["stronger dollar", "firmer dollar", "dollar strengthened"]):
+        if dxy < -0.30 and _contains_unhedged_any(text, ["stronger dollar", "firmer dollar", "dollar strengthened"]):
             warnings.append({"type": "fx_logic", "severity": "review", "message": "Narrative says the dollar strengthened, but DXY was materially lower."})
 
     us10y = _parse_pct(_summary_item(bundle, "Rates", "10Y Treasury").get("Pct Change"))
     if us10y is not None:
-        if us10y > 0.50 and _contains_any(text, ["lower yields", "yields fell", "yields declined"]):
+        if us10y > 0.50 and _contains_unhedged_any(text, ["lower yields", "yields fell", "yields declined"]):
             warnings.append({"type": "rates_logic", "severity": "review", "message": "Narrative says yields fell, but US 10Y was materially higher."})
-        if us10y < -0.50 and _contains_any(text, ["higher yields", "yields rose", "yields climbed"]):
+        if us10y < -0.50 and _contains_unhedged_any(text, ["higher yields", "yields rose", "yields climbed"]):
             warnings.append({"type": "rates_logic", "severity": "review", "message": "Narrative says yields rose, but US 10Y was materially lower."})
 
     southbound = ((bundle.get("hk_local", {}) or {}).get("southbound_net_flow", {}) or {})

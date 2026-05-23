@@ -6,7 +6,7 @@ from _bootstrap import ROOT  # noqa: F401
 from professional.fact_checker import run_fact_check
 
 
-def _bundle(text: str, *, risk_regime: str = "Risk-Off"):
+def _bundle(text: str, *, risk_regime: str = "Risk-Off", us10y_change: str = "0.99%"):
     return {
         "overview": {"risk_regime": risk_regime},
         "market_summary": {
@@ -17,7 +17,7 @@ def _bundle(text: str, *, risk_regime: str = "Risk-Off"):
                 "Hang Seng TECH ETF": {"Pct Change": "0.28%", "Price": 6.2},
                 "China Large-Cap (FXI)": {"Pct Change": "-1.46%", "Price": 35.0},
             },
-            "Rates": {"10Y Treasury": {"Pct Change": "0.99%", "Price": 4.292}},
+            "Rates": {"10Y Treasury": {"Pct Change": us10y_change, "Price": 4.292}},
             "FX": {"DXY": {"Pct Change": "0.37%", "Price": 100.5}, "USD/CNH": {"Pct Change": "0.00%", "Price": 7.12}},
             "Commodities": {"Brent Crude": {"Pct Change": "0.89%", "Price": 85.0}, "Gold": {"Pct Change": "-1.17%", "Price": 3300}},
             "Vol": {"VIX": {"Pct Change": "3.34%", "Price": 19.5}},
@@ -63,11 +63,38 @@ def test_explicit_regime_conflict_is_review_warning():
     assert warning["severity"] == "review"
 
 
+def test_conditional_yield_watchpoint_is_not_a_logic_warning():
+    result = run_fact_check(
+        _bundle(
+            "Rates impulse was supportive because US 10Y declined. "
+            "Macro watchpoints: higher yields would pressure duration-sensitive HK sectors."
+        )
+    )
+    assert result["status"] == "ok"
+    assert result["logic_warnings"] == []
+
+
+def test_unhedged_yield_direction_conflict_is_review_warning():
+    result = run_fact_check(
+        _bundle(
+            "Higher yields drove the session and pressured growth.",
+            risk_regime="Risk-On",
+            us10y_change="-0.99%",
+        )
+    )
+    assert result["status"] == "warning"
+    warning = result["logic_warnings"][0]
+    assert warning["type"] == "rates_logic"
+    assert warning["severity"] == "review"
+
+
 def main() -> None:
     test_us10y_change_and_level_are_not_confused()
     test_us10y_wrong_change_is_flagged_as_critical()
     test_risk_on_pockets_do_not_conflict_with_risk_off_regime()
     test_explicit_regime_conflict_is_review_warning()
+    test_conditional_yield_watchpoint_is_not_a_logic_warning()
+    test_unhedged_yield_direction_conflict_is_review_warning()
     print("Fact checker test passed")
 
 
