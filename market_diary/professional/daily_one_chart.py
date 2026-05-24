@@ -151,6 +151,30 @@ def _short_pressure_signal(short_rows: List[Dict[str, Any]], short_ratio: float 
     }
 
 
+def _southbound_signal(southbound: Dict[str, Any], rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    total_turnover = _parse_float(southbound.get("total_turnover"))
+    net_buy = _parse_float(southbound.get("net_buy"))
+    totals = [_parse_float(item.get("total_turnover")) or 0.0 for item in rows]
+    nets = [_parse_float(item.get("net_buy")) or 0.0 for item in rows]
+    top_total = max(totals or [0.0])
+    top_abs_net = max((abs(value) for value in nets), default=0.0)
+    active_net_count = sum(1 for value in nets if abs(value) >= 250.0)
+    top_share = (top_total / total_turnover * 100) if total_turnover else None
+    chart_worthy = bool(rows) and (
+        (net_buy is not None and abs(net_buy) >= 3_000.0)
+        or (top_share is not None and top_share >= 8.0)
+        or top_abs_net >= 400.0
+        or top_total >= 1_500.0
+        or active_net_count >= 3
+    )
+    return {
+        "chart_worthy": chart_worthy,
+        "top_share": top_share,
+        "top_abs_net": top_abs_net,
+        "active_net_count": active_net_count,
+    }
+
+
 def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
     flow_tracker = bundle.get("flow_tracker", {}) or {}
     attribution = bundle.get("attribution", {}) or {}
@@ -170,6 +194,7 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
     oil = brent if brent is not None else _summary_pct(bundle, "Commodities", "Crude Oil")
     risk_dashboard = attribution.get("risk_dashboard", {}) or {}
     short_signal = _short_pressure_signal(short_rows, short_ratio)
+    southbound_signal = _southbound_signal(southbound, southbound_active)
 
     if short_rows and short_ratio is not None and short_signal["chart_worthy"]:
         top_name = short_rows[0]
@@ -190,7 +215,7 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
             ],
         }
 
-    if southbound_active:
+    if southbound_active and southbound_signal["chart_worthy"]:
         top_name = southbound_active[0]
         return {
             "kind": "stock_connect",
@@ -431,23 +456,29 @@ def _plot_stock_connect(ax, bundle: Dict[str, Any]) -> None:
     ax.axis("off")
 
     total_turnover = _parse_float(southbound.get("total_turnover")) or 0.0
-    buy_turnover = _parse_float(southbound.get("buy_turnover")) or 0.0
-    sell_turnover = _parse_float(southbound.get("sell_turnover")) or 0.0
+    buy_turnover_raw = _parse_float(southbound.get("buy_turnover"))
+    sell_turnover_raw = _parse_float(southbound.get("sell_turnover"))
+    buy_turnover = buy_turnover_raw or 0.0
+    sell_turnover = sell_turnover_raw or 0.0
     net_buy = _parse_float(southbound.get("net_buy"))
     active_rows: List[Dict[str, Any]] = []
     for item in rows:
-        buy = _parse_float(item.get("buy_turnover")) or 0.0
-        sell = _parse_float(item.get("sell_turnover")) or 0.0
+        buy_raw = _parse_float(item.get("buy_turnover"))
+        sell_raw = _parse_float(item.get("sell_turnover"))
+        buy = buy_raw or 0.0
+        sell = sell_raw or 0.0
         net = _parse_float(item.get("net_buy")) or 0.0
         total = _parse_float(item.get("total_turnover")) or buy + sell or abs(net)
-        active_rows.append({**item, "_buy": buy, "_sell": sell, "_net": net, "_total": total})
+        active_rows.append({**item, "_buy": buy, "_sell": sell, "_net": net, "_total": total, "_has_split": buy_raw is not None and sell_raw is not None and buy + sell > 0})
     active_total = sum(item["_total"] for item in active_rows)
     top_total = max((item["_total"] for item in active_rows), default=0.0)
     denominator = total_turnover or active_total
+    share_scope = "tape" if total_turnover else "active list"
     top_share = (top_total / denominator * 100) if denominator else None
+    has_aggregate_split = buy_turnover_raw is not None and sell_turnover_raw is not None and buy_turnover + sell_turnover > 0
     buy_sell_total = max(buy_turnover + sell_turnover, 1.0)
-    buy_share = buy_turnover / buy_sell_total
-    sell_share = sell_turnover / buy_sell_total
+    buy_share = buy_turnover / buy_sell_total if has_aggregate_split else 0.0
+    sell_share = sell_turnover / buy_sell_total if has_aggregate_split else 0.0
     positive_count = sum(1 for item in active_rows if item["_net"] >= 0)
     negative_count = len(active_rows) - positive_count
     max_abs_net = max(max((abs(item["_net"]) for item in active_rows), default=1.0), 1.0)
@@ -484,10 +515,13 @@ def _plot_stock_connect(ax, bundle: Dict[str, Any]) -> None:
     ax.text(0.325, 0.875, "BUY / SELL TURNOVER MIX", transform=ax.transAxes, fontsize=8.5, color=SLATE, fontweight="bold", va="center")
     mix_x, mix_y, mix_w, mix_h = 0.325, 0.815, 0.31, 0.030
     ax.add_patch(Rectangle((mix_x, mix_y), mix_w, mix_h, transform=ax.transAxes, linewidth=0, facecolor="#e4e7ec"))
-    ax.add_patch(Rectangle((mix_x, mix_y), mix_w * buy_share, mix_h, transform=ax.transAxes, linewidth=0, facecolor=GREEN))
-    ax.add_patch(Rectangle((mix_x + mix_w * buy_share, mix_y), mix_w * sell_share, mix_h, transform=ax.transAxes, linewidth=0, facecolor=RED))
-    ax.text(0.325, 0.795, _safe_text(f"Buy {_fmt_hkd_bn_from_mn(buy_turnover)}"), transform=ax.transAxes, fontsize=9.2, color=GREEN, fontweight="bold", va="top")
-    ax.text(0.635, 0.795, _safe_text(f"Sell {_fmt_hkd_bn_from_mn(sell_turnover)}"), transform=ax.transAxes, fontsize=9.2, color=RED, fontweight="bold", va="top", ha="right")
+    if has_aggregate_split:
+        ax.add_patch(Rectangle((mix_x, mix_y), mix_w * buy_share, mix_h, transform=ax.transAxes, linewidth=0, facecolor=GREEN))
+        ax.add_patch(Rectangle((mix_x + mix_w * buy_share, mix_y), mix_w * sell_share, mix_h, transform=ax.transAxes, linewidth=0, facecolor=RED))
+        ax.text(0.325, 0.795, _safe_text(f"Buy {_fmt_hkd_bn_from_mn(buy_turnover)}"), transform=ax.transAxes, fontsize=9.2, color=GREEN, fontweight="bold", va="top")
+        ax.text(0.635, 0.795, _safe_text(f"Sell {_fmt_hkd_bn_from_mn(sell_turnover)}"), transform=ax.transAxes, fontsize=9.2, color=RED, fontweight="bold", va="top", ha="right")
+    else:
+        ax.text(0.325, 0.795, "Split unavailable", transform=ax.transAxes, fontsize=9.2, color=SLATE, fontweight="bold", va="top")
 
     card(0.73, 0.775, 0.23, 0.145)
     concentration_value = top_share if top_share is not None else 0.0
@@ -512,6 +546,7 @@ def _plot_stock_connect(ax, bundle: Dict[str, Any]) -> None:
         buy = float(item["_buy"])
         sell = float(item["_sell"])
         total = float(item["_total"])
+        has_split = bool(item.get("_has_split"))
         color = GREEN if net >= 0 else RED
         card(0.02, y, 0.94, row_h, "#ffffff" if rank % 2 else "#f8fafc")
         ax.add_patch(Rectangle((0.02, y), 0.008, row_h, transform=ax.transAxes, linewidth=0, facecolor=color))
@@ -530,7 +565,7 @@ def _plot_stock_connect(ax, bundle: Dict[str, Any]) -> None:
 
         active_share = total / denominator * 100 if denominator else 0.0
         ax.text(0.650, y + 0.048, _safe_text(_fmt_hkd_flow(total)), transform=ax.transAxes, fontsize=9.3, color=INK, va="center", ha="center", fontweight="bold")
-        ax.text(0.650, y + 0.022, f"{active_share:.1f}% of tape", transform=ax.transAxes, fontsize=8.0, color=SLATE, va="center", ha="center")
+        ax.text(0.650, y + 0.022, f"{active_share:.1f}% of {share_scope}", transform=ax.transAxes, fontsize=8.0, color=SLATE, va="center", ha="center")
 
         bar_x = 0.765
         bar_y = y + 0.032
@@ -539,15 +574,19 @@ def _plot_stock_connect(ax, bundle: Dict[str, Any]) -> None:
         buy_w = bar_w * max(0.0, buy) / mix_total
         sell_w = bar_w * max(0.0, sell) / mix_total
         ax.add_patch(Rectangle((bar_x, bar_y), bar_w, 0.030, transform=ax.transAxes, linewidth=0, facecolor="#e4e7ec"))
-        ax.add_patch(Rectangle((bar_x, bar_y), buy_w, 0.030, transform=ax.transAxes, linewidth=0, facecolor=GREEN))
-        ax.add_patch(Rectangle((bar_x + buy_w, bar_y), sell_w, 0.030, transform=ax.transAxes, linewidth=0, facecolor=RED))
-        ax.text(0.955, y + 0.047, f"{buy:,.0f}/{sell:,.0f}", transform=ax.transAxes, fontsize=8.2, color=SLATE, va="center", ha="right")
+        if has_split:
+            ax.add_patch(Rectangle((bar_x, bar_y), buy_w, 0.030, transform=ax.transAxes, linewidth=0, facecolor=GREEN))
+            ax.add_patch(Rectangle((bar_x + buy_w, bar_y), sell_w, 0.030, transform=ax.transAxes, linewidth=0, facecolor=RED))
+            split_text = f"{buy:,.0f}/{sell:,.0f}"
+        else:
+            split_text = "N/A"
+        ax.text(0.955, y + 0.047, split_text, transform=ax.transAxes, fontsize=8.2, color=SLATE, va="center", ha="right")
         y -= 0.095
 
     read_color = RED if concentration_value >= 20 else AMBER if concentration_value >= 12 else BLUE
     read = (
         f"Read: {positive_count} net-bought / {negative_count} net-sold active names; "
-        f"top active share {concentration_value:.1f}%. "
+        f"top {share_scope} share {concentration_value:.1f}%. "
         f"{'Flow is concentrated; test single-name sustainability.' if concentration_value >= 12 else 'Flow is distributed; use breadth confirmation before extrapolating.'}"
     )
     card(0.02, 0.075, 0.94, 0.095, "#ffffff")

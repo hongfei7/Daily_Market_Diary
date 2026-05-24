@@ -3,8 +3,8 @@
 ## Local Setup
 
 ```bash
-cd market_diary
-pip install -r requirements.txt
+pip install -r market_diary/requirements.txt
+pip install -e . --no-deps
 ```
 
 Optional LLM environment variables:

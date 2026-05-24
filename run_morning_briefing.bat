@@ -9,7 +9,14 @@ echo.
 
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Python 3.8 or above was not found on this machine.
+    echo [ERROR] Python 3.10 or above was not found on this machine.
+    pause
+    exit /b 1
+)
+
+python -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)" >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Python 3.10 or above is required.
     pause
     exit /b 1
 )

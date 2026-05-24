@@ -10,7 +10,16 @@ echo "========================================"
 echo ""
 
 if ! command -v python3 >/dev/null 2>&1; then
-    echo "[ERROR] Python 3.8 or above was not found on this machine."
+    echo "[ERROR] Python 3.10 or above was not found on this machine."
+    exit 1
+fi
+
+if ! python3 - <<'PY' >/dev/null 2>&1
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 10) else 1)
+PY
+then
+    echo "[ERROR] Python 3.10 or above is required."
     exit 1
 fi
 

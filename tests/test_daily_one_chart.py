@@ -103,6 +103,37 @@ def main() -> None:
         assert os.path.exists(moderate_short_path)
         assert moderate_short_meta["kind"] == "stock_connect"
 
+        quiet_southbound_bundle = {
+            "meta": {"briefing_date": "2026-04-14"},
+            "market_summary": {"Equities": {}, "FX": {}, "Commodities": {}},
+            "hk_local": {"short_selling_ratio": {"value": 10.0}, "turnover_vs_20d": {"value": 1.0}},
+            "flow_tracker": {
+                "stock_connect": {
+                    "data": {
+                        "southbound": {
+                            "net_buy": 120.0,
+                            "total_turnover": 20_000.0,
+                            "top_active": [
+                                {"ticker": "00005.HK", "name": "HSBC", "net_buy": 50.0, "total_turnover": 260.0}
+                            ],
+                        }
+                    }
+                },
+                "ah_premium": {
+                    "data": {
+                        "top_premium": [
+                            {"name": "CRRC", "premium_pct": 82.5},
+                        ]
+                    }
+                },
+            },
+            "attribution": {"dominant_drivers": [], "risk_dashboard": {"score": 52.0, "bucket": "Mixed", "components": []}},
+        }
+        quiet_southbound_path = os.path.join(chart_dir, "test_daily_one_chart_quiet_southbound.png")
+        quiet_southbound_meta = generate_daily_one_chart(quiet_southbound_bundle, quiet_southbound_path)
+        assert os.path.exists(quiet_southbound_path)
+        assert quiet_southbound_meta["kind"] == "ah_premium"
+
         ah_bundle = {
             "meta": {"briefing_date": "2026-04-14"},
             "market_summary": {"Equities": {}, "FX": {}, "Commodities": {}},
