@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-05-23](./archive/2026-05-23/README.md)
+- Latest archive folder: [2026-05-27](./archive/2026-05-27/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-27 | Trading Daily | The Nasdaq 100's +1.76% overnight gain transmitted cleanly into Hong Kong growth proxies with HSTECH outperforming... | 88.7/100 | [Report](archive/2026-05-27/README.md) | [Dashboard](archive/2026-05-27/charts/dashboard_2026-05-27.png) | [One Chart](archive/2026-05-27/charts/daily_one_chart_2026-05-27.png) | N/A | N/A |
 | 2026-05-23 | Trading Daily | Intel's -6.33% guidance reset dominated the completed session while copper's +1.97% held the China risk theme, leav... | 92.6/100 | [Report](archive/2026-05-23/README.md) | [Dashboard](archive/2026-05-23/charts/dashboard_2026-05-23.png) | [One Chart](archive/2026-05-23/charts/daily_one_chart_2026-05-23.png) | N/A | N/A |
 | 2026-05-22 | Trading Daily | A neutral, range-bound session with easing VIX and growth-led internal tape held, but elevated 18% short-selling, S... | 94.7/100 | [Report](archive/2026-05-22/README.md) | [Dashboard](archive/2026-05-22/charts/dashboard_2026-05-22.png) | [One Chart](archive/2026-05-22/charts/daily_one_chart_2026-05-22.png) | N/A | N/A |
 | 2026-05-21 | Trading Daily | Risk-On backdrop with USD softer and lower yields supported a marginal HSTECH-led rally on May 20, but the offshore... | 94.7/100 | [Report](archive/2026-05-21/README.md) | [Dashboard](archive/2026-05-21/charts/dashboard_2026-05-21.png) | [One Chart](archive/2026-05-21/charts/daily_one_chart_2026-05-21.png) | N/A | N/A |
