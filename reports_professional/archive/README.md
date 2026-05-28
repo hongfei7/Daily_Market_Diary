@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-28 | Trading Daily | HSTECH's +1.77% leadership against a weaker FXI (-1.20%) and stronger USD creates a constructive internal tape for... | 87.0/100 | [Report](2026-05-28/README.md) | [Dashboard](2026-05-28/charts/dashboard_2026-05-28.png) | [One Chart](2026-05-28/charts/daily_one_chart_2026-05-28.png) | N/A | N/A |
 | 2026-05-27 | Trading Daily | The Nasdaq 100's +1.76% overnight gain transmitted cleanly into Hong Kong growth proxies with HSTECH outperforming... | 88.7/100 | [Report](2026-05-27/README.md) | [Dashboard](2026-05-27/charts/dashboard_2026-05-27.png) | [One Chart](2026-05-27/charts/daily_one_chart_2026-05-27.png) | N/A | N/A |
 | 2026-05-23 | Trading Daily | Intel's -6.33% guidance reset dominated the completed session while copper's +1.97% held the China risk theme, leav... | 92.6/100 | [Report](2026-05-23/README.md) | [Dashboard](2026-05-23/charts/dashboard_2026-05-23.png) | [One Chart](2026-05-23/charts/daily_one_chart_2026-05-23.png) | N/A | N/A |
 | 2026-05-22 | Trading Daily | A neutral, range-bound session with easing VIX and growth-led internal tape held, but elevated 18% short-selling, S... | 94.7/100 | [Report](2026-05-22/README.md) | [Dashboard](2026-05-22/charts/dashboard_2026-05-22.png) | [One Chart](2026-05-22/charts/daily_one_chart_2026-05-22.png) | N/A | N/A |
