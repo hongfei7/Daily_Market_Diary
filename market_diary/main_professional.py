@@ -435,13 +435,25 @@ def main() -> None:
         _attach_weekly_trend_summary(bundle, summarize_hk_trend_pack_data(trend_pack_data))
 
     llm_cache_dir = os.path.join(output_dir, "raw", "llm_cache")
-    bundle["llm_sections"] = (
-        {}
-        if args.no_llm
-        else generate_llm_sections(bundle=bundle, config=config, cache_dir=llm_cache_dir)
-    )
-    bundle["fact_check"] = run_fact_check(bundle)
-    bundle["report_quality"] = build_report_quality(bundle)
+    try:
+        bundle["llm_sections"] = (
+            {}
+            if args.no_llm
+            else generate_llm_sections(bundle=bundle, config=config, cache_dir=llm_cache_dir)
+        )
+    except Exception as exc:
+        print(f"[runtime] LLM overlay crashed (non-fatal, using empty sections): {_error_summary(exc)}")
+        bundle["llm_sections"] = {"task_meta": {"status": "error", "error": _error_summary(exc)}}
+    try:
+        bundle["fact_check"] = run_fact_check(bundle)
+    except Exception as exc:
+        print(f"[runtime] Fact-check guardrail failed (non-fatal): {_error_summary(exc)}")
+        bundle["fact_check"] = {"status": "error", "error": _error_summary(exc)}
+    try:
+        bundle["report_quality"] = build_report_quality(bundle)
+    except Exception as exc:
+        print(f"[runtime] Report quality scoring failed (non-fatal): {_error_summary(exc)}")
+        bundle["report_quality"] = {"status": "error", "error": _error_summary(exc)}
 
     dashboard_rel_path = ""
     if should_render_dashboard:

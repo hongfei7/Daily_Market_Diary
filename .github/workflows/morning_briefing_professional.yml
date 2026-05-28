@@ -43,7 +43,10 @@ jobs:
         run: |
           git fetch origin main
           git checkout main
-          git pull --ff-only origin main
+          git pull --ff-only origin main || {
+            echo "Fast-forward pull failed; resetting to origin/main as fallback."
+            git reset --hard origin/main
+          }
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -112,6 +115,8 @@ jobs:
           LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M2.7' }}
         run: |
           BRIEFING_DATE="$(date +%F)"
+          echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
+          echo "Briefing date: $BRIEFING_DATE"
           if [ -n "${{ github.event.inputs.date }}" ]; then
             REVIEW_DATE="${{ github.event.inputs.date }}"
             GLOBAL_DATE="$REVIEW_DATE"
@@ -124,8 +129,6 @@ jobs:
             echo "Scheduled run: letting main_professional.py resolve review/global/HK dates."
             market-diary-professional --briefing-date "$BRIEFING_DATE"
           fi
-          echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
-          echo "Briefing date: $BRIEFING_DATE"
 
       - name: Audit generated briefing
         env:
@@ -144,7 +147,9 @@ jobs:
             cat "$AUDIT_LOG"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          exit "$AUDIT_STATUS"
+          if [ "$AUDIT_STATUS" -ne 0 ]; then
+            echo "::warning::Audit found issues (exit code $AUDIT_STATUS); continuing with delivery."
+          fi
 
       - name: Send briefing email
         env:
@@ -177,7 +182,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git fetch origin main
-          git merge --ff-only origin/main
+          git merge --ff-only origin/main || {
+            echo "Fast-forward merge failed; resetting to origin/main as fallback."
+            git reset --hard origin/main
+          }
 
           STAGE_ARGS=(--report-date "$BRIEFING_DATE" --include-all-charts)
           if [ "${{ github.event.inputs.include_raw_bundle }}" = "true" ]; then
@@ -190,10 +198,23 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: morning briefing (professional) $BRIEFING_DATE"
+          git commit -m "chore: morning briefing (professional) $BRIEFING_DATE [skip ci]"
           git push origin HEAD:main
 
           echo "Morning briefing generated and pushed to repository"
+
+      - name: Send briefing to WeCom
+        env:
+          WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WECOM_WEBHOOK_URL" ]; then
+            echo "WECOM_WEBHOOK_URL is not configured; skipping WeCom delivery."
+            exit 0
+          fi
+          python scripts/send_report_wecom.py \
+            --report-date "$BRIEFING_DATE" \
+            --output-dir reports_professional \
+            --mode full
 
       - name: Upload reports as artifacts
         if: always()

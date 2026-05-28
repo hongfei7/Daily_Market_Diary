@@ -21,6 +21,7 @@ idna==3.11
 jiter==0.13.0
 kiwisolver==1.4.9
 matplotlib==3.10.6
+mistune==3.1.6
 multitasking==0.0.12
 numpy==2.3.5
 openai==2.30.0
