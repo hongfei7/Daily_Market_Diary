@@ -4,8 +4,8 @@ This is the GitHub landing page for the archived report dated `2026-05-29`.
 
 - Report date: `2026-05-29`
 - Report mode: `Trading Daily`
-- Quality: `84.6/100`
-- One-line pulse: Softer USD and lower yields offered a constructive overnight backdrop, but Hong Kong's lower close despite that sig...
+- Quality: `87.4/100`
+- One-line pulse: The completed session closed with Hong Kong growth style outperforming (HSTECH -0.42% vs HSCEI -1.17%) despite a mi...
 - Latest published entry: [latest/README.md](../../latest/README.md)
 - Archive gallery: [archive/README.md](../README.md)
 - Direct markdown file: [morning_briefing.md](./morning_briefing.md)
