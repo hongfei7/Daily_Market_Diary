@@ -34,7 +34,7 @@
     },
     {
       "available": true,
-      "net_pp": -0.207,
+      "net_pp": -0.191,
       "range_pp": 0.305,
       "high": {
         "time": "2026-05-28 11:50",
@@ -66,7 +66,7 @@
     },
     {
       "available": true,
-      "net_pp": -0.256,
+      "net_pp": -0.268,
       "range_pp": 0.616,
       "high": {
         "time": "2026-05-28 11:55",
@@ -130,7 +130,7 @@
     },
     {
       "available": true,
-      "net_pp": -0.003,
+      "net_pp": -0.002,
       "range_pp": 0.058,
       "high": {
         "time": "2026-05-28 23:55",
@@ -164,14 +164,14 @@
   "fx_composite": {
     "available": true,
     "net_pp": -0.542,
-    "range_pp": 0.636,
+    "range_pp": 0.633,
     "high": {
       "time": "2026-05-28 11:55",
       "value": 0.091
     },
     "low": {
-      "time": "2026-05-29 05:05",
-      "value": -0.545
+      "time": "2026-05-29 07:00",
+      "value": -0.542
     },
     "turning_points": [
       {
@@ -256,30 +256,30 @@
     },
     "Bitcoin": {
       "available": true,
-      "net_pp": -1.196,
-      "range_pp": 2.444,
+      "net_pp": -1.231,
+      "range_pp": 2.449,
       "high": {
         "time": "2026-05-28 08:55",
-        "value": 0.019
+        "value": 0.015
       },
       "low": {
         "time": "2026-05-28 23:15",
-        "value": -2.425
+        "value": -2.434
       },
       "turning_points": [
         {
           "time": "2026-05-28 08:10",
-          "value": -0.1693,
+          "value": -0.1733,
           "direction": "trough"
         },
         {
           "time": "2026-05-28 08:30",
-          "value": -0.0242,
+          "value": -0.0282,
           "direction": "peak"
         },
         {
           "time": "2026-05-28 08:45",
-          "value": -0.0617,
+          "value": -0.0656,
           "direction": "trough"
         }
       ],
@@ -295,7 +295,7 @@
   },
   "correlations": {
     "Gold_Oil": -0.929,
-    "Gold_Bitcoin": 0.268,
-    "Oil_Bitcoin": -0.401
+    "Gold_Bitcoin": 0.411,
+    "Oil_Bitcoin": -0.551
   }
 }
