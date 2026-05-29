@@ -396,23 +396,34 @@ HTML_CSS = """\
 </style>"""
 
 
-def _md_to_html(md_text: str, output_dir: Path, report_date: str) -> str:
+def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir: Optional[Path] = None) -> str:
     """Convert markdown report to a self-contained HTML document with embedded images."""
     # Convert MD to HTML body
     body_html = mistune.html(md_text)
 
+    # Collect search dirs for resolving relative image paths
+    search_dirs = [output_dir]
+    if md_source_dir is not None:
+        search_dirs.insert(0, md_source_dir)
+
+    def _resolve_img_path(src: str) -> Optional[Path]:
+        src_path = Path(src)
+        if src_path.is_absolute():
+            return src_path if src_path.exists() else None
+        for base in search_dirs:
+            candidate = base / src
+            if candidate.exists():
+                return candidate
+        return None
+
     # Replace local image paths with base64 data URIs
     def _replace_img(match: re.Match) -> str:
-        src = match.group(1)
-        alt = match.group(2) or ""
-        src_path = Path(src)
-        if src_path.is_absolute() and src_path.exists():
-            img_path = src_path
-        else:
-            # Try relative to output_dir
-            img_path = output_dir / src
-            if not img_path.exists():
-                return match.group(0)  # keep original if not found
+        src = match.group("src")
+        alt = match.group("alt") or ""
+        img_path = _resolve_img_path(src)
+        if img_path is None:
+            print(f"  [WARN] Image not found: {src} (searched: {[str(d) for d in search_dirs]})")
+            return match.group(0)
 
         try:
             suffix = img_path.suffix.lower()
@@ -426,9 +437,9 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str) -> str:
         except Exception:
             return match.group(0)
 
-    # Match img tags with src and optional alt (handles both self-closing and non-self-closing)
+    # Match img tags — mistune outputs <img src="..." alt="..." /> with src before alt
     body_html = re.sub(
-        r'<img\s+src="([^"]+)"\s+alt="([^"]*)"[^>]*/?>',
+        r'<img\s+src="(?P<src>[^"]+)"\s+alt="(?P<alt>[^"]*)"[^>]*/?>',
         _replace_img,
         body_html,
     )
@@ -464,15 +475,17 @@ def send_file(
     dry_run: bool = False,
 ) -> str:
     """Convert markdown report to self-contained HTML, upload to WeCom, and send as file."""
-    # Try date-prefixed filename first, then plain morning_briefing.md (archive layout)
+    # Try date-prefixed filename first, then archive layout, then plain morning_briefing.md
     md_path = output_dir / f"{report_date}_morning_briefing.md"
+    if not md_path.exists():
+        md_path = output_dir / "archive" / report_date / "morning_briefing.md"
     if not md_path.exists():
         md_path = output_dir / "morning_briefing.md"
     if not md_path.exists():
         raise FileNotFoundError(f"Report file not found in {output_dir}")
 
     md_text = md_path.read_text(encoding="utf-8")
-    html = _md_to_html(md_text, output_dir, report_date)
+    html = _md_to_html(md_text, output_dir, report_date, md_source_dir=md_path.parent)
 
     # Write HTML to a temp file for upload
     html_filename = f"{report_date}_morning_briefing.html"
