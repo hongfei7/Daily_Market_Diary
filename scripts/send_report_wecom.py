@@ -14,12 +14,10 @@ from __future__ import annotations
 
 import argparse
 import base64
-import hashlib
 import json
 import os
 import re
 import sys
-import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -35,8 +33,6 @@ from professional.report_formatting import _truncate, _fmt_pct, _fmt_price
 WECOM_MARKDOWN_BYTE_LIMIT = 4096
 WECOM_FILE_SIZE_LIMIT = 20 * 1024 * 1024  # 20 MB
 WECOM_IMAGE_SIZE_LIMIT = 2 * 1024 * 1024  # 2 MB
-
-IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 
 
 # ---------------------------------------------------------------------------
@@ -93,12 +89,15 @@ def _wecom_post(webhook_url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
 
 def _wecom_upload(webhook_url: str, file_path: Path, media_type: str = "file") -> str:
     """Upload a file to WeCom and return the media_id."""
-    base_url = webhook_url.rstrip("/")
-    if "/send" in base_url:
-        upload_url = base_url.replace("/send", "/upload_media")
-    else:
-        upload_url = f"{base_url}/upload_media"
-    upload_url = f"{upload_url}?key={base_url.split('key=')[-1]}&type={media_type}"
+    # Extract key and build the upload URL from the webhook send URL
+    if "key=" not in webhook_url:
+        raise ValueError(f"Invalid WeCom webhook URL: missing 'key' parameter")
+    key = webhook_url.split("key=")[-1].split("&")[0]  # strip trailing params
+
+    upload_url = webhook_url.rstrip("/").replace("/send", "/upload_media")
+    if "?" in upload_url:
+        upload_url = upload_url.split("?")[0]
+    upload_url = f"{upload_url}?key={key}&type={media_type}"
 
     file_size = file_path.stat().st_size
     if media_type == "image" and file_size > WECOM_IMAGE_SIZE_LIMIT:
@@ -107,7 +106,7 @@ def _wecom_upload(webhook_url: str, file_path: Path, media_type: str = "file") -
         raise ValueError(f"File size {file_size} exceeds WeCom 20MB limit")
 
     with file_path.open("rb") as handle:
-        response = requests.post(upload_url, files={"file": (file_path.name, handle)}, timeout=60)
+        response = requests.post(upload_url, files={"media": (file_path.name, handle)}, timeout=60)
     response.raise_for_status()
     result = response.json()
     if result.get("errcode") != 0:
