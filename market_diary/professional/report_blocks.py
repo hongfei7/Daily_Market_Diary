@@ -829,7 +829,7 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
                     item.get("claim_type", ""),
                     item.get("claimed", ""),
                     item.get("expected", ""),
-                    _truncate(item.get("snippet", ""), 70),
+                    item.get("snippet", ""),
                 )
                 for item in mismatches[:6]
             ]

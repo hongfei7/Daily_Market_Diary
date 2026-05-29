@@ -178,7 +178,7 @@ def _claim_mismatches(bundle: Dict[str, Any], texts: List[Tuple[str, str]]) -> T
                             continue
                         checked += 1
                         if abs(claimed - expected) > tolerance:
-                            snippet = text[max(match.start() - 32, 0) : min(match.end() + 32, len(text))]
+                            snippet = text[max(match.start() - 50, 0) : min(match.end() + 50, len(text))]
                             severity = _severity_for_numeric(kind, claimed, expected, tolerance)
                             dedupe_key = (fact["label"], kind, round(claimed, 3), round(expected, 3), snippet.strip())
                             if dedupe_key in seen:
