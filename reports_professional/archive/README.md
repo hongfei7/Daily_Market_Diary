@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-30 | Trading Daily | A neutral cross-asset backdrop with active Hong Kong participation and intact offshore China proxies supports a sel... | 87.4/100 | [Report](2026-05-30/README.md) | [Dashboard](2026-05-30/charts/dashboard_2026-05-30.png) | [One Chart](2026-05-30/charts/daily_one_chart_2026-05-30.png) | N/A | N/A |
 | 2026-05-29 | Trading Daily | The completed session closed with Hong Kong growth style outperforming (HSTECH -0.42% vs HSCEI -1.17%) despite a mi... | 87.4/100 | [Report](2026-05-29/README.md) | [Dashboard](2026-05-29/charts/dashboard_2026-05-29.png) | [One Chart](2026-05-29/charts/daily_one_chart_2026-05-29.png) | N/A | N/A |
 | 2026-05-28 | Trading Daily | HSTECH's +1.77% leadership against a weaker FXI (-1.20%) and stronger USD creates a constructive internal tape for... | 87.0/100 | [Report](2026-05-28/README.md) | [Dashboard](2026-05-28/charts/dashboard_2026-05-28.png) | [One Chart](2026-05-28/charts/daily_one_chart_2026-05-28.png) | N/A | N/A |
 | 2026-05-27 | Trading Daily | The Nasdaq 100's +1.76% overnight gain transmitted cleanly into Hong Kong growth proxies with HSTECH outperforming... | 88.7/100 | [Report](2026-05-27/README.md) | [Dashboard](2026-05-27/charts/dashboard_2026-05-27.png) | [One Chart](2026-05-27/charts/daily_one_chart_2026-05-27.png) | N/A | N/A |
