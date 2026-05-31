@@ -2,25 +2,25 @@
 
 This is the stable GitHub entry for the newest archived report.
 
-- Report date: `2026-05-30`
-- Report mode: `Trading Daily`
-- Quality: `87.4/100`
-- One-line pulse: A neutral cross-asset backdrop with active Hong Kong participation and intact offshore China proxies supports a sel...
-- Archived folder: [archive/2026-05-30](../archive/2026-05-30/README.md)
-- Direct markdown file: [morning_briefing.md](../archive/2026-05-30/morning_briefing.md)
-- Dashboard: [Open image](../archive/2026-05-30/charts/dashboard_2026-05-30.png)
-- Daily One Chart: [Open image](../archive/2026-05-30/charts/daily_one_chart_2026-05-30.png)
-- Trend Pack: N/A
+- Report date: `2026-05-31`
+- Report mode: `Weekly Review`
+- Quality: `86.6/100`
+- One-line pulse: The completed week delivered a Risk-On frame with active turnover and stable funding, but value/OE leadership over...
+- Archived folder: [archive/2026-05-31](../archive/2026-05-31/README.md)
+- Direct markdown file: [morning_briefing.md](../archive/2026-05-31/morning_briefing.md)
+- Dashboard: [Open image](../archive/2026-05-31/charts/dashboard_2026-05-31.png)
+- Daily One Chart: [Open image](../archive/2026-05-31/charts/daily_one_chart_2026-05-31.png)
+- Trend Pack: [Open image](../archive/2026-05-31/charts/hk_trend_pack_2026-05-31.png)
 - Raw bundle: N/A
 
 
 ## Dashboard Preview
 
-![Dashboard](../archive/2026-05-30/charts/dashboard_2026-05-30.png)
+![Dashboard](../archive/2026-05-31/charts/dashboard_2026-05-31.png)
 
 
 ## Quick start
 
-1. Open the archived landing page for navigation and context: [archive/2026-05-30/README.md](../archive/2026-05-30/README.md)
-2. Open [morning_briefing.md](../archive/2026-05-30/morning_briefing.md) if you want the full markdown report.
+1. Open the archived landing page for navigation and context: [archive/2026-05-31/README.md](../archive/2026-05-31/README.md)
+2. Open [morning_briefing.md](../archive/2026-05-31/morning_briefing.md) if you want the full markdown report.
 3. Use the chart and bundle links above when you need the production assets behind the report.

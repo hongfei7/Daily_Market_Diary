@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-05-30](./archive/2026-05-30/README.md)
+- Latest archive folder: [2026-05-31](./archive/2026-05-31/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-31 | Weekly Review | The completed week delivered a Risk-On frame with active turnover and stable funding, but value/OE leadership over... | 86.6/100 | [Report](archive/2026-05-31/README.md) | [Dashboard](archive/2026-05-31/charts/dashboard_2026-05-31.png) | [One Chart](archive/2026-05-31/charts/daily_one_chart_2026-05-31.png) | [Trend Pack](archive/2026-05-31/charts/hk_trend_pack_2026-05-31.png) | N/A |
 | 2026-05-30 | Trading Daily | A neutral cross-asset backdrop with active Hong Kong participation and intact offshore China proxies supports a sel... | 87.4/100 | [Report](archive/2026-05-30/README.md) | [Dashboard](archive/2026-05-30/charts/dashboard_2026-05-30.png) | [One Chart](archive/2026-05-30/charts/daily_one_chart_2026-05-30.png) | N/A | N/A |
 | 2026-05-29 | Trading Daily | The completed session closed with Hong Kong growth style outperforming (HSTECH -0.42% vs HSCEI -1.17%) despite a mi... | 87.4/100 | [Report](archive/2026-05-29/README.md) | [Dashboard](archive/2026-05-29/charts/dashboard_2026-05-29.png) | [One Chart](archive/2026-05-29/charts/daily_one_chart_2026-05-29.png) | N/A | N/A |
 | 2026-05-28 | Trading Daily | HSTECH's +1.77% leadership against a weaker FXI (-1.20%) and stronger USD creates a constructive internal tape for... | 87.0/100 | [Report](archive/2026-05-28/README.md) | [Dashboard](archive/2026-05-28/charts/dashboard_2026-05-28.png) | [One Chart](archive/2026-05-28/charts/daily_one_chart_2026-05-28.png) | N/A | N/A |
