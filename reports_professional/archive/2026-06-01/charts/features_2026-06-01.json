@@ -1,0 +1,173 @@
+{
+  "fx_pairs": [
+    {
+      "available": true,
+      "net_pp": 0.0,
+      "range_pp": 0.036,
+      "high": {
+        "time": "2026-06-01 06:00",
+        "value": 0.0
+      },
+      "low": {
+        "time": "2026-06-01 07:25",
+        "value": -0.036
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-01 06:10",
+          "value": -0.0192,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-01 06:30",
+          "value": -0.0061,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-01 07:05",
+          "value": -0.0283,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "DXY",
+      "inverted": false
+    }
+  ],
+  "fx_composite": {
+    "available": true,
+    "net_pp": 0.0,
+    "range_pp": 0.036,
+    "high": {
+      "time": "2026-06-01 06:00",
+      "value": 0.0
+    },
+    "low": {
+      "time": "2026-06-01 07:25",
+      "value": -0.036
+    },
+    "turning_points": [
+      {
+        "time": "2026-06-01 06:10",
+        "value": -0.0192,
+        "direction": "trough"
+      },
+      {
+        "time": "2026-06-01 06:30",
+        "value": -0.0061,
+        "direction": "peak"
+      },
+      {
+        "time": "2026-06-01 07:05",
+        "value": -0.0283,
+        "direction": "trough"
+      }
+    ]
+  },
+  "assets": {
+    "Gold": {
+      "available": true,
+      "net_pp": 0.114,
+      "range_pp": 0.291,
+      "high": {
+        "time": "2026-06-01 07:25",
+        "value": 0.223
+      },
+      "low": {
+        "time": "2026-06-01 06:35",
+        "value": -0.068
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-01 06:15",
+          "value": 0.0394,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-01 06:30",
+          "value": 0.0219,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-01 06:45",
+          "value": 0.0789,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "GOLD"
+    },
+    "Oil": {
+      "available": true,
+      "net_pp": -0.212,
+      "range_pp": 0.458,
+      "high": {
+        "time": "2026-06-01 06:15",
+        "value": 0.089
+      },
+      "low": {
+        "time": "2026-06-01 07:30",
+        "value": -0.368
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-01 06:15",
+          "value": 0.0893,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-01 06:30",
+          "value": -0.1897,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-01 06:55",
+          "value": -0.0223,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "WTI"
+    },
+    "Bitcoin": {
+      "available": true,
+      "net_pp": -0.457,
+      "range_pp": 1.113,
+      "high": {
+        "time": "2026-05-31 09:20",
+        "value": 0.529
+      },
+      "low": {
+        "time": "2026-06-01 00:30",
+        "value": -0.584
+      },
+      "turning_points": [
+        {
+          "time": "2026-05-31 08:05",
+          "value": 0.0189,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-05-31 08:20",
+          "value": 0.1378,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-05-31 08:45",
+          "value": 0.0795,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "BTC"
+    }
+  },
+  "divergence": {
+    "best_asset": "Gold",
+    "best_net_pp": 0.114,
+    "worst_asset": "Bitcoin",
+    "worst_net_pp": -0.457,
+    "spread_pp": 0.571
+  },
+  "correlations": {
+    "Gold_Oil": -0.46,
+    "Gold_Bitcoin": null,
+    "Oil_Bitcoin": null
+  }
+}
