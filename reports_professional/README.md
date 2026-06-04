@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-06-03](./archive/2026-06-03/README.md)
+- Latest archive folder: [2026-06-04](./archive/2026-06-04/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-04 | Trading Daily | Risk-off pressure from a firmer USD, higher yields, and a 21% short-selling ratio challenges the HSTECH rebound; to... | 90.0/100 | [Report](archive/2026-06-04/README.md) | [Dashboard](archive/2026-06-04/charts/dashboard_2026-06-04.png) | [One Chart](archive/2026-06-04/charts/daily_one_chart_2026-06-04.png) | N/A | N/A |
 | 2026-06-03 | Trading Daily | Hong Kong's +2.52% session confirmed a Risk-On backdrop with credible turnover and offshore China proxy leadership,... | 87.4/100 | [Report](archive/2026-06-03/README.md) | [Dashboard](archive/2026-06-03/charts/dashboard_2026-06-03.png) | [One Chart](archive/2026-06-03/charts/daily_one_chart_2026-06-03.png) | N/A | N/A |
 | 2026-06-02 | Trading Daily | Risk-On conditions with oil strength support the HK energy and cyclical trade, but Intel's guidance reset and a 19%... | 85.8/100 | [Report](archive/2026-06-02/README.md) | [Dashboard](archive/2026-06-02/charts/dashboard_2026-06-02.png) | [One Chart](archive/2026-06-02/charts/daily_one_chart_2026-06-02.png) | N/A | N/A |
 | 2026-06-01 | Weekend Event Watch | A lower VIX and Nio's 10% product-cycle surge keep the weekend backdrop constructive for Hong Kong, but Fed Governo... | 90.0/100 | [Report](archive/2026-06-01/README.md) | [Dashboard](archive/2026-06-01/charts/dashboard_2026-06-01.png) | [One Chart](archive/2026-06-01/charts/daily_one_chart_2026-06-01.png) | N/A | N/A |
