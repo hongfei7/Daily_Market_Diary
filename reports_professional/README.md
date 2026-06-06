@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-06-05](./archive/2026-06-05/README.md)
+- Latest archive folder: [2026-06-06](./archive/2026-06-06/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-06 | Trading Daily | The overnight hawkish CPI and Goldman Sachs HK downgrade deepen the Risk-Off regime, so the open hinges on defensiv... | 88.3/100 | [Report](archive/2026-06-06/README.md) | [Dashboard](archive/2026-06-06/charts/dashboard_2026-06-06.png) | [One Chart](archive/2026-06-06/charts/daily_one_chart_2026-06-06.png) | N/A | N/A |
 | 2026-06-05 | Trading Daily | Elevated short-selling at 23% and the Goldman Sachs downgrade keep Hong Kong opening pressure intact, while the Gol... | 85.0/100 | [Report](archive/2026-06-05/README.md) | [Dashboard](archive/2026-06-05/charts/dashboard_2026-06-05.png) | [One Chart](archive/2026-06-05/charts/daily_one_chart_2026-06-05.png) | N/A | N/A |
 | 2026-06-04 | Trading Daily | Risk-off pressure from a firmer USD, higher yields, and a 21% short-selling ratio challenges the HSTECH rebound; to... | 90.0/100 | [Report](archive/2026-06-04/README.md) | [Dashboard](archive/2026-06-04/charts/dashboard_2026-06-04.png) | [One Chart](archive/2026-06-04/charts/daily_one_chart_2026-06-04.png) | N/A | N/A |
 | 2026-06-03 | Trading Daily | Hong Kong's +2.52% session confirmed a Risk-On backdrop with credible turnover and offshore China proxy leadership,... | 87.4/100 | [Report](archive/2026-06-03/README.md) | [Dashboard](archive/2026-06-03/charts/dashboard_2026-06-03.png) | [One Chart](archive/2026-06-03/charts/daily_one_chart_2026-06-03.png) | N/A | N/A |
