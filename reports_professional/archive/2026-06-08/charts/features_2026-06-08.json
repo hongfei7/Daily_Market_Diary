@@ -1,0 +1,189 @@
+{
+  "fx_pairs": [
+    {
+      "available": true,
+      "net_pp": -0.063,
+      "range_pp": 0.085,
+      "high": {
+        "time": "2026-06-08 06:05",
+        "value": 0.022
+      },
+      "low": {
+        "time": "2026-06-08 07:50",
+        "value": -0.063
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-08 06:05",
+          "value": 0.022,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-08 06:20",
+          "value": -0.035,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-08 06:35",
+          "value": -0.016,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "DXY",
+      "inverted": false
+    },
+    {
+      "available": true,
+      "net_pp": 0.0,
+      "range_pp": 0.0,
+      "high": {
+        "time": "2026-06-08 06:20",
+        "value": 0.0
+      },
+      "low": {
+        "time": "2026-06-08 06:20",
+        "value": 0.0
+      },
+      "turning_points": [],
+      "symbol": "USD/CNH",
+      "inverted": false
+    }
+  ],
+  "fx_composite": {
+    "available": true,
+    "net_pp": -0.063,
+    "range_pp": 0.085,
+    "high": {
+      "time": "2026-06-08 06:05",
+      "value": 0.022
+    },
+    "low": {
+      "time": "2026-06-08 07:50",
+      "value": -0.063
+    },
+    "turning_points": [
+      {
+        "time": "2026-06-08 06:05",
+        "value": 0.022,
+        "direction": "peak"
+      },
+      {
+        "time": "2026-06-08 06:30",
+        "value": 0.0005,
+        "direction": "peak"
+      },
+      {
+        "time": "2026-06-08 06:45",
+        "value": 0.0,
+        "direction": "peak"
+      }
+    ]
+  },
+  "assets": {
+    "Gold": {
+      "available": true,
+      "net_pp": 0.319,
+      "range_pp": 0.632,
+      "high": {
+        "time": "2026-06-08 07:55",
+        "value": 0.319
+      },
+      "low": {
+        "time": "2026-06-08 06:25",
+        "value": -0.312
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-08 06:25",
+          "value": -0.3124,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-08 06:40",
+          "value": -0.0896,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-08 06:55",
+          "value": -0.2894,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "GOLD"
+    },
+    "Oil": {
+      "available": true,
+      "net_pp": -0.108,
+      "range_pp": 0.431,
+      "high": {
+        "time": "2026-06-08 06:25",
+        "value": 0.129
+      },
+      "low": {
+        "time": "2026-06-08 07:25",
+        "value": -0.302
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-08 06:20",
+          "value": -0.0862,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-08 06:40",
+          "value": 0.1293,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-08 07:00",
+          "value": 0.0539,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "WTI"
+    },
+    "Bitcoin": {
+      "available": true,
+      "net_pp": 0.471,
+      "range_pp": 3.438,
+      "high": {
+        "time": "2026-06-07 16:55",
+        "value": 3.168
+      },
+      "low": {
+        "time": "2026-06-07 08:45",
+        "value": -0.27
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-07 08:10",
+          "value": -0.1847,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-07 08:30",
+          "value": 0.0077,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-07 08:45",
+          "value": -0.27,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "BTC"
+    }
+  },
+  "divergence": {
+    "best_asset": "Bitcoin",
+    "best_net_pp": 0.471,
+    "worst_asset": "Oil",
+    "worst_net_pp": -0.108,
+    "spread_pp": 0.579
+  },
+  "correlations": {
+    "Gold_Oil": -0.521,
+    "Gold_Bitcoin": null,
+    "Oil_Bitcoin": null
+  }
+}
