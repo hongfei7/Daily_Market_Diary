@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-06-08](./archive/2026-06-08/README.md)
+- Latest archive folder: [2026-06-09](./archive/2026-06-09/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-09 | Trading Daily | Nasdaq's +1.58% lead and a sharp VIX compression create a mildly constructive overnight setup for Hong Kong, but th... | 82.4/100 | [Report](archive/2026-06-09/README.md) | [Dashboard](archive/2026-06-09/charts/dashboard_2026-06-09.png) | [One Chart](archive/2026-06-09/charts/daily_one_chart_2026-06-09.png) | N/A | N/A |
 | 2026-06-08 | Weekend Event Watch | Risk-off intensified over the weekend with a 40% VIX surge, higher yields, and a Goldman H-share downgrade, leaving... | 83.8/100 | [Report](archive/2026-06-08/README.md) | [Dashboard](archive/2026-06-08/charts/dashboard_2026-06-08.png) | [One Chart](archive/2026-06-08/charts/daily_one_chart_2026-06-08.png) | N/A | N/A |
 | 2026-06-07 | Weekly Review | Hong Kong's week closed with a clear Risk-Off tone - VIX spiked +39.68% to 21.51, Nasdaq fell -4.77% versus S&P -2.... | 87.4/100 | [Report](archive/2026-06-07/README.md) | [Dashboard](archive/2026-06-07/charts/dashboard_2026-06-07.png) | [One Chart](archive/2026-06-07/charts/daily_one_chart_2026-06-07.png) | [Trend Pack](archive/2026-06-07/charts/hk_trend_pack_2026-06-07.png) | N/A |
 | 2026-06-06 | Trading Daily | The overnight hawkish CPI and Goldman Sachs HK downgrade deepen the Risk-Off regime, so the open hinges on defensiv... | 88.3/100 | [Report](archive/2026-06-06/README.md) | [Dashboard](archive/2026-06-06/charts/dashboard_2026-06-06.png) | [One Chart](archive/2026-06-06/charts/daily_one_chart_2026-06-06.png) | N/A | N/A |
