@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-11 | Trading Daily | Overnight risk-off was partly offset by Hong Kong's relative resilience and southbound support, but elevated short-... | 88.7/100 | [Report](2026-06-11/README.md) | [Dashboard](2026-06-11/charts/dashboard_2026-06-11.png) | [One Chart](2026-06-11/charts/daily_one_chart_2026-06-11.png) | N/A | N/A |
 | 2026-06-10 | Trading Daily | Risk-off session with VIX spiking to 19.87 and HSTECH falling 2.55% reflects elevated caution, but FXI's flat print... | 77.4/100 | [Report](2026-06-10/README.md) | [Dashboard](2026-06-10/charts/dashboard_2026-06-10.png) | [One Chart](2026-06-10/charts/daily_one_chart_2026-06-10.png) | N/A | N/A |
 | 2026-06-09 | Trading Daily | Nasdaq's +1.58% lead and a sharp VIX compression create a mildly constructive overnight setup for Hong Kong, but th... | 82.4/100 | [Report](2026-06-09/README.md) | [Dashboard](2026-06-09/charts/dashboard_2026-06-09.png) | [One Chart](2026-06-09/charts/daily_one_chart_2026-06-09.png) | N/A | N/A |
 | 2026-06-08 | Weekend Event Watch | Risk-off intensified over the weekend with a 40% VIX surge, higher yields, and a Goldman H-share downgrade, leaving... | 83.8/100 | [Report](2026-06-08/README.md) | [Dashboard](2026-06-08/charts/dashboard_2026-06-08.png) | [One Chart](2026-06-08/charts/daily_one_chart_2026-06-08.png) | N/A | N/A |
