@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-06-19](./archive/2026-06-19/README.md)
+- Latest archive folder: [2026-06-20](./archive/2026-06-20/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-20 | Trading Daily | Nasdaq's overnight rally failed to lift Hong Kong, producing a tentative HSTECH relative-lead against a Risk-Off ba... | 87.3/100 | [Report](archive/2026-06-20/README.md) | [Dashboard](archive/2026-06-20/charts/dashboard_2026-06-20.png) | [One Chart](archive/2026-06-20/charts/daily_one_chart_2026-06-20.png) | N/A | N/A |
 | 2026-06-19 | Trading Daily | Nasdaq +2.48% and lower volatility give Hong Kong growth a positive opening lead, but the local tape's HSTECH +0.09... | 87.1/100 | [Report](archive/2026-06-19/README.md) | [Dashboard](archive/2026-06-19/charts/dashboard_2026-06-19.png) | [One Chart](archive/2026-06-19/charts/daily_one_chart_2026-06-19.png) | N/A | N/A |
 | 2026-06-18 | Trading Daily | Fed hawkishness under Chairman Warsh drove the Risk-Off session, with USD strength overwhelming the partial duratio... | 87.4/100 | [Report](archive/2026-06-18/README.md) | [Dashboard](archive/2026-06-18/charts/dashboard_2026-06-18.png) | [One Chart](archive/2026-06-18/charts/daily_one_chart_2026-06-18.png) | N/A | N/A |
 | 2026-06-17 | Trading Daily | The June 16 session delivered a bifurcated Hong Kong tape - HSTECH outperformed (+1.26%) despite Nasdaq's -1.89% dr... | 82.4/100 | [Report](archive/2026-06-17/README.md) | [Dashboard](archive/2026-06-17/charts/dashboard_2026-06-17.png) | [One Chart](archive/2026-06-17/charts/daily_one_chart_2026-06-17.png) | N/A | N/A |
