@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-06-22](./archive/2026-06-22/README.md)
+- Latest archive folder: [2026-06-23](./archive/2026-06-23/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-23 | Trading Daily | VIX spike and yield-driven risk-off dominated overnight, but the HSTECH-over-HSCEI tilt and FXI divergence offer a... | 87.1/100 | [Report](archive/2026-06-23/README.md) | [Dashboard](archive/2026-06-23/charts/dashboard_2026-06-23.png) | [One Chart](archive/2026-06-23/charts/daily_one_chart_2026-06-23.png) | N/A | N/A |
 | 2026-06-22 | Weekend Event Watch | Weekend VIX compression (-11.06%) and US growth-style leadership (Nasdaq +2.48%) provide a constructive bridge for... | 81.4/100 | [Report](archive/2026-06-22/README.md) | [Dashboard](archive/2026-06-22/charts/dashboard_2026-06-22.png) | [One Chart](archive/2026-06-22/charts/daily_one_chart_2026-06-22.png) | N/A | N/A |
 | 2026-06-21 | Weekly Review | HSTECH-led intraday resilience versus offshore China proxies and elevated local short-selling define the week's mix... | 80.1/100 | [Report](archive/2026-06-21/README.md) | [Dashboard](archive/2026-06-21/charts/dashboard_2026-06-21.png) | [One Chart](archive/2026-06-21/charts/daily_one_chart_2026-06-21.png) | [Trend Pack](archive/2026-06-21/charts/hk_trend_pack_2026-06-21.png) | N/A |
 | 2026-06-20 | Trading Daily | Nasdaq's overnight rally failed to lift Hong Kong, producing a tentative HSTECH relative-lead against a Risk-Off ba... | 87.3/100 | [Report](archive/2026-06-20/README.md) | [Dashboard](archive/2026-06-20/charts/dashboard_2026-06-20.png) | [One Chart](archive/2026-06-20/charts/daily_one_chart_2026-06-20.png) | N/A | N/A |
