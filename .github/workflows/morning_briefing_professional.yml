@@ -2,8 +2,8 @@ name: Daily Morning Briefing (Professional)
 
 on:
   schedule:
-    # 23:00 UTC = 07:00 Hong Kong / Beijing time, leaving a 30-minute buffer before the 07:30 target.
-    - cron: "0 23 * * *"
+    # 21:00 UTC = 05:00 Hong Kong / Beijing time, leaving a 30-minute buffer before the 05:30 target.
+    - cron: "0 21 * * *"
   workflow_dispatch:
     inputs:
       date:
