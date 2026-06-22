@@ -1,0 +1,189 @@
+{
+  "fx_pairs": [
+    {
+      "available": true,
+      "net_pp": 0.019,
+      "range_pp": 0.061,
+      "high": {
+        "time": "2026-06-22 07:45",
+        "value": 0.051
+      },
+      "low": {
+        "time": "2026-06-22 06:20",
+        "value": -0.01
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-22 06:05",
+          "value": 0.0109,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-22 06:20",
+          "value": -0.0099,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-22 06:50",
+          "value": 0.0139,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "DXY",
+      "inverted": false
+    },
+    {
+      "available": true,
+      "net_pp": -0.015,
+      "range_pp": 0.015,
+      "high": {
+        "time": "2026-06-22 07:50",
+        "value": 0.0
+      },
+      "low": {
+        "time": "2026-06-22 07:55",
+        "value": -0.015
+      },
+      "turning_points": [],
+      "symbol": "USD/CNH",
+      "inverted": false
+    }
+  ],
+  "fx_composite": {
+    "available": true,
+    "net_pp": 0.002,
+    "range_pp": 0.061,
+    "high": {
+      "time": "2026-06-22 07:45",
+      "value": 0.051
+    },
+    "low": {
+      "time": "2026-06-22 06:20",
+      "value": -0.01
+    },
+    "turning_points": [
+      {
+        "time": "2026-06-22 06:05",
+        "value": 0.0109,
+        "direction": "peak"
+      },
+      {
+        "time": "2026-06-22 06:20",
+        "value": -0.0099,
+        "direction": "trough"
+      },
+      {
+        "time": "2026-06-22 06:50",
+        "value": 0.0139,
+        "direction": "trough"
+      }
+    ]
+  },
+  "assets": {
+    "Gold": {
+      "available": true,
+      "net_pp": -0.388,
+      "range_pp": 0.628,
+      "high": {
+        "time": "2026-06-22 07:05",
+        "value": 0.153
+      },
+      "low": {
+        "time": "2026-06-22 07:50",
+        "value": -0.474
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-22 06:10",
+          "value": -0.1222,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-22 06:25",
+          "value": -0.115,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-22 06:40",
+          "value": -0.0072,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "GOLD"
+    },
+    "Oil": {
+      "available": true,
+      "net_pp": 0.064,
+      "range_pp": 1.636,
+      "high": {
+        "time": "2026-06-22 07:35",
+        "value": 0.232
+      },
+      "low": {
+        "time": "2026-06-22 06:50",
+        "value": -1.404
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-22 06:05",
+          "value": 0.1803,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-22 06:20",
+          "value": 0.0902,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-22 06:50",
+          "value": -1.4041,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "WTI"
+    },
+    "Bitcoin": {
+      "available": true,
+      "net_pp": -0.064,
+      "range_pp": 0.929,
+      "high": {
+        "time": "2026-06-21 12:30",
+        "value": 0.434
+      },
+      "low": {
+        "time": "2026-06-21 16:35",
+        "value": -0.495
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-21 08:10",
+          "value": 0.0074,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-21 08:25",
+          "value": 0.0105,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-21 08:40",
+          "value": 0.0338,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "BTC"
+    }
+  },
+  "divergence": {
+    "best_asset": "Oil",
+    "best_net_pp": 0.064,
+    "worst_asset": "Gold",
+    "worst_net_pp": -0.388,
+    "spread_pp": 0.452
+  },
+  "correlations": {
+    "Gold_Oil": -0.353,
+    "Gold_Bitcoin": null,
+    "Oil_Bitcoin": null
+  }
+}
