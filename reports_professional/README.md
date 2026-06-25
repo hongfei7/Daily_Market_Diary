@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-06-25](./archive/2026-06-25/README.md)
+- Latest archive folder: [2026-06-26](./archive/2026-06-26/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-26 | Trading Daily | HSTECH's +1.99% growth leadership looked constructive in the session, but the HK$8.9bn Southbound outflow, FXI's -2... | 81.2/100 | [Report](archive/2026-06-26/README.md) | [Dashboard](archive/2026-06-26/charts/dashboard_2026-06-26.png) | [One Chart](archive/2026-06-26/charts/daily_one_chart_2026-06-26.png) | N/A | N/A |
 | 2026-06-25 | Trading Daily | Risk-off overnight with elevated HK short-selling (22%) and tech underperformance leaves the open defensive; local... | 92.1/100 | [Report](archive/2026-06-25/README.md) | [Dashboard](archive/2026-06-25/charts/dashboard_2026-06-25.png) | [One Chart](archive/2026-06-25/charts/daily_one_chart_2026-06-25.png) | N/A | N/A |
 | 2026-06-24 | Trading Daily | Elevated VIX, higher US yields, and weak 618 data deepened the risk-off backdrop, with HSTECH down 1.06% and short-... | 85.0/100 | [Report](archive/2026-06-24/README.md) | [Dashboard](archive/2026-06-24/charts/dashboard_2026-06-24.png) | [One Chart](archive/2026-06-24/charts/daily_one_chart_2026-06-24.png) | N/A | N/A |
 | 2026-06-23 | Trading Daily | VIX spike and yield-driven risk-off dominated overnight, but the HSTECH-over-HSCEI tilt and FXI divergence offer a... | 87.1/100 | [Report](archive/2026-06-23/README.md) | [Dashboard](archive/2026-06-23/charts/dashboard_2026-06-23.png) | [One Chart](archive/2026-06-23/charts/daily_one_chart_2026-06-23.png) | N/A | N/A |
