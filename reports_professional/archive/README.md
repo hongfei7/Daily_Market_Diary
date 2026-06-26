@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-27 | Trading Daily | A softer dollar and lower yields cushion the Intel-led tech drag, but elevated short-selling and southbound outflow... | 85.0/100 | [Report](2026-06-27/README.md) | [Dashboard](2026-06-27/charts/dashboard_2026-06-27.png) | [One Chart](2026-06-27/charts/daily_one_chart_2026-06-27.png) | N/A | N/A |
 | 2026-06-26 | Trading Daily | HSTECH's +1.99% growth leadership looked constructive in the session, but the HK$8.9bn Southbound outflow, FXI's -2... | 81.2/100 | [Report](2026-06-26/README.md) | [Dashboard](2026-06-26/charts/dashboard_2026-06-26.png) | [One Chart](2026-06-26/charts/daily_one_chart_2026-06-26.png) | N/A | N/A |
 | 2026-06-25 | Trading Daily | Risk-off overnight with elevated HK short-selling (22%) and tech underperformance leaves the open defensive; local... | 92.1/100 | [Report](2026-06-25/README.md) | [Dashboard](2026-06-25/charts/dashboard_2026-06-25.png) | [One Chart](2026-06-25/charts/daily_one_chart_2026-06-25.png) | N/A | N/A |
 | 2026-06-24 | Trading Daily | Elevated VIX, higher US yields, and weak 618 data deepened the risk-off backdrop, with HSTECH down 1.06% and short-... | 85.0/100 | [Report](2026-06-24/README.md) | [Dashboard](2026-06-24/charts/dashboard_2026-06-24.png) | [One Chart](2026-06-24/charts/daily_one_chart_2026-06-24.png) | N/A | N/A |
