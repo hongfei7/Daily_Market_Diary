@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-06-29](./archive/2026-06-29/README.md)
+- Latest archive folder: [2026-06-30](./archive/2026-06-30/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-06-30 | Trading Daily | Overnight Risk-On signals from US growth-style leadership and stable offshore China proxies contrast with Hong Kong... | 87.4/100 | [Report](archive/2026-06-30/README.md) | [Dashboard](archive/2026-06-30/charts/dashboard_2026-06-30.png) | [One Chart](archive/2026-06-30/charts/daily_one_chart_2026-06-30.png) | N/A | N/A |
 | 2026-06-29 | Weekend Event Watch | Risk-off backdrop with gold outperforming oil and a hot US CPI print sets a cautious weekend tone for Hong Kong's M... | 86.2/100 | [Report](archive/2026-06-29/README.md) | [Dashboard](archive/2026-06-29/charts/dashboard_2026-06-29.png) | [One Chart](archive/2026-06-29/charts/daily_one_chart_2026-06-29.png) | N/A | N/A |
 | 2026-06-28 | Weekly Review | Hong Kong closed a risk-off week led by state-owned H-shares with HSTECH underperforming by 2pp, short-selling elev... | 85.3/100 | [Report](archive/2026-06-28/README.md) | [Dashboard](archive/2026-06-28/charts/dashboard_2026-06-28.png) | [One Chart](archive/2026-06-28/charts/daily_one_chart_2026-06-28.png) | [Trend Pack](archive/2026-06-28/charts/hk_trend_pack_2026-06-28.png) | N/A |
 | 2026-06-27 | Trading Daily | A softer dollar and lower yields cushion the Intel-led tech drag, but elevated short-selling and southbound outflow... | 85.0/100 | [Report](archive/2026-06-27/README.md) | [Dashboard](archive/2026-06-27/charts/dashboard_2026-06-27.png) | [One Chart](archive/2026-06-27/charts/daily_one_chart_2026-06-27.png) | N/A | N/A |
