@@ -1,0 +1,301 @@
+{
+  "fx_pairs": [
+    {
+      "available": true,
+      "net_pp": -0.142,
+      "range_pp": 0.349,
+      "high": {
+        "time": "2026-06-30 19:35",
+        "value": 0.108
+      },
+      "low": {
+        "time": "2026-06-30 22:55",
+        "value": -0.242
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-30 12:20",
+          "value": 0.0148,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 12:35",
+          "value": -0.002,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-30 12:50",
+          "value": 0.0079,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "DXY",
+      "inverted": false
+    },
+    {
+      "available": true,
+      "net_pp": 0.41,
+      "range_pp": 0.445,
+      "high": {
+        "time": "2026-07-01 00:15",
+        "value": 0.443
+      },
+      "low": {
+        "time": "2026-06-30 08:15",
+        "value": -0.001
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-30 08:05",
+          "value": 0.008,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 08:30",
+          "value": 0.0167,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 08:50",
+          "value": 0.2452,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "USD/JPY",
+      "inverted": false
+    },
+    {
+      "available": true,
+      "net_pp": -0.023,
+      "range_pp": 0.433,
+      "high": {
+        "time": "2026-06-30 13:55",
+        "value": 0.307
+      },
+      "low": {
+        "time": "2026-06-30 22:55",
+        "value": -0.126
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-30 08:50",
+          "value": 0.0457,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 09:10",
+          "value": 0.1027,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 09:55",
+          "value": 0.1255,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "EUR/USD",
+      "inverted": true
+    },
+    {
+      "available": true,
+      "net_pp": -0.067,
+      "range_pp": 0.126,
+      "high": {
+        "time": "2026-06-30 12:55",
+        "value": 0.0
+      },
+      "low": {
+        "time": "2026-06-30 15:35",
+        "value": -0.126
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-30 14:50",
+          "value": -0.0518,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 15:55",
+          "value": -0.0887,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 16:50",
+          "value": -0.0666,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "USD/CNH",
+      "inverted": false
+    },
+    {
+      "available": true,
+      "net_pp": 0.02,
+      "range_pp": 0.037,
+      "high": {
+        "time": "2026-06-30 09:55",
+        "value": 0.037
+      },
+      "low": {
+        "time": "2026-06-30 08:00",
+        "value": 0.0
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-30 08:15",
+          "value": 0.014,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 08:30",
+          "value": 0.008,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-30 08:50",
+          "value": 0.0134,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "USD/HKD",
+      "inverted": false
+    }
+  ],
+  "fx_composite": {
+    "available": true,
+    "net_pp": 0.136,
+    "range_pp": 0.152,
+    "high": {
+      "time": "2026-07-01 06:10",
+      "value": 0.136
+    },
+    "low": {
+      "time": "2026-06-30 22:55",
+      "value": -0.017
+    },
+    "turning_points": [
+      {
+        "time": "2026-06-30 08:30",
+        "value": 0.0197,
+        "direction": "peak"
+      },
+      {
+        "time": "2026-06-30 08:50",
+        "value": 0.1014,
+        "direction": "peak"
+      },
+      {
+        "time": "2026-06-30 09:10",
+        "value": 0.108,
+        "direction": "peak"
+      }
+    ]
+  },
+  "assets": {
+    "Gold": {
+      "available": true,
+      "net_pp": 1.074,
+      "range_pp": 2.389,
+      "high": {
+        "time": "2026-06-30 22:20",
+        "value": 2.321
+      },
+      "low": {
+        "time": "2026-06-30 12:05",
+        "value": -0.068
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-30 12:05",
+          "value": -0.0678,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-30 12:30",
+          "value": 0.6199,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 12:45",
+          "value": 0.4517,
+          "direction": "peak"
+        }
+      ],
+      "symbol": "GOLD"
+    },
+    "Oil": {
+      "available": true,
+      "net_pp": -0.597,
+      "range_pp": 3.153,
+      "high": {
+        "time": "2026-06-30 21:10",
+        "value": 1.534
+      },
+      "low": {
+        "time": "2026-07-01 02:20",
+        "value": -1.619
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-30 12:05",
+          "value": 0.0426,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 12:40",
+          "value": -0.2415,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-30 13:05",
+          "value": -0.5539,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "WTI"
+    },
+    "Bitcoin": {
+      "available": true,
+      "net_pp": -2.555,
+      "range_pp": 3.285,
+      "high": {
+        "time": "2026-06-30 08:00",
+        "value": 0.0
+      },
+      "low": {
+        "time": "2026-07-01 00:25",
+        "value": -3.285
+      },
+      "turning_points": [
+        {
+          "time": "2026-06-30 08:35",
+          "value": -0.8968,
+          "direction": "trough"
+        },
+        {
+          "time": "2026-06-30 08:50",
+          "value": -0.6725,
+          "direction": "peak"
+        },
+        {
+          "time": "2026-06-30 09:05",
+          "value": -0.7799,
+          "direction": "trough"
+        }
+      ],
+      "symbol": "BTC"
+    }
+  },
+  "divergence": {
+    "best_asset": "Gold",
+    "best_net_pp": 1.074,
+    "worst_asset": "Bitcoin",
+    "worst_net_pp": -2.555,
+    "spread_pp": 3.629
+  },
+  "correlations": {
+    "Gold_Oil": 0.089,
+    "Gold_Bitcoin": -0.4,
+    "Oil_Bitcoin": 0.301
+  }
+}
