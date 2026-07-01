@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-07-01](./archive/2026-07-01/README.md)
+- Latest archive folder: [2026-07-02](./archive/2026-07-02/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-02 | Trading Daily | HSTECH and FXI bucked the higher-yield, lower-Nasdaq overnight with a 1.9% rise, but elevated short-selling and thi... | 86.4/100 | [Report](archive/2026-07-02/README.md) | [Dashboard](archive/2026-07-02/charts/dashboard_2026-07-02.png) | [One Chart](archive/2026-07-02/charts/daily_one_chart_2026-07-02.png) | N/A | N/A |
 | 2026-07-01 | Trading Daily | Risk-On conditions supported Hong Kong growth leadership on June 30, but the +3.06% HSTECH surge arrived alongside... | 87.4/100 | [Report](archive/2026-07-01/README.md) | [Dashboard](archive/2026-07-01/charts/dashboard_2026-07-01.png) | [One Chart](archive/2026-07-01/charts/daily_one_chart_2026-07-01.png) | N/A | N/A |
 | 2026-06-30 | Trading Daily | Overnight Risk-On signals from US growth-style leadership and stable offshore China proxies contrast with Hong Kong... | 87.4/100 | [Report](archive/2026-06-30/README.md) | [Dashboard](archive/2026-06-30/charts/dashboard_2026-06-30.png) | [One Chart](archive/2026-06-30/charts/daily_one_chart_2026-06-30.png) | N/A | N/A |
 | 2026-06-29 | Weekend Event Watch | Risk-off backdrop with gold outperforming oil and a hot US CPI print sets a cautious weekend tone for Hong Kong's M... | 86.2/100 | [Report](archive/2026-06-29/README.md) | [Dashboard](archive/2026-06-29/charts/dashboard_2026-06-29.png) | [One Chart](archive/2026-06-29/charts/daily_one_chart_2026-06-29.png) | N/A | N/A |
