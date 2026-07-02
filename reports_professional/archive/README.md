@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-03 | Trading Daily | A Risk-Off overnight with higher yields and a softer dollar leaves Hong Kong opening under pressure, but elevated s... | 87.5/100 | [Report](2026-07-03/README.md) | [Dashboard](2026-07-03/charts/dashboard_2026-07-03.png) | [One Chart](2026-07-03/charts/daily_one_chart_2026-07-03.png) | N/A | N/A |
 | 2026-07-02 | Trading Daily | HSTECH and FXI bucked the higher-yield, lower-Nasdaq overnight with a 1.9% rise, but elevated short-selling and thi... | 86.4/100 | [Report](2026-07-02/README.md) | [Dashboard](2026-07-02/charts/dashboard_2026-07-02.png) | [One Chart](2026-07-02/charts/daily_one_chart_2026-07-02.png) | N/A | N/A |
 | 2026-07-01 | Trading Daily | Risk-On conditions supported Hong Kong growth leadership on June 30, but the +3.06% HSTECH surge arrived alongside... | 87.4/100 | [Report](2026-07-01/README.md) | [Dashboard](2026-07-01/charts/dashboard_2026-07-01.png) | [One Chart](2026-07-01/charts/daily_one_chart_2026-07-01.png) | N/A | N/A |
 | 2026-06-30 | Trading Daily | Overnight Risk-On signals from US growth-style leadership and stable offshore China proxies contrast with Hong Kong... | 87.4/100 | [Report](2026-06-30/README.md) | [Dashboard](2026-06-30/charts/dashboard_2026-06-30.png) | [One Chart](2026-06-30/charts/daily_one_chart_2026-06-30.png) | N/A | N/A |
