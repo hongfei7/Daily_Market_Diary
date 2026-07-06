@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-07-06](./archive/2026-07-06/README.md)
+- Latest archive folder: [2026-07-07](./archive/2026-07-07/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-07 | Trading Daily | Risk-On backdrop with Nasdaq growth leadership and a 22% short-selling ratio sets a constructive but flow-confirmat... | 84.9/100 | [Report](archive/2026-07-07/README.md) | [Dashboard](archive/2026-07-07/charts/dashboard_2026-07-07.png) | [One Chart](archive/2026-07-07/charts/daily_one_chart_2026-07-07.png) | N/A | N/A |
 | 2026-07-06 | Weekend Event Watch | A softer dollar and lower volatility keep the Risk-On bridge intact, turning Monday's focus to corporate catalysts,... | 85.0/100 | [Report](archive/2026-07-06/README.md) | [Dashboard](archive/2026-07-06/charts/dashboard_2026-07-06.png) | [One Chart](archive/2026-07-06/charts/daily_one_chart_2026-07-06.png) | N/A | N/A |
 | 2026-07-05 | Weekly Review | Hong Kong local indices outperformed a Risk-On week but without FXI cross-confirmation or southbound flow support,... | 87.4/100 | [Report](archive/2026-07-05/README.md) | [Dashboard](archive/2026-07-05/charts/dashboard_2026-07-05.png) | [One Chart](archive/2026-07-05/charts/daily_one_chart_2026-07-05.png) | [Trend Pack](archive/2026-07-05/charts/hk_trend_pack_2026-07-05.png) | N/A |
 | 2026-07-04 | Trading Daily | A hot US June CPI release over the weekend breaks the earlier neutral backdrop and raises the bar for the Monday op... | 83.7/100 | [Report](archive/2026-07-04/README.md) | [Dashboard](archive/2026-07-04/charts/dashboard_2026-07-04.png) | [One Chart](archive/2026-07-04/charts/daily_one_chart_2026-07-04.png) | N/A | N/A |
