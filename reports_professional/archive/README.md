@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-09 | Trading Daily | Overnight Risk-Off conditions, with higher yields and oil strength, leave Hong Kong facing a mixed open: FXI outper... | 87.4/100 | [Report](2026-07-09/README.md) | [Dashboard](2026-07-09/charts/dashboard_2026-07-09.png) | [One Chart](2026-07-09/charts/daily_one_chart_2026-07-09.png) | N/A | N/A |
 | 2026-07-08 | Trading Daily | Risk-Off overnight setup (Nasdaq -1.77%, 10Y +0.98%, VIX 16.13) and a 21% short-selling ratio argue for a soft Hong... | 88.7/100 | [Report](2026-07-08/README.md) | [Dashboard](2026-07-08/charts/dashboard_2026-07-08.png) | [One Chart](2026-07-08/charts/daily_one_chart_2026-07-08.png) | N/A | N/A |
 | 2026-07-07 | Trading Daily | Risk-On backdrop with Nasdaq growth leadership and a 22% short-selling ratio sets a constructive but flow-confirmat... | 84.9/100 | [Report](2026-07-07/README.md) | [Dashboard](2026-07-07/charts/dashboard_2026-07-07.png) | [One Chart](2026-07-07/charts/daily_one_chart_2026-07-07.png) | N/A | N/A |
 | 2026-07-06 | Weekend Event Watch | A softer dollar and lower volatility keep the Risk-On bridge intact, turning Monday's focus to corporate catalysts,... | 85.0/100 | [Report](2026-07-06/README.md) | [Dashboard](2026-07-06/charts/dashboard_2026-07-06.png) | [One Chart](2026-07-06/charts/daily_one_chart_2026-07-06.png) | N/A | N/A |
