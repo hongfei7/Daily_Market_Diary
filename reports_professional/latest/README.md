@@ -2,25 +2,25 @@
 
 This is the stable GitHub entry for the newest archived report.
 
-- Report date: `2026-07-09`
+- Report date: `2026-07-10`
 - Report mode: `Trading Daily`
-- Quality: `87.4/100`
-- One-line pulse: Overnight Risk-Off conditions, with higher yields and oil strength, leave Hong Kong facing a mixed open: FXI outper...
-- Archived folder: [archive/2026-07-09](../archive/2026-07-09/README.md)
-- Direct markdown file: [morning_briefing.md](../archive/2026-07-09/morning_briefing.md)
-- Dashboard: [Open image](../archive/2026-07-09/charts/dashboard_2026-07-09.png)
-- Daily One Chart: [Open image](../archive/2026-07-09/charts/daily_one_chart_2026-07-09.png)
+- Quality: `90.0/100`
+- One-line pulse: The overnight risk-on setup - lower yields, declining VIX, and Nasdaq strength - collides with a hotter US CPI prin...
+- Archived folder: [archive/2026-07-10](../archive/2026-07-10/README.md)
+- Direct markdown file: [morning_briefing.md](../archive/2026-07-10/morning_briefing.md)
+- Dashboard: [Open image](../archive/2026-07-10/charts/dashboard_2026-07-10.png)
+- Daily One Chart: [Open image](../archive/2026-07-10/charts/daily_one_chart_2026-07-10.png)
 - Trend Pack: N/A
 - Raw bundle: N/A
 
 
 ## Dashboard Preview
 
-![Dashboard](../archive/2026-07-09/charts/dashboard_2026-07-09.png)
+![Dashboard](../archive/2026-07-10/charts/dashboard_2026-07-10.png)
 
 
 ## Quick start
 
-1. Open the archived landing page for navigation and context: [archive/2026-07-09/README.md](../archive/2026-07-09/README.md)
-2. Open [morning_briefing.md](../archive/2026-07-09/morning_briefing.md) if you want the full markdown report.
+1. Open the archived landing page for navigation and context: [archive/2026-07-10/README.md](../archive/2026-07-10/README.md)
+2. Open [morning_briefing.md](../archive/2026-07-10/morning_briefing.md) if you want the full markdown report.
 3. Use the chart and bundle links above when you need the production assets behind the report.
