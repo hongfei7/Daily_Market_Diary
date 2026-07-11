@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-07-11](./archive/2026-07-11/README.md)
+- Latest archive folder: [2026-07-12](./archive/2026-07-12/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-12 | Weekly Review | The week closed with Risk-On intact but local-flow quality uncertain - VIX compression and Bitcoin outperforming Oi... | 84.1/100 | [Report](archive/2026-07-12/README.md) | [Dashboard](archive/2026-07-12/charts/dashboard_2026-07-12.png) | [One Chart](archive/2026-07-12/charts/daily_one_chart_2026-07-12.png) | [Trend Pack](archive/2026-07-12/charts/hk_trend_pack_2026-07-12.png) | N/A |
 | 2026-07-11 | Trading Daily | Overnight CPI landed in line but sustained USD strength and higher yields kept the backdrop neutral and rates-sensi... | 88.7/100 | [Report](archive/2026-07-11/README.md) | [Dashboard](archive/2026-07-11/charts/dashboard_2026-07-11.png) | [One Chart](archive/2026-07-11/charts/daily_one_chart_2026-07-11.png) | N/A | N/A |
 | 2026-07-10 | Trading Daily | The overnight risk-on setup - lower yields, declining VIX, and Nasdaq strength - collides with a hotter US CPI prin... | 90.0/100 | [Report](archive/2026-07-10/README.md) | [Dashboard](archive/2026-07-10/charts/dashboard_2026-07-10.png) | [One Chart](archive/2026-07-10/charts/daily_one_chart_2026-07-10.png) | N/A | N/A |
 | 2026-07-09 | Trading Daily | Overnight Risk-Off conditions, with higher yields and oil strength, leave Hong Kong facing a mixed open: FXI outper... | 87.4/100 | [Report](archive/2026-07-09/README.md) | [Dashboard](archive/2026-07-09/charts/dashboard_2026-07-09.png) | [One Chart](archive/2026-07-09/charts/daily_one_chart_2026-07-09.png) | N/A | N/A |
