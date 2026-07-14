@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-07-14](./archive/2026-07-14/README.md)
+- Latest archive folder: [2026-07-15](./archive/2026-07-15/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-15 | Trading Daily | Risk-On conditions with a softer dollar and lower yields created a constructive cross-asset backdrop on July 14, ye... | 87.1/100 | [Report](archive/2026-07-15/README.md) | [Dashboard](archive/2026-07-15/charts/dashboard_2026-07-15.png) | [One Chart](archive/2026-07-15/charts/daily_one_chart_2026-07-15.png) | N/A | N/A |
 | 2026-07-14 | Trading Daily | The overnight risk-off shock from a VIX spike, higher US yields, and a hawkish Fed tilt leaves Hong Kong's open con... | 86.2/100 | [Report](archive/2026-07-14/README.md) | [Dashboard](archive/2026-07-14/charts/dashboard_2026-07-14.png) | [One Chart](archive/2026-07-14/charts/daily_one_chart_2026-07-14.png) | N/A | N/A |
 | 2026-07-13 | Weekend Event Watch | Weekend Risk-On signals are complicated by the US CPI beat driving a higher-rate repricing, leaving Monday's Hong K... | 86.3/100 | [Report](archive/2026-07-13/README.md) | [Dashboard](archive/2026-07-13/charts/dashboard_2026-07-13.png) | [One Chart](archive/2026-07-13/charts/daily_one_chart_2026-07-13.png) | N/A | N/A |
 | 2026-07-12 | Weekly Review | The week closed with Risk-On intact but local-flow quality uncertain - VIX compression and Bitcoin outperforming Oi... | 84.1/100 | [Report](archive/2026-07-12/README.md) | [Dashboard](archive/2026-07-12/charts/dashboard_2026-07-12.png) | [One Chart](archive/2026-07-12/charts/daily_one_chart_2026-07-12.png) | [Trend Pack](archive/2026-07-12/charts/hk_trend_pack_2026-07-12.png) | N/A |
