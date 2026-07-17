@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-18 | Trading Daily | Overnight US equity weakness and a VIX spike contrast with Hong Kong's prior-session HSTECH-led outperformance, but... | 90.0/100 | [Report](2026-07-18/README.md) | [Dashboard](2026-07-18/charts/dashboard_2026-07-18.png) | [One Chart](2026-07-18/charts/daily_one_chart_2026-07-18.png) | N/A | N/A |
 | 2026-07-17 | Trading Daily | Hong Kong staged a notable intraday divergence - HSI +1.4% against a Nasdaq -1.62% - but the 18% short-selling rati... | 83.7/100 | [Report](2026-07-17/README.md) | [Dashboard](2026-07-17/charts/dashboard_2026-07-17.png) | [One Chart](2026-07-17/charts/daily_one_chart_2026-07-17.png) | N/A | N/A |
 | 2026-07-16 | Trading Daily | A Risk-On overnight backdrop with softer yields and a declining dollar supports Hong Kong, but the FXI-led offshore... | 82.1/100 | [Report](2026-07-16/README.md) | [Dashboard](2026-07-16/charts/dashboard_2026-07-16.png) | [One Chart](2026-07-16/charts/daily_one_chart_2026-07-16.png) | N/A | N/A |
 | 2026-07-15 | Trading Daily | Risk-On conditions with a softer dollar and lower yields created a constructive cross-asset backdrop on July 14, ye... | 87.1/100 | [Report](2026-07-15/README.md) | [Dashboard](2026-07-15/charts/dashboard_2026-07-15.png) | [One Chart](2026-07-15/charts/daily_one_chart_2026-07-15.png) | N/A | N/A |
