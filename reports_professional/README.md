@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-07-19](./archive/2026-07-19/README.md)
+- Latest archive folder: [2026-07-20](./archive/2026-07-20/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-20 | Weekend Event Watch | Weekend risk-off signals were led by a 12.2% VIX spike and hawkish Fed commentary, pointing to a defensive open for... | 87.5/100 | [Report](archive/2026-07-20/README.md) | [Dashboard](archive/2026-07-20/charts/dashboard_2026-07-20.png) | [One Chart](archive/2026-07-20/charts/daily_one_chart_2026-07-20.png) | N/A | N/A |
 | 2026-07-19 | Weekly Review | The completed Risk-Off week left H-share leadership as the only constructive signal, but elevated short-selling and... | 81.6/100 | [Report](archive/2026-07-19/README.md) | [Dashboard](archive/2026-07-19/charts/dashboard_2026-07-19.png) | [One Chart](archive/2026-07-19/charts/daily_one_chart_2026-07-19.png) | [Trend Pack](archive/2026-07-19/charts/hk_trend_pack_2026-07-19.png) | N/A |
 | 2026-07-18 | Trading Daily | Overnight US equity weakness and a VIX spike contrast with Hong Kong's prior-session HSTECH-led outperformance, but... | 90.0/100 | [Report](archive/2026-07-18/README.md) | [Dashboard](archive/2026-07-18/charts/dashboard_2026-07-18.png) | [One Chart](archive/2026-07-18/charts/daily_one_chart_2026-07-18.png) | N/A | N/A |
 | 2026-07-17 | Trading Daily | Hong Kong staged a notable intraday divergence - HSI +1.4% against a Nasdaq -1.62% - but the 18% short-selling rati... | 83.7/100 | [Report](archive/2026-07-17/README.md) | [Dashboard](archive/2026-07-17/charts/dashboard_2026-07-17.png) | [One Chart](archive/2026-07-17/charts/daily_one_chart_2026-07-17.png) | N/A | N/A |
