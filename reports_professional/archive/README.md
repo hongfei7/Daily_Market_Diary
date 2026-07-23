@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-24 | Trading Daily | A hotter-than-expected US CPI cemented Risk-Off into the close, with elevated short-selling (19%) and thin turnover... | 83.3/100 | [Report](2026-07-24/README.md) | [Dashboard](2026-07-24/charts/dashboard_2026-07-24.png) | [One Chart](2026-07-24/charts/daily_one_chart_2026-07-24.png) | N/A | N/A |
 | 2026-07-23 | Trading Daily | HSTECH-led style rotation on thin volume and elevated short-selling lacks clean flow confirmation, leaving the Thur... | 87.4/100 | [Report](2026-07-23/README.md) | [Dashboard](2026-07-23/charts/dashboard_2026-07-23.png) | [One Chart](2026-07-23/charts/daily_one_chart_2026-07-23.png) | N/A | N/A |
 | 2026-07-22 | Trading Daily | Nasdaq gains and a VIX collapse set a constructive tone, but light Hong Kong turnover and FXI underperformance mean... | 90.0/100 | [Report](2026-07-22/README.md) | [Dashboard](2026-07-22/charts/dashboard_2026-07-22.png) | [One Chart](2026-07-22/charts/daily_one_chart_2026-07-22.png) | N/A | N/A |
 | 2026-07-21 | Trading Daily | Hot US CPI and a +1.26% rise in the 10Y yield reinforced the Risk-Off tone that drove HSTECH -4.51%, but FXI +2.67%... | 88.7/100 | [Report](2026-07-21/README.md) | [Dashboard](2026-07-21/charts/dashboard_2026-07-21.png) | [One Chart](2026-07-21/charts/daily_one_chart_2026-07-21.png) | N/A | N/A |
