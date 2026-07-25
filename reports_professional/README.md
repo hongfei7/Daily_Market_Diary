@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-07-25](./archive/2026-07-25/README.md)
+- Latest archive folder: [2026-07-26](./archive/2026-07-26/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-26 | Weekly Review | The week confirmed a Neutral backdrop with Gold outperforming Oil and lower yields supporting duration, but the com... | 84.0/100 | [Report](archive/2026-07-26/README.md) | [Dashboard](archive/2026-07-26/charts/dashboard_2026-07-26.png) | [One Chart](archive/2026-07-26/charts/daily_one_chart_2026-07-26.png) | [Trend Pack](archive/2026-07-26/charts/hk_trend_pack_2026-07-26.png) | N/A |
 | 2026-07-25 | Trading Daily | Lower US yields and a range‑bound dollar provided a supportive shell, but Nasdaq‑led tech weakness and elevated Hon... | 88.7/100 | [Report](archive/2026-07-25/README.md) | [Dashboard](archive/2026-07-25/charts/dashboard_2026-07-25.png) | [One Chart](archive/2026-07-25/charts/daily_one_chart_2026-07-25.png) | N/A | N/A |
 | 2026-07-24 | Trading Daily | A hotter-than-expected US CPI cemented Risk-Off into the close, with elevated short-selling (19%) and thin turnover... | 83.3/100 | [Report](archive/2026-07-24/README.md) | [Dashboard](archive/2026-07-24/charts/dashboard_2026-07-24.png) | [One Chart](archive/2026-07-24/charts/daily_one_chart_2026-07-24.png) | N/A | N/A |
 | 2026-07-23 | Trading Daily | HSTECH-led style rotation on thin volume and elevated short-selling lacks clean flow confirmation, leaving the Thur... | 87.4/100 | [Report](archive/2026-07-23/README.md) | [Dashboard](archive/2026-07-23/charts/dashboard_2026-07-23.png) | [One Chart](archive/2026-07-23/charts/daily_one_chart_2026-07-23.png) | N/A | N/A |

@@ -2,25 +2,25 @@
 
 This is the stable GitHub entry for the newest archived report.
 
-- Report date: `2026-07-25`
-- Report mode: `Trading Daily`
-- Quality: `88.7/100`
-- One-line pulse: Lower US yields and a range‑bound dollar provided a supportive shell, but Nasdaq‑led tech weakness and elevated Hon...
-- Archived folder: [archive/2026-07-25](../archive/2026-07-25/README.md)
-- Direct markdown file: [morning_briefing.md](../archive/2026-07-25/morning_briefing.md)
-- Dashboard: [Open image](../archive/2026-07-25/charts/dashboard_2026-07-25.png)
-- Daily One Chart: [Open image](../archive/2026-07-25/charts/daily_one_chart_2026-07-25.png)
-- Trend Pack: N/A
+- Report date: `2026-07-26`
+- Report mode: `Weekly Review`
+- Quality: `84.0/100`
+- One-line pulse: The week confirmed a Neutral backdrop with Gold outperforming Oil and lower yields supporting duration, but the com...
+- Archived folder: [archive/2026-07-26](../archive/2026-07-26/README.md)
+- Direct markdown file: [morning_briefing.md](../archive/2026-07-26/morning_briefing.md)
+- Dashboard: [Open image](../archive/2026-07-26/charts/dashboard_2026-07-26.png)
+- Daily One Chart: [Open image](../archive/2026-07-26/charts/daily_one_chart_2026-07-26.png)
+- Trend Pack: [Open image](../archive/2026-07-26/charts/hk_trend_pack_2026-07-26.png)
 - Raw bundle: N/A
 
 
 ## Dashboard Preview
 
-![Dashboard](../archive/2026-07-25/charts/dashboard_2026-07-25.png)
+![Dashboard](../archive/2026-07-26/charts/dashboard_2026-07-26.png)
 
 
 ## Quick start
 
-1. Open the archived landing page for navigation and context: [archive/2026-07-25/README.md](../archive/2026-07-25/README.md)
-2. Open [morning_briefing.md](../archive/2026-07-25/morning_briefing.md) if you want the full markdown report.
+1. Open the archived landing page for navigation and context: [archive/2026-07-26/README.md](../archive/2026-07-26/README.md)
+2. Open [morning_briefing.md](../archive/2026-07-26/morning_briefing.md) if you want the full markdown report.
 3. Use the chart and bundle links above when you need the production assets behind the report.
