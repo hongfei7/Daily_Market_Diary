@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-07-28](./archive/2026-07-28/README.md)
+- Latest archive folder: [2026-07-29](./archive/2026-07-29/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-29 | Trading Daily | A lower US yield and risk-on overnight backdrop provide a constructive starting tone, but Nasdaq weakness and Hong... | 85.0/100 | [Report](archive/2026-07-29/README.md) | [Dashboard](archive/2026-07-29/charts/dashboard_2026-07-29.png) | [One Chart](archive/2026-07-29/charts/daily_one_chart_2026-07-29.png) | N/A | N/A |
 | 2026-07-28 | Trading Daily | Hong Kong's completed session split along style lines - HSI +1.28% and HSCEI +1.23% on value/SOE rotation while HST... | 84.6/100 | [Report](archive/2026-07-28/README.md) | [Dashboard](archive/2026-07-28/charts/dashboard_2026-07-28.png) | [One Chart](archive/2026-07-28/charts/daily_one_chart_2026-07-28.png) | N/A | N/A |
 | 2026-07-27 | Weekend Event Watch | Weekend still-moving signals - lower oil, lower yields, and defensive gold demand - leave the Monday setup for Hong... | 86.2/100 | [Report](archive/2026-07-27/README.md) | [Dashboard](archive/2026-07-27/charts/dashboard_2026-07-27.png) | [One Chart](archive/2026-07-27/charts/daily_one_chart_2026-07-27.png) | N/A | N/A |
 | 2026-07-26 | Weekly Review | The week confirmed a Neutral backdrop with Gold outperforming Oil and lower yields supporting duration, but the com... | 84.0/100 | [Report](archive/2026-07-26/README.md) | [Dashboard](archive/2026-07-26/charts/dashboard_2026-07-26.png) | [One Chart](archive/2026-07-26/charts/daily_one_chart_2026-07-26.png) | [Trend Pack](archive/2026-07-26/charts/hk_trend_pack_2026-07-26.png) | N/A |
