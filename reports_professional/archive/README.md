@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-31 | Trading Daily | A strong US tech-led rally and softer dollar set a constructive backdrop for Hong Kong, but flat turnover, elevated... | 85.8/100 | [Report](2026-07-31/README.md) | [Dashboard](2026-07-31/charts/dashboard_2026-07-31.png) | [One Chart](2026-07-31/charts/daily_one_chart_2026-07-31.png) | N/A | N/A |
 | 2026-07-30 | Trading Daily | A softer USD and resilient offshore China proxies (FXI +1.32%) produced a constructive overnight backdrop, but a 13... | 90.8/100 | [Report](2026-07-30/README.md) | [Dashboard](2026-07-30/charts/dashboard_2026-07-30.png) | [One Chart](2026-07-30/charts/daily_one_chart_2026-07-30.png) | N/A | N/A |
 | 2026-07-29 | Trading Daily | A lower US yield and risk-on overnight backdrop provide a constructive starting tone, but Nasdaq weakness and Hong... | 85.0/100 | [Report](2026-07-29/README.md) | [Dashboard](2026-07-29/charts/dashboard_2026-07-29.png) | [One Chart](2026-07-29/charts/daily_one_chart_2026-07-29.png) | N/A | N/A |
 | 2026-07-28 | Trading Daily | Hong Kong's completed session split along style lines - HSI +1.28% and HSCEI +1.23% on value/SOE rotation while HST... | 84.6/100 | [Report](2026-07-28/README.md) | [Dashboard](2026-07-28/charts/dashboard_2026-07-28.png) | [One Chart](2026-07-28/charts/daily_one_chart_2026-07-28.png) | N/A | N/A |
