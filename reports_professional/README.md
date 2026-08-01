@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-08-01](./archive/2026-08-01/README.md)
+- Latest archive folder: [2026-08-02](./archive/2026-08-02/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -25,6 +25,7 @@ The same structure is used for daily trading reports, Sunday weekly reviews, wee
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-08-02 | Weekly Review | The week ended with a Risk-On US beta cushion but a hawkish rates impulse that left Hong Kong's SOE/H-share leaders... | 85.3/100 | [Report](archive/2026-08-02/README.md) | [Dashboard](archive/2026-08-02/charts/dashboard_2026-08-02.png) | [One Chart](archive/2026-08-02/charts/daily_one_chart_2026-08-02.png) | [Trend Pack](archive/2026-08-02/charts/hk_trend_pack_2026-08-02.png) | N/A |
 | 2026-08-01 | Trading Daily | Softer CPI and VIX compression supported global equities, but the 1.76% rise in the US 10-year yield kept pressure... | 87.4/100 | [Report](archive/2026-08-01/README.md) | [Dashboard](archive/2026-08-01/charts/dashboard_2026-08-01.png) | [One Chart](archive/2026-08-01/charts/daily_one_chart_2026-08-01.png) | N/A | N/A |
 | 2026-07-31 | Trading Daily | A strong US tech-led rally and softer dollar set a constructive backdrop for Hong Kong, but flat turnover, elevated... | 85.8/100 | [Report](archive/2026-07-31/README.md) | [Dashboard](archive/2026-07-31/charts/dashboard_2026-07-31.png) | [One Chart](archive/2026-07-31/charts/daily_one_chart_2026-07-31.png) | N/A | N/A |
 | 2026-07-30 | Trading Daily | A softer USD and resilient offshore China proxies (FXI +1.32%) produced a constructive overnight backdrop, but a 13... | 90.8/100 | [Report](archive/2026-07-30/README.md) | [Dashboard](archive/2026-07-30/charts/dashboard_2026-07-30.png) | [One Chart](archive/2026-07-30/charts/daily_one_chart_2026-07-30.png) | N/A | N/A |
