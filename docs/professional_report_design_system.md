@@ -11,20 +11,23 @@ The report is a decision brief, not a market-data catalogue. It should let a Hon
 
 ## Visual hierarchy
 
-The production report uses three recurring visuals and one conditional visual.
+The production report uses four recurring visual roles and one conditional visual.
 
 ### 1. Decision Dashboard — every run
 
-Use one four-panel page:
+Use one mobile-first, vertically stacked page:
 
 - Global regime: direction and estimated Hong Kong transmission, not just raw returns.
 - Hong Kong confirmation: turnover, funding, flow, short pressure, and A/H dispersion.
 - Concentration: the names or channels carrying the flow signal.
-- Catalyst ladder: only dated, sourced events that can change the view.
 
 Use a white background, dark navy rules, blue for supportive signals, amber for adverse signals, no gradients, minimal borders, direct labels, and a short decision sequence in the footer. Never mix percentage returns and basis-point moves on one axis.
 
-### 2. Daily One Chart — every run
+### 2. Catalyst & Event Radar — every run
+
+Keep event confidence explicit: confirmed date, bounded window, or undated monitor. Formal calendars lead; configured watchlist triggers provide a non-fabricated weekend fallback. Recent issuer disclosures are a separate backward-looking strip and only receive individual cards when they match the configured watchlist.
+
+### 3. Daily One Chart — every run
 
 Select exactly one decision-relevant relationship. Priority order:
 
@@ -35,11 +38,11 @@ Select exactly one decision-relevant relationship. Priority order:
 
 The right column must state the takeaway, evidence, confirmation, and invalidation. It must not repeat the dashboard.
 
-### 3. Source-aware signal table — every run
+### 4. Source-aware signal table — every run
 
 Keep nine high-signal rows in the five-minute scan. Each row contains the last value and move, interpretation, and a confirmation or invalidation test. Indicator definitions and lower-priority monitors belong in the source bundle or appendix.
 
-### 4. Hong Kong Trend Pack — weekly runs only
+### 5. Hong Kong Trend Pack — weekly runs only
 
 Use four shared-horizon panels: Southbound persistence, HIBOR/Aggregate Balance, HSI/HSCEI/3033.HK ETF-proxy leadership, and A/H dispersion. Daily reports should not include it because one-day evidence cannot support the same conclusions.
 
@@ -51,18 +54,18 @@ Use four shared-horizon panels: Southbound persistence, HIBOR/Aggregate Balance,
 - One Hong Kong implication.
 - One confirmation test.
 - One invalidation condition.
-- Decision Dashboard.
+- Decision Dashboard and Catalyst & Event Radar.
 - Nine cross-asset signals, up to six Hong Kong local checks, four risk components, and four checklist items.
 
 Do not repeat a number already visible in the dashboard unless the sentence adds a new mechanism or decision test.
 
 ### Layer 2 — causal deep read
 
-Target 25–30 minutes and keep the complete report near 2,200–3,200 English words. The runtime audit warns outside that range and blocks reports above 4,200 words.
+Target 25–30 minutes and keep the complete report near 3,000–4,500 English words including traceability material. The runtime audit blocks reports above 5,200 words.
 
 Spend detail on cross-asset transmission, local-flow confirmation or contradiction, dated macro/company catalysts, disconfirming evidence, scenario paths, and sourced company implications.
 
-Compress or omit generic indicator definitions, flat moves with no new information, repeated price recaps, undated watchlist catalysts, and headlines without a Hong Kong transmission channel.
+Compress or omit generic indicator definitions, flat moves with no new information, repeated price recaps, and headlines without a Hong Kong transmission channel. Undated watchlist catalysts may appear only as explicitly labelled monitoring triggers, never as scheduled events.
 
 ### Layer 3 — analyst thinking
 

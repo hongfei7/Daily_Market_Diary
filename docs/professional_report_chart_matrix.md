@@ -2,16 +2,17 @@
 
 ## Design principle
 
-For a Hong Kong sell-side morning note, charts should answer four questions quickly:
+For a Hong Kong sell-side morning note, charts should answer five questions quickly:
 
 1. What changed in the global regime overnight?
 2. Did Hong Kong local flow and funding confirm or contradict that regime?
-3. What is the single highest-signal chart worth deeper attention today?
-4. Which tables are needed for traceability rather than decoration?
+3. Which dated events or undated research triggers can change the view next?
+4. What is the single highest-signal chart worth deeper attention today?
+5. Which tables are needed for traceability rather than decoration?
 
 ## Visual dashboard
 
-The visual dashboard should be a four-panel decision page rather than a text wall:
+The mobile-first visual dashboard is a three-stage decision page rather than a text wall. The stages are stacked vertically so the image remains legible in the WeCom HTML attachment:
 
 1. Global regime board
    - Cross-asset 1D moves for S&P 500, Nasdaq 100, HSI, HSTECH, FXI, US 10Y, DXY, WTI, Gold, VIX
@@ -32,12 +33,18 @@ The visual dashboard should be a four-panel decision page rather than a text wal
    - Fallback to attribution ranking
    - Purpose: identify whether the move is broad or concentrated
 
-4. Catalyst ladder
-   - Today's macro releases
-   - Earnings / policy / conference catalysts
-   - Purpose: convert the note into a work plan
-
 Risk score, Hong Kong style, data coverage, and report mode remain compact header fields. Coverage-name detail stays in the report so the visual does not become a text dashboard.
+
+## Catalyst & Event Radar
+
+Event timing has its own full-width visual instead of competing for one quarter of the dashboard:
+
+- `CONFIRMED`: an exact source-backed date is available.
+- `WINDOW`: the source provides a bounded timing window but not an exact date.
+- `MONITOR`: the research trigger matters but its date is unconfirmed.
+- Recent issuer read-through is backward-looking and only promoted when it matches the configured watchlist; broad unmatched HKEX filings are summarized as coverage, not displayed as pseudo-catalysts.
+
+The radar ranks materiality before proximity, never invents a date, and remains useful on weekends by falling back from formal calendars to clearly labelled watchlist monitors.
 
 ## Daily One Chart
 
@@ -106,6 +113,6 @@ The next chart upgrades worth building are:
 1. HSI / HSCEI / HSTECH breadth heatmap
 2. Sector rotation rank-change heatmap
 3. A/H premium change heatmap
-4. Earnings calendar timeline
+4. Confirmed earnings and policy timeline with surprise/consensus fields
 5. Southbound active-name concentration trend
 6. ETF shorting versus spot turnover divergence chart

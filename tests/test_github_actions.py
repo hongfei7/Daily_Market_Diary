@@ -65,6 +65,7 @@ def check_project_imports() -> bool:
         "professional.analytics_trackers",
         "professional.analytics_watchlist",
         "professional.attribution",
+        "professional.catalyst_radar",
         "professional.config",
         "professional.daily_one_chart",
         "professional.dashboard",

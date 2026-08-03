@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 REQUIRED_REPORT_SECTION_GROUPS = [
     ("Visual dashboard", ("## Visual Dashboard",)),
+    ("Catalyst event radar", ("![Catalyst & Event Radar]",)),
     ("Global asset dashboard", ("### 1.2 Global Asset Price Dashboard",)),
     (
         "Hong Kong quick check",
@@ -138,6 +139,7 @@ def audit_generated_run(
     report_path = root / f"{report_date}_morning_briefing.md"
     bundle_path = root / "raw" / f"{report_date}_bundle.json"
     dashboard_path = root / "charts" / f"dashboard_{report_date}.png"
+    catalyst_radar_path = root / "charts" / f"catalyst_radar_{report_date}.png"
     daily_chart_path = root / "charts" / f"daily_one_chart_{report_date}.png"
     email_preview_path = root / f"{report_date}_email_preview.html"
     wecom_preview_path = root / f"{report_date}_wecom_preview.md"
@@ -150,6 +152,7 @@ def audit_generated_run(
         ("report", report_path),
         ("bundle", bundle_path),
         ("dashboard", dashboard_path),
+        ("catalyst radar", catalyst_radar_path),
         ("daily chart", daily_chart_path),
     ]:
         if not path.exists():
@@ -320,6 +323,7 @@ def audit_generated_run(
             "report": str(report_path),
             "bundle": str(bundle_path),
             "dashboard": str(dashboard_path),
+            "catalyst_radar": str(catalyst_radar_path),
             "daily_chart": str(daily_chart_path),
             "email_preview": str(email_preview_path),
             "wecom_preview": str(wecom_preview_path),

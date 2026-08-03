@@ -40,6 +40,7 @@ from market_diary.modules.risk_radar import fetch_risk_data
 from market_diary.modules.sector_news import fetch_sector_data
 from market_diary.professional.analytics import build_professional_bundle
 from market_diary.professional.chart_appendix import render_chart_appendix
+from market_diary.professional.catalyst_radar import generate_catalyst_radar
 from market_diary.professional.config import load_professional_config
 from market_diary.professional.daily_one_chart import generate_daily_one_chart
 from market_diary.professional.dashboard import generate_dashboard
@@ -77,7 +78,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=str, default="", help="Override the output directory.")
     parser.add_argument("--config", type=str, default="", help="Optional JSON config path.")
     parser.add_argument("--skip-charts", action="store_true", help="Skip chart generation.")
-    parser.add_argument("--skip-dashboard", action="store_true", help="Skip dashboard image generation.")
+    parser.add_argument("--skip-dashboard", action="store_true", help="Skip the dashboard and companion Catalyst & Event Radar images.")
     parser.add_argument("--skip-daily-chart", action="store_true", help="Skip the dedicated Daily One Chart image.")
     parser.add_argument("--skip-trend-pack", action="store_true", help="Skip the Hong Kong Trend Pack image.")
     parser.add_argument("--no-llm", action="store_true", help="Disable the optional LLM overlay.")
@@ -620,6 +621,7 @@ def main() -> None:
     day_mode = (bundle.get("day_mode", {}) or {})
     skip_all_charts = bool(args.skip_charts)
     should_render_dashboard = not skip_all_charts and not args.skip_dashboard
+    should_render_catalyst_radar = should_render_dashboard
     should_render_daily_chart = not skip_all_charts and not args.skip_daily_chart
     should_render_trend_pack = (
         not skip_all_charts
@@ -720,6 +722,20 @@ def main() -> None:
         dashboard_name = generate_dashboard(bundle, os.path.join(chart_dir, f"dashboard_{output_label}.png"))
         dashboard_rel_path = f"charts/{dashboard_name}"
 
+    catalyst_radar_rel_path = ""
+    if should_render_catalyst_radar:
+        chart_dir = os.path.join(output_dir, "charts")
+        os.makedirs(chart_dir, exist_ok=True)
+        catalyst_radar_meta = generate_catalyst_radar(
+            bundle,
+            os.path.join(chart_dir, f"catalyst_radar_{output_label}.png"),
+        )
+        bundle["catalyst_radar"] = {
+            **catalyst_radar_meta,
+            "rel_path": f"charts/{catalyst_radar_meta['path']}",
+        }
+        catalyst_radar_rel_path = bundle["catalyst_radar"]["rel_path"]
+
     daily_chart_rel_path = ""
     if should_render_daily_chart:
         chart_dir = os.path.join(output_dir, "charts")
@@ -755,6 +771,7 @@ def main() -> None:
         else render_chart_appendix(
             bundle=bundle,
             dashboard_rel_path=dashboard_rel_path,
+            catalyst_radar_rel_path=catalyst_radar_rel_path,
             daily_chart_rel_path=daily_chart_rel_path,
             trend_pack_rel_path=trend_pack_rel_path,
         )
@@ -768,6 +785,7 @@ def main() -> None:
         bundle=bundle,
         charts_section=charts_section,
         dashboard_rel_path=dashboard_rel_path,
+        catalyst_radar_rel_path=catalyst_radar_rel_path,
         daily_chart_rel_path=daily_chart_rel_path,
         trend_pack_rel_path=trend_pack_rel_path,
     )
@@ -781,6 +799,8 @@ def main() -> None:
     print(f"Report: {output_file}")
     if dashboard_rel_path:
         print(f"Dashboard: {os.path.join(output_dir, dashboard_rel_path)}")
+    if catalyst_radar_rel_path:
+        print(f"Catalyst Radar: {os.path.join(output_dir, catalyst_radar_rel_path)}")
     if daily_chart_rel_path:
         print(f"Daily One Chart: {os.path.join(output_dir, daily_chart_rel_path)}")
     if trend_pack_rel_path:

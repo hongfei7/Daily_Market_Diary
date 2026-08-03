@@ -22,6 +22,7 @@ class ReportEntry:
     quality: str
     report_path: Path
     dashboard_path: Optional[Path]
+    catalyst_radar_path: Optional[Path]
     daily_chart_path: Optional[Path]
     trend_pack_path: Optional[Path]
     raw_bundle_path: Optional[Path]
@@ -91,6 +92,7 @@ def _entry_from_date_dir(date_dir: Path) -> Optional[ReportEntry]:
         quality=quality,
         report_path=report_path,
         dashboard_path=_find_one(charts_dir, f"dashboard_{date_value}.png"),
+        catalyst_radar_path=_find_one(charts_dir, f"catalyst_radar_{date_value}.png"),
         daily_chart_path=_find_one(charts_dir, f"daily_one_chart_{date_value}.png"),
         trend_pack_path=_find_one(charts_dir, f"hk_trend_pack_{date_value}.png"),
         raw_bundle_path=_find_one(raw_dir, f"{date_value}_bundle.json"),
@@ -126,8 +128,8 @@ def _rel_target(target: Optional[Path], base: Path) -> str:
 
 def _gallery_table(entries: Iterable[ReportEntry], base: Path) -> str:
     rows = [
-        "| Date | Mode | Pulse | Quality | Report | Dashboard | One Chart | Trend Pack | Raw |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| Date | Mode | Pulse | Quality | Report | Dashboard | Event Radar | One Chart | Trend Pack | Raw |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for entry in entries:
         rows.append(
@@ -139,6 +141,7 @@ def _gallery_table(entries: Iterable[ReportEntry], base: Path) -> str:
                     entry.quality,
                     _rel_link(entry.report_path.parent / "README.md", base, "Report"),
                     _rel_link(entry.dashboard_path, base, "Dashboard"),
+                    _rel_link(entry.catalyst_radar_path, base, "Event Radar"),
                     _rel_link(entry.daily_chart_path, base, "One Chart"),
                     _rel_link(entry.trend_pack_path, base, "Trend Pack"),
                     _rel_link(entry.raw_bundle_path, base, "Bundle"),
@@ -210,6 +213,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 def _landing_asset_lines(entry: ReportEntry, base: Path) -> List[str]:
     lines = [
         f"- Dashboard: {_rel_link(entry.dashboard_path, base, 'Open image')}",
+        f"- Catalyst & Event Radar: {_rel_link(entry.catalyst_radar_path, base, 'Open image')}",
         f"- Daily One Chart: {_rel_link(entry.daily_chart_path, base, 'Open image')}",
         f"- Trend Pack: {_rel_link(entry.trend_pack_path, base, 'Open image')}",
         f"- Raw bundle: {_rel_link(entry.raw_bundle_path, base, 'Open bundle')}",

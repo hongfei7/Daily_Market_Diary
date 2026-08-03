@@ -5,6 +5,7 @@ from typing import Any, Dict
 from market_diary.professional.report_blocks import (
     _render_attribution,
     _render_company_events,
+    _render_catalyst_radar,
     _render_daily_one_chart,
     _render_executive_summary,
     _render_flow_tracker,
@@ -43,6 +44,7 @@ def render_professional_report(
     dashboard_rel_path: str = "",
     daily_chart_rel_path: str = "",
     trend_pack_rel_path: str = "",
+    catalyst_radar_rel_path: str = "",
 ) -> str:
     layout = build_report_layout(bundle, dashboard_rel_path=dashboard_rel_path)
     meta = layout["meta"]
@@ -66,6 +68,8 @@ def render_professional_report(
     global_date = layout["global_date"]
     hk_date = layout["hk_date"]
     internal_notes = _render_internal_notes(bundle)
+    catalyst_radar_block = _render_catalyst_radar(bundle, catalyst_radar_rel_path)
+    catalyst_radar_section = f"\n{catalyst_radar_block}\n" if catalyst_radar_block else ""
     daily_chart_block = _render_daily_one_chart(bundle, daily_chart_rel_path)
     trend_pack_block = _render_trend_pack(bundle, trend_pack_rel_path)
     daily_chart_section = f"### 3.3 Daily One Chart\n{daily_chart_block}\n\n" if daily_chart_block else ""
@@ -85,7 +89,7 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 
 ## Visual Dashboard
 
-{dashboard_md}## {layer_one_title}
+{dashboard_md}{catalyst_radar_section}## {layer_one_title}
 
 ### 1.2 Global Asset Price Dashboard
 {_render_global_asset_dashboard(bundle)}

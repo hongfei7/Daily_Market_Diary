@@ -426,7 +426,7 @@ HTML_CSS = """\
                  sans-serif;
     color: var(--ink); line-height: 1.62; max-width: 1360px; margin: 0 auto;
     padding: 0 44px 64px; background: var(--paper); font-size: 15px;
-    -webkit-font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
   }
   h1, h2, h3, h4, h5, h6 { color: var(--ink); letter-spacing: -.025em; }
   h1 { font-size: 32px; line-height: 1.12; margin: 42px 0 18px; }

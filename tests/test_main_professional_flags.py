@@ -28,7 +28,7 @@ def _args(output_dir: str, **overrides) -> SimpleNamespace:
 
 
 def _install_main_stubs(monkeypatch, tmp_path, *, args: SimpleNamespace, mode: str) -> dict:
-    calls = {"dashboard": 0, "daily": 0, "trend_collect": 0, "trend_generate": 0, "appendix": 0}
+    calls = {"dashboard": 0, "catalyst": 0, "daily": 0, "trend_collect": 0, "trend_generate": 0, "appendix": 0}
 
     monkeypatch.setattr(main_professional, "parse_args", lambda: args)
     monkeypatch.setattr(
@@ -90,6 +90,10 @@ def _install_main_stubs(monkeypatch, tmp_path, *, args: SimpleNamespace, mode: s
         calls["daily"] += 1
         return {"path": "daily_one_chart.png", "title": "Daily One Chart"}
 
+    def fake_catalyst_radar(bundle, output_path):
+        calls["catalyst"] += 1
+        return {"path": "catalyst_radar.png", "title": "Catalyst & Event Radar"}
+
     def fake_collect(bundle, cache_dir=None):
         calls["trend_collect"] += 1
         return {"southbound": [], "liquidity": [], "leadership": {"dates": [], "series": {}}, "ah_heatmap": {"dates": [], "names": [], "matrix": []}}
@@ -103,6 +107,7 @@ def _install_main_stubs(monkeypatch, tmp_path, *, args: SimpleNamespace, mode: s
         return "_appendix_"
 
     monkeypatch.setattr(main_professional, "generate_dashboard", fake_dashboard)
+    monkeypatch.setattr(main_professional, "generate_catalyst_radar", fake_catalyst_radar)
     monkeypatch.setattr(main_professional, "generate_daily_one_chart", fake_daily_chart)
     monkeypatch.setattr(main_professional, "collect_hk_trend_pack_data", fake_collect)
     monkeypatch.setattr(main_professional, "generate_hk_trend_pack", fake_trend_pack)
@@ -117,7 +122,7 @@ def test_skip_charts_skips_all_visual_generation(monkeypatch, tmp_path) -> None:
 
     main_professional.main()
 
-    assert calls == {"dashboard": 0, "daily": 0, "trend_collect": 0, "trend_generate": 0, "appendix": 0}
+    assert calls == {"dashboard": 0, "catalyst": 0, "daily": 0, "trend_collect": 0, "trend_generate": 0, "appendix": 0}
 
 
 def test_non_weekly_runs_do_not_generate_trend_pack(monkeypatch, tmp_path) -> None:
@@ -127,6 +132,7 @@ def test_non_weekly_runs_do_not_generate_trend_pack(monkeypatch, tmp_path) -> No
     main_professional.main()
 
     assert calls["dashboard"] == 1
+    assert calls["catalyst"] == 1
     assert calls["daily"] == 1
     assert calls["trend_collect"] == 0
     assert calls["trend_generate"] == 0

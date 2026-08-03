@@ -29,6 +29,7 @@ def test_gallery_generation_from_archive() -> None:
         (date_dir / "charts").mkdir(parents=True)
         (date_dir / "raw").mkdir(parents=True)
         (date_dir / "charts" / "dashboard_2026-04-19.png").write_bytes(b"png")
+        (date_dir / "charts" / "catalyst_radar_2026-04-19.png").write_bytes(b"png")
         (date_dir / "charts" / "daily_one_chart_2026-04-19.png").write_bytes(b"png")
         (date_dir / "charts" / "hk_trend_pack_2026-04-19.png").write_bytes(b"png")
         (date_dir / "raw" / "2026-04-19_bundle.json").write_text("{}", encoding="utf-8")
@@ -63,6 +64,7 @@ Weekly pulse with clean Hong Kong follow-through and next-week preparation.
         assert "[Report](archive/2026-04-19/README.md)" in root_index
         assert "archive/2026-04-19/README.md" in root_index
         assert "archive/2026-04-19/charts/dashboard_2026-04-19.png" in root_index
+        assert "archive/2026-04-19/charts/catalyst_radar_2026-04-19.png" in root_index
         assert "[Report](2026-04-19/README.md)" in archive_index
         assert "2026-04-19/charts/dashboard_2026-04-19.png" in archive_index
         assert "2026-04-19/raw/2026-04-19_bundle.json" in archive_index

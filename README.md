@@ -12,6 +12,7 @@ Each run writes a self-contained report package under `reports_professional/`.
 
 - Markdown morning briefing
 - Dashboard image
+- Catalyst & Event Radar with explicit date confidence
 - Daily One Chart
 - Hong Kong trend pack when enabled
 - Chart feature JSON
@@ -127,7 +128,7 @@ Useful flags:
 - `--config PATH`: load a custom JSON config
 - `--output-dir PATH`: override the output directory
 - `--skip-charts`: skip all chart generation
-- `--skip-dashboard`: skip only the dashboard
+- `--skip-dashboard`: skip the dashboard and companion Catalyst & Event Radar
 - `--skip-daily-chart`: skip Daily One Chart
 - `--skip-trend-pack`: skip Hong Kong Trend Pack
 - `--no-llm`: disable optional LLM sections

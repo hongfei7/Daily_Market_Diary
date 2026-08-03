@@ -12,13 +12,13 @@ INK = "#111820"
 SLATE = "#58656f"
 LINE = "#d8dde1"
 PANEL_BG = "#ffffff"
-FIG_BG = "#ffffff"
+FIG_BG = "#f7f6f2"
 GREEN = "#1f7a3e"
 RED = "#b42318"
 AMBER = "#b54708"
 BLUE = "#123a56"
-DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v9"
-CHART_CLIP_MARK = "~"
+DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v10"
+CHART_CLIP_MARK = "…"
 
 
 def _parse_float(value: Any) -> float | None:
@@ -110,9 +110,9 @@ def _panel(ax) -> None:
 def _panel_title(ax, title: str, subtitle: str = "") -> None:
     ax.add_patch(
         Rectangle(
-            (0.018, 0.835),
+            (0.018, 0.79),
             0.96,
-            0.145,
+            0.19,
             transform=ax.transAxes,
             linewidth=0,
             facecolor=PANEL_BG,
@@ -120,11 +120,11 @@ def _panel_title(ax, title: str, subtitle: str = "") -> None:
             clip_on=False,
         )
     )
-    ax.text(0.035, 0.95, title, transform=ax.transAxes, fontsize=15.8, fontweight="bold", color=INK, va="top", zorder=7)
+    ax.text(0.035, 0.95, title, transform=ax.transAxes, fontsize=15.0, fontweight="bold", color=INK, va="top", zorder=7)
     if subtitle:
         ax.text(
             0.035,
-            0.895,
+            0.82,
             _wrap_text(subtitle, width=58, max_lines=1),
             transform=ax.transAxes,
             fontsize=10.6,
@@ -251,12 +251,12 @@ def _hk_metric_cards(bundle: Dict[str, Any]) -> List[Dict[str, str]]:
 def _draw_metric_cards(ax, cards: List[Dict[str, str]]) -> None:
     ax.axis("off")
     _panel(ax)
-    _panel_title(ax, "Hong Kong local tape", "Refreshed local evidence; missing fields are gated")
+    _panel_title(ax, "Hong Kong confirmation", "Local evidence only; unavailable fields stay out of the signal")
 
     tile_w = 0.435
-    tile_h = 0.168
+    tile_h = 0.16
     x_positions = [0.045, 0.52]
-    y_positions = [0.64, 0.405, 0.17]
+    y_positions = [0.55, 0.33, 0.11]
     for idx, card in enumerate(cards[:6]):
         chip_text, chip_color = _status_chip(card["status"])
         raw_value = str(card["value"] or "N/A").replace(" / ", " | ")
@@ -267,51 +267,27 @@ def _draw_metric_cards(ax, cards: List[Dict[str, str]]) -> None:
             if multiline_value
             else textwrap.shorten(str(card.get("as_of") or ""), width=18, placeholder=CHART_CLIP_MARK) if card.get("as_of") else ""
         )
-        row_face = "#f8fafc" if idx % 2 == 0 else "#fdfefe"
         x = x_positions[idx % 2]
         y = y_positions[idx // 2]
-        ax.add_patch(
-            FancyBboxPatch(
-                (x, y),
-                tile_w,
-                tile_h,
-                boxstyle="round,pad=0.014,rounding_size=0.03",
-                transform=ax.transAxes,
-                linewidth=0.95,
-                edgecolor="#d9e2ec",
-                facecolor=row_face,
-            )
-        )
-        ax.add_patch(
-            FancyBboxPatch(
-                (x + tile_w - 0.125, y + tile_h - 0.05),
-                0.095,
-                0.031,
-                boxstyle="round,pad=0.01,rounding_size=0.015",
-                transform=ax.transAxes,
-                linewidth=0.8,
-                edgecolor=chip_color,
-                facecolor="#ffffff",
-            )
-        )
-        ax.text(x + 0.026, y + tile_h - 0.037, card["label"], transform=ax.transAxes, fontsize=10.3, color=SLATE, va="center", fontweight="bold")
+        ax.add_patch(Rectangle((x, y + tile_h - 0.006), tile_w, 0.006, transform=ax.transAxes, linewidth=0, facecolor=LINE))
+        ax.text(x, y + tile_h - 0.03, card["label"].upper(), transform=ax.transAxes, fontsize=8.4, color=SLATE, va="center", fontweight="bold")
         ax.text(
-            x + tile_w - 0.077,
-            y + tile_h - 0.034,
+            x + tile_w,
+            y + tile_h - 0.03,
             chip_text,
             transform=ax.transAxes,
-            fontsize=7.6,
+            fontsize=7.8,
             color=chip_color,
-            ha="center",
+            ha="right",
             va="center",
             fontweight="bold",
         )
         ax.text(
-            x + 0.026,
-            y + (0.058 if multiline_value else 0.077),
+            x,
+            y + (0.052 if multiline_value else 0.075),
             _safe_text(value_text),
             transform=ax.transAxes,
-            fontsize=10.6 if multiline_value else 13.2,
+            fontsize=10.8 if multiline_value else 13.4,
             fontweight="bold",
             color=INK,
             va="center",
@@ -319,11 +295,11 @@ def _draw_metric_cards(ax, cards: List[Dict[str, str]]) -> None:
         )
         if as_of_text:
             ax.text(
-                x + 0.026,
-                y + 0.025,
+                x,
+                y + 0.005,
                 _safe_text(f"As of {as_of_text}"),
                 transform=ax.transAxes,
-                fontsize=8.7,
+                fontsize=8.2,
                 color=SLATE,
                 va="bottom",
             )
@@ -462,182 +438,50 @@ def _flow_unit_text(unit_label: str) -> str:
 
 def _draw_flow_focus(ax, bundle: Dict[str, Any]) -> None:
     title, subtitle, rows, xlabel = _flow_focus(bundle)
-    ax.axis("off")
     _panel(ax)
     _panel_title(ax, title, subtitle)
 
     if not rows:
+        ax.axis("off")
         ax.text(0.03, 0.55, "No ranked flow or pressure panel was available.", transform=ax.transAxes, fontsize=11, color=SLATE)
         return
 
-    positives = sorted([row for row in rows if row[1] >= 0], key=lambda item: item[1], reverse=True)[:3]
-    negatives = sorted([row for row in rows if row[1] < 0], key=lambda item: item[1])[:3]
-
-    def draw_column(x: float, heading: str, items: List[Tuple[str, float, str]], color: str) -> None:
-        ax.text(x, 0.74, heading.upper(), transform=ax.transAxes, fontsize=9.2, color=color, fontweight="bold")
-        ax.text(x + 0.405, 0.74, _flow_unit_text(xlabel), transform=ax.transAxes, fontsize=8.6, color=SLATE, ha="right")
-        if not items:
-            ax.add_patch(
-                FancyBboxPatch(
-                    (x, 0.43),
-                    0.43,
-                    0.15,
-                    boxstyle="round,pad=0.012,rounding_size=0.02",
-                    transform=ax.transAxes,
-                    linewidth=0.8,
-                    edgecolor="#d9e2ec",
-                    facecolor="#f8fafc",
-                )
-            )
-            ax.text(x + 0.03, 0.505, "No ranked names", transform=ax.transAxes, fontsize=10.2, color=SLATE, va="center")
-            return
-
-        y = 0.60
-        for rank, (label, value, note) in enumerate(items, start=1):
-            ax.add_patch(
-                FancyBboxPatch(
-                    (x, y),
-                    0.43,
-                    0.115,
-                    boxstyle="round,pad=0.012,rounding_size=0.022",
-                    transform=ax.transAxes,
-                    linewidth=0.85,
-                    edgecolor="#d9e2ec",
-                    facecolor="#f8fafc",
-                )
-            )
-            ax.add_patch(
-                Rectangle((x, y), 0.011, 0.115, transform=ax.transAxes, linewidth=0, facecolor=color)
-            )
-            ax.text(
-                x + 0.028,
-                y + 0.076,
-                _safe_text(f"{rank}. {textwrap.shorten(label, width=14, placeholder=CHART_CLIP_MARK)}"),
-                transform=ax.transAxes,
-                fontsize=11.1,
-                color=INK,
-                va="center",
-                fontweight="bold",
-            )
-            ax.text(
-                x + 0.028,
-                y + 0.031,
-                _safe_text(textwrap.shorten(note or "Name unavailable", width=20, placeholder=CHART_CLIP_MARK)),
-                transform=ax.transAxes,
-                fontsize=8.9,
-                color=SLATE,
-                va="center",
-            )
-            ax.text(
-                x + 0.405,
-                y + 0.058,
-                _safe_text(_flow_value_text(value, xlabel)),
-                transform=ax.transAxes,
-                fontsize=11.0,
-                color=color,
-                va="center",
-                ha="right",
-                fontweight="bold",
-            )
-            y -= 0.145
-
-    if negatives:
-        draw_column(0.045, "Top net buy", positives, GREEN)
-        draw_column(0.525, "Top net sell", negatives, RED)
+    ranked = sorted(rows, key=lambda item: abs(item[1]), reverse=True)[:6]
+    ranked.sort(key=lambda item: item[1])
+    labels = [textwrap.shorten(item[2] or item[0], width=22, placeholder=CHART_CLIP_MARK) for item in ranked]
+    values = [item[1] for item in ranked]
+    is_pressure = "%" in xlabel or "ratio" in xlabel.lower()
+    colors = [AMBER if is_pressure else BLUE if value >= 0 else AMBER for value in values]
+    max_abs = max(max((abs(value) for value in values), default=1.0), 1.0)
+    ax.barh(labels, values, color=colors, height=0.55)
+    ax.axvline(0, color="#98a2b3", linewidth=1.0)
+    ax.set_xlim(min(0.0, min(values or [0])) - max_abs * 0.12, max(0.0, max(values or [0])) + max_abs * 0.20)
+    ax.set_ylim(-1.15, len(labels) + 1.60)
+    ax.tick_params(axis="x", labelsize=8.8, colors=SLATE)
+    ax.tick_params(axis="y", labelsize=10.0, colors=INK, pad=7)
+    ax.grid(axis="x", color="#e4e7ec", linewidth=0.8, alpha=0.8)
+    ax.set_xlabel(_flow_unit_text(xlabel), fontsize=8.8, color=SLATE, labelpad=4)
+    for index, (value, color) in enumerate(zip(values, colors)):
         ax.text(
-            0.045,
-            0.075,
-            _safe_text(_wrap_text("Desk read: concentration matters more than headline flow; check whether buys are index-heavy or idiosyncratic.", width=88, max_lines=2)),
-            transform=ax.transAxes,
-            fontsize=9.2,
-            color=SLATE,
-            linespacing=1.25,
-        )
-        return
-
-    ranked = sorted(rows, key=lambda item: abs(item[1]), reverse=True)[:4]
-    ax.text(0.045, 0.74, "TOP RANKED NAMES", transform=ax.transAxes, fontsize=9.2, color=BLUE, fontweight="bold")
-    max_abs = max(max((abs(item[1]) for item in ranked), default=1.0), 1.0)
-    y = 0.61
-    for rank, (label, value, note) in enumerate(ranked, start=1):
-        bar_w = 0.22 * abs(value) / max_abs
-        color = _bar_color(value)
-        ax.add_patch(
-            FancyBboxPatch(
-                (0.045, y),
-                0.91,
-                0.105,
-                boxstyle="round,pad=0.012,rounding_size=0.02",
-                transform=ax.transAxes,
-                linewidth=0.85,
-                edgecolor="#d9e2ec",
-                facecolor="#f8fafc",
-            )
-        )
-        ax.text(0.07, y + 0.065, f"{rank}. {_safe_text(textwrap.shorten(label, width=18, placeholder=CHART_CLIP_MARK))}", transform=ax.transAxes, fontsize=11, color=INK, fontweight="bold")
-        ax.text(0.07, y + 0.026, _safe_text(textwrap.shorten(note or "", width=26, placeholder=CHART_CLIP_MARK)), transform=ax.transAxes, fontsize=8.8, color=SLATE)
-        ax.add_patch(Rectangle((0.56, y + 0.035), 0.24, 0.032, transform=ax.transAxes, linewidth=0, facecolor="#e4e7ec"))
-        ax.add_patch(Rectangle((0.56, y + 0.035), bar_w, 0.032, transform=ax.transAxes, linewidth=0, facecolor=color))
-        ax.text(0.925, y + 0.052, _safe_text(_flow_value_text(value, xlabel)), transform=ax.transAxes, fontsize=10.7, color=color, fontweight="bold", ha="right", va="center")
-        y -= 0.13
-
-
-def _catalyst_lines(bundle: Dict[str, Any]) -> List[Tuple[str, str, str]]:
-    items: List[Tuple[str, str, str]] = []
-    for item in (bundle.get("catalysts", []) or [])[:5]:
-        time_label = f"{item.get('date', '')} {item.get('time', '')}".strip()
-        tag = str(item.get("category", "Catalyst") or "Catalyst")
-        headline = str(item.get("event", "") or "")
-        items.append((time_label, tag, headline))
-    for item in (bundle.get("macro_agenda", []) or [])[:3]:
-        time_label = f"{item.get('time', '')} {item.get('country', '')}".strip()
-        tag = str(item.get("status", "Macro") or "Macro")
-        headline = str(item.get("event", "") or "")
-        row = (time_label, tag, headline)
-        if row not in items:
-            items.append(row)
-    return items[:7]
-
-
-def _draw_catalysts(ax, bundle: Dict[str, Any]) -> None:
-    ax.axis("off")
-    _panel(ax)
-    _panel_title(ax, "Catalyst ladder", "Today's highest-conviction watchlist")
-    lines = _catalyst_lines(bundle)
-    if not lines:
-        ax.text(0.03, 0.55, "No catalyst items were available.", transform=ax.transAxes, fontsize=11, color=SLATE)
-        return
-    row_height = 0.118
-    row_gap = 0.018
-    y = 0.66
-    for idx, (time_label, tag, headline) in enumerate(lines[:5]):
-        tag_color = BLUE if tag.lower() in {"upcoming", "released", "macro", "central bank"} else AMBER
-        headline_text = textwrap.shorten(headline, width=58, placeholder=CHART_CLIP_MARK)
-        row_face = "#f8fafc" if idx % 2 == 0 else "#fdfefe"
-        ax.add_patch(
-            FancyBboxPatch(
-                (0.035, y),
-                0.93,
-                row_height,
-                boxstyle="round,pad=0.012,rounding_size=0.02",
-                transform=ax.transAxes,
-                linewidth=0.8,
-                edgecolor="#d9e2ec",
-                facecolor=row_face,
-            )
-        )
-        ax.text(0.055, y + 0.082, time_label or "Today", transform=ax.transAxes, fontsize=9.5, color=SLATE, va="center")
-        ax.text(0.32, y + 0.082, f"[{tag}]", transform=ax.transAxes, fontsize=9.0, color=tag_color, va="center", fontweight="bold")
-        ax.text(
-            0.055,
-            y + 0.034,
-            _safe_text(headline_text),
-            transform=ax.transAxes,
-            fontsize=11.0,
-            color=INK,
+            value + (max_abs * 0.025 if value >= 0 else -max_abs * 0.025),
+            index,
+            _safe_text(_flow_value_text(value, xlabel)),
             va="center",
+            ha="left" if value >= 0 else "right",
+            fontsize=9.4,
+            color=color,
+            fontweight="bold",
+            clip_on=False,
         )
-        y -= row_height + row_gap
+    ax.text(
+        0.99,
+        0.05,
+        "Read concentration before the headline aggregate; a narrow flow is not broad confirmation.",
+        transform=ax.transAxes,
+        fontsize=8.7,
+        color=SLATE,
+        ha="right",
+    )
 
 
 def _watchlist_rows(bundle: Dict[str, Any]) -> List[Tuple[str, str, str, str]]:
@@ -765,21 +609,11 @@ def _header_chip(fig, x: float, y: float, label: str, value: str, color: str = I
 def _draw_header_card(fig, rect: Tuple[float, float, float, float], label: str, value: str, color: str = INK) -> None:
     ax = fig.add_axes(rect)
     ax.axis("off")
-    ax.add_patch(
-        Rectangle(
-            (0, 0),
-            1,
-            1,
-            transform=ax.transAxes,
-            linewidth=0.8,
-            edgecolor="#b9c1c7",
-            facecolor=PANEL_BG,
-        )
-    )
-    ax.text(0.055, 0.70, label, transform=ax.transAxes, fontsize=9.6, color=SLATE, va="center", fontweight="bold")
+    ax.add_patch(Rectangle((0, 0.94), 1, 0.06, transform=ax.transAxes, linewidth=0, facecolor=LINE))
+    ax.text(0, 0.69, label.upper(), transform=ax.transAxes, fontsize=8.4, color=SLATE, va="center", fontweight="bold")
     ax.text(
-        0.055,
-        0.34,
+        0,
+        0.29,
         _safe_text(_wrap_text(value, width=26, max_lines=2)),
         transform=ax.transAxes,
         fontsize=11.8,
@@ -794,8 +628,8 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     plt.style.use("default")
-    fig = plt.figure(figsize=(14.2, 10.8), facecolor=FIG_BG)
-    grid = fig.add_gridspec(2, 2, left=0.09, right=0.965, top=0.785, bottom=0.092, hspace=0.30, wspace=0.14)
+    fig = plt.figure(figsize=(10.6, 13.2), facecolor=FIG_BG)
+    grid = fig.add_gridspec(3, 1, height_ratios=[1.0, 1.0, 1.05], left=0.14, right=0.95, top=0.74, bottom=0.07, hspace=0.22)
 
     report_date = bundle.get("meta", {}).get("briefing_date", bundle.get("meta", {}).get("report_date", ""))
     theme = str((bundle.get("overview", {}) or {}).get("theme", "") or "")
@@ -822,17 +656,17 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
 
     fig.text(
         0.045,
-        0.955,
-        f"Hong Kong Decision Dashboard | {report_date}",
-        fontsize=24,
+        0.965,
+        f"Hong Kong Decision Board | {report_date}",
+        fontsize=23,
         fontweight="bold",
         ha="left",
         color=INK,
     )
-    fig.text(0.045, 0.918, textwrap.shorten(theme, width=112, placeholder=CHART_CLIP_MARK), fontsize=12.2, color=SLATE)
+    fig.text(0.045, 0.934, textwrap.shorten(theme, width=82, placeholder=CHART_CLIP_MARK), fontsize=11.2, color=SLATE)
     fig.text(
         0.905,
-        0.942,
+        0.956,
         regime.upper(),
         fontsize=10.8,
         fontweight="bold",
@@ -842,10 +676,10 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
         bbox=dict(boxstyle="square,pad=0.35", facecolor=PANEL_BG, edgecolor=LINE),
     )
 
-    _draw_header_card(fig, (0.045, 0.825, 0.215, 0.068), "Risk score", f"{risk_score}/100 | {risk_bucket}", bucket_color)
-    _draw_header_card(fig, (0.285, 0.825, 0.275, 0.068), "HK style", leadership, INK)
-    _draw_header_card(fig, (0.585, 0.825, 0.17, 0.068), "Data", quality_text, INK)
-    _draw_header_card(fig, (0.78, 0.825, 0.16, 0.068), "US 10Y", rate_text, BLUE)
+    _draw_header_card(fig, (0.055, 0.855, 0.405, 0.048), "Risk score", f"{risk_score}/100 | {risk_bucket}", bucket_color)
+    _draw_header_card(fig, (0.535, 0.855, 0.405, 0.048), "HK style", leadership, INK)
+    _draw_header_card(fig, (0.055, 0.780, 0.405, 0.048), "Data", quality_text, INK)
+    _draw_header_card(fig, (0.535, 0.780, 0.405, 0.048), "US 10Y", rate_text, BLUE)
 
     ax_regime = fig.add_subplot(grid[0, 0])
     _panel(ax_regime)
@@ -853,7 +687,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     if not rows:
         _draw_evidence_coverage(ax_regime, bundle)
     else:
-        _panel_title(ax_regime, "Global regime board", "Bars show comparable 1D returns only (%)")
+        _panel_title(ax_regime, "Global regime", "Comparable 1D returns; colors reflect HK decision impact")
         raw_labels = [row.get("label", "") for row in rows]
         labels = [_dashboard_label(label) for label in raw_labels]
         values = [float(row.get("change_pct", 0) or 0) for row in rows]
@@ -861,15 +695,13 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
         max_abs = max(max((abs(value) for value in values), default=1.0), 1.0)
         ax_regime.barh(labels, values, color=colors, height=0.56)
         ax_regime.axvline(0, color="#98a2b3", linewidth=1.0)
-        ax_regime.set_xlim(min(0.0, min(values or [0])) - max_abs * 0.18, max(0.0, max(values or [0])) + max_abs * 0.24)
+        ax_regime.set_xlim(min(0.0, min(values or [0])) - max_abs * 0.27, max(0.0, max(values or [0])) + max_abs * 0.28)
         ax_regime.invert_yaxis()
-        ax_regime.set_ylim(len(labels) - 0.35, -1.75)
+        ax_regime.set_ylim(len(labels) - 0.35, -2.65)
         ax_regime.tick_params(axis="x", labelsize=9.7)
-        ax_regime.tick_params(axis="y", labelsize=11.0)
+        ax_regime.tick_params(axis="y", labelsize=10.5, pad=7)
         ax_regime.grid(axis="x", color="#e4e7ec", linewidth=0.8, alpha=0.75)
         for idx, value in enumerate(values):
-            if abs(value) < 0.35:
-                continue
             ax_regime.text(
                 value + (max_abs * 0.025 if value >= 0 else -max_abs * 0.025),
                 idx,
@@ -878,22 +710,19 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
                 ha="left" if value >= 0 else "right",
                 fontsize=9.8,
                 color=INK,
-                clip_on=True,
+                clip_on=False,
             )
 
-    ax_hk = fig.add_subplot(grid[0, 1])
+    ax_hk = fig.add_subplot(grid[1, 0])
     _draw_metric_cards(ax_hk, _hk_metric_cards(bundle))
 
-    ax_flow = fig.add_subplot(grid[1, 0])
+    ax_flow = fig.add_subplot(grid[2, 0])
     _draw_flow_focus(ax_flow, bundle)
-
-    ax_catalyst = fig.add_subplot(grid[1, 1])
-    _draw_catalysts(ax_catalyst, bundle)
 
     fig.text(
         0.045,
         0.025,
-        "Decision sequence: global regime -> local confirmation -> flow concentration -> dated catalysts. Definitions and source metadata remain in the appendix.",
+        "Decision sequence: global regime -> Hong Kong confirmation -> concentration. Event timing is handled separately in the radar.",
         fontsize=9.8,
         color=SLATE,
     )

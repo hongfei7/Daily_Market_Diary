@@ -19,6 +19,7 @@ def _make_table(headers: Sequence[str], rows: Iterable[Sequence[Any]]) -> str:
 
 def _visual_rows(
     dashboard_rel_path: str,
+    catalyst_radar_rel_path: str,
     daily_chart_rel_path: str,
     trend_pack_rel_path: str,
 ) -> List[Tuple[str, str, str]]:
@@ -29,6 +30,14 @@ def _visual_rows(
                 "Visual Dashboard",
                 f"`{dashboard_rel_path}`",
                 "Cross-asset regime board and Hong Kong local tape snapshot.",
+            )
+        )
+    if catalyst_radar_rel_path:
+        rows.append(
+            (
+                "Catalyst & Event Radar",
+                f"`{catalyst_radar_rel_path}`",
+                "Confirmed dates, time windows, undated monitors, and recent issuer read-through.",
             )
         )
     if daily_chart_rel_path:
@@ -55,6 +64,7 @@ def render_chart_appendix(
     dashboard_rel_path: str = "",
     daily_chart_rel_path: str = "",
     trend_pack_rel_path: str = "",
+    catalyst_radar_rel_path: str = "",
 ) -> str:
     overview = bundle.get("overview", {}) or {}
     chart_read = overview.get("chart_read", {}) or {}
@@ -65,7 +75,7 @@ def render_chart_appendix(
         "",
     ]
 
-    visual_rows = _visual_rows(dashboard_rel_path, daily_chart_rel_path, trend_pack_rel_path)
+    visual_rows = _visual_rows(dashboard_rel_path, catalyst_radar_rel_path, daily_chart_rel_path, trend_pack_rel_path)
     if visual_rows:
         lines.append("### Visual Index")
         lines.append(_make_table(["Visual", "Path", "Role"], visual_rows))

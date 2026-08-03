@@ -5,6 +5,7 @@ import tempfile
 from _bootstrap import ROOT  # noqa: F401
 
 from professional.analytics import build_professional_bundle
+from professional.catalyst_radar import build_catalyst_radar_rows, generate_catalyst_radar
 from professional.config import load_professional_config
 from professional.daily_one_chart import generate_daily_one_chart
 from professional.dashboard import DASHBOARD_LAYOUT_VERSION, generate_dashboard, _regime_impact_color
@@ -183,6 +184,43 @@ def _minimal_fixture():
 
 
 def main():
+    weekend_payload = build_catalyst_radar_rows(
+        {
+            "meta": {"briefing_date": "2026-08-03"},
+            "day_mode": {"next_hk_trading_day": "2026-08-03"},
+            "catalysts": [],
+            "macro_agenda": [],
+            "watchlists": {
+                "Core coverage": [
+                    {
+                        "ticker": "9988.HK",
+                        "name": "Alibaba",
+                        "upcoming_catalyst": "Cloud demand and GMV updates",
+                        "catalyst_date": "",
+                        "thesis": "China consumption and cloud read-through",
+                    }
+                ]
+            },
+            "company_events": {
+                "announcements": [
+                    {
+                        "ticker": "09988.HK",
+                        "company": "Alibaba",
+                        "event_type": "Results announcement",
+                        "title": "Quarterly results announcement",
+                        "release_time": "2026-07-31",
+                        "source": "HKEXnews",
+                        "score": 4.5,
+                    }
+                ]
+            },
+        }
+    )
+    assert weekend_payload["counts"] == {"confirmed": 0, "window": 0, "monitor": 1}
+    assert weekend_payload["rows"][0]["lane"] == "monitor"
+    assert weekend_payload["rows"][0]["date"] == ""
+    assert weekend_payload["issuer_signals"][0]["event"] == "Quarterly results announcement"
+
     fixture = _minimal_fixture()
     config = load_professional_config()
     config["watchlists"] = {"core_coverage": [], "focus_pool": [], "learning_pool": []}
@@ -252,9 +290,17 @@ def main():
         dashboard_path = os.path.join(chart_dir, "test_dashboard.png")
         generate_dashboard(bundle, dashboard_path)
         assert os.path.exists(dashboard_path)
-        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v9"
+        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v10"
         assert _regime_impact_color("US 10Y", 0.6) != _regime_impact_color("S&P 500", 0.6)
         assert _regime_impact_color("DXY", -0.3) == _regime_impact_color("S&P 500", 0.6)
+
+        catalyst_radar_path = os.path.join(chart_dir, "test_catalyst_radar.png")
+        catalyst_meta = generate_catalyst_radar(bundle, catalyst_radar_path)
+        bundle["catalyst_radar"] = {**catalyst_meta, "rel_path": "charts/test_catalyst_radar.png"}
+        assert os.path.exists(catalyst_radar_path)
+        radar_payload = build_catalyst_radar_rows(bundle)
+        assert radar_payload["rows"]
+        assert radar_payload["counts"]["confirmed"] >= 1
 
         daily_chart_path = os.path.join(chart_dir, "test_daily_one_chart.png")
         daily_meta = generate_daily_one_chart(bundle, daily_chart_path)
@@ -301,6 +347,7 @@ def main():
             bundle,
             charts_section="Charts placeholder",
             dashboard_rel_path="charts/test_dashboard.png",
+            catalyst_radar_rel_path="charts/test_catalyst_radar.png",
             daily_chart_rel_path="charts/test_daily_one_chart.png",
             trend_pack_rel_path="charts/test_hk_trend_pack.png",
         )
@@ -318,6 +365,7 @@ def main():
     assert "MEITUAN-W" in report
     assert "CRRC" in report
     assert "![Research Dashboard](charts/test_dashboard.png)" in report
+    assert "![Catalyst & Event Radar](charts/test_catalyst_radar.png)" in report
     assert "![Daily One Chart](charts/test_daily_one_chart.png)" in report
     assert "![Hong Kong Trend Pack](charts/test_hk_trend_pack.png)" in report
     assert "![Daily One Chart](charts/test_dashboard.png)" not in report

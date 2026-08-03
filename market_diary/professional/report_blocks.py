@@ -689,6 +689,20 @@ def _render_daily_one_chart(bundle: Dict[str, Any], daily_chart_rel_path: str) -
     return f"**{title}**\n\n![Daily One Chart]({chart_path})\n\n{caption_lines}{source_line}"
 
 
+def _render_catalyst_radar(bundle: Dict[str, Any], catalyst_radar_rel_path: str) -> str:
+    chart_meta = bundle.get("catalyst_radar", {}) or {}
+    chart_path = catalyst_radar_rel_path or chart_meta.get("rel_path", "")
+    if not chart_path:
+        return ""
+
+    title = chart_meta.get("title", "Catalyst & Event Radar")
+    caption = chart_meta.get("caption", "")
+    source = chart_meta.get("source", "")
+    source_line = f"\n\n_Source: {source}_" if source else ""
+    chart_read = f"\n\n**Chart read:** {caption}" if caption else ""
+    return f"**{title}**\n\n![Catalyst & Event Radar]({chart_path}){chart_read}{source_line}"
+
+
 def _render_trend_pack(bundle: Dict[str, Any], trend_pack_rel_path: str) -> str:
     chart_meta = bundle.get("trend_pack", {}) or {}
     chart_path = trend_pack_rel_path or chart_meta.get("rel_path", "")

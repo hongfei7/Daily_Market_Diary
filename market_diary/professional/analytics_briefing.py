@@ -283,26 +283,32 @@ def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[
         )
 
     hkex_announcements = ((sector_data or {}).get("hkex_announcements", {}) or {}).get("data", {}) or {}
+    watchlist_announcements = hkex_announcements.get("watchlist_hits", []) or []
+    selected_announcements = watchlist_announcements or hkex_announcements.get("top_announcements", []) or []
     announcement_rows: List[Dict[str, Any]] = []
-    for item in (hkex_announcements.get("watchlist_hits", []) or hkex_announcements.get("top_announcements", []) or [])[:10]:
-        announcement_rows.append(
-            {
-                "grade": item.get("grade", ""),
-                "ticker": item.get("ticker", ""),
-                "company": item.get("company", ""),
-                "event_type": item.get("event_type", ""),
-                "title": item.get("title", ""),
-                "release_time": item.get("release_time", ""),
-                "source": item.get("source", "HKEXnews"),
-                "url": item.get("url", ""),
-                "score": item.get("score", 0),
-            }
-        )
+    watchlist_rows: List[Dict[str, Any]] = []
+    for item in selected_announcements[:10]:
+        row = {
+            "grade": item.get("grade", ""),
+            "ticker": item.get("ticker", ""),
+            "company": item.get("company", ""),
+            "event_type": item.get("event_type", ""),
+            "title": item.get("title", ""),
+            "release_time": item.get("release_time", ""),
+            "source": item.get("source", "HKEXnews"),
+            "url": item.get("url", ""),
+            "score": item.get("score", 0),
+        }
+        announcement_rows.append(row)
+        if watchlist_announcements:
+            watchlist_rows.append(row)
 
     return {
         "earnings": earnings_rows,
         "ratings": (sector_digest or {}).get("sell_side", []) or [],
         "announcements": announcement_rows,
+        "watchlist_announcements": watchlist_rows,
+        "announcement_scope": "watchlist" if watchlist_announcements else "market",
         "hkex_meta": ((sector_data or {}).get("hkex_announcements", {}) or {}).get("meta", {}) or {},
         "ipo_watch": "IPO and grey-market monitoring is not yet part of the standard production pack.",
     }

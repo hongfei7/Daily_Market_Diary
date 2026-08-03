@@ -13,6 +13,7 @@ REPORT_BODY = """# Morning Research Workbench | 2026-04-14
 
 ## Visual Dashboard
 ![Research Dashboard](charts/dashboard_2026-04-14.png)
+![Catalyst & Event Radar](charts/catalyst_radar_2026-04-14.png)
 
 ### 1.2 Global Asset Price Dashboard
 
@@ -61,6 +62,7 @@ def main() -> None:
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY, encoding="utf-8")
         (root / "raw" / "2026-04-14_bundle.json").write_text(json.dumps(_bundle()), encoding="utf-8")
         (root / "charts" / "dashboard_2026-04-14.png").write_bytes(b"png")
+        (root / "charts" / "catalyst_radar_2026-04-14.png").write_bytes(b"png")
         (root / "charts" / "daily_one_chart_2026-04-14.png").write_bytes(b"png")
         (root / "2026-04-14_email_preview.html").write_text(
             "<html><body>REPORT QUALITY DEEP READ Hong Kong local checks</body></html>", encoding="utf-8"

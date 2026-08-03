@@ -38,6 +38,8 @@ def test_professional_html_structure() -> None:
     assert "reading-path" in html
     assert "section-executive-summary" in html
     assert "mobile-toc" in html
+    assert 'name="viewport"' in html
+    assert "overflow-x: hidden" in html
     assert "linear-gradient" not in html
     assert "background: #1677ff" not in html
 

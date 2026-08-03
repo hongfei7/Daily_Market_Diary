@@ -8,7 +8,7 @@ This is the upgraded morning-briefing pipeline for the project. It is designed f
 - The report is layered into a 3-minute edition, a 15-minute edition, and a traceable appendix.
 - The pipeline is split into data collection, deterministic analytics, dashboard generation, and report rendering.
 - The report no longer depends on the LLM for the core structure. LLM output is optional and additive.
-- A dashboard image is generated automatically to make the briefing easier to scan before market open.
+- A mobile-first dashboard and a separate catalyst/event radar are generated automatically for the pre-open scan.
 - Personal watchlists are first-class inputs instead of ad-hoc notes.
 - The default lens now reflects a Hong Kong offshore-China desk: Hang Seng, HSCEI, Hang Seng TECH, FXI, USD/CNH, and USD/HKD all feed the opening read.
 
@@ -30,6 +30,7 @@ market_diary/
 |   |-- analytics_trackers.py         # high-frequency trackers
 |   |-- analytics_watchlist.py        # watchlist price/news snapshots
 |   |-- attribution.py
+|   |-- catalyst_radar.py
 |   |-- config.py
 |   |-- daily_one_chart.py
 |   |-- dashboard.py
@@ -62,6 +63,7 @@ Each run writes to `reports_professional/`:
 
 - `YYYY-MM-DD_morning_briefing.md`: final markdown briefing
 - `charts/dashboard_YYYY-MM-DD.png`: visual dashboard
+- `charts/catalyst_radar_YYYY-MM-DD.png`: dated-event and monitoring-trigger radar
 - `charts/*.png`: supporting charts
 - `charts/features_YYYY-MM-DD.json`: extracted chart features
 - `raw/YYYY-MM-DD_bundle.json`: structured research bundle
@@ -88,8 +90,8 @@ Useful flags:
 
 - `--config PATH`: load a custom JSON config
 - `--output-dir PATH`: override the output directory
-- `--skip-charts`: skip dashboard, Daily One Chart, Hong Kong Trend Pack, and chart appendix generation
-- `--skip-dashboard`: skip dashboard generation
+- `--skip-charts`: skip dashboard, Catalyst & Event Radar, Daily One Chart, Hong Kong Trend Pack, and chart appendix generation
+- `--skip-dashboard`: skip the dashboard and its companion Catalyst & Event Radar
 - `--skip-daily-chart`: skip Daily One Chart generation
 - `--skip-trend-pack`: skip Hong Kong Trend Pack generation
 - `--no-llm`: disable the optional LLM overlay
