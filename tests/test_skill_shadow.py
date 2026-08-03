@@ -60,7 +60,21 @@ def test_shadow_run_is_non_publishing_and_provider_agnostic() -> None:
         assert "strict JSON" in prompt
         assert "Verified context JSON" in prompt
         assert "claude" not in provider.lower()
-        return {"gaps": [], "skill": skill_name}, {"status": "ok", "provider": provider, "model": model}
+        payloads = {
+            "morning-note": {"top_call": {}, "signal_stack": [], "content_budget": {}, "gaps": []},
+            "catalyst-calendar": {"events": [], "undated_watch": [], "gaps": []},
+            "thesis-tracker": {"updates": [], "portfolio_level_gaps": [], "gaps": []},
+            "report-evidence-qc": {
+                "release_state": "share_with_caveats",
+                "release_reason": "Narrative coverage is partial.",
+                "claim_checks": [],
+                "visual_checks": [],
+                "priority_fixes": [],
+                "caveats_to_publish": ["Narrative coverage is partial."],
+                "gaps": [],
+            },
+        }
+        return payloads[skill_name], {"status": "ok", "provider": provider, "model": model}
 
     config = load_professional_config()
     result = generate_skill_shadow(_bundle(), config=config, runner=fake_runner)
@@ -71,6 +85,16 @@ def test_shadow_run_is_non_publishing_and_provider_agnostic() -> None:
     assert result["publish"] is False
     assert result["human_review_required"] is True
     assert set(result["skills"]) == set(SKILL_NAMES)
+
+
+def test_invalid_skill_output_is_quarantined() -> None:
+    def invalid_runner(skill_name, context, prompt, provider, model):
+        return {"gaps": []}, {"status": "ok", "provider": provider, "model": model}
+
+    result = generate_skill_shadow(_bundle(), config=load_professional_config(), runner=invalid_runner)
+    assert result["status"] == "partial"
+    assert all(item["meta"]["status"] == "error" for item in result["skills"].values())
+    assert all(item["meta"].get("contract_errors") for item in result["skills"].values())
 
 
 def test_daily_shadow_is_skipped_to_protect_sla() -> None:
@@ -84,6 +108,7 @@ def test_daily_shadow_is_skipped_to_protect_sla() -> None:
 def main() -> None:
     test_skill_files_are_project_local_and_complete()
     test_shadow_run_is_non_publishing_and_provider_agnostic()
+    test_invalid_skill_output_is_quarantined()
     test_daily_shadow_is_skipped_to_protect_sla()
     print("Skill shadow test passed")
 

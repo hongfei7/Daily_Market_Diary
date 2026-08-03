@@ -71,8 +71,8 @@ def main() -> None:
             encoding="utf-8",
         )
         (root / "2026-04-14_morning_briefing.html").write_text(
-            '<html><head><meta name="viewport"></head><body><div class="reading-route"></div>'
-            '<div class="report-grid">Morning Research Workbench</div></body></html>',
+            '<html><head><meta name="viewport"></head><body><div class="reading-path"></div>'
+            '<div class="report-grid">Morning Market Brief</div></body></html>',
             encoding="utf-8",
         )
 
@@ -121,6 +121,32 @@ def main() -> None:
         provenance_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert provenance_audit["status"] == "error"
         assert any("provenance" in item.lower() for item in provenance_audit["errors"])
+
+        bundle = _bundle()
+        bundle["report_quality"] = {
+            "score": 58.0,
+            "warnings": ["Local source coverage is weak."],
+            "release_recommendation": {"action": "manual_review"},
+        }
+        bundle["fact_check"] = {
+            "status": "warning",
+            "release_blocking": True,
+            "degraded_fields": ["one_line_market_pulse"],
+        }
+        bundle["source_health"] = {"status": "failed", "critical_failures": ["hk_local"]}
+        bundle["provenance_audit"] = {"status": "ok", "errors": []}
+        (root / "raw" / "2026-04-14_bundle.json").write_text(json.dumps(bundle), encoding="utf-8")
+        commute_audit = audit_generated_run(
+            root,
+            "2026-04-14",
+            require_llm=True,
+            require_email_preview=True,
+            require_wecom_preview=True,
+            quality_policy="commute",
+        )
+        assert commute_audit["status"] == "ok"
+        assert commute_audit["quality_policy"] == "commute"
+        assert any("Commute delivery" in item for item in commute_audit["warnings"])
     finally:
         shutil.rmtree(root, ignore_errors=True)
 

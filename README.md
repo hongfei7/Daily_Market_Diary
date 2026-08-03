@@ -75,13 +75,14 @@ Use `--no-llm` when you want a deterministic run with no model calls.
 
 ### Financial skills and research plugins
 
-Three project-local, provider-agnostic skills run in the weekly-review shadow pass when `DEEPSEEK_API_KEY` is available:
+Four project-local, provider-agnostic skills run in the weekly-review shadow pass when `DEEPSEEK_API_KEY` is available:
 
 - `skills/morning-note`
 - `skills/catalyst-calendar`
 - `skills/thesis-tracker`
+- `skills/report-evidence-qc`
 
-Their output is stored under `skill_shadow` in the raw bundle, requires human review, and is never merged into the published report. Public Equity Investing and Data Analytics are Codex-side tools for manual follow-up research; they are not callable from GitHub Actions and are not CI dependencies. Claude models are not configured.
+Their output is contract-validated, stored under `skill_shadow` in the raw bundle, requires human review, and is never merged into the published report. Public Equity Investing and Data Analytics are Codex-side tools for manual follow-up research; they are not callable from GitHub Actions and are not CI dependencies. Claude models are not configured. See [the skill architecture](docs/skills_integration.md) for the external-skill review and promotion rules.
 
 They are skipped on ordinary daily runs to protect the 07:30 delivery SLA and token budget. Set `DMD_SKILL_SHADOW_FORCE=1` for an explicit daily diagnostic, or `DMD_SKILL_SHADOW_ENABLED=0` to disable them entirely without disabling the production MiniMax narrative layer.
 
@@ -148,6 +149,9 @@ It targets delivery before 07:30 Hong Kong / Beijing time. The primary run start
 - renders and audits the mobile WeCom summary, self-contained HTML attachment, and email preview before publication
 - sends the decision brief and full report to WeCom first, with bounded retries
 - treats WeCom as the required primary channel; a successful email copy does not hide a WeCom delivery failure
+- uses the commute release policy so visible research caveats do not silently suppress the report, while broken files, invalid provenance, and delivery-asset failures still block publication
+- sends a WeCom incident notice when no delivery-ready report can be produced, allowing the 06:47 recovery run to remain visible
+- writes machine-readable success receipts for both the WeCom decision brief and HTML attachment
 - archives published reports back to `main`
 - verifies an immutable SHA-256 archive manifest and updates the signal ledger
 - uploads reports and raw outputs as workflow artifacts
@@ -156,7 +160,7 @@ Manual workflow dispatch supports:
 
 - `date`: explicit calendar review date
 - `publish_archive`: commit the archive to `main`
-- `deliver`: send the primary WeCom brief and attachment plus the secondary email copy for a manual run
+- `deliver`: send the primary WeCom brief and attachment plus the secondary email copy for a manual run; defaults to `true`
 - `run_full_tests`: run the full regression suite before a manual generation
 - `include_raw_bundle`: include raw JSON in the committed archive
 

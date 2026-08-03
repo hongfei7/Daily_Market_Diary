@@ -18,6 +18,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--require-llm", action="store_true", help="Fail the audit if LLM task metadata is missing or errored.")
     parser.add_argument("--require-email-preview", action="store_true", help="Fail the audit if the email preview HTML file is missing.")
     parser.add_argument("--require-wecom-preview", action="store_true", help="Fail if the primary WeCom summary or HTML preview is missing or invalid.")
+    parser.add_argument(
+        "--quality-policy",
+        choices=("strict", "commute"),
+        default="strict",
+        help="strict blocks critical research-quality findings; commute delivers a visibly caveated report while retaining structural blockers.",
+    )
     return parser.parse_args()
 
 
@@ -29,6 +35,7 @@ def main() -> int:
         require_llm=args.require_llm,
         require_email_preview=args.require_email_preview,
         require_wecom_preview=args.require_wecom_preview,
+        quality_policy=args.quality_policy,
     )
     print(format_audit_summary(audit))
     return 0 if audit.get("status") == "ok" else 1

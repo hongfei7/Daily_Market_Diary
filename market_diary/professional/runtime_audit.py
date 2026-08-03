@@ -129,7 +129,11 @@ def audit_generated_run(
     require_llm: bool = False,
     require_email_preview: bool = False,
     require_wecom_preview: bool = False,
+    quality_policy: str = "strict",
 ) -> Dict[str, Any]:
+    if quality_policy not in {"strict", "commute"}:
+        raise ValueError("quality_policy must be either 'strict' or 'commute'.")
+
     root = Path(output_dir)
     report_path = root / f"{report_date}_morning_briefing.md"
     bundle_path = root / "raw" / f"{report_date}_bundle.json"
@@ -221,11 +225,23 @@ def audit_generated_run(
             warnings.extend(str(item) for item in (report_quality.get("warnings", []) or [])[:8])
         release_recommendation = report_quality.get("release_recommendation", {}) or {}
         if release_recommendation.get("action") == "manual_review":
-            errors.append("Report quality requires manual review; automatic distribution is blocked.")
+            message = "Report quality requires manual review."
+            if quality_policy == "strict":
+                errors.append(f"{message} Automatic distribution is blocked under the strict policy.")
+            else:
+                warnings.append(
+                    f"{message} Commute delivery remains enabled with the report's visible release caveat."
+                )
 
         fact_check = bundle.get("fact_check", {}) or {}
         if fact_check.get("status") == "error" or fact_check.get("release_blocking"):
-            errors.append("Fact-check guardrail has a release-blocking error.")
+            message = "Fact-check guardrail has unresolved critical findings."
+            if quality_policy == "strict":
+                errors.append(f"{message} Automatic distribution is blocked under the strict policy.")
+            else:
+                warnings.append(
+                    f"{message} Commute delivery is restricted to the caveated report and deterministic fallback copy."
+                )
         elif fact_check.get("status") == "warning":
             warnings.append("Fact-check review findings were downgraded to deterministic fallback fields; inspect the audit trail.")
 
@@ -237,7 +253,13 @@ def audit_generated_run(
         source_health = bundle.get("source_health", {}) or {}
         if source_health.get("status") == "failed":
             failures = ", ".join(str(item) for item in (source_health.get("critical_failures", []) or []))
-            errors.append(f"Critical source-health policy failed{': ' + failures if failures else '.'}")
+            message = f"Critical source-health policy failed{': ' + failures if failures else '.'}"
+            if quality_policy == "strict":
+                errors.append(message)
+            else:
+                warnings.append(
+                    f"{message} Commute delivery remains enabled only because the gap is disclosed in the report."
+                )
 
         performance = bundle.get("performance", {}) or {}
         if (performance.get("methodology", {}) or {}).get("look_ahead_guard") is not True:
@@ -276,13 +298,14 @@ def audit_generated_run(
 
     if wecom_html_path.exists():
         wecom_html = wecom_html_path.read_text(encoding="utf-8")
-        for marker in ('name="viewport"', "reading-route", "report-grid", "Morning Research Workbench"):
+        for marker in ('name="viewport"', "reading-path", "report-grid", "Morning Market Brief"):
             if marker not in wecom_html:
                 errors.append(f"WeCom HTML preview is missing required marker: {marker}")
 
     status = "ok" if not errors else "error"
     return {
         "status": status,
+        "quality_policy": quality_policy,
         "report_date": report_date,
         "errors": errors,
         "warnings": warnings,

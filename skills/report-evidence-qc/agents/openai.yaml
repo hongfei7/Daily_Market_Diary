@@ -1,0 +1,4 @@
+interface:
+  display_name: "Report Evidence QC"
+  short_description: "Audit claims, sources, visuals, and release caveats"
+  default_prompt: "Use $report-evidence-qc to audit a morning report before human review."

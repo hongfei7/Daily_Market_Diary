@@ -32,7 +32,7 @@ Every adapter keeps its original provenance records. The source-health layer sco
 4. Confidence: the adapter's declared evidence confidence.
 5. Freshness: the share of all active records inside a source-specific age policy.
 
-`market_data` and `hk_local` are critical by default. Market quotes are represented asset by asset, so one fresh quote cannot hide stale instruments. A critical source with no decision-grade record, a future-dated record, or freshness coverage below its minimum ratio forces manual review and blocks automatic distribution. Optional sources degrade the report with a visible caveat rather than stopping the whole pipeline.
+`market_data` and `hk_local` are critical by default. Market quotes are represented asset by asset, so one fresh quote cannot hide stale instruments. A critical source with no decision-grade record, a future-dated record, or freshness coverage below its minimum ratio forces the strict research policy to manual review. The unattended commute policy keeps that restriction visible in the report and WeCom summary instead of silently dropping the entire morning delivery; invalid provenance or structurally broken artifacts still block publication. Optional sources degrade the report with a visible caveat.
 
 ## Backtest contract
 

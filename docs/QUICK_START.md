@@ -86,6 +86,8 @@ Both messages use bounded retries. The workflow fails visibly if either primary-
 python scripts/send_report_wecom.py --report-date 2026-04-13 --output-dir reports_professional --mode full --dry-run
 ```
 
+Manual workflow runs send to WeCom by default. Clear the `deliver` checkbox only when you intentionally want a preview-only run. Successful live sends create separate JSON receipts for the summary and file attachment. If generation, preview rendering, or audit cannot produce a delivery-ready report, the workflow sends a compact WeCom incident notice and the 06:47 scheduled recovery run retries automatically.
+
 ## Secondary Email Delivery
 
 The workflow can also email the generated report to `hongfei_wu7@outlook.com` as a secondary copy.

@@ -33,7 +33,11 @@ def test_professional_html_structure() -> None:
     assert '<span class="move-positive">' in html
     assert '<span class="move-negative">' in html
     assert '<span class="move-negative">-08' not in html
-    assert "Hong Kong institutional research" in html
+    assert "Hong Kong Market Intelligence" in html
+    assert "Morning Market Brief" in html
+    assert "reading-path" in html
+    assert "section-executive-summary" in html
+    assert "mobile-toc" in html
     assert "linear-gradient" not in html
     assert "background: #1677ff" not in html
 

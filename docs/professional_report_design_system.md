@@ -77,14 +77,18 @@ The performance block must show the execution convention, sample size, net resul
 ## Automated versus human research
 
 - GitHub Actions uses deterministic code, MiniMax as the primary narrative provider, and DeepSeek as fallback plus a weekly non-publishing skill shadow runner.
-- `morning-note`, `catalyst-calendar`, and `thesis-tracker` shadow outputs are stored in the raw bundle for human comparison and never enter the published report.
+- `morning-note`, `catalyst-calendar`, `thesis-tracker`, and `report-evidence-qc` shadow outputs are contract-validated, stored in the raw bundle for human comparison, and never enter the published report.
 - Codex Public Equity Investing and Data Analytics plugins support manual follow-up research only. They are not available inside GitHub Actions and are not production dependencies.
 - Claude models are not configured or called.
 
 ## Release standard
 
-Every substantive statement must be traceable to a source URL and observation date. Questionable LLM fields are removed and replaced by deterministic copy. Missing provenance, failed critical-source freshness, unresolved critical numeric claims, truncated text that survives fallback, or a disabled look-ahead guard block automated delivery; review-only findings travel as caveats.
+Every substantive statement must be traceable to a source URL and observation date. Questionable LLM fields are removed and replaced by deterministic copy. The strict research policy continues to flag critical source-health and fact-check findings for human review. The commute delivery policy keeps those findings visible as release caveats instead of silently suppressing the morning report; malformed or missing artifacts, invalid provenance, broken tables, oversized content, and a disabled look-ahead guard remain hard blockers.
 
 ## Primary delivery contract
 
-WeCom is the production reading surface. Its first message is a decision brief capped at 3,800 UTF-8 bytes and must retain the base case, confirmation test, invalidation condition, source dates, market tape, and a valid archive link. A self-contained mobile HTML file follows for the full 35–50 minute commute read. Both assets are rendered and audited before publication, sent with bounded retries, and treated as required delivery outcomes. Email is a secondary copy and cannot mask a WeCom failure.
+WeCom is the production reading surface. Its first message is a decision brief capped at 3,800 UTF-8 bytes and must retain the base case, confirmation test, invalidation condition, source dates, market tape, and a valid archive link. A self-contained mobile HTML file follows for the full 40–50 minute commute read. Both assets are rendered and audited before publication, sent with bounded retries, and treated as required delivery outcomes. Each successful send writes a JSON receipt with the message kind, timestamp, report date, and WeCom response code. If a delivery-ready report cannot be produced, a short incident message explains the failed stage and the scheduled recovery behavior. Email is a secondary copy and cannot mask a WeCom failure.
+
+## HTML design language
+
+Use a conservative strategy-report system inspired by leading professional-services publications without copying their branding: black editorial rules, white paper, a single restrained blue accent, answer-first headlines, strong exhibit hierarchy, quiet metadata, no gradients, and no decorative dashboard cards. The masthead carries the issue, source dates, edition, quality state, and a three-step commute reading path. The executive summary uses three evidence-led columns on desktop and a single scan path on mobile. Full tables remain horizontally scrollable in WeCom, while the contents list collapses behind a native mobile disclosure control.

@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -55,6 +56,11 @@ def _parse_args() -> argparse.Namespace:
         help="Delivery mode: summary=markdown card, file=HTML attachment, full=both (default: summary)",
     )
     parser.add_argument("--dry-run", action="store_true", help="Render/preview without sending.")
+    parser.add_argument(
+        "--receipt-file",
+        default="",
+        help="Optional JSON receipt path written only after WeCom confirms successful delivery.",
+    )
     return parser.parse_args()
 
 
@@ -116,6 +122,29 @@ def _wecom_upload(webhook_url: str, file_path: Path, media_type: str = "file") -
     if result.get("errcode") != 0:
         raise RuntimeError(f"WeCom upload error: {result.get('errmsg', 'unknown')} (code {result.get('errcode')})")
     return result["media_id"]
+
+
+def _write_delivery_receipt(
+    path: Optional[Path],
+    report_date: str,
+    kind: str,
+    response: Dict[str, Any],
+) -> None:
+    if path is None:
+        return
+    payload = {
+        "status": "ok",
+        "channel": "wecom",
+        "kind": kind,
+        "report_date": report_date,
+        "sent_at_utc": datetime.now(timezone.utc).isoformat(),
+        "response": {
+            "errcode": response.get("errcode"),
+            "errmsg": response.get("errmsg", ""),
+        },
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -348,7 +377,13 @@ def build_summary_markdown(bundle: Dict[str, Any], report_date: str) -> str:
     return body
 
 
-def send_summary(webhook_url: str, bundle: Dict[str, Any], report_date: str, dry_run: bool = False) -> str:
+def send_summary(
+    webhook_url: str,
+    bundle: Dict[str, Any],
+    report_date: str,
+    dry_run: bool = False,
+    receipt_path: Optional[Path] = None,
+) -> str:
     """Send markdown summary. Returns the markdown text."""
     markdown = build_summary_markdown(bundle, report_date)
     if dry_run:
@@ -359,7 +394,8 @@ def send_summary(webhook_url: str, bundle: Dict[str, Any], report_date: str, dry
             f"{WECOM_SAFE_MARKDOWN_BYTE_LIMIT} safe ({WECOM_MARKDOWN_BYTE_LIMIT} platform) ==="
         )
     else:
-        _wecom_post(webhook_url, {"msgtype": "markdown", "markdown": {"content": markdown}})
+        result = _wecom_post(webhook_url, {"msgtype": "markdown", "markdown": {"content": markdown}})
+        _write_delivery_receipt(receipt_path, report_date, "summary", result)
         print("WeCom markdown summary sent.")
     return markdown
 
@@ -371,119 +407,167 @@ def send_summary(webhook_url: str, bundle: Dict[str, Any], report_date: str, dry
 HTML_CSS = """\
 <style>
   :root {
-    --ink: #111820;
-    --navy: #123a56;
-    --blue: #1f5f8b;
-    --muted: #58656f;
-    --line: #d8dde1;
-    --soft: #f4f6f7;
-    --positive: #1f5f8b;
-    --negative: #b54708;
+    --ink: #101114;
+    --navy: #18364a;
+    --blue: #176b92;
+    --muted: #5f666b;
+    --line: #d9dcdd;
+    --paper: #ffffff;
+    --warm: #f4f2ed;
+    --soft: #f6f7f7;
+    --supportive: #176b92;
+    --adverse: #9a5a21;
   }
   * { box-sizing: border-box; }
-  html { background: #eef1f2; }
+  html { background: #efefec; scroll-behavior: smooth; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
                  "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial,
                  sans-serif;
-    color: var(--ink); line-height: 1.58; max-width: 1240px; margin: 0 auto;
-    padding: 0 30px 56px; background: #fff; font-size: 15px;
+    color: var(--ink); line-height: 1.62; max-width: 1360px; margin: 0 auto;
+    padding: 0 44px 64px; background: var(--paper); font-size: 15px;
+    -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4, h5, h6 { color: var(--ink); letter-spacing: -0.015em; }
-  h1 { font-size: 30px; line-height: 1.15; margin: 44px 0 20px; }
-  h2 { font-size: 24px; line-height: 1.2; margin: 54px 0 20px; padding-top: 14px; border-top: 3px solid var(--navy); }
-  h3 { font-size: 19px; line-height: 1.3; margin: 34px 0 13px; }
-  h4 { font-size: 16px; margin: 26px 0 10px; color: var(--navy); }
+  h1, h2, h3, h4, h5, h6 { color: var(--ink); letter-spacing: -.025em; }
+  h1 { font-size: 32px; line-height: 1.12; margin: 42px 0 18px; }
+  h2 { font-size: 30px; line-height: 1.14; margin: 0 0 26px; padding-top: 18px; border-top: 5px solid var(--ink); }
+  h3 { font-size: 21px; line-height: 1.26; margin: 38px 0 14px; padding-left: 12px; border-left: 3px solid var(--blue); }
+  h4 { font-size: 16px; margin: 28px 0 10px; color: var(--navy); letter-spacing: -.01em; }
   h5, h6 { font-size: 15px; margin: 22px 0 8px; }
   p { margin: 0 0 13px; }
   blockquote {
-    border-left: 4px solid var(--navy); padding: 11px 16px; margin: 16px 0 22px;
-    background: var(--soft); color: #3d4952; font-size: 14px;
+    border-left: 3px solid var(--blue); padding: 13px 17px; margin: 18px 0 24px;
+    background: var(--soft); color: #374047; font-size: 14px;
   }
   blockquote p:last-child { margin-bottom: 0; }
-  .report-shell { border-top: 7px solid var(--navy); }
-  .report-header {
-    padding: 44px 0 34px; border-bottom: 1px solid var(--line); margin-bottom: 28px;
+  .report-shell { border-top: 9px solid var(--ink); }
+  .report-masthead { padding: 24px 0 34px; border-bottom: 1px solid var(--line); }
+  .masthead-line {
+    display: flex; justify-content: space-between; gap: 20px; align-items: baseline;
+    padding-bottom: 19px; border-bottom: 1px solid var(--ink);
   }
-  .report-eyebrow {
-    margin: 0 0 12px; color: var(--blue); font-size: 12px; font-weight: 700;
-    letter-spacing: .13em; text-transform: uppercase;
+  .report-wordmark, .issue-label {
+    margin: 0; font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
   }
-  .report-header h1 { margin: 0; max-width: 820px; font-size: 40px; font-weight: 650; }
-  .report-date { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
-  .reading-route {
-    display: inline-block; margin: 14px 0 0; padding: 7px 10px; background: #e9f1f5;
-    color: var(--navy); font-size: 12px; font-weight: 700;
-  }
+  .report-wordmark { color: var(--blue); }
+  .issue-label { color: var(--muted); letter-spacing: .11em; }
+  .masthead-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 54px; padding-top: 34px; }
+  .report-eyebrow { margin: 0 0 11px; color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+  .report-masthead h1 { margin: 0; max-width: 820px; font-size: 48px; font-weight: 720; line-height: 1.02; }
   .report-deck {
-    max-width: 900px; margin: 24px 0 0; padding-left: 18px; border-left: 4px solid var(--blue);
-    font-family: Georgia, "Times New Roman", serif; font-size: 21px; line-height: 1.45; color: #26343e;
+    max-width: 900px; margin: 24px 0 0; font-size: 24px; font-weight: 500;
+    line-height: 1.38; letter-spacing: -.02em; color: #2e3438;
   }
-  .report-grid { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 48px; align-items: start; }
-  .report-toc { position: sticky; top: 18px; padding-top: 10px; }
-  .report-toc-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
-  .report-toc a { display: block; margin-top: 10px; color: #43515b; font-size: 12px; line-height: 1.35; text-decoration: none; }
+  .issue-facts { margin: 2px 0 0; padding: 0 0 0 20px; border-left: 1px solid var(--line); }
+  .issue-facts div { padding: 0 0 14px; margin: 0 0 14px; border-bottom: 1px solid var(--line); }
+  .issue-facts div:last-child { margin-bottom: 0; border-bottom: 0; }
+  .issue-facts dt { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  .issue-facts dd { margin: 4px 0 0; color: var(--ink); font-size: 13px; font-weight: 700; line-height: 1.35; }
+  .reading-path { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 31px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .reading-path li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; margin: 0; padding: 14px 18px 14px 0; border-right: 1px solid var(--line); }
+  .reading-path li:last-child { border-right: 0; padding-left: 18px; }
+  .reading-path li:nth-child(2) { padding-left: 18px; }
+  .reading-path b { color: var(--blue); font-size: 11px; }
+  .reading-path span { display: block; font-size: 12px; font-weight: 750; line-height: 1.2; }
+  .reading-path small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+  .report-grid { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 58px; align-items: start; padding-top: 34px; }
+  .report-toc { position: sticky; top: 18px; padding-top: 8px; }
+  .report-toc-title { padding-bottom: 9px; border-bottom: 2px solid var(--ink); font-size: 9px; font-weight: 800; color: var(--ink); letter-spacing: .14em; text-transform: uppercase; }
+  .report-toc a { display: block; margin-top: 11px; color: #4e555a; font-size: 11px; line-height: 1.35; text-decoration: none; }
   .report-toc a:hover { color: var(--blue); }
-  .report-content { min-width: 0; max-width: 940px; }
-  .report-content > h1:first-child { display: none; }
-  .table-shell { width: 100%; margin: 18px 0 24px; overflow-x: auto; border-top: 2px solid var(--navy); }
-  table {
-    width: 100%; border-collapse: collapse; margin: 0; font-size: 13px;
+  .mobile-toc { display: none; }
+  .report-content { min-width: 0; max-width: 990px; }
+  .report-content > h1 { display: none; }
+  .report-section { margin: 0 0 58px; scroll-margin-top: 18px; }
+  .section-executive-summary > ul {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
+    padding: 0; margin: 0; list-style: none;
   }
-  th {
-    background: #fff; color: var(--navy); padding: 10px 11px; text-align: left;
-    font-weight: 700; border-bottom: 1px solid #aeb8bf; vertical-align: bottom;
+  .section-executive-summary > ul > li {
+    margin: 0; padding: 14px 0 0; border-top: 3px solid var(--blue); color: #353c41;
   }
-  td {
-    padding: 10px 11px; border-bottom: 1px solid #e2e6e8; vertical-align: top;
-  }
-  tr:nth-child(even) td { background: #f8f9f9; }
-  tbody tr:hover td { background: #f1f4f5; }
-  th:first-child, td:first-child { font-weight: 650; }
-  .move-positive { color: var(--positive); font-weight: 700; white-space: nowrap; }
-  .move-negative { color: var(--negative); font-weight: 700; white-space: nowrap; }
+  .section-executive-summary > ul > li strong { display: block; margin-bottom: 7px; color: var(--ink); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
+  .section-visual-dashboard { padding: 24px 26px 2px; background: var(--warm); }
+  .section-visual-dashboard h2 { border-top-color: var(--blue); }
+  .section-optional-appendix-traceability-and-performance,
+  .section-traceable-appendix,
+  .section-supplementary-visual-appendix { padding: 28px 30px; background: var(--soft); }
+  .table-shell { width: 100%; margin: 18px 0 26px; overflow-x: auto; border-top: 2px solid var(--ink); -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; margin: 0; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  th { background: var(--paper); color: var(--ink); padding: 10px 10px; text-align: left; font-size: 10px; letter-spacing: .055em; text-transform: uppercase; font-weight: 800; border-bottom: 1px solid #9ea4a7; vertical-align: bottom; }
+  td { padding: 10px; border-bottom: 1px solid #e3e4e4; vertical-align: top; }
+  tbody tr:hover td { background: #f7f7f5; }
+  th:first-child, td:first-child { font-weight: 700; }
+  th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) { font-variant-numeric: tabular-nums; }
+  .move-positive { color: var(--supportive); font-weight: 750; white-space: nowrap; }
+  .move-negative { color: var(--adverse); font-weight: 750; white-space: nowrap; }
   img { display: block; max-width: 100%; height: auto; margin: 22px 0 30px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  code {
-    background: #f1f3f4; padding: 2px 5px;
-    font-family: "SF Mono", "Fira Code", "Consolas", monospace; font-size: 13px;
-  }
-  pre {
-    background: #f4f6f7; padding: 14px; overflow-x: auto;
-    font-size: 12px; line-height: 1.5; border-left: 3px solid var(--navy);
-  }
+  .section-visual-dashboard img { margin-top: 16px; border: 0; }
+  code { background: #f0f1f1; padding: 2px 5px; font-family: "SF Mono", "Fira Code", "Consolas", monospace; font-size: 12px; }
+  pre { background: var(--soft); padding: 14px; overflow-x: auto; font-size: 12px; line-height: 1.5; border-left: 3px solid var(--navy); }
   pre code { background: none; padding: 0; }
-  ul, ol { padding-left: 23px; margin: 8px 0 16px; }
+  ul, ol { padding-left: 22px; margin: 8px 0 17px; }
   li { margin: 6px 0; }
-  strong { color: #10171d; }
-  a { color: var(--blue); text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  strong { color: var(--ink); }
+  a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 2px; }
   hr { border: none; border-top: 1px solid var(--line); margin: 34px 0; }
-  .report-footer {
-    margin-top: 54px; padding: 20px 0; border-top: 1px solid var(--line);
-    font-size: 12px; color: #75818a; text-align: left;
-  }
+  .report-footer { margin-top: 22px; padding: 23px 0 8px; border-top: 5px solid var(--ink); font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 18px; }
   @media (max-width: 860px) {
-    body { padding: 0 18px 40px; }
-    .report-header { padding: 32px 0 26px; }
-    .report-header h1 { font-size: 32px; }
+    body { padding: 0 18px 38px; font-size: 14px; }
+    .report-shell { border-top-width: 6px; }
+    .report-masthead { padding: 17px 0 24px; }
+    .masthead-line { padding-bottom: 13px; }
+    .report-wordmark, .issue-label { font-size: 8px; }
+    .masthead-grid { display: block; padding-top: 24px; }
+    .report-masthead h1 { font-size: 36px; }
+    .report-deck { margin-top: 18px; font-size: 19px; line-height: 1.42; }
+    .issue-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; margin-top: 24px; padding: 0; border-left: 0; border-top: 1px solid var(--line); }
+    .issue-facts div { padding-top: 11px; margin-bottom: 0; }
+    .reading-path { margin-top: 22px; }
+    .reading-path li { display: block; padding: 11px 8px 11px 0; }
+    .reading-path li:nth-child(2), .reading-path li:last-child { padding-left: 10px; }
+    .reading-path b { display: none; }
+    .reading-path span { font-size: 10px; }
+    .reading-path small { font-size: 9px; }
+    .report-grid { display: block; padding-top: 20px; }
+    .report-toc { display: none; }
+    .mobile-toc { display: block; margin: 0 0 30px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--line); }
+    .mobile-toc summary { padding: 12px 0; cursor: pointer; color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .mobile-toc a { display: block; padding: 8px 0; color: #4e555a; font-size: 12px; text-decoration: none; }
+    .mobile-toc nav { padding: 0 0 12px; }
+    .report-section { margin-bottom: 45px; }
+    h2 { font-size: 25px; margin-bottom: 21px; padding-top: 14px; border-top-width: 4px; }
+    h3 { font-size: 18px; margin-top: 31px; }
+    .section-executive-summary > ul { display: block; }
+    .section-executive-summary > ul > li { margin-bottom: 20px; }
+    .section-visual-dashboard,
+    .section-optional-appendix-traceability-and-performance,
+    .section-traceable-appendix,
+    .section-supplementary-visual-appendix { margin-left: -18px; margin-right: -18px; padding: 24px 18px 2px; }
+    table { min-width: 660px; font-size: 12px; }
+    th, td { padding: 9px 8px; }
+    .report-footer { display: block; }
+    .report-footer span { display: block; margin-top: 5px; }
+  }
+  @media (max-width: 430px) {
+    body { padding-left: 14px; padding-right: 14px; }
+    .report-masthead h1 { font-size: 32px; }
     .report-deck { font-size: 18px; }
-    .report-grid { display: block; }
-    .report-toc { position: static; display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 0 0 20px; border-bottom: 1px solid var(--line); }
-    .report-toc-title { width: 100%; }
-    .report-toc a { margin: 0; }
-    h2 { font-size: 21px; margin-top: 42px; }
-    h3 { font-size: 18px; }
-    table { min-width: 620px; }
+    .section-visual-dashboard,
+    .section-optional-appendix-traceability-and-performance,
+    .section-traceable-appendix,
+    .section-supplementary-visual-appendix { margin-left: -14px; margin-right: -14px; padding-left: 14px; padding-right: 14px; }
   }
   @media print {
     html { background: #fff; }
     body { max-width: none; padding: 0; font-size: 10.5pt; }
-    .report-toc { display: none; }
+    .report-toc, .mobile-toc { display: none; }
     .report-grid { display: block; }
     .report-content { max-width: none; }
     .table-shell { overflow: visible; break-inside: avoid; }
     table { min-width: 0; }
     h2, h3, img { break-after: avoid; }
+    .report-section { break-inside: auto; }
   }
 </style>"""
 
@@ -532,7 +616,58 @@ def _structure_report_html(body_html: str) -> tuple[str, List[tuple[str, str]]]:
         return f"<td>{decorated}</td>"
 
     body_html = re.sub(r"<td>(?P<inner>.*?)</td>", _movement_cell, body_html, flags=re.DOTALL)
+
+    # The report title and commute metadata are represented by the designed
+    # masthead below; remove their duplicated Markdown rendering from the body.
+    body_html = re.sub(
+        r'(?P<title><h1>.*?</h1>)\s*(?:<blockquote>.*?</blockquote>)?\s*'
+        r'(?:<p><em>Data through:.*?</em></p>)?',
+        r'\g<title>',
+        body_html,
+        count=1,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+
+    # Wrap each H2-led chapter so hierarchy, appendix treatment, and mobile
+    # spacing can be controlled without changing the underlying Markdown.
+    matches = list(re.finditer(r'<h2 id="(?P<slug>[^"]+)">.*?</h2>', body_html, flags=re.DOTALL))
+    if matches:
+        pieces = [body_html[: matches[0].start()]]
+        for index, match in enumerate(matches):
+            end = matches[index + 1].start() if index + 1 < len(matches) else len(body_html)
+            slug = match.group("slug")
+            pieces.append(f'<section class="report-section section-{slug}">{body_html[match.start():end]}</section>')
+        body_html = "".join(pieces)
     return body_html, toc
+
+
+def _extract_header_context(md_text: str, report_date: str) -> Dict[str, str]:
+    def _match(pattern: str, default: str = "") -> str:
+        found = re.search(pattern, md_text, flags=re.MULTILINE | re.IGNORECASE)
+        return " ".join(found.group(1).split()).strip() if found else default
+
+    pulse = _match(
+        r"^- \*\*Market pulse:\*\*\s*(.+)$",
+        "Evidence-led Hong Kong market briefing and decision checklist.",
+    )
+    mode = _match(r"Mode:\s*`([^`]+)`", "Daily briefing")
+    global_date = _match(
+        r"Data through:\s*global\s*`([^`]+)`",
+        _match(r"Global request:\s*`([^`]+)`", "See report"),
+    )
+    hk_date = _match(
+        r"HK/China\s*`([^`]+)`",
+        _match(r"HK/China request:\s*`([^`]+)`", "See report"),
+    )
+    quality = _match(r"Report quality:\s*`([^`]+)`", "See validation")
+    return {
+        "pulse": pulse,
+        "mode": mode,
+        "global_date": global_date,
+        "hk_date": hk_date,
+        "quality": quality,
+        "report_date": report_date,
+    }
 
 
 def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir: Optional[Path] = None) -> str:
@@ -584,9 +719,9 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
         body_html,
     )
 
-    title = f"HK Morning Brief | {report_date}"
-    pulse_match = re.search(r"^- \*\*Market pulse:\*\*\s*(.+)$", md_text, flags=re.MULTILINE)
-    pulse = html_lib.escape(pulse_match.group(1).strip() if pulse_match else "Evidence-led Hong Kong market briefing and decision checklist.")
+    title = f"HK Morning Market Brief | {report_date}"
+    header = _extract_header_context(md_text, report_date)
+    pulse = html_lib.escape(header["pulse"])
     toc_html = "".join(f'<a href="#{slug}">{html_lib.escape(label)}</a>' for slug, label in toc)
 
     return f"""\
@@ -600,12 +735,29 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
 </head>
 <body>
 <div class="report-shell">
-  <header class="report-header">
-    <p class="report-eyebrow">Hong Kong institutional research</p>
-    <h1>Morning Research Workbench</h1>
-    <p class="report-date">Issue date {report_date} · Decision brief · Source-audited</p>
-    <p class="reading-route">5 min scan · 25–30 min deep read · optional 10–15 min appendix</p>
-    <p class="report-deck">{pulse}</p>
+  <header class="report-masthead">
+    <div class="masthead-line">
+      <p class="report-wordmark">Hong Kong Market Intelligence</p>
+      <p class="issue-label">Daily research note · {report_date}</p>
+    </div>
+    <div class="masthead-grid">
+      <div>
+        <p class="report-eyebrow">Decision brief · Source-audited</p>
+        <h1>Morning Market Brief</h1>
+        <p class="report-deck">{pulse}</p>
+      </div>
+      <dl class="issue-facts">
+        <div><dt>Edition</dt><dd>{html_lib.escape(header['mode'])}</dd></div>
+        <div><dt>Global through</dt><dd>{html_lib.escape(header['global_date'])}</dd></div>
+        <div><dt>HK / China through</dt><dd>{html_lib.escape(header['hk_date'])}</dd></div>
+        <div><dt>Report quality</dt><dd>{html_lib.escape(header['quality'])}</dd></div>
+      </dl>
+    </div>
+    <ol class="reading-path" aria-label="Commute reading path">
+      <li><b>01</b><div><span>Decision scan</span><small>5 minutes</small></div></li>
+      <li><b>02</b><div><span>Causal deep read</span><small>25–30 minutes</small></div></li>
+      <li><b>03</b><div><span>Evidence appendix</span><small>Optional 10–15 minutes</small></div></li>
+    </ol>
   </header>
   <div class="report-grid">
     <nav class="report-toc" aria-label="Report sections">
@@ -613,11 +765,16 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
       {toc_html}
     </nav>
     <main class="report-content">
+      <details class="mobile-toc">
+        <summary>In this issue</summary>
+        <nav aria-label="Mobile report sections">{toc_html}</nav>
+      </details>
       {body_html}
     </main>
   </div>
   <div class="report-footer">
-    Morning Research Workbench · Generated {report_date} · For research review, not investment advice
+    <strong>Morning Market Brief</strong>
+    <span>Generated {report_date} · For research review, not investment advice</span>
   </div>
 </div>
 </body>
@@ -629,6 +786,7 @@ def send_file(
     output_dir: Path,
     report_date: str,
     dry_run: bool = False,
+    receipt_path: Optional[Path] = None,
 ) -> str:
     """Convert markdown report to self-contained HTML, upload to WeCom, and send as file."""
     # Try date-prefixed filename first, then archive layout, then plain morning_briefing.md
@@ -658,7 +816,8 @@ def send_file(
         media_id = _wecom_upload(webhook_url, tmp_path, media_type="file")
         print(f"Uploaded. media_id={media_id}")
 
-        _wecom_post(webhook_url, {"msgtype": "file", "file": {"media_id": media_id}})
+        result = _wecom_post(webhook_url, {"msgtype": "file", "file": {"media_id": media_id}})
+        _write_delivery_receipt(receipt_path, report_date, "file", result)
         print("WeCom file message sent.")
     finally:
         # Clean up temp file (keep it on dry_run for inspection)
@@ -678,6 +837,7 @@ def main() -> int:
     output_dir = (ROOT / args.output_dir).resolve()
 
     webhook_url = (os.getenv("WECOM_WEBHOOK_URL") or "").strip()
+    receipt_path = Path(args.receipt_file).resolve() if args.receipt_file else None
     if not webhook_url and not args.dry_run:
         print("WECOM_WEBHOOK_URL is not set; primary WeCom delivery cannot proceed.", file=sys.stderr)
         return 1
@@ -688,11 +848,23 @@ def main() -> int:
         bundle = _load_bundle(output_dir, args.report_date)
 
     if args.mode == "summary":
-        markdown = send_summary(webhook_url, bundle, args.report_date, dry_run=args.dry_run)
+        markdown = send_summary(
+            webhook_url,
+            bundle,
+            args.report_date,
+            dry_run=args.dry_run,
+            receipt_path=receipt_path,
+        )
         if args.dry_run:
             (output_dir / f"{args.report_date}_wecom_preview.md").write_text(markdown, encoding="utf-8")
     elif args.mode == "file":
-        send_file(webhook_url, output_dir, args.report_date, dry_run=args.dry_run)
+        send_file(
+            webhook_url,
+            output_dir,
+            args.report_date,
+            dry_run=args.dry_run,
+            receipt_path=receipt_path,
+        )
     elif args.mode == "full":
         markdown = send_summary(webhook_url, bundle, args.report_date, dry_run=args.dry_run)
         if args.dry_run:

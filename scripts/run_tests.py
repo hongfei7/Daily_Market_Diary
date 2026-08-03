@@ -31,6 +31,7 @@ SYSTEM_TESTS = [
     "tests/test_llm_pipeline.py",
     "tests/test_skill_shadow.py",
     "tests/test_email_delivery.py",
+    "tests/test_wecom_receipt.py",
     "tests/test_report_html.py",
     "tests/test_editorial_guards.py",
     "tests/test_fact_checker.py",

@@ -198,6 +198,12 @@ def check_workflow_guardrails() -> bool:
         "status=success",
         "archive_needed",
         "primary run did not succeed",
+        "--quality-policy commute",
+        "Notify WeCom when the report is unavailable",
+        "send_wecom_incident.py",
+        "wecom_${BRIEFING_DATE}_summary_receipt.json",
+        "wecom_${BRIEFING_DATE}_file_receipt.json",
+        "steps.audit.outcome == 'success'",
     )
     for marker in required_sla_guards:
         if marker not in morning:
@@ -205,6 +211,10 @@ def check_workflow_guardrails() -> bool:
             return False
     if "reports_professional/performance/*" not in morning:
         print("FAIL signal performance artifacts must be retained with each workflow run")
+        return False
+    deliver_block = morning.split("deliver:", 1)[1].split("run_full_tests:", 1)[0]
+    if "default: true" not in deliver_block:
+        print("FAIL manual workflow dispatch must deliver to WeCom by default")
         return False
     print("OK  workflows use current actions and full regression coverage")
     return True

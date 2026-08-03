@@ -20,7 +20,21 @@ from market_diary.professional.llm_enhancer import (
 )
 
 
-SKILL_NAMES = ("morning-note", "catalyst-calendar", "thesis-tracker")
+SKILL_NAMES = ("morning-note", "catalyst-calendar", "thesis-tracker", "report-evidence-qc")
+REQUIRED_OUTPUT_KEYS = {
+    "morning-note": {"top_call", "signal_stack", "content_budget", "gaps"},
+    "catalyst-calendar": {"events", "undated_watch", "gaps"},
+    "thesis-tracker": {"updates", "portfolio_level_gaps", "gaps"},
+    "report-evidence-qc": {
+        "release_state",
+        "release_reason",
+        "claim_checks",
+        "visual_checks",
+        "priority_fixes",
+        "caveats_to_publish",
+        "gaps",
+    },
+}
 ShadowRunner = Callable[[str, Dict[str, Any], str, str, str], Tuple[Dict[str, Any], Dict[str, Any]]]
 
 
@@ -85,13 +99,27 @@ def _shadow_context(skill_name: str, bundle: Dict[str, Any]) -> Dict[str, Any]:
                 "watchlists": _watchlist_rows(bundle),
             }
         )
-    else:
+    elif skill_name == "thesis-tracker":
         common.update(
             {
                 "watchlists": _watchlist_rows(bundle),
                 "company_events": bundle.get("company_events", {}) or {},
                 "sector_digest": bundle.get("sector_digest", {}) or {},
                 "today_forward": bundle.get("today_forward", {}) or {},
+            }
+        )
+    else:
+        common.update(
+            {
+                "overview": bundle.get("overview", {}) or {},
+                "market_summary": bundle.get("market_summary", {}) or {},
+                "hk_quick_checks": (bundle.get("hk_quick_checks", []) or [])[:10],
+                "attribution": bundle.get("attribution", {}) or {},
+                "daily_one_chart": bundle.get("daily_one_chart", {}) or {},
+                "report_quality": bundle.get("report_quality", {}) or {},
+                "fact_check": bundle.get("fact_check", {}) or {},
+                "source_health": bundle.get("source_health", {}) or {},
+                "llm_sections": bundle.get("llm_sections", {}) or {},
             }
         )
     return common
@@ -112,6 +140,19 @@ def _build_shadow_prompt(skill_name: str, context: Dict[str, Any]) -> str:
 def _cache_path(cache_dir: str, skill_name: str, provider: str, model: str, prompt: str) -> Path:
     digest = hashlib.sha256(f"{provider}|{model}|{prompt}".encode("utf-8")).hexdigest()
     return Path(cache_dir) / f"shadow_{skill_name}_{digest}.json"
+
+
+def _output_contract_errors(skill_name: str, payload: Dict[str, Any]) -> list[str]:
+    required = REQUIRED_OUTPUT_KEYS.get(skill_name, set())
+    missing = sorted(key for key in required if key not in payload)
+    errors = [f"Missing required output key: {key}" for key in missing]
+    if skill_name == "report-evidence-qc" and payload.get("release_state") not in {
+        "ready",
+        "share_with_caveats",
+        "needs_revision",
+    }:
+        errors.append("release_state is outside the output contract.")
+    return errors
 
 
 def _run_shadow_factory(shadow_config: Dict[str, Any], cache_dir: str) -> ShadowRunner:
@@ -216,6 +257,14 @@ def generate_skill_shadow(
         context = _shadow_context(skill_name, bundle)
         prompt = _build_shadow_prompt(skill_name, context)
         payload, meta = runner_fn(skill_name, context, prompt, provider, model)
+        contract_errors = _output_contract_errors(skill_name, payload) if payload else []
+        if str(meta.get("status", "")) in {"ok", "cached"} and contract_errors:
+            meta = {
+                **meta,
+                "status": "error",
+                "error": "Output contract validation failed.",
+                "contract_errors": contract_errors,
+            }
         results[skill_name] = {
             "skill_version": _skill_version(skill_name),
             "output": payload,
