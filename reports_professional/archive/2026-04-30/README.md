@@ -10,9 +10,11 @@ This is the GitHub landing page for the archived report dated `2026-04-30`.
 - Archive gallery: [archive/README.md](../README.md)
 - Direct markdown file: [morning_briefing.md](./morning_briefing.md)
 - Dashboard: [Open image](charts/dashboard_2026-04-30.png)
+- Catalyst & Event Radar: N/A
 - Daily One Chart: [Open image](charts/daily_one_chart_2026-04-30.png)
 - Trend Pack: [Open image](charts/hk_trend_pack_2026-04-30.png)
 - Raw bundle: [Open bundle](raw/2026-04-30_bundle.json)
+- Integrity manifest: [Verify SHA-256 payload](manifest.json)
 
 
 ## Dashboard Preview

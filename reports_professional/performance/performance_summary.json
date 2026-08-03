@@ -19,14 +19,14 @@
         }
       },
       "metrics": {
-        "active_exposure_ratio": 0.4909,
+        "active_exposure_ratio": 0.4821,
         "active_sessions": 27,
-        "annualized_return": 0.049464,
-        "annualized_volatility": 0.167964,
-        "average_daily_return": 0.0002476,
-        "benchmark_return": -0.022215,
-        "cumulative_return_net": 0.010593,
-        "excess_return": 0.032808,
+        "annualized_return": 0.04385,
+        "annualized_volatility": 0.166478,
+        "average_daily_return": 0.00022532,
+        "benchmark_return": -0.019316,
+        "cumulative_return_net": 0.009582,
+        "excess_return": 0.028898,
         "hit_rate_active_sessions": 0.4815,
         "max_drawdown": -0.079127,
         "median_daily_return": 0.0,
@@ -34,8 +34,8 @@
           "minimum_active_sessions": 100,
           "minimum_sessions": 252
         },
-        "sessions": 55,
-        "sharpe_zero_rf": 0.371,
+        "sessions": 56,
+        "sharpe_zero_rf": 0.341,
         "status": "exploratory"
       }
     },
@@ -58,14 +58,14 @@
         }
       },
       "metrics": {
-        "active_exposure_ratio": 0.5,
+        "active_exposure_ratio": 0.4909,
         "active_sessions": 27,
-        "annualized_return": -0.091716,
-        "annualized_volatility": 0.250072,
-        "average_daily_return": -0.00025756,
-        "benchmark_return": -0.045254,
-        "cumulative_return_net": -0.020403,
-        "excess_return": 0.024851,
+        "annualized_return": -0.094288,
+        "annualized_volatility": 0.247793,
+        "average_daily_return": -0.00027106,
+        "benchmark_return": -0.052863,
+        "cumulative_return_net": -0.021383,
+        "excess_return": 0.031481,
         "hit_rate_active_sessions": 0.4815,
         "max_drawdown": -0.132983,
         "median_daily_return": 0.0,
@@ -73,14 +73,14 @@
           "minimum_active_sessions": 100,
           "minimum_sessions": 252
         },
-        "sessions": 54,
-        "sharpe_zero_rf": -0.26,
+        "sessions": 55,
+        "sharpe_zero_rf": -0.276,
         "status": "exploratory"
       }
     }
   },
   "data_quality": {
-    "active_signal_dates": 70,
+    "active_signal_dates": 71,
     "conflicts": [
       "2026-05-29 Hang Seng Index: 25006.16 versus 25182.39; excluded conflicted observation",
       "2026-05-29 Hang Seng TECH ETF (3033.HK): 4.782 versus 4.784; excluded conflicted observation",
@@ -109,9 +109,9 @@
       "2026-06-21: excluded non-session weekend effective date"
     ],
     "first_observation": "2026-04-16",
-    "last_observation": "2026-07-31",
-    "observations": 64,
-    "signals": 86
+    "last_observation": "2026-08-03",
+    "observations": 65,
+    "signals": 87
   },
   "methodology": {
     "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",

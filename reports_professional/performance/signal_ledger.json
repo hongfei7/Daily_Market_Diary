@@ -19,14 +19,14 @@
         }
       },
       "metrics": {
-        "active_exposure_ratio": 0.4909,
+        "active_exposure_ratio": 0.4821,
         "active_sessions": 27,
-        "annualized_return": 0.049464,
-        "annualized_volatility": 0.167964,
-        "average_daily_return": 0.0002476,
-        "benchmark_return": -0.022215,
-        "cumulative_return_net": 0.010593,
-        "excess_return": 0.032808,
+        "annualized_return": 0.04385,
+        "annualized_volatility": 0.166478,
+        "average_daily_return": 0.00022532,
+        "benchmark_return": -0.019316,
+        "cumulative_return_net": 0.009582,
+        "excess_return": 0.028898,
         "hit_rate_active_sessions": 0.4815,
         "max_drawdown": -0.079127,
         "median_daily_return": 0.0,
@@ -34,8 +34,8 @@
           "minimum_active_sessions": 100,
           "minimum_sessions": 252
         },
-        "sessions": 55,
-        "sharpe_zero_rf": 0.371,
+        "sessions": 56,
+        "sharpe_zero_rf": 0.341,
         "status": "exploratory"
       },
       "outcomes": [
@@ -1209,6 +1209,12 @@
               "hit": null,
               "underlying_return": 0.01565024
             },
+            "20": {
+              "directional_return_net": 0.0,
+              "exit_date": "2026-08-03",
+              "hit": null,
+              "underlying_return": 0.14169855
+            },
             "5": {
               "directional_return_net": 0.0,
               "exit_date": "2026-07-07",
@@ -1229,6 +1235,12 @@
               "exit_date": "2026-06-30",
               "hit": null,
               "underlying_return": 0.01565024
+            },
+            "20": {
+              "directional_return_net": 0.0,
+              "exit_date": "2026-08-03",
+              "hit": null,
+              "underlying_return": 0.14169855
             },
             "5": {
               "directional_return_net": 0.0,
@@ -1607,6 +1619,12 @@
               "exit_date": "2026-07-27",
               "hit": null,
               "underlying_return": 0.01278088
+            },
+            "5": {
+              "directional_return_net": 0.0,
+              "exit_date": "2026-08-03",
+              "hit": null,
+              "underlying_return": 0.03984185
             }
           },
           "market_as_of": "2026-07-22",
@@ -1676,11 +1694,34 @@
         },
         {
           "entry_date": "2026-07-30",
-          "horizons": {},
+          "horizons": {
+            "1": {
+              "directional_return_net": 0.0,
+              "exit_date": "2026-08-03",
+              "hit": null,
+              "underlying_return": 0.00296458
+            }
+          },
           "market_as_of": "2026-07-29",
           "position": 0,
           "report_date": "2026-07-30",
           "signal_id": "hk-beta:2026-07-29:2026-07-30"
+        },
+        {
+          "entry_date": "2026-08-03",
+          "horizons": {},
+          "market_as_of": "2026-07-30",
+          "position": 1,
+          "report_date": "2026-07-31",
+          "signal_id": "hk-beta:2026-07-30:2026-07-31"
+        },
+        {
+          "entry_date": "2026-08-03",
+          "horizons": {},
+          "market_as_of": "2026-07-31",
+          "position": 1,
+          "report_date": "2026-08-03",
+          "signal_id": "hk-beta:2026-07-31:2026-08-03"
         }
       ],
       "series": [
@@ -2288,6 +2329,17 @@
           "strategy_return_net": 0.01863861,
           "turnover": 1,
           "underlying_return": 0.01963861
+        },
+        {
+          "benchmark_equity": 0.98068405,
+          "entry_date": "2026-07-30",
+          "exit_date": "2026-08-03",
+          "position": 0,
+          "signal_id": "hk-beta:2026-07-29:2026-07-30",
+          "strategy_equity": 1.0095824,
+          "strategy_return_net": -0.001,
+          "turnover": 1,
+          "underlying_return": 0.00296458
         }
       ]
     },
@@ -2310,14 +2362,14 @@
         }
       },
       "metrics": {
-        "active_exposure_ratio": 0.5,
+        "active_exposure_ratio": 0.4909,
         "active_sessions": 27,
-        "annualized_return": -0.091716,
-        "annualized_volatility": 0.250072,
-        "average_daily_return": -0.00025756,
-        "benchmark_return": -0.045254,
-        "cumulative_return_net": -0.020403,
-        "excess_return": 0.024851,
+        "annualized_return": -0.094288,
+        "annualized_volatility": 0.247793,
+        "average_daily_return": -0.00027106,
+        "benchmark_return": -0.052863,
+        "cumulative_return_net": -0.021383,
+        "excess_return": 0.031481,
         "hit_rate_active_sessions": 0.4815,
         "max_drawdown": -0.132983,
         "median_daily_return": 0.0,
@@ -2325,8 +2377,8 @@
           "minimum_active_sessions": 100,
           "minimum_sessions": 252
         },
-        "sessions": 54,
-        "sharpe_zero_rf": -0.26,
+        "sessions": 55,
+        "sharpe_zero_rf": -0.276,
         "status": "exploratory"
       },
       "outcomes": [
@@ -3500,6 +3552,12 @@
               "hit": null,
               "underlying_return": 0.03062201
             },
+            "20": {
+              "directional_return_net": 0.0,
+              "exit_date": "2026-08-03",
+              "hit": null,
+              "underlying_return": 0.13157895
+            },
             "5": {
               "directional_return_net": 0.0,
               "exit_date": "2026-07-07",
@@ -3520,6 +3578,12 @@
               "exit_date": "2026-06-30",
               "hit": null,
               "underlying_return": 0.03062201
+            },
+            "20": {
+              "directional_return_net": 0.0,
+              "exit_date": "2026-08-03",
+              "hit": null,
+              "underlying_return": 0.13157895
             },
             "5": {
               "directional_return_net": 0.0,
@@ -3898,6 +3962,12 @@
               "exit_date": "2026-07-27",
               "hit": null,
               "underlying_return": -0.00829694
+            },
+            "5": {
+              "directional_return_net": 0.0,
+              "exit_date": "2026-08-03",
+              "hit": null,
+              "underlying_return": 0.03275109
             }
           },
           "market_as_of": "2026-07-22",
@@ -3967,11 +4037,34 @@
         },
         {
           "entry_date": "2026-07-30",
-          "horizons": {},
+          "horizons": {
+            "1": {
+              "directional_return_net": -0.0,
+              "exit_date": "2026-08-03",
+              "hit": null,
+              "underlying_return": -0.0079698
+            }
+          },
           "market_as_of": "2026-07-29",
           "position": 0,
           "report_date": "2026-07-30",
           "signal_id": "hk-beta:2026-07-29:2026-07-30"
+        },
+        {
+          "entry_date": "2026-08-03",
+          "horizons": {},
+          "market_as_of": "2026-07-30",
+          "position": 1,
+          "report_date": "2026-07-31",
+          "signal_id": "hk-beta:2026-07-30:2026-07-31"
+        },
+        {
+          "entry_date": "2026-08-03",
+          "horizons": {},
+          "market_as_of": "2026-07-31",
+          "position": 1,
+          "report_date": "2026-08-03",
+          "signal_id": "hk-beta:2026-07-31:2026-08-03"
         }
       ],
       "series": [
@@ -4568,12 +4661,23 @@
           "strategy_return_net": 0.02570112,
           "turnover": 1,
           "underlying_return": 0.02670112
+        },
+        {
+          "benchmark_equity": 0.94713656,
+          "entry_date": "2026-07-30",
+          "exit_date": "2026-08-03",
+          "position": 0,
+          "signal_id": "hk-beta:2026-07-29:2026-07-30",
+          "strategy_equity": 0.97861745,
+          "strategy_return_net": -0.001,
+          "turnover": 1,
+          "underlying_return": -0.0079698
         }
       ]
     }
   },
   "data_quality": {
-    "active_signal_dates": 70,
+    "active_signal_dates": 71,
     "conflicts": [
       "2026-05-29 Hang Seng Index: 25006.16 versus 25182.39; excluded conflicted observation",
       "2026-05-29 Hang Seng TECH ETF (3033.HK): 4.782 versus 4.784; excluded conflicted observation",
@@ -4602,9 +4706,9 @@
       "2026-06-21: excluded non-session weekend effective date"
     ],
     "first_observation": "2026-04-16",
-    "last_observation": "2026-07-31",
-    "observations": 64,
-    "signals": 86
+    "last_observation": "2026-08-03",
+    "observations": 65,
+    "signals": 87
   },
   "methodology": {
     "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",
@@ -4632,7 +4736,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.994
       },
       "report_date": "2026-04-17",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-04-17/morning_briefing.md"
+      "source": "reports_professional/archive/2026-04-17/morning_briefing.md"
     },
     {
       "as_of": "2026-04-20",
@@ -4641,7 +4745,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.936
       },
       "report_date": "2026-04-21",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-04-21/morning_briefing.md"
+      "source": "reports_professional/archive/2026-04-21/morning_briefing.md"
     },
     {
       "as_of": "2026-04-21",
@@ -4650,7 +4754,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.95
       },
       "report_date": "2026-04-22",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-04-22/morning_briefing.md"
+      "source": "reports_professional/archive/2026-04-22/morning_briefing.md"
     },
     {
       "as_of": "2026-04-22",
@@ -4659,7 +4763,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.956
       },
       "report_date": "2026-04-23",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-04-23/morning_briefing.md"
+      "source": "reports_professional/archive/2026-04-23/morning_briefing.md"
     },
     {
       "as_of": "2026-04-23",
@@ -4668,7 +4772,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.858
       },
       "report_date": "2026-04-24",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-04-24/morning_briefing.md"
+      "source": "reports_professional/archive/2026-04-24/morning_briefing.md"
     },
     {
       "as_of": "2026-04-24",
@@ -4677,7 +4781,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.8
       },
       "report_date": "2026-04-26",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-04-26/morning_briefing.md"
+      "source": "reports_professional/archive/2026-04-26/morning_briefing.md"
     },
     {
       "as_of": "2026-04-29",
@@ -4686,7 +4790,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.726
       },
       "report_date": "2026-04-30",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-04-30/morning_briefing.md"
+      "source": "reports_professional/archive/2026-04-30/morning_briefing.md"
     },
     {
       "as_of": "2026-05-05",
@@ -4695,7 +4799,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.874
       },
       "report_date": "2026-05-06",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-06/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-06/morning_briefing.md"
     },
     {
       "as_of": "2026-05-06",
@@ -4704,7 +4808,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.818
       },
       "report_date": "2026-05-07",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-07/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-07/morning_briefing.md"
     },
     {
       "as_of": "2026-05-07",
@@ -4713,7 +4817,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.87
       },
       "report_date": "2026-05-08",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-08/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-08/morning_briefing.md"
     },
     {
       "as_of": "2026-05-18",
@@ -4722,7 +4826,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.83
       },
       "report_date": "2026-05-19",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-19/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-19/morning_briefing.md"
     },
     {
       "as_of": "2026-05-19",
@@ -4731,7 +4835,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.736
       },
       "report_date": "2026-05-20",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-20/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-20/morning_briefing.md"
     },
     {
       "as_of": "2026-05-20",
@@ -4740,7 +4844,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.76
       },
       "report_date": "2026-05-21",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-21/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-21/morning_briefing.md"
     },
     {
       "as_of": "2026-05-21",
@@ -4749,7 +4853,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.77
       },
       "report_date": "2026-05-22",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-22/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-22/morning_briefing.md"
     },
     {
       "as_of": "2026-05-22",
@@ -4758,7 +4862,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.668
       },
       "report_date": "2026-05-23",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-23/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-23/morning_briefing.md"
     },
     {
       "as_of": "2026-05-26",
@@ -4767,7 +4871,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.84
       },
       "report_date": "2026-05-27",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-27/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-27/morning_briefing.md"
     },
     {
       "as_of": "2026-05-27",
@@ -4776,7 +4880,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.84
       },
       "report_date": "2026-05-28",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-28/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-28/morning_briefing.md"
     },
     {
       "as_of": "2026-05-28",
@@ -4785,13 +4889,13 @@
         "Hang Seng TECH ETF (3033.HK)": 4.782
       },
       "report_date": "2026-05-29",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-29/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-29/morning_briefing.md"
     },
     {
       "as_of": "2026-05-29",
       "prices": {},
       "report_date": "2026-05-30",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-05-30/morning_briefing.md"
+      "source": "reports_professional/archive/2026-05-30/morning_briefing.md"
     },
     {
       "as_of": "2026-06-01",
@@ -4800,7 +4904,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.784
       },
       "report_date": "2026-06-02",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-02/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-02/morning_briefing.md"
     },
     {
       "as_of": "2026-06-02",
@@ -4809,7 +4913,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.866
       },
       "report_date": "2026-06-03",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-03/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-03/morning_briefing.md"
     },
     {
       "as_of": "2026-06-03",
@@ -4818,7 +4922,7 @@
         "Hang Seng TECH ETF (3033.HK)": 5.095
       },
       "report_date": "2026-06-04",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-04/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-04/morning_briefing.md"
     },
     {
       "as_of": "2026-06-04",
@@ -4827,13 +4931,13 @@
         "Hang Seng TECH ETF (3033.HK)": 4.95
       },
       "report_date": "2026-06-05",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-05/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-05/morning_briefing.md"
     },
     {
       "as_of": "2026-06-05",
       "prices": {},
       "report_date": "2026-06-06",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-06/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-06/morning_briefing.md"
     },
     {
       "as_of": "2026-06-08",
@@ -4842,7 +4946,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.786
       },
       "report_date": "2026-06-09",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-09/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-09/morning_briefing.md"
     },
     {
       "as_of": "2026-06-09",
@@ -4851,7 +4955,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.664
       },
       "report_date": "2026-06-10",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-10/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-10/morning_briefing.md"
     },
     {
       "as_of": "2026-06-10",
@@ -4860,7 +4964,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.676
       },
       "report_date": "2026-06-11",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-11/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-11/morning_briefing.md"
     },
     {
       "as_of": "2026-06-11",
@@ -4869,7 +4973,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.634
       },
       "report_date": "2026-06-12",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-12/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-12/morning_briefing.md"
     },
     {
       "as_of": "2026-06-12",
@@ -4877,7 +4981,7 @@
         "Hang Seng Index": 24718.1
       },
       "report_date": "2026-06-13",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-13/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-13/morning_briefing.md"
     },
     {
       "as_of": "2026-06-15",
@@ -4886,7 +4990,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.61
       },
       "report_date": "2026-06-16",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-16/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-16/morning_briefing.md"
     },
     {
       "as_of": "2026-06-16",
@@ -4895,7 +4999,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.668
       },
       "report_date": "2026-06-17",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-17/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-17/morning_briefing.md"
     },
     {
       "as_of": "2026-06-17",
@@ -4904,7 +5008,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.562
       },
       "report_date": "2026-06-18",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-18/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-18/morning_briefing.md"
     },
     {
       "as_of": "2026-06-18",
@@ -4913,7 +5017,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.566
       },
       "report_date": "2026-06-19",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-19/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-19/morning_briefing.md"
     },
     {
       "as_of": "2026-06-19",
@@ -4922,7 +5026,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.512
       },
       "report_date": "2026-06-20",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-20/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-20/morning_briefing.md"
     },
     {
       "as_of": "2026-06-22",
@@ -4931,7 +5035,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.464
       },
       "report_date": "2026-06-23",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-23/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-23/morning_briefing.md"
     },
     {
       "as_of": "2026-06-23",
@@ -4940,7 +5044,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.464
       },
       "report_date": "2026-06-24",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-24/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-24/morning_briefing.md"
     },
     {
       "as_of": "2026-06-24",
@@ -4949,7 +5053,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.314
       },
       "report_date": "2026-06-25",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-25/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-25/morning_briefing.md"
     },
     {
       "as_of": "2026-06-25",
@@ -4958,13 +5062,13 @@
         "Hang Seng TECH ETF (3033.HK)": 4.4
       },
       "report_date": "2026-06-26",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-26/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-26/morning_briefing.md"
     },
     {
       "as_of": "2026-06-26",
       "prices": {},
       "report_date": "2026-06-27",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-27/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-27/morning_briefing.md"
     },
     {
       "as_of": "2026-06-29",
@@ -4973,7 +5077,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.18
       },
       "report_date": "2026-06-30",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-06-30/morning_briefing.md"
+      "source": "reports_professional/archive/2026-06-30/morning_briefing.md"
     },
     {
       "as_of": "2026-06-30",
@@ -4982,7 +5086,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.308
       },
       "report_date": "2026-07-01",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-01/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-01/morning_briefing.md"
     },
     {
       "as_of": "2026-07-01",
@@ -4991,7 +5095,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.39
       },
       "report_date": "2026-07-02",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-02/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-02/morning_briefing.md"
     },
     {
       "as_of": "2026-07-02",
@@ -5000,13 +5104,13 @@
         "Hang Seng TECH ETF (3033.HK)": 4.364
       },
       "report_date": "2026-07-03",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-03/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-03/morning_briefing.md"
     },
     {
       "as_of": "2026-07-03",
       "prices": {},
       "report_date": "2026-07-04",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-04/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-04/morning_briefing.md"
     },
     {
       "as_of": "2026-07-06",
@@ -5015,7 +5119,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.416
       },
       "report_date": "2026-07-07",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-07/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-07/morning_briefing.md"
     },
     {
       "as_of": "2026-07-07",
@@ -5024,7 +5128,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.456
       },
       "report_date": "2026-07-08",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-08/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-08/morning_briefing.md"
     },
     {
       "as_of": "2026-07-08",
@@ -5033,7 +5137,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.418
       },
       "report_date": "2026-07-09",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-09/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-09/morning_briefing.md"
     },
     {
       "as_of": "2026-07-09",
@@ -5042,13 +5146,13 @@
         "Hang Seng TECH ETF (3033.HK)": 4.64
       },
       "report_date": "2026-07-10",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-10/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-10/morning_briefing.md"
     },
     {
       "as_of": "2026-07-10",
       "prices": {},
       "report_date": "2026-07-11",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-11/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-11/morning_briefing.md"
     },
     {
       "as_of": "2026-07-13",
@@ -5057,7 +5161,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.634
       },
       "report_date": "2026-07-14",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-14/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-14/morning_briefing.md"
     },
     {
       "as_of": "2026-07-14",
@@ -5066,7 +5170,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.59
       },
       "report_date": "2026-07-15",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-15/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-15/morning_briefing.md"
     },
     {
       "as_of": "2026-07-15",
@@ -5075,7 +5179,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.6
       },
       "report_date": "2026-07-16",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-16/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-16/morning_briefing.md"
     },
     {
       "as_of": "2026-07-16",
@@ -5084,13 +5188,13 @@
         "Hang Seng TECH ETF (3033.HK)": 4.648
       },
       "report_date": "2026-07-17",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-17/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-17/morning_briefing.md"
     },
     {
       "as_of": "2026-07-17",
       "prices": {},
       "report_date": "2026-07-18",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-18/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-18/morning_briefing.md"
     },
     {
       "as_of": "2026-07-20",
@@ -5099,7 +5203,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.534
       },
       "report_date": "2026-07-21",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-21/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-21/morning_briefing.md"
     },
     {
       "as_of": "2026-07-21",
@@ -5108,7 +5212,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.65
       },
       "report_date": "2026-07-22",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-22/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-22/morning_briefing.md"
     },
     {
       "as_of": "2026-07-22",
@@ -5117,7 +5221,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.722
       },
       "report_date": "2026-07-23",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-23/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-23/morning_briefing.md"
     },
     {
       "as_of": "2026-07-23",
@@ -5126,13 +5230,13 @@
         "Hang Seng TECH ETF (3033.HK)": 4.58
       },
       "report_date": "2026-07-24",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-24/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-24/morning_briefing.md"
     },
     {
       "as_of": "2026-07-24",
       "prices": {},
       "report_date": "2026-07-25",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-25/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-25/morning_briefing.md"
     },
     {
       "as_of": "2026-07-27",
@@ -5141,7 +5245,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.542
       },
       "report_date": "2026-07-28",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-28/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-28/morning_briefing.md"
     },
     {
       "as_of": "2026-07-28",
@@ -5150,7 +5254,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.616
       },
       "report_date": "2026-07-29",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-29/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-29/morning_briefing.md"
     },
     {
       "as_of": "2026-07-29",
@@ -5159,7 +5263,7 @@
         "Hang Seng TECH ETF (3033.HK)": 4.644
       },
       "report_date": "2026-07-30",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-30/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-30/morning_briefing.md"
     },
     {
       "as_of": "2026-07-30",
@@ -5168,13 +5272,22 @@
         "Hang Seng TECH ETF (3033.HK)": 4.768
       },
       "report_date": "2026-07-31",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-07-31/morning_briefing.md"
+      "source": "reports_professional/archive/2026-07-31/morning_briefing.md"
     },
     {
       "as_of": "2026-07-31",
       "prices": {},
       "report_date": "2026-08-01",
-      "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-08-01/morning_briefing.md"
+      "source": "reports_professional/archive/2026-08-01/morning_briefing.md"
+    },
+    {
+      "as_of": "2026-08-03",
+      "prices": {
+        "Hang Seng Index": 25884.4297,
+        "Hang Seng TECH ETF (3033.HK)": 4.73
+      },
+      "report_date": "2026-08-04",
+      "source": "current_bundle"
     }
   ],
   "schema_version": "signal-performance-v1",
@@ -6725,6 +6838,26 @@
       "signal": "Risk-on",
       "signal_id": "hk-beta:2026-07-31:2026-08-03",
       "source": "/Volumes/macmini-ssd/01_Projects/Daily_Market_Diary/reports_professional/archive/2026-08-03/morning_briefing.md",
+      "status": "active"
+    },
+    {
+      "benchmark_scope": [
+        "Hang Seng Index",
+        "Hang Seng TECH ETF (3033.HK)"
+      ],
+      "entry_policy": "next_available_close",
+      "evidence": {
+        "market_pulse": "Risk-On backdrop with USD range-bound, lower yields supported duration, and Oil outperformed Gold",
+        "report_quality": 85.8,
+        "risk_score": null,
+        "source_health": "degraded"
+      },
+      "market_as_of": "2026-08-03",
+      "position": 1,
+      "report_date": "2026-08-04",
+      "signal": "Risk-On",
+      "signal_id": "hk-beta:2026-08-03:2026-08-04",
+      "source": "current_bundle",
       "status": "active"
     }
   ],

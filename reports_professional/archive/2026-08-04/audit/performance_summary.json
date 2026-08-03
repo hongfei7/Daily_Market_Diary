@@ -1,0 +1,140 @@
+{
+  "benchmarks": {
+    "Hang Seng Index": {
+      "event_horizons": {
+        "1": {
+          "average_directional_return_net": 0.00083,
+          "hit_rate": 0.5152,
+          "resolved_signals": 33
+        },
+        "20": {
+          "average_directional_return_net": -0.011024,
+          "hit_rate": 0.4167,
+          "resolved_signals": 24
+        },
+        "5": {
+          "average_directional_return_net": -0.000235,
+          "hit_rate": 0.5667,
+          "resolved_signals": 30
+        }
+      },
+      "metrics": {
+        "active_exposure_ratio": 0.4821,
+        "active_sessions": 27,
+        "annualized_return": 0.04385,
+        "annualized_volatility": 0.166478,
+        "average_daily_return": 0.00022532,
+        "benchmark_return": -0.019316,
+        "cumulative_return_net": 0.009582,
+        "excess_return": 0.028898,
+        "hit_rate_active_sessions": 0.4815,
+        "max_drawdown": -0.079127,
+        "median_daily_return": 0.0,
+        "sample_gate": {
+          "minimum_active_sessions": 100,
+          "minimum_sessions": 252
+        },
+        "sessions": 56,
+        "sharpe_zero_rf": 0.341,
+        "status": "exploratory"
+      }
+    },
+    "Hang Seng TECH ETF (3033.HK)": {
+      "event_horizons": {
+        "1": {
+          "average_directional_return_net": 0.000369,
+          "hit_rate": 0.4848,
+          "resolved_signals": 33
+        },
+        "20": {
+          "average_directional_return_net": -0.011833,
+          "hit_rate": 0.5417,
+          "resolved_signals": 24
+        },
+        "5": {
+          "average_directional_return_net": -0.002872,
+          "hit_rate": 0.5,
+          "resolved_signals": 30
+        }
+      },
+      "metrics": {
+        "active_exposure_ratio": 0.4909,
+        "active_sessions": 27,
+        "annualized_return": -0.094288,
+        "annualized_volatility": 0.247793,
+        "average_daily_return": -0.00027106,
+        "benchmark_return": -0.052863,
+        "cumulative_return_net": -0.021383,
+        "excess_return": 0.031481,
+        "hit_rate_active_sessions": 0.4815,
+        "max_drawdown": -0.132983,
+        "median_daily_return": 0.0,
+        "sample_gate": {
+          "minimum_active_sessions": 100,
+          "minimum_sessions": 252
+        },
+        "sessions": 55,
+        "sharpe_zero_rf": -0.276,
+        "status": "exploratory"
+      }
+    }
+  },
+  "chart_path": "signal_performance_2026-08-04.png",
+  "data_quality": {
+    "active_signal_dates": 71,
+    "conflicts": [
+      "2026-05-29 Hang Seng Index: 25006.16 versus 25182.39; excluded conflicted observation",
+      "2026-05-29 Hang Seng TECH ETF (3033.HK): 4.782 versus 4.784; excluded conflicted observation",
+      "2026-06-05 Hang Seng Index: 25253.4 versus 24961.95; excluded conflicted observation",
+      "2026-06-05 Hang Seng TECH ETF (3033.HK): 4.87 versus 4.786; excluded conflicted observation",
+      "2026-06-12 Hang Seng TECH ETF (3033.HK): 4.56 versus 4.61; excluded conflicted observation",
+      "2026-06-26 Hang Seng TECH ETF (3033.HK): 4.33 versus 4.18; excluded conflicted observation",
+      "2026-06-26 Hang Seng Index: 23076.91 versus 22671.86; excluded conflicted observation",
+      "2026-07-03 Hang Seng Index: 23055.03 versus 23350.03; excluded conflicted observation",
+      "2026-07-03 Hang Seng TECH ETF (3033.HK): 4.364 versus 4.416; excluded conflicted observation",
+      "2026-07-10 Hang Seng Index: 24030.18 versus 24175.12; excluded conflicted observation",
+      "2026-07-10 Hang Seng TECH ETF (3033.HK): 4.64 versus 4.634; excluded conflicted observation",
+      "2026-07-17 Hang Seng Index: 25008.6 versus 24562.24; excluded conflicted observation",
+      "2026-07-17 Hang Seng TECH ETF (3033.HK): 4.748 versus 4.534; excluded conflicted observation",
+      "2026-07-24 Hang Seng Index: 25210.81 versus 24963.23; excluded conflicted observation",
+      "2026-07-24 Hang Seng TECH ETF (3033.HK): 4.61 versus 4.542; excluded conflicted observation",
+      "2026-07-31 Hang Seng Index: 25858.88 versus 25884.43; excluded conflicted observation",
+      "2026-07-31 Hang Seng TECH ETF (3033.HK): 4.718 versus 4.73; excluded conflicted observation"
+    ],
+    "excluded_non_session_observations": [
+      "2026-04-26: excluded non-session weekend effective date",
+      "2026-05-03: excluded non-session weekend effective date",
+      "2026-05-31: excluded non-session weekend effective date",
+      "2026-06-07: excluded non-session weekend effective date",
+      "2026-06-14: excluded non-session weekend effective date",
+      "2026-06-21: excluded non-session weekend effective date"
+    ],
+    "first_observation": "2026-04-16",
+    "last_observation": "2026-08-03",
+    "observations": 65,
+    "signals": 87
+  },
+  "ledger_path": "performance/signal_ledger.json",
+  "methodology": {
+    "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",
+    "horizons_sessions": [
+      1,
+      5,
+      20
+    ],
+    "limitations": [
+      "Close-to-close research diagnostic; it is not an executable intraday strategy or investment recommendation.",
+      "Legacy signals are reconstructed from immutable published Markdown and may lack current source-health fields.",
+      "No dividends, financing, borrow, market impact, taxes, or benchmark reconstitution effects are modeled.",
+      "Results remain exploratory until a benchmark has at least 252 sessions and 100 active-signal sessions."
+    ],
+    "look_ahead_guard": true,
+    "portfolio": "Latest published signal per market as-of date; close-to-close returns with turnover costs.",
+    "signal": "Published deterministic risk regime mapped to long (+1), neutral (0), or short (-1).",
+    "transaction_cost_bps": 10.0
+  },
+  "rel_path": "charts/signal_performance_2026-08-04.png",
+  "schema_version": "signal-performance-v1",
+  "status": "exploratory_with_caveats",
+  "summary_path": "performance/performance_summary.json"
+}
