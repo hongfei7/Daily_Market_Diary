@@ -87,7 +87,7 @@ Every substantive statement must be traceable to a source URL and observation da
 
 ## Primary delivery contract
 
-WeCom is the production reading surface. Its first message is a decision brief capped at 3,800 UTF-8 bytes and must retain the base case, confirmation test, invalidation condition, source dates, market tape, and a valid archive link. A self-contained mobile HTML file follows for the full 40–50 minute commute read. Both assets are rendered and audited before publication, sent with bounded retries, and treated as required delivery outcomes. Each successful send writes a JSON receipt with the message kind, timestamp, report date, and WeCom response code. If a delivery-ready report cannot be produced, a short incident message explains the failed stage and the scheduled recovery behavior. Email is a secondary copy and cannot mask a WeCom failure.
+WeCom is the production reading surface. Its first message is a decision brief capped at 3,800 UTF-8 bytes and must retain the base case, confirmation test, invalidation condition, source dates, market tape, and a valid archive link. A self-contained mobile HTML file follows for the full 40–50 minute commute read. The working content budget is 3,000–4,500 words including traceability material, with a 5,200-word hard stop for genuine sprawl. Both assets are rendered and audited before publication, sent with bounded retries, and treated as required delivery outcomes. Each successful send writes a JSON receipt with the message kind, timestamp, report date, and WeCom response code. If a delivery-ready report cannot be produced, a short incident message explains the failed stage and the scheduled recovery behavior. Email is a secondary copy and cannot mask a WeCom failure.
 
 ## HTML design language
 

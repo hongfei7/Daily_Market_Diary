@@ -104,6 +104,38 @@ def main() -> None:
         natural_ellipsis_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert natural_ellipsis_audit["status"] == "ok"
 
+        # A full one-hour commute edition may legitimately run above 4,200
+        # words once its source appendix is included, but genuine sprawl is
+        # still a structural release blocker.
+        (root / "2026-04-14_morning_briefing.md").write_text(
+            REPORT_BODY + "\n" + ("evidence " * 4300),
+            encoding="utf-8",
+        )
+        commute_length_audit = audit_generated_run(
+            root,
+            "2026-04-14",
+            require_llm=True,
+            require_email_preview=True,
+            require_wecom_preview=True,
+            quality_policy="commute",
+        )
+        assert commute_length_audit["status"] == "ok"
+
+        (root / "2026-04-14_morning_briefing.md").write_text(
+            REPORT_BODY + "\n" + ("evidence " * 5300),
+            encoding="utf-8",
+        )
+        overlong_audit = audit_generated_run(
+            root,
+            "2026-04-14",
+            require_llm=True,
+            require_email_preview=True,
+            require_wecom_preview=True,
+            quality_policy="commute",
+        )
+        assert overlong_audit["status"] == "error"
+        assert any("too long" in item.lower() for item in overlong_audit["errors"])
+
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nThis line was clipped [trimmed]\n", encoding="utf-8")
         trimmed_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert trimmed_audit["status"] == "error"
