@@ -8,8 +8,8 @@ from typing import Any, Dict, Optional
 
 DEFAULT_LLM_ROUTE_FALLBACK = {
     "deepseek": "deepseek-v4-pro",
-    "minimax": "MiniMax-M2.7",
-    "default": "MiniMax-M2.7",
+    "minimax": "MiniMax-M3",
+    "default": "MiniMax-M3",
 }
 
 

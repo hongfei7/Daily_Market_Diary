@@ -6,7 +6,12 @@ import os
 from pathlib import Path
 from typing import Any, Callable, Dict, Tuple
 
-from market_diary.modules.llm_client import get_available_providers, get_client, get_default_model
+from market_diary.modules.llm_client import (
+    get_available_providers,
+    get_client,
+    get_completion_extra_body,
+    get_default_model,
+)
 from market_diary.professional.llm_enhancer import (
     _choice_finish_reason,
     _extract_json_object,
@@ -27,6 +32,8 @@ def _load_skill_text(skill_name: str) -> str:
     skill_dir = _skills_root() / skill_name
     parts = [(skill_dir / "SKILL.md").read_text(encoding="utf-8")]
     for reference in sorted((skill_dir / "references").glob("*.md")):
+        if reference.name.startswith("._"):
+            continue
         parts.append(reference.read_text(encoding="utf-8"))
     return "\n\n".join(parts)
 
@@ -135,6 +142,7 @@ def _run_shadow_factory(shadow_config: Dict[str, Any], cache_dir: str) -> Shadow
                 ],
                 temperature=float(shadow_config.get("temperature", 0.0)),
                 max_tokens=int(shadow_config.get("max_tokens", 1800)),
+                extra_body=get_completion_extra_body(provider, model),
             )
             raw = _extract_response_text(response.choices[0].message.content)
             if _llm_response_looks_truncated(raw, _choice_finish_reason(response)):

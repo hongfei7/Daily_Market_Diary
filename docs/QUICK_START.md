@@ -12,7 +12,7 @@ Optional LLM environment variables:
 ```bash
 export MINIMAX_API_KEY="your_minimax_api_key"
 export LLM_BASE_URL="https://api.minimaxi.com/v1"
-export LLM_MODEL="MiniMax-M2.7"
+export LLM_MODEL="MiniMax-M3"
 export LLM_PRIMARY_PROVIDER="minimax"
 ```
 

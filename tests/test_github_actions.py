@@ -168,7 +168,7 @@ def check_workflow_guardrails() -> bool:
         "DEEPSEEK_API_KEY",
         "deepseek-v4-pro",
         "https://api.deepseek.com",
-        "MiniMax-M2.7",
+        "MiniMax-M3",
     )
     for marker in required_llm_config:
         if marker not in morning:

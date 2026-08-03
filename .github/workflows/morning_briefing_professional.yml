@@ -66,7 +66,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
           LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M2.7' || 'deepseek-v4-pro' }}
+          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
           LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
           echo "=== Environment Info ==="
@@ -97,7 +97,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
           LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M2.7' || 'deepseek-v4-pro' }}
+          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
           LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
           echo "Running system tests..."
@@ -111,7 +111,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
           LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M2.7' || 'deepseek-v4-pro' }}
+          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
           LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
           BRIEFING_DATE="$(date +%F)"
