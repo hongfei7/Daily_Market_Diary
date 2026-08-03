@@ -18,6 +18,7 @@ STATUS_SCORE = {
     "stale_local": 0.7,
     "stale_public": 0.7,
     "proxy": 0.35,
+    "derived": 0.75,
     "skipped": 0.55,
     "disabled": 0.55,
     "timeout": 0.0,
@@ -93,7 +94,7 @@ def _runtime_bucket(status: str) -> str:
     normalized = str(status or "").lower()
     if normalized in {"ok", "cached", "live_local", "live_public", "live_quote", "live_hybrid"}:
         return "healthy"
-    if normalized in {"partial", "partial_public", "partial_local", "stale_local", "stale_public", "proxy", "skipped", "disabled"}:
+    if normalized in {"partial", "partial_public", "partial_local", "stale_local", "stale_public", "proxy", "derived", "skipped", "disabled"}:
         return "caveat"
     return "failed"
 
@@ -115,6 +116,10 @@ def _runtime_summary(bundle: Dict[str, Any]) -> Tuple[str, List[Dict[str, str]]]
         {"name": "China rates", "status": str(((source_inputs.get("china_rates", {}) or {}).get("status", "unavailable"))), "bucket": ""},
         {"name": "Narrative overlay", "status": llm_status, "bucket": ""},
     ]
+    if "macro_calendar" in source_inputs:
+        rows.insert(-1, {"name": "Macro calendar", "status": str(((source_inputs.get("macro_calendar", {}) or {}).get("status", "unavailable"))), "bucket": ""})
+    if "risk_feed" in source_inputs:
+        rows.insert(-1, {"name": "Risk and sentiment feed", "status": str(((source_inputs.get("risk_feed", {}) or {}).get("status", "unavailable"))), "bucket": ""})
 
     counts = {"healthy": 0, "caveat": 0, "failed": 0}
     for row in rows:
@@ -202,11 +207,35 @@ def _runtime_guidance(runtime_rows: List[Dict[str, str]]) -> List[Dict[str, str]
     return guidance[:4]
 
 
-def _release_recommendation(runtime_rows: List[Dict[str, str]], runtime_guidance: List[Dict[str, str]]) -> Dict[str, str]:
+def _release_recommendation(
+    runtime_rows: List[Dict[str, str]],
+    runtime_guidance: List[Dict[str, str]],
+    provenance_status: str = "",
+    fact_status: str = "",
+    source_health_status: str = "",
+) -> Dict[str, str]:
     blocking_count = sum(1 for item in runtime_guidance if item.get("level") == "blocking")
     has_caveat = any(str(item.get("bucket", "")) == "caveat" for item in runtime_rows)
     has_failed = any(str(item.get("bucket", "")) == "failed" for item in runtime_rows)
 
+    if provenance_status == "error":
+        return {
+            "action": "manual_review",
+            "label": "Manual review",
+            "reason": "Source provenance validation failed; automatic distribution is blocked.",
+        }
+    if source_health_status == "failed":
+        return {
+            "action": "manual_review",
+            "label": "Manual review",
+            "reason": "A critical data source failed its availability or freshness policy; automatic distribution is blocked.",
+        }
+    if fact_status in {"warning", "error"}:
+        return {
+            "action": "manual_review",
+            "label": "Manual review",
+            "reason": "Fact validation produced unresolved warnings or errors; automatic distribution is blocked.",
+        }
     if blocking_count:
         return {
             "action": "manual_review",
@@ -246,15 +275,44 @@ def _fact_check_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
         return 75.0, fact_check.get("summary", "Fact check was skipped.")
     mismatches = fact_check.get("numeric_mismatches", []) or []
     warnings = fact_check.get("logic_warnings", []) or []
+    source_warnings = fact_check.get("source_warnings", []) or []
     critical = sum(1 for item in mismatches if item.get("severity", "critical") == "critical")
     review = (
         sum(1 for item in mismatches if item.get("severity", "critical") == "review")
         + sum(1 for item in warnings if item.get("severity", "review") == "review")
+        + sum(1 for item in source_warnings if item.get("severity", "critical") == "review")
     )
-    info = sum(1 for item in warnings if item.get("severity") == "info")
+    critical += sum(1 for item in source_warnings if item.get("severity", "critical") == "critical")
+    info = sum(1 for item in warnings + source_warnings if item.get("severity") == "info")
     penalty = critical * 25.0 + review * 12.5 + info * 4.0
     score = max(0.0, 100.0 - penalty)
     return score, fact_check.get("summary", "Fact-check diagnostics were available.")
+
+
+def _provenance_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
+    audit = bundle.get("provenance_audit", {}) or {}
+    if not audit:
+        return 75.0, "Source provenance validation was not attached to this compatibility fixture."
+    if audit.get("status") != "ok":
+        return 0.0, f"Source provenance failed with {len(audit.get('errors', []) or [])} error(s)."
+    checked = int(audit.get("checked_records", 0) or 0)
+    unavailable = int(audit.get("unavailable_records", 0) or 0)
+    score = max(60.0, 100.0 - unavailable * 4.0)
+    return score, f"{checked} provenance record(s) validated; {unavailable} unavailable source record(s)."
+
+
+def _source_health_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
+    health = bundle.get("source_health", {}) or {}
+    if not health:
+        return 75.0, "Source-health scoring was not attached to this compatibility fixture."
+    rows = health.get("sources", []) or []
+    scores = [float(item.get("score", 0.0) or 0.0) for item in rows]
+    score = sum(scores) / len(scores) if scores else 0.0
+    coverage = health.get("coverage", {}) or {}
+    return score, (
+        f"{coverage.get('healthy', 0)} healthy, {coverage.get('degraded', 0)} degraded, "
+        f"{coverage.get('unavailable', 0)} unavailable source group(s)."
+    )
 
 
 def _component(name: str, score: float, weight: float, read: str) -> Dict[str, Any]:
@@ -273,18 +331,40 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
     adapter_score, adapter_read, adapter_rows = _adapter_score(bundle)
     llm_score, llm_read = _llm_score(bundle)
     fact_score, fact_read = _fact_check_score(bundle)
+    provenance_score, provenance_read = _provenance_score(bundle)
+    source_health_score, source_health_read = _source_health_score(bundle)
     runtime_summary, runtime_rows = _runtime_summary(bundle)
     runtime_guidance = _runtime_guidance(runtime_rows)
-    release_recommendation = _release_recommendation(runtime_rows, runtime_guidance)
+    provenance_audit = bundle.get("provenance_audit", {}) or {}
+    fact_check = bundle.get("fact_check", {}) or {}
+    provenance_status = str(provenance_audit.get("status", "") or "")
+    fact_status = str(fact_check.get("status", "") or "")
+    source_health_status = str((bundle.get("source_health", {}) or {}).get("status", "") or "")
+    if provenance_status == "error":
+        runtime_guidance.insert(0, _guidance("blocking", "Source provenance is incomplete or invalid; do not distribute automatically."))
+    if fact_status in {"warning", "error"}:
+        runtime_guidance.insert(0, _guidance("blocking", "Fact validation has unresolved findings; review them before distribution."))
+    if source_health_status == "failed":
+        failures = ", ".join((bundle.get("source_health", {}) or {}).get("critical_failures", []) or [])
+        runtime_guidance.insert(0, _guidance("blocking", f"Critical source freshness or availability failed: {failures or 'unspecified source'}."))
+    release_recommendation = _release_recommendation(
+        runtime_rows,
+        runtime_guidance,
+        provenance_status=provenance_status,
+        fact_status=fact_status,
+        source_health_status=source_health_status,
+    )
     blocking_guidance = sum(1 for item in runtime_guidance if item.get("level") == "blocking")
     advisory_guidance = sum(1 for item in runtime_guidance if item.get("level") == "advisory")
 
     components = [
-        _component("Market data coverage", market_score, 0.30, market_read),
-        _component("Hong Kong local metrics", local_score, 0.25, local_read),
+        _component("Market data coverage", market_score, 0.20, market_read),
+        _component("Hong Kong local metrics", local_score, 0.20, local_read),
         _component("Key public adapters", adapter_score, 0.20, adapter_read),
-        _component("Narrative overlay health", llm_score, 0.15, llm_read),
-        _component("Fact-check guardrail", fact_score, 0.10, fact_read),
+        _component("Narrative overlay health", llm_score, 0.10, llm_read),
+        _component("Fact-check guardrail", fact_score, 0.15, fact_read),
+        _component("Source provenance", provenance_score, 0.05, provenance_read),
+        _component("Source health and freshness", source_health_score, 0.10, source_health_read),
     ]
     score = sum(item["weighted_score"] for item in components)
 
@@ -292,14 +372,17 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
     for item in components:
         if item["score"] < 60:
             warnings.append(f"{item['name']} is weak: {item['read']}")
-    fact_check = bundle.get("fact_check", {}) or {}
     if fact_check.get("status") == "warning":
         warnings.append("Narrative fact-check guardrail produced warnings; review the validation table before relying on narrative sections.")
+    if provenance_status == "error":
+        warnings.append("Source provenance validation failed; automatic distribution must remain blocked.")
+
+    quality_status = "manual_review" if release_recommendation.get("action") == "manual_review" else _score_to_status(score)
 
     return {
         "score": round(score, 1),
         "grade": _score_to_grade(score),
-        "status": _score_to_status(score),
+        "status": quality_status,
         "components": components,
         "adapter_status": adapter_rows,
         "runtime_summary": runtime_summary,

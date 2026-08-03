@@ -40,6 +40,9 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
                 "attention": {"high": 5, "medium": 3, "low": 1}.get(item.get("impact", "medium"), 3),
                 "score": 80 + {"high": 15, "medium": 8, "low": 3}.get(item.get("impact", "medium"), 8),
                 "detail": f"Actual {item.get('actual')} / Forecast {item.get('forecast')} / Prior {item.get('previous')}",
+                "as_of": item.get("as_of", report_date),
+                "source": item.get("source", ""),
+                "source_url": item.get("source_url", item.get("url", "")),
             }
         )
 
@@ -58,6 +61,9 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
                 "attention": {"high": 5, "medium": 3, "low": 1}.get(item.get("impact", "medium"), 3),
                 "score": 70 + {"high": 15, "medium": 8, "low": 3}.get(item.get("impact", "medium"), 8),
                 "detail": f"Forecast {item.get('forecast')} / Prior {item.get('previous')}",
+                "as_of": item.get("as_of", report_date),
+                "source": item.get("source", ""),
+                "source_url": item.get("source_url", item.get("url", "")),
             }
         )
 
@@ -75,6 +81,9 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
                 "attention": 5 if item.get("importance") == "high" else 3,
                 "score": 78 if item.get("importance") == "high" else 68,
                 "detail": item.get("event_type", "speech"),
+                "as_of": item.get("as_of", report_date),
+                "source": item.get("source", ""),
+                "source_url": item.get("source_url", item.get("url", "")),
             }
         )
 

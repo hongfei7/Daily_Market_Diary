@@ -27,7 +27,11 @@ def main() -> None:
         cache_dir = cache_root / "sector"
         cache_dir.mkdir()
         config = {"watchlists": {"core_coverage": [{"ticker": "0700.HK", "name": "Tencent"}]}}
-        cache_key = json.dumps({"date": "2026-04-16", "watchlists": config["watchlists"]}, sort_keys=True, ensure_ascii=True)
+        cache_key = json.dumps(
+            {"schema": 2, "date": "2026-04-16", "watchlists": config["watchlists"]},
+            sort_keys=True,
+            ensure_ascii=True,
+        )
         digest = hashlib.md5(cache_key.encode("utf-8")).hexdigest()[:12]
         payload = {
             "sector_news": {"China Internet": []},

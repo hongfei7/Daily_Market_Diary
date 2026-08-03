@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from market_diary.modules.adapter_hkex_announce import fetch_hkex_announcements
+from market_diary.modules.provenance import provenance_record, unavailable_record
 from market_diary.modules.text_normalizer import normalize_news_text
 
 try:
@@ -190,37 +191,12 @@ class SectorNewsAggregator:
         return score
 
     def fetch_earnings_calendar(self, date: str) -> List[Dict]:
-        """Return a placeholder earnings calendar."""
-        return [
-            {
-                "ticker": "0700.HK",
-                "company": "Tencent Holdings",
-                "time": "After Market Close",
-                "eps_estimate": "4.15 HKD",
-                "revenue_estimate": "163.2bn HKD",
-            },
-            {
-                "ticker": "0388.HK",
-                "company": "Hong Kong Exchanges and Clearing",
-                "time": "Before Market Open",
-                "eps_estimate": "2.81 HKD",
-                "revenue_estimate": "6.0bn HKD",
-            },
-        ]
+        """Return no earnings claims until a dated, attributable source is configured."""
+        return []
 
     def fetch_analyst_changes(self, date: str) -> List[Dict]:
-        """Return a placeholder analyst rating change list."""
-        return [
-            {
-                "ticker": "9988.HK",
-                "firm": "Morgan Stanley",
-                "action": "Upgrade",
-                "from_rating": "Equal Weight",
-                "to_rating": "Overweight",
-                "price_target": "105",
-                "previous_target": "92",
-            }
-        ]
+        """Return no rating claims until a dated, attributable source is configured."""
+        return []
 
     def format_for_report(
         self,
@@ -272,7 +248,11 @@ class SectorNewsAggregator:
 def fetch_sector_data(date: str, config: Optional[Dict[str, Any]] = None, cache_dir: str = "") -> Dict:
     """Public entry point for sector and company news."""
     watchlists = (config or {}).get("watchlists", {}) if isinstance(config, dict) else {}
-    cache_key = json.dumps({"date": date, "watchlists": watchlists}, sort_keys=True, ensure_ascii=True)
+    cache_key = json.dumps(
+        {"schema": 2, "date": date, "watchlists": watchlists},
+        sort_keys=True,
+        ensure_ascii=True,
+    )
     cached = _load_cache(cache_dir, cache_key)
     if cached is not None:
         print("[sector_news] using cached sector/company payload")
@@ -287,12 +267,57 @@ def fetch_sector_data(date: str, config: Optional[Dict[str, Any]] = None, cache_
         watchlists=watchlists,
     )
 
+    provenance = []
+    news_items = [item for items in sector_news.values() for item in items]
+    if news_items:
+        provenance.append(
+            provenance_record(
+                source_name="Public market-news RSS feeds",
+                source_url="https://feeds.bloomberg.com/markets/news.rss",
+                as_of=date,
+                source_type="public",
+                status="ok",
+                confidence=0.7,
+                note="Headline aggregation only; company-event claims require a linked primary or licensed source.",
+            )
+        )
+    else:
+        provenance.append(
+            unavailable_record(
+                "Public market-news RSS feeds",
+                date,
+                "No sector headline passed the feed and relevance checks.",
+            )
+        )
+
+    hkex_meta = (hkex_announcements or {}).get("meta", {}) or {}
+    hkex_status = str((hkex_announcements or {}).get("status", "unavailable") or "unavailable")
+    provenance.append(
+        provenance_record(
+            source_name=str(hkex_meta.get("source") or "HKEXnews"),
+            source_url=str(hkex_meta.get("source_url") or "https://www1.hkexnews.hk/"),
+            as_of=str(hkex_meta.get("effective_date") or date),
+            source_type="official",
+            status=hkex_status,
+            confidence=0.95 if hkex_status == "ok" else 0.0,
+            note="Official listed-company announcements.",
+        )
+    )
+
+    has_news = bool(news_items)
+    has_hkex = hkex_status == "ok"
+    status = "ok" if has_news and has_hkex else "partial" if has_news or has_hkex else "unavailable"
+
     payload = {
+        "status": status,
         "sector_news": sector_news,
         "earnings_calendar": earnings,
         "analyst_changes": analyst_changes,
+        "earnings_calendar_status": "unavailable",
+        "analyst_changes_status": "unavailable",
         "hkex_announcements": hkex_announcements,
         "formatted_text": aggregator.format_for_report(sector_news, earnings, analyst_changes),
+        "provenance": provenance,
     }
     _save_cache(cache_dir, cache_key, payload)
     return payload

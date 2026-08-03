@@ -1,0 +1,2844 @@
+{
+  "archive_id": "b4c7f4f7dcf117b0faf4c9331fc92d0f374c086bb34978c74e8bf81d8dcbd64e",
+  "dates": 86,
+  "entries": [
+    {
+      "archive_id": "f03d0a1b58400c4d0fc0c5f63ccc2068b73ef5df74565423a1f4bf3cf2aa8239",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-04-17.png",
+          "sha256": "fddda7b1e2524be8b6b08cd30d90c25e517cd7091fe7f36bcdd6a22f1d2cf313",
+          "size_bytes": 263783
+        },
+        {
+          "path": "charts/dashboard_2026-04-17.png",
+          "sha256": "638103649b8616e3049e4fc7203b906893e083ae02ae9e4c293bedb11bbd8b1a",
+          "size_bytes": 430063
+        },
+        {
+          "path": "charts/features_2026-04-17.json",
+          "sha256": "18ce63158741f4b42ee43131d429accfa9f0ace41d05107e602105552f1d8cdc",
+          "size_bytes": 6351
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-04-17.png",
+          "sha256": "4546e194b8c70eb61b1b109ff4b32fabae7d700c898d2ddf124685079e2f57a1",
+          "size_bytes": 437056
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "969742b2e2f20c9803b0038dfac022a38de58ca4505f538622ad9bac077a04b5",
+          "size_bytes": 34556
+        },
+        {
+          "path": "raw/2026-04-17_bundle.json",
+          "sha256": "346a53a84f828531c70b34ba09dfd098a67a573c5304dad93859d393c07d5f2f",
+          "size_bytes": 256536
+        }
+      ],
+      "report_date": "2026-04-17"
+    },
+    {
+      "archive_id": "d17780041b0d8ede56db6aea58884b478abaa47804206cec56594eea048cac19",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-04-21.png",
+          "sha256": "fa291d56e3b6e8d28282675ba7115cd6d328e7268281d4295df3d028ce316d1e",
+          "size_bytes": 261956
+        },
+        {
+          "path": "charts/dashboard_2026-04-21.png",
+          "sha256": "2f7f78dd3dfc5aae6b651bb00d30978c961c3bff47171d4d124ccc097e45534e",
+          "size_bytes": 427121
+        },
+        {
+          "path": "charts/features_2026-04-21.json",
+          "sha256": "8999ddbcf9aa59c2da5af694551a6dad5694eeab6f28184b31864fa9a4e58c37",
+          "size_bytes": 6360
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-04-21.png",
+          "sha256": "c07152577a55633b61d8613ebbd9c891cdddb0e2ffe02e162be1af66ac85c12a",
+          "size_bytes": 438965
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "6a37e2bd2aa30a019a665d4098cdef78a80418248696f0f3a30101b7f71d8a4e",
+          "size_bytes": 42661
+        },
+        {
+          "path": "raw/2026-04-21_bundle.json",
+          "sha256": "8fcf71e4f0ba6ae1e84a696c3dbde99b894a05b0518445e2ed072b58f0436cf2",
+          "size_bytes": 284490
+        }
+      ],
+      "report_date": "2026-04-21"
+    },
+    {
+      "archive_id": "58a4806929ab623fcc21f3cc290a9949cf3c91029b0fbc850a9dee8d844b6b63",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-04-22.png",
+          "sha256": "591f1733d4e3e9eb13fc1e2e001a1da68f620ae1671a7dcff026212a6c1f463e",
+          "size_bytes": 263984
+        },
+        {
+          "path": "charts/dashboard_2026-04-22.png",
+          "sha256": "5f9be15007dcccfa2735c04403064fc6c840e1d7a1f7d9d6c2947413853e2b87",
+          "size_bytes": 444518
+        },
+        {
+          "path": "charts/features_2026-04-22.json",
+          "sha256": "861b5430c559b71125c6b4c769adc67fd5e7785df1a768413caee96433bf3564",
+          "size_bytes": 6336
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-04-22.png",
+          "sha256": "4878861da91dbf1f58c5a8eb2bcd9d43907e6c13609029c32b0bd9a5e6db70a5",
+          "size_bytes": 417558
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "406e3ce88d1365c4118343615760d7d1831501690e9fe07bd4c89e3727294b30",
+          "size_bytes": 40411
+        },
+        {
+          "path": "raw/2026-04-22_bundle.json",
+          "sha256": "9915fa9097308b809676712eaac75145fe1652faf3146e64e83ac21af9dcc888",
+          "size_bytes": 298446
+        }
+      ],
+      "report_date": "2026-04-22"
+    },
+    {
+      "archive_id": "35c5ffb62aab74cf6954c2cd7e036055271ad1406ff3f57281e6f20111928f44",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-04-23.png",
+          "sha256": "bb932bd09e5d733fa53252c77a09255d7b1e5c202ecc10d167649f17f5f96841",
+          "size_bytes": 264177
+        },
+        {
+          "path": "charts/dashboard_2026-04-23.png",
+          "sha256": "72e4f000fcb4bfd69d67af82156f9e001d353e58f43fa7220911e383b3deb46b",
+          "size_bytes": 445515
+        },
+        {
+          "path": "charts/features_2026-04-23.json",
+          "sha256": "b0e9099dbf60a2906a99430d817ec24da24b38a0ebfb4837972be25136479a33",
+          "size_bytes": 6348
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-04-23.png",
+          "sha256": "7f0966bdff9dfbd5e308bca7db72195fdc5b68ac4718163ebd91a61e58d7c52a",
+          "size_bytes": 423558
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "503e2284c139f06b08f8bf83e5eed7cbbc86f06c25364f34d321be31ca9b4bac",
+          "size_bytes": 37639
+        },
+        {
+          "path": "raw/2026-04-23_bundle.json",
+          "sha256": "b2497b7de75d51d12ff07654334f8078c2b6824f3344c8a306ba7156ea5ecd46",
+          "size_bytes": 287150
+        }
+      ],
+      "report_date": "2026-04-23"
+    },
+    {
+      "archive_id": "7b7bbc908ac696aed8d9ebab0c8bf2d6af136cbb205cfb861af15d12f6934697",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-04-24.png",
+          "sha256": "c99b7c6a286e84ed1873364bf624a0f84485fbdf8db85c5ade3d52a51e49b8d3",
+          "size_bytes": 262639
+        },
+        {
+          "path": "charts/dashboard_2026-04-24.png",
+          "sha256": "28d3b6457c96e87e2ec48c6d6271b1bc79f080c86dc6fab1d8441ad01ecdd64d",
+          "size_bytes": 450449
+        },
+        {
+          "path": "charts/features_2026-04-24.json",
+          "sha256": "4f117b3d889e6a4a3d8a4627095f6689f6a059540522576f0d70d01c376b65f6",
+          "size_bytes": 6353
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-04-24.png",
+          "sha256": "76e65893a6d1021d2fe8d61fabbec5bfcd413381289438e4a0d9d1dd20318b2b",
+          "size_bytes": 419432
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "35defc8e0de7429b3a8244087f5c08552be7be0e438a959bb54b16bb37e18ada",
+          "size_bytes": 38882
+        },
+        {
+          "path": "raw/2026-04-24_bundle.json",
+          "sha256": "dc7cd04d05e39b6c01e12394512a8f2a1eec8d81534bef869ee9db28f2ababde",
+          "size_bytes": 288742
+        }
+      ],
+      "report_date": "2026-04-24"
+    },
+    {
+      "archive_id": "e68c6c2e9dcaaa4f9a5b3632a85d3f14f9c3ba0645461a2bee2cccd55c9b2d99",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-04-26.png",
+          "sha256": "802df39c868429389f6b5a6a2eac034053dee78159f807fdd9be102367b88862",
+          "size_bytes": 262751
+        },
+        {
+          "path": "charts/dashboard_2026-04-26.png",
+          "sha256": "8b67197c48182ee8b5dd95fdd758779bc846ba4e5e5e1bfabd8c7cfc7c27eb2e",
+          "size_bytes": 449617
+        },
+        {
+          "path": "charts/features_2026-04-26.json",
+          "sha256": "f269a402a3dfff110ededfc53ac3519dd8b0b46d82963d41f489c48ba53e229a",
+          "size_bytes": 6359
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-04-26.png",
+          "sha256": "25a455eead82249774d3e86d34adb2a548cabe456f50982b254deac107d7dce6",
+          "size_bytes": 417081
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "cbdd608ba33642fc374fe5ad16a9e88a1e1db85ec723f75ee600211e0bbe51d7",
+          "size_bytes": 43694
+        },
+        {
+          "path": "raw/2026-04-26_bundle.json",
+          "sha256": "6432a051166ae0639a5fdbec7f125d8121f77b7dea7257fa7b0101a48d0ab0f0",
+          "size_bytes": 298734
+        }
+      ],
+      "report_date": "2026-04-26"
+    },
+    {
+      "archive_id": "a783df553469b10797914663c244c37523d6a740d2e889531e5e3a9068a81287",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-04-27.png",
+          "sha256": "802df39c868429389f6b5a6a2eac034053dee78159f807fdd9be102367b88862",
+          "size_bytes": 262751
+        },
+        {
+          "path": "charts/dashboard_2026-04-27.png",
+          "sha256": "8211c4ddc4c4608e80f1b0568e0055bce6727686a7187141d1276309619e9c93",
+          "size_bytes": 453147
+        },
+        {
+          "path": "charts/features_2026-04-27.json",
+          "sha256": "001687fc03b5cd9fb5f25750a893e48442c1bff30e9d49a4a85436838be55227",
+          "size_bytes": 3599
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-04-27.png",
+          "sha256": "e97a1a0541e5dabe26cdccd0050cbc184422ba64f6d852aeed78d9cf3649053c",
+          "size_bytes": 417364
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "376b818cb70011000e943011dbb64aa6b6f716d584f6be5d00878c4a61849469",
+          "size_bytes": 43624
+        },
+        {
+          "path": "raw/2026-04-27_bundle.json",
+          "sha256": "97e2eae972da2bb122f1920ba7ceb40ae88d7e5574db935e2bfcfa34962205f9",
+          "size_bytes": 297782
+        }
+      ],
+      "report_date": "2026-04-27"
+    },
+    {
+      "archive_id": "1dc96f2b660fefc8e941f05d8e572759b7d16f61b4249f4438bd5d0700a3c89c",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-04-30.png",
+          "sha256": "bd3a9088b1425a9fccfc1818fa81563d7c100db3230d28a70786c81e504f0584",
+          "size_bytes": 263354
+        },
+        {
+          "path": "charts/dashboard_2026-04-30.png",
+          "sha256": "5a171adca624efa11bcf31baf24fc27aa220ee3b4f1f0af9b39acbc2b106910b",
+          "size_bytes": 443949
+        },
+        {
+          "path": "charts/features_2026-04-30.json",
+          "sha256": "f434d1f765c489b392bc28ccd0988cabf17366958e01346b9523bae7bc5bba2a",
+          "size_bytes": 6331
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-04-30.png",
+          "sha256": "8c4a7f84793accb53960fb7c9fab02816a1d1b40407e90c386ea5bc7147799f0",
+          "size_bytes": 415006
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "5fffe37aa16e59e52f3aa8c1b04ba4ebe20d2bf6fe71fd93b8b348af0708ba5e",
+          "size_bytes": 39370
+        },
+        {
+          "path": "raw/2026-04-30_bundle.json",
+          "sha256": "6bfe305537f8733944f08cb7261c2f17ce1b762b2f0e7532d357e6d675a71998",
+          "size_bytes": 287996
+        }
+      ],
+      "report_date": "2026-04-30"
+    },
+    {
+      "archive_id": "7762495aa3a1ef0235e5eae8ca62e2e20cdf9dd0e9d1ff4f2d3b1cff44382cdd",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-04.png",
+          "sha256": "9d63156c9b132ef30aa29c545c20bca22076c207bca4c12b3992ecfbd9398b5e",
+          "size_bytes": 262320
+        },
+        {
+          "path": "charts/dashboard_2026-05-04.png",
+          "sha256": "dd262ae268984b6bb991dafe2a34e045d4b6569e04f4a70ddb45b0faf2cb8cc3",
+          "size_bytes": 383595
+        },
+        {
+          "path": "charts/features_2026-05-04.json",
+          "sha256": "07bdb94709f30e41f7dda601a657696d4f73876aaff826fb3a59b601908dc4ac",
+          "size_bytes": 3584
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-05-04.png",
+          "sha256": "d822901afff6fa865dfcfebfd233703c78bca7ba7e5ab11894d152e1dc375204",
+          "size_bytes": 411150
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "79f4e39081aa03c6cd3c9daff205204b8051db5283762147a658b745e865c9ab",
+          "size_bytes": 43340
+        },
+        {
+          "path": "raw/2026-05-04_bundle.json",
+          "sha256": "f733bdc4c0d94ea1a01d30148af777eb8ab41c3db26f81cb8ec5c07b2e8396eb",
+          "size_bytes": 278584
+        }
+      ],
+      "report_date": "2026-05-04"
+    },
+    {
+      "archive_id": "110017f6832c81971e144b83dc681995ddb44a11ea52af3d5611e541e16e0c95",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-06.png",
+          "sha256": "937de464f29c3333ebf60d788cc77b2b69f45d1ca0c6d70b85ca3cf0acaa6587",
+          "size_bytes": 263712
+        },
+        {
+          "path": "charts/dashboard_2026-05-06.png",
+          "sha256": "5a544eb821b76a8dee0f86b01476c68c807608aa216e45ca7e335067905f7b45",
+          "size_bytes": 395055
+        },
+        {
+          "path": "charts/features_2026-05-06.json",
+          "sha256": "5b8552aebad96226bb476066ea613266982cfd7e065732c4e10f15756b1a3a99",
+          "size_bytes": 6347
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-05-06.png",
+          "sha256": "f8eef710ff83907c93619071ee16c2e1c9268cfd1e8d23519a491e8b8877acf8",
+          "size_bytes": 404944
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "3627865bfc7df8819f2c978b3ba7b7dd67aadf121fb11199e1b1104af446ba31",
+          "size_bytes": 37198
+        },
+        {
+          "path": "raw/2026-05-06_bundle.json",
+          "sha256": "8441accaa3511c2ecfe505cb496290410662c36f7aff2c5119ec487144fa31b5",
+          "size_bytes": 258265
+        }
+      ],
+      "report_date": "2026-05-06"
+    },
+    {
+      "archive_id": "04a3130123dc3d3a532e59cbfded10a1f20d195f6583e2d0c585ce884425c5b3",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-07.png",
+          "sha256": "c376b13c503b93bd0d1e4f4f6f30b92ff3679795d56bf59412a6a0ce0d7b2514",
+          "size_bytes": 262307
+        },
+        {
+          "path": "charts/dashboard_2026-05-07.png",
+          "sha256": "c2ed18d786e90eb2ea12a6e901df7dfc99cd0644cb4710391b81748b503e7256",
+          "size_bytes": 443577
+        },
+        {
+          "path": "charts/features_2026-05-07.json",
+          "sha256": "7b47681e10cab36c33bbfd55706b240439d6dfebc5934cddf6005f29c47ff1f6",
+          "size_bytes": 6348
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-05-07.png",
+          "sha256": "93a2d5a6edc7b01fc258a9d903052b6ece6aa6005ad812ad98fd65855d94c707",
+          "size_bytes": 408890
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "6fb7f5952a0c2f43877bb2933a95fea5d1b80cc99742a310c2be14d6434cec92",
+          "size_bytes": 41366
+        },
+        {
+          "path": "raw/2026-05-07_bundle.json",
+          "sha256": "2f2bc6150393a7a05c96a1c547f9caa5a0c039fd37f461aa53e1e0bf28e3b951",
+          "size_bytes": 299193
+        }
+      ],
+      "report_date": "2026-05-07"
+    },
+    {
+      "archive_id": "ad3cd02d69343b27653e42de14bbe13ade353486d7ae6143a3676c0c0cea62b1",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-08.png",
+          "sha256": "6006248012ef1d67f4fdd913ab981730697a8ff53661a0ab7e8e9bfbc75aa6e3",
+          "size_bytes": 261985
+        },
+        {
+          "path": "charts/dashboard_2026-05-08.png",
+          "sha256": "7d978da1135ed3ac1862c6befeec43ea36c24bfebf49eab58d4d852c65592011",
+          "size_bytes": 434166
+        },
+        {
+          "path": "charts/features_2026-05-08.json",
+          "sha256": "8203871f79e1cd9043df2fb1fb33eda4f6727b20a0413dc10a748c34516608b7",
+          "size_bytes": 6347
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-05-08.png",
+          "sha256": "ebd55e43e6e8468b41fcd6d87bf566b64cd5c2067e3d1c90d1dbf7fe0cad3100",
+          "size_bytes": 422248
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "617ad1d2adb9006ce072936188f617ea2723ef77b56f32f65a44a7d2ec3616a7",
+          "size_bytes": 37302
+        },
+        {
+          "path": "raw/2026-05-08_bundle.json",
+          "sha256": "a750a01a0bfdf83ad49b5107f43c3723a8c12cff22245b49d3d6a4e6bf1a551e",
+          "size_bytes": 285946
+        }
+      ],
+      "report_date": "2026-05-08"
+    },
+    {
+      "archive_id": "c03bd071b27a105b1a5fbf2b3039c30b768d252c9dacb6f0ed18d84d391e680d",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-19.png",
+          "sha256": "88a0eb1e2fec01f688abf922cedd129468099d14fb24cae9d7a8646af0a6d57a",
+          "size_bytes": 261864
+        },
+        {
+          "path": "charts/dashboard_2026-05-19.png",
+          "sha256": "4fec8f4641027013e153fc28097b3e42265aea2a216e07c7b4fa2250568f2cc9",
+          "size_bytes": 452660
+        },
+        {
+          "path": "charts/features_2026-05-19.json",
+          "sha256": "5b1ee2a02b6c18522cc65982801c66bfc583e7657607053b8556bbf0fa7f85c4",
+          "size_bytes": 6357
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "1c63cac666667584ab42a46f8189850092049f9b8b0ea08ab6886f59ff5e61b2",
+          "size_bytes": 31706
+        }
+      ],
+      "report_date": "2026-05-19"
+    },
+    {
+      "archive_id": "4de4b5414684285270b372a8e19ab446a1185c14fc48f4026950fd84a728cb21",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-20.png",
+          "sha256": "7eb19188ab87d7535bb9c0e8723db5274b72d743461a7ded9f9fba9803ef8ae2",
+          "size_bytes": 261015
+        },
+        {
+          "path": "charts/dashboard_2026-05-20.png",
+          "sha256": "b5e204ec182dbba51d73d4c6b3ddf04ca049937afd25ac1959d27e4e7959f225",
+          "size_bytes": 438990
+        },
+        {
+          "path": "charts/features_2026-05-20.json",
+          "sha256": "c97c9afc1a87212d83a1a4e273a58c39de2058d753dfcf474f17f8e51c55a3a5",
+          "size_bytes": 6334
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "65e8134250fa088d3dd60e22877cb2f22af34b32e528b07e9a029a211e5b7597",
+          "size_bytes": 29119
+        }
+      ],
+      "report_date": "2026-05-20"
+    },
+    {
+      "archive_id": "ad5b56f89764b4356f02f7dede034f5e76ff89fc6ec18a6d2fc77f63e1113e10",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-21.png",
+          "sha256": "e7e3aa252783434dde5e8194fcedf3f8e6dcd5a3a8959e95ed13c3877e43a2da",
+          "size_bytes": 262024
+        },
+        {
+          "path": "charts/dashboard_2026-05-21.png",
+          "sha256": "e2e15e1e6709e35238cce94e31bfe18e337cc3fad5036efa06401cad05905c64",
+          "size_bytes": 439140
+        },
+        {
+          "path": "charts/features_2026-05-21.json",
+          "sha256": "1aa3996fe8abbb3a09d990c964025f111bf12ed80803eebbfc10c4d865b7a8ce",
+          "size_bytes": 6341
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "696e80b17901cbba45f86eda6afbdd677f5561477e3f06db941b5b2b72fbc395",
+          "size_bytes": 32415
+        }
+      ],
+      "report_date": "2026-05-21"
+    },
+    {
+      "archive_id": "ae8ae43aec28503dcabadd728726eb17f11053e4421deb63314ded47a9c2a790",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-22.png",
+          "sha256": "5f61aeaebb37a25ff51d60519ef1d42a7672b0361373e3b2a11e60e21997582a",
+          "size_bytes": 263924
+        },
+        {
+          "path": "charts/dashboard_2026-05-22.png",
+          "sha256": "7e8e28b668abac415a451e72d37c1fc3df816ed3ce09f053717258f2f2c55237",
+          "size_bytes": 439161
+        },
+        {
+          "path": "charts/features_2026-05-22.json",
+          "sha256": "1dcd2b1157d20f0c99d902c0045cafa65f7c7cdb8a98d1a36a4c0f0f7c3a4d5e",
+          "size_bytes": 6355
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "db3453b554db3ecfe522e7ac997a02255441409c25c2d2d0b87f6da5b9570658",
+          "size_bytes": 31584
+        }
+      ],
+      "report_date": "2026-05-22"
+    },
+    {
+      "archive_id": "fc4c4380a9047954e1f5e6a7dc0ce1436a85940cc5b700eb045094677ee3c4d2",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-23.png",
+          "sha256": "0c94e46dea16b960249bf6f5c3686b209993366f0ad4bd9053fbdb841b47fb65",
+          "size_bytes": 262385
+        },
+        {
+          "path": "charts/dashboard_2026-05-23.png",
+          "sha256": "d7cf2aa730ac1c710de0da044dff9d0356f62e731bfda8e1005ce574ca40ae9a",
+          "size_bytes": 437986
+        },
+        {
+          "path": "charts/features_2026-05-23.json",
+          "sha256": "e1f4d348c33f90247ea193797ca4c7e3810e9b072f8aad6e68edf3d2e4d51b53",
+          "size_bytes": 6369
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "101c6a6bac13ca11246ea0f1761531695f7aef857f0fea8d0dba4b1782913d5d",
+          "size_bytes": 29474
+        }
+      ],
+      "report_date": "2026-05-23"
+    },
+    {
+      "archive_id": "29996a10fa9f05005f303dc96c85b8fd2e02587f523111e1466091da41bf3f4c",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-27.png",
+          "sha256": "1307ac7b4d8faad91dae999df14dea1a7902c5a3ea6b706eae5437d4bf8e62cf",
+          "size_bytes": 242484
+        },
+        {
+          "path": "charts/dashboard_2026-05-27.png",
+          "sha256": "993d71589aa32a672a4a9e2c93405af2bd34a749b400185ba16e4eff4db50336",
+          "size_bytes": 446292
+        },
+        {
+          "path": "charts/features_2026-05-27.json",
+          "sha256": "45d8d8adfb9d5cc8e7ae547a7482f83c87bf63fe9c9027a7d6338c29725afaba",
+          "size_bytes": 6342
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "08c261244d4d3e89c1554246fb97d0a4b1ea32631ad375b5faebd0552ee78928",
+          "size_bytes": 29602
+        }
+      ],
+      "report_date": "2026-05-27"
+    },
+    {
+      "archive_id": "6782951b0ae8c21a94d5d71c5096594371e872a88d384fc1cf62e02de5f5cb85",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-28.png",
+          "sha256": "ae501d0d640657a101505c3fb4ced509ac70ad5b21b98410321d9e0381d8c0d0",
+          "size_bytes": 241093
+        },
+        {
+          "path": "charts/dashboard_2026-05-28.png",
+          "sha256": "07e964629d84efb896bf8c4b1d6f18d40b0b531381440cd98840e3de9641b91c",
+          "size_bytes": 431635
+        },
+        {
+          "path": "charts/features_2026-05-28.json",
+          "sha256": "a1db342ab58587783eb79ddf30eea5d14a7fdc59acc76ad247eb01c47a297aea",
+          "size_bytes": 6351
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "2bcd471a84cc4e32dcf0755b5ce971ea1ba99f59a234dcbb9d36f5cf756603ab",
+          "size_bytes": 30848
+        }
+      ],
+      "report_date": "2026-05-28"
+    },
+    {
+      "archive_id": "240c2c1803f078942c22bb189311555b75dfa6073ac90b1530710788bf8efb75",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-29.png",
+          "sha256": "953a21941efbe0d5821dbbc3de930e3e324defd980c8fa3eefe8994c73e50465",
+          "size_bytes": 240970
+        },
+        {
+          "path": "charts/dashboard_2026-05-29.png",
+          "sha256": "eac41e59370ab8a5b49737436902c044833c1ad60e3528c1e07251a0042bb32b",
+          "size_bytes": 444276
+        },
+        {
+          "path": "charts/features_2026-05-29.json",
+          "sha256": "e9b162f1fd373922d06a0679e83aa9e4e24da18b996a2b4f6dc33adec85b1d2e",
+          "size_bytes": 6362
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "700c51c2f280c5386fd9f39c972d1db6a89a6b0f160c17654f8fcd305f5fd9ee",
+          "size_bytes": 30148
+        }
+      ],
+      "report_date": "2026-05-29"
+    },
+    {
+      "archive_id": "7fa0678ebd51064457817e70e13956ba1365245ecc92c3de31a67ac41c25a113",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-30.png",
+          "sha256": "cccb757f8b76322562ceb4ef59e8307d3f1d2d541152eb2d034e6f2a20a62128",
+          "size_bytes": 241215
+        },
+        {
+          "path": "charts/dashboard_2026-05-30.png",
+          "sha256": "bd04be11bd375bd77c492a2a39cd213b8ae2740bec5c5f9e14c283e627418a7a",
+          "size_bytes": 435895
+        },
+        {
+          "path": "charts/features_2026-05-30.json",
+          "sha256": "d50a66463052b9c58a0b710e6f7883347cce6ae1e880bfb78d0638a72c9cff58",
+          "size_bytes": 6345
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "4bc0a602b52ff682f634c885309abbf7f89f1341d0f7691e2e1abf0f1f7c57a7",
+          "size_bytes": 30781
+        }
+      ],
+      "report_date": "2026-05-30"
+    },
+    {
+      "archive_id": "d8e2a7336d238f770275d227bb9a764a3eec2de81ee9653f78d5a11c9091c90d",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-05-31.png",
+          "sha256": "cccb757f8b76322562ceb4ef59e8307d3f1d2d541152eb2d034e6f2a20a62128",
+          "size_bytes": 241215
+        },
+        {
+          "path": "charts/dashboard_2026-05-31.png",
+          "sha256": "8d5dbe1a0b036f22f14dffcd835149d0a99115ee6319ab1bfe9a069842b430e4",
+          "size_bytes": 438366
+        },
+        {
+          "path": "charts/features_2026-05-31.json",
+          "sha256": "5e988b0e8e04e1731d18d5d9b2564c53910aefebafb631d8cac4f75aa1c35bfb",
+          "size_bytes": 6346
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-05-31.png",
+          "sha256": "3af47fb8289240a894bd198ae5c18929e1eec4afe28f8a818a2bc5685aa63536",
+          "size_bytes": 412473
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "f16420d5a2d8a34b8a219a0d0d3c9f05ba37a49fce5de1f2732369e56fcf2de4",
+          "size_bytes": 34944
+        }
+      ],
+      "report_date": "2026-05-31"
+    },
+    {
+      "archive_id": "bab8ecc0016af9e08028b1b21c1141fe5b3cd35a91930bab81d666d5f6820c4c",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-01.png",
+          "sha256": "cccb757f8b76322562ceb4ef59e8307d3f1d2d541152eb2d034e6f2a20a62128",
+          "size_bytes": 241215
+        },
+        {
+          "path": "charts/dashboard_2026-06-01.png",
+          "sha256": "32e7e5f1c4059c2f370c4d5fc156a586f71f3e2a21ee57912252f64a6b9823e3",
+          "size_bytes": 440069
+        },
+        {
+          "path": "charts/features_2026-06-01.json",
+          "sha256": "f6b7ca10d7feb9f1449889997b571210922831a4abafa924da7ddb627d33b3dd",
+          "size_bytes": 3583
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "c05b6280feb0a48a48b69bf845d2055a566de32d636d81d6c75b585e26213b67",
+          "size_bytes": 35236
+        }
+      ],
+      "report_date": "2026-06-01"
+    },
+    {
+      "archive_id": "8b8371d96de4efa3243717363cff2f71c9a3a71a5dd80aae86df27107851ba5a",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-02.png",
+          "sha256": "d917cd2c7a5c9bad455dcd804fb05fc611fce197e5db59b6ccbc71cbe571cd53",
+          "size_bytes": 245258
+        },
+        {
+          "path": "charts/dashboard_2026-06-02.png",
+          "sha256": "b3f4283e438f30dff973bb4725a429f8e98bf54c5ff25b1ca993c575916bd5ec",
+          "size_bytes": 447802
+        },
+        {
+          "path": "charts/features_2026-06-02.json",
+          "sha256": "1dedbf8aa635a0915136db9529f539df6574be60ad834c4fa45afe9dcae5fdef",
+          "size_bytes": 6345
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "e4ded2cf0f2ec831324d6c94693eec4f3d2ac5259d8398270c2ffd6d936a4065",
+          "size_bytes": 30781
+        }
+      ],
+      "report_date": "2026-06-02"
+    },
+    {
+      "archive_id": "f21ff056239b6d68412e8218f0b9626a0302557ad39d225ed8ad3003eb1e4f13",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-03.png",
+          "sha256": "4eef38d6ab643def7f83ba9140422280e854b197efb1d5fc6b52cc1e1c08e689",
+          "size_bytes": 242102
+        },
+        {
+          "path": "charts/dashboard_2026-06-03.png",
+          "sha256": "b57075ec35329242632a967d4698350312c4ab3e68b3c105789d5df165a625ab",
+          "size_bytes": 455168
+        },
+        {
+          "path": "charts/features_2026-06-03.json",
+          "sha256": "de2ec5fe632df35f1f17564f6b522a13c29445ec498a1a7d6d3f3a86b2bceb40",
+          "size_bytes": 6341
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "bd5077c112943fbd88d26e7662dc259e4695b37935d8f080bdb5d60603d104c2",
+          "size_bytes": 29433
+        }
+      ],
+      "report_date": "2026-06-03"
+    },
+    {
+      "archive_id": "35fad0ae61c8b60de1bb1a2cf8fe3c1bbe02a6d21ad0bf97ac09cc1d7ae87ea2",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-04.png",
+          "sha256": "1687f6a66e08bb20af236e7fa41abd5b7ed115ac06d9406e1ec15612cede0d9b",
+          "size_bytes": 244268
+        },
+        {
+          "path": "charts/dashboard_2026-06-04.png",
+          "sha256": "9e42986bf97b362922a0d6dda2a93ad0df13633d13ab242e1b115c5f58ad08ab",
+          "size_bytes": 442151
+        },
+        {
+          "path": "charts/features_2026-06-04.json",
+          "sha256": "fb37319443268f48e7dcde8c0c8247715f823ccf64a50ea1a71ccbcb5d8ce398",
+          "size_bytes": 6351
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "5db076c9877a5f3753de76013e7699bcceb34026d7646283ca11965c111e07ad",
+          "size_bytes": 29657
+        }
+      ],
+      "report_date": "2026-06-04"
+    },
+    {
+      "archive_id": "39df28fa5281d8d95596e11087ebd051298ff2b53bc9b26b92cafcdcd6d6facc",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-05.png",
+          "sha256": "6b74c96ac597891566652d7558c7b66eac595eef7f7fd7b2f657ced92100d67a",
+          "size_bytes": 242147
+        },
+        {
+          "path": "charts/dashboard_2026-06-05.png",
+          "sha256": "7a31762920fc8de4ed5df766decdd63c3d24dde505865a61570db279784157d6",
+          "size_bytes": 441331
+        },
+        {
+          "path": "charts/features_2026-06-05.json",
+          "sha256": "895f712d69c6eecf60aad552b34ce836c0d288a9271a5a7bd2d730d8b08fabfc",
+          "size_bytes": 6351
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "c6eea25c4c29d107cd874a2221aa9ccf7adda4b8899eee7eaaff69a15fdc726d",
+          "size_bytes": 31035
+        }
+      ],
+      "report_date": "2026-06-05"
+    },
+    {
+      "archive_id": "81abd2abe24f19e0a8b2eb1b38e02b46e4fc02b1c35c7006df52a1c3baf5a717",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-06.png",
+          "sha256": "2d37d92afdfaddd406d65d4a7513d6aae9bc3581ede27b977c14c4ebe5c808de",
+          "size_bytes": 241092
+        },
+        {
+          "path": "charts/dashboard_2026-06-06.png",
+          "sha256": "3b1efea368f2525433af8a00c4ec3595a1792c972a4ea7379a6319763594685f",
+          "size_bytes": 457997
+        },
+        {
+          "path": "charts/features_2026-06-06.json",
+          "sha256": "c183395bc5ac73cebacc3e0b88cf0758801f10a6bfc047066825594792ee0d63",
+          "size_bytes": 6351
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "b7387ac8d2a829c9e57180af18fe3b0689c17e8560041fd6e805ca0a12c2c6e4",
+          "size_bytes": 32888
+        }
+      ],
+      "report_date": "2026-06-06"
+    },
+    {
+      "archive_id": "f49bc76b31fef51e7c65150528b6a032a9926750b7a69c914108da1c75cccd7e",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-07.png",
+          "sha256": "2d37d92afdfaddd406d65d4a7513d6aae9bc3581ede27b977c14c4ebe5c808de",
+          "size_bytes": 241092
+        },
+        {
+          "path": "charts/dashboard_2026-06-07.png",
+          "sha256": "cb327d51ca5012914144164110d665f11a84532f0d17398fe75ad4f6d579ae8e",
+          "size_bytes": 458099
+        },
+        {
+          "path": "charts/features_2026-06-07.json",
+          "sha256": "8497326abc903fa4d4899dc46ac11a392d91ce37c0454ab024771e52901dd767",
+          "size_bytes": 6351
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-06-07.png",
+          "sha256": "22520ecb8e1fdadd04e1e97376bfadc329b4f465733535ce9a2afb6cc3e62b50",
+          "size_bytes": 419136
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "f9965b1a7d5486f7938581128c0eb41c846e5b324aefd1250adacea107314884",
+          "size_bytes": 37489
+        }
+      ],
+      "report_date": "2026-06-07"
+    },
+    {
+      "archive_id": "b79649a6436b3129f4ed9b9a56102c874117a3470f9798af2d6d2ff9b3fa4986",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-08.png",
+          "sha256": "2d37d92afdfaddd406d65d4a7513d6aae9bc3581ede27b977c14c4ebe5c808de",
+          "size_bytes": 241092
+        },
+        {
+          "path": "charts/dashboard_2026-06-08.png",
+          "sha256": "b9898d4f716f80b77bd0be1fe0c6c133bfd77ad6a3503b4c01c788de7c541b63",
+          "size_bytes": 456317
+        },
+        {
+          "path": "charts/features_2026-06-08.json",
+          "sha256": "f0cf537b65a33c07d196bb183c224a10f27d7a74fa1022b927b1a1ea6c631f13",
+          "size_bytes": 3908
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "163b1bf1d28f44fcda58db3470f90e2979df369f56e8e15724424c5138d61612",
+          "size_bytes": 36050
+        }
+      ],
+      "report_date": "2026-06-08"
+    },
+    {
+      "archive_id": "bfbf2341622274e1e422cf6c7c18769fc728ea0afd8e2ce2d4db0f483d373812",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-09.png",
+          "sha256": "96985fe2f1435141ff9afec63a74ccfd1367fa07a70a6f39dab28a7fec3b5b6d",
+          "size_bytes": 243197
+        },
+        {
+          "path": "charts/dashboard_2026-06-09.png",
+          "sha256": "65205789e860baadb23ced2121a74d2e629e27a141c1cad3bcc1ccd36b59be5d",
+          "size_bytes": 450743
+        },
+        {
+          "path": "charts/features_2026-06-09.json",
+          "sha256": "848ba8554671567299e5b1088bbc134ec524484552b9c5e07ee0d03214ac04cc",
+          "size_bytes": 6362
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "4caf4836adc24336bcfe85bac99d173230de58dfeb9665e8a88786106e43c6c9",
+          "size_bytes": 29596
+        }
+      ],
+      "report_date": "2026-06-09"
+    },
+    {
+      "archive_id": "66c454c085e706703c0074a396492d819cc864b84d1171355739de13db901574",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-10.png",
+          "sha256": "5f6ed5aeb9e41bf7c2affb6a685f900713cb90f99317688f9ab78e4da3b9f7b7",
+          "size_bytes": 243372
+        },
+        {
+          "path": "charts/dashboard_2026-06-10.png",
+          "sha256": "6d9e1c017e2a741e7d64c2614edbc47a52a2a5841d1f5fde232ced3a1bb07ef0",
+          "size_bytes": 455538
+        },
+        {
+          "path": "charts/features_2026-06-10.json",
+          "sha256": "fb6fad0b468e393395980669bfce4dd241a7475e4375d4329e948c0b2b0a94a8",
+          "size_bytes": 6354
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "8050f6bc71be700201db31b9ac9d8f1f11269ce7d1c378ba54c177d276228306",
+          "size_bytes": 30839
+        }
+      ],
+      "report_date": "2026-06-10"
+    },
+    {
+      "archive_id": "53287633b495b1e6817d97226066e67940942064f2b5849a6ff24ebe8c4f5c90",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-11.png",
+          "sha256": "ff7879f9a48ea4b8f17fb65a48479d06fdd00c1cc2cbdd812522def0d41af666",
+          "size_bytes": 243068
+        },
+        {
+          "path": "charts/dashboard_2026-06-11.png",
+          "sha256": "42e3ea22d7a7b407be30590c82536079d97f970e0a0a75624f7b05009c3ce9bd",
+          "size_bytes": 438743
+        },
+        {
+          "path": "charts/features_2026-06-11.json",
+          "sha256": "7090415c3d8c91641cc36b93ec8c5915db23ce627eeb5f433730dd0ada52a898",
+          "size_bytes": 6353
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "350fd57b353d8a94e3c3fcb037d43847f51b361e8ca58fcd97801fa1da76a306",
+          "size_bytes": 29492
+        }
+      ],
+      "report_date": "2026-06-11"
+    },
+    {
+      "archive_id": "2072eaf0d09627a4a130da752da1245c8de6b737dc029da9c744163f985ec851",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-12.png",
+          "sha256": "46c2ccf9aa5dedd5e5e2e1ae94868b95bf0bc7f8c62a127d88ac3281bc131d26",
+          "size_bytes": 242384
+        },
+        {
+          "path": "charts/dashboard_2026-06-12.png",
+          "sha256": "5cb2900dcd1992633c314307643bc105f93f0b76ebd194668048c9d58c9dd6db",
+          "size_bytes": 451259
+        },
+        {
+          "path": "charts/features_2026-06-12.json",
+          "sha256": "1e01ec27ef9f65d2ce0b50e8f449cfc8d974e3391e9844cfe3153f0ce51e59b9",
+          "size_bytes": 6355
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "02e623755d3816a1a262638d9cedd49ca71b8dbc6dbe444bd7709fbcf5b1bdc6",
+          "size_bytes": 29481
+        }
+      ],
+      "report_date": "2026-06-12"
+    },
+    {
+      "archive_id": "46ea9ecf14f08f395b73b0ea6d5a2498981594f259329862f5c93d0e0a21e517",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-13.png",
+          "sha256": "7e3e875f532679bff9df7f6ac2473fae2047564a1dc784ebff15e5303d358846",
+          "size_bytes": 239220
+        },
+        {
+          "path": "charts/dashboard_2026-06-13.png",
+          "sha256": "0632f693cd1d400a9eb692a2f4bcff8565c59e04a83f4294f450f36cb4f30bd6",
+          "size_bytes": 452780
+        },
+        {
+          "path": "charts/features_2026-06-13.json",
+          "sha256": "6b24637eb6c500f95901f36f9c744915d6c7117d65f4eac9e5e27f7762a2e610",
+          "size_bytes": 6353
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "623b879c4a9b3d11e444d661f3d337b6508de3b175eecd912ca4be0eb43a6bea",
+          "size_bytes": 30579
+        }
+      ],
+      "report_date": "2026-06-13"
+    },
+    {
+      "archive_id": "e6f2f9a5e450ba78cc6d8a5500d97d918ec1b8ff25f6b95abe0293da1880e7f4",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-14.png",
+          "sha256": "7e3e875f532679bff9df7f6ac2473fae2047564a1dc784ebff15e5303d358846",
+          "size_bytes": 239220
+        },
+        {
+          "path": "charts/dashboard_2026-06-14.png",
+          "sha256": "ed6420d575e97e77116f28b18b4b4a939b1331536be8f30678781ed373137dc6",
+          "size_bytes": 452615
+        },
+        {
+          "path": "charts/features_2026-06-14.json",
+          "sha256": "327977b8b20c226c4df381b211f0dbd5eb8b436d46b6b44bd2aa1c78ac6ea549",
+          "size_bytes": 6353
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-06-14.png",
+          "sha256": "ede38a6e13beb5db4dface94af8ed86f8a30c5eddb5d80374d450ac96da7c979",
+          "size_bytes": 409078
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "dee6803bbf33312eb6a41c0f8ea4db6a7ff8a7d59e12d7daa74f875778a021ed",
+          "size_bytes": 35069
+        }
+      ],
+      "report_date": "2026-06-14"
+    },
+    {
+      "archive_id": "592ec5ece2544be731f8eacc448827e62385f73f4d47b682eb3ce08a03086f4d",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-15.png",
+          "sha256": "7e3e875f532679bff9df7f6ac2473fae2047564a1dc784ebff15e5303d358846",
+          "size_bytes": 239220
+        },
+        {
+          "path": "charts/dashboard_2026-06-15.png",
+          "sha256": "6dd2d58f84cf87411f324ea549b691abac0f34503e7e9ae5f27f46355a5eb6a3",
+          "size_bytes": 455278
+        },
+        {
+          "path": "charts/features_2026-06-15.json",
+          "sha256": "a8bcdc74a1f65f2cb062d716aa60ef5964e05520a5467a5ae491e73b5f1f8cc9",
+          "size_bytes": 3916
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "14c924cf0f343e53200709ca20ecf09eac71e7532696a0311127a33709123c60",
+          "size_bytes": 34090
+        }
+      ],
+      "report_date": "2026-06-15"
+    },
+    {
+      "archive_id": "25995e4f43977f78ed7f90863157580fe804ba85a70229a47aaa44a00b6c910f",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-16.png",
+          "sha256": "a79c9ad9ddbecd185876c2e808d340d1347c2a1c44c753597a9b98caf10b2aa9",
+          "size_bytes": 243042
+        },
+        {
+          "path": "charts/dashboard_2026-06-16.png",
+          "sha256": "82c2e9576ee022156f9557f9cde4c64aacf15cfa9ee27ff213100043b6484719",
+          "size_bytes": 457406
+        },
+        {
+          "path": "charts/features_2026-06-16.json",
+          "sha256": "9c466cc402fddc92d9d3d5dc03dc2c2054be58725025da5415b085aadad1a16e",
+          "size_bytes": 6327
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "4aaf1d6c87c5ef913a4a1775eb980d3aa42ae39db36bb47df676a605532db788",
+          "size_bytes": 30040
+        }
+      ],
+      "report_date": "2026-06-16"
+    },
+    {
+      "archive_id": "5bb76b6b855664c82c08a810cedb9df5ed394cf4b1146b979ab98c63c03ad53e",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-17.png",
+          "sha256": "e84288e8f95de6f0376c9b486cb7f4b174c1c0f0ee3b72876d81bbd18c2b3b92",
+          "size_bytes": 242804
+        },
+        {
+          "path": "charts/dashboard_2026-06-17.png",
+          "sha256": "d4cd33841bbaf1c27fb8d5bec2e62302f5db9ea8d0e61b5f994d0764e0be6465",
+          "size_bytes": 447054
+        },
+        {
+          "path": "charts/features_2026-06-17.json",
+          "sha256": "309eb2579cf7cc750d6df802aea83836c24b391202ebe02008d00e80231d530f",
+          "size_bytes": 6349
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "34b2e8accea677e4d9c14fec36df6e94810a44558bdd9b985a60f8896367dc6a",
+          "size_bytes": 30568
+        }
+      ],
+      "report_date": "2026-06-17"
+    },
+    {
+      "archive_id": "6085846c1a8f615f110e41f3a48d1aa171ce33296b1e2459c200b557a078db04",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-18.png",
+          "sha256": "bc16d2ec5f91f92e776944b96ba6d6b2da568ad92a3b798b0efa31355c24f2ca",
+          "size_bytes": 241778
+        },
+        {
+          "path": "charts/dashboard_2026-06-18.png",
+          "sha256": "1dd2d93f9ba8b0115fa6cdc56a82c4266241522b42a0b219e87a370c5162a5a5",
+          "size_bytes": 462022
+        },
+        {
+          "path": "charts/features_2026-06-18.json",
+          "sha256": "222c0437c117cd088a0ebaaf701201235b87853e466cf149a4d778969ec82b26",
+          "size_bytes": 6351
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "6f389e4c237b77bd44b31cefa505f93494d23560a695f5a1b7e65e0b7374f5ca",
+          "size_bytes": 28802
+        }
+      ],
+      "report_date": "2026-06-18"
+    },
+    {
+      "archive_id": "64e6731e515b371090c900c3ec352660b41355a24af17a3309b1679a70fdc39c",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-19.png",
+          "sha256": "8c9ada0414999c5031130a97dbde249e7bac4fc6225d855a449e0102ddc7c78d",
+          "size_bytes": 242092
+        },
+        {
+          "path": "charts/dashboard_2026-06-19.png",
+          "sha256": "c820d07fcf3610052966db1891c6453cb1536333510b28c3e2701bea4f0aa3f2",
+          "size_bytes": 444256
+        },
+        {
+          "path": "charts/features_2026-06-19.json",
+          "sha256": "8ed7a0a12136bcff46d84a7cc79e2c3ddea43a374ac933b09483d3cbae115314",
+          "size_bytes": 6337
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "19fd8f9dd9c1872bcf8fbb68d590e8199e8cdca321958d324c936d1e739e7d3a",
+          "size_bytes": 31970
+        }
+      ],
+      "report_date": "2026-06-19"
+    },
+    {
+      "archive_id": "acef0348957603aff4c5bbe324b3457bf88deea57f383505cc597dc574195698",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-20.png",
+          "sha256": "8c9ada0414999c5031130a97dbde249e7bac4fc6225d855a449e0102ddc7c78d",
+          "size_bytes": 242092
+        },
+        {
+          "path": "charts/dashboard_2026-06-20.png",
+          "sha256": "adc6075195939045569e74256914108cf3a38f5b58687baabda1eb7e5b94ad6f",
+          "size_bytes": 392028
+        },
+        {
+          "path": "charts/features_2026-06-20.json",
+          "sha256": "eac106ddce3fe6d65ed2a25a4b6e941b0619f1ae9b65d0fb5f0bbbf54d1008bb",
+          "size_bytes": 3742
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "d4185e499563edc15be7a542f3480c96075ac154d0381a48bbeafff0f8885f8f",
+          "size_bytes": 32247
+        }
+      ],
+      "report_date": "2026-06-20"
+    },
+    {
+      "archive_id": "9ceb4f080fcb2f4ec6c50cc4aaa9a991f5af3df6b9ef6f508e0eb4f8130214a8",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-21.png",
+          "sha256": "8c9ada0414999c5031130a97dbde249e7bac4fc6225d855a449e0102ddc7c78d",
+          "size_bytes": 242092
+        },
+        {
+          "path": "charts/dashboard_2026-06-21.png",
+          "sha256": "bc5d948ed9adbd8e8d0897bbb18d11e218ccdf3d92a3bc2b0d8849b1a866205d",
+          "size_bytes": 389877
+        },
+        {
+          "path": "charts/features_2026-06-21.json",
+          "sha256": "c9075ab9d3eb311ffcf659b11801b866c43e74b3b89b432abc5cd86ca7402179",
+          "size_bytes": 3741
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-06-21.png",
+          "sha256": "655054a363cdd506594fbdc69c10b71d904f36a4cbd1acd5b9477e69c3a44cf5",
+          "size_bytes": 399111
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "c90622232eb9b507af55141ad275bba306c2d919e629bdf653390f6f646408da",
+          "size_bytes": 36648
+        }
+      ],
+      "report_date": "2026-06-21"
+    },
+    {
+      "archive_id": "db68c031353746a31b98a8e714a521beb73e77c45d5287146622617aaba14a09",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-22.png",
+          "sha256": "8c9ada0414999c5031130a97dbde249e7bac4fc6225d855a449e0102ddc7c78d",
+          "size_bytes": 242092
+        },
+        {
+          "path": "charts/dashboard_2026-06-22.png",
+          "sha256": "d0172cfe223d956da73899f0b5c5b66e474db1b5d2f9829d5b4e7becbdc62d74",
+          "size_bytes": 390344
+        },
+        {
+          "path": "charts/features_2026-06-22.json",
+          "sha256": "f6f7084e536e152fad097c6fefb49b97ccc2027cd0e51b62a044f9fc417cbdbc",
+          "size_bytes": 3917
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "40b971367f49ad5d57978736c761763a0827df5b0847c53bb3805052172e6d4a",
+          "size_bytes": 35346
+        }
+      ],
+      "report_date": "2026-06-22"
+    },
+    {
+      "archive_id": "ddb0c2a32abae9af33e7ec3f556fed94920801a0effcc38ab5a0b55b509948ad",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-23.png",
+          "sha256": "3b909e3e25e6a3ee39bb9ae691d1b3b90d5e404df809b852846d049c41ae28ef",
+          "size_bytes": 241841
+        },
+        {
+          "path": "charts/dashboard_2026-06-23.png",
+          "sha256": "7b50bdcf95497334f2952a6463b13e706a40b321a719ecc0f1d91cfe54d8534b",
+          "size_bytes": 448703
+        },
+        {
+          "path": "charts/features_2026-06-23.json",
+          "sha256": "bed7e0b0734761e04db2d4ffd0e1a68b5ade9137232f4b64f22fe16a05c81881",
+          "size_bytes": 6341
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "7ab26e3b1a39bc77b379cd57f0fb4987106450bcf8f28e448f7a0cbfd3b55d38",
+          "size_bytes": 30490
+        }
+      ],
+      "report_date": "2026-06-23"
+    },
+    {
+      "archive_id": "f7627d08294d645a6f620f41e27dc1d9c12cb8bc162cd722799ffcb9489f1b17",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-24.png",
+          "sha256": "241959e5a2c4ceabeee4233c109a2dda62fe360aeb4a4e0666950551ce849718",
+          "size_bytes": 243759
+        },
+        {
+          "path": "charts/dashboard_2026-06-24.png",
+          "sha256": "884cd7dc0824cb61e8d3a025402a81ab0b89eb43159a52e8c0542240d14c8d0e",
+          "size_bytes": 447327
+        },
+        {
+          "path": "charts/features_2026-06-24.json",
+          "sha256": "b6ca1dbb607bcb6d172ed2a09b3c45ae62ada05efab6bb509a7e0e9d58b11bed",
+          "size_bytes": 6339
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "2d64c261b8aed5a6695c6c75e5dd63ff7c91159e9186390c5290ee72c7700a19",
+          "size_bytes": 29501
+        }
+      ],
+      "report_date": "2026-06-24"
+    },
+    {
+      "archive_id": "f0414fc6249cb8b5ea26ca328a99a87218c54e29da6e9ce41feeb669d8554904",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-25.png",
+          "sha256": "a704be5816d330970f102cf85b871a267ed1ed9b80ac34925b66ae655a71a8ac",
+          "size_bytes": 244608
+        },
+        {
+          "path": "charts/dashboard_2026-06-25.png",
+          "sha256": "9a27b094a4721b640be855274062abadbe5e082bdcec3cc05ba0a1d25339cbb1",
+          "size_bytes": 444177
+        },
+        {
+          "path": "charts/features_2026-06-25.json",
+          "sha256": "4a0abe2cbd03fd12a9abb6275a80f5a569e7b1647104571632514d3434101f4f",
+          "size_bytes": 6331
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "9de5edc6639b654dec842c6599aec01c1fa640dba737fe65f38ec9b95f10a567",
+          "size_bytes": 30424
+        }
+      ],
+      "report_date": "2026-06-25"
+    },
+    {
+      "archive_id": "f8ea8318611812aad5cc7998a024aa5b750cceb34a8f698d87c15508e50493ca",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-26.png",
+          "sha256": "5190eb56b4ec8f1ecbc4dfced8099bc36005bc346506e8318f7d0e5f48a3852b",
+          "size_bytes": 242356
+        },
+        {
+          "path": "charts/dashboard_2026-06-26.png",
+          "sha256": "ff53aa3c5f1fd2b5208e5353af6766cb0ef30514a7f24a6d3be0db9f4c6e6040",
+          "size_bytes": 443441
+        },
+        {
+          "path": "charts/features_2026-06-26.json",
+          "sha256": "5e9cdb0658a9173b4b978ebeaffcafbdc3294c94417731a1997373b6623dee71",
+          "size_bytes": 6364
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "281016e15e9d4ff2ddf16620f2a209acdb971ce8bd4d3f83542250964fd4dddf",
+          "size_bytes": 30457
+        }
+      ],
+      "report_date": "2026-06-26"
+    },
+    {
+      "archive_id": "1be5e720995a0dfae083edb6858f70de5de1fac4f944aa4fa241a943df3b32f4",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-27.png",
+          "sha256": "9407d44bb93bd90c187c5e924242b7133590bd617422f4735533a9da1d622262",
+          "size_bytes": 241604
+        },
+        {
+          "path": "charts/dashboard_2026-06-27.png",
+          "sha256": "9157fba6f4151bcb1abacd3a8545e45488bb4be670896c4bb72585af3eb0dadd",
+          "size_bytes": 445376
+        },
+        {
+          "path": "charts/features_2026-06-27.json",
+          "sha256": "38bd7d8fcd62991bd1ee118cb64ea047adb8f684e4dc1914fab075155acb5e69",
+          "size_bytes": 6339
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "21c96e680ec0ac45205a3481effd7c651d66599f73d31c0a2fe123e89cef55f8",
+          "size_bytes": 31193
+        }
+      ],
+      "report_date": "2026-06-27"
+    },
+    {
+      "archive_id": "dad056b09b10793714013a05eb80a32eae416a54968d10d27963967c8d97c81d",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-28.png",
+          "sha256": "9407d44bb93bd90c187c5e924242b7133590bd617422f4735533a9da1d622262",
+          "size_bytes": 241604
+        },
+        {
+          "path": "charts/dashboard_2026-06-28.png",
+          "sha256": "2c6b1a84017c357b2e5d9a1631114c01a97961a10b788de87355d9fb18bbec33",
+          "size_bytes": 448516
+        },
+        {
+          "path": "charts/features_2026-06-28.json",
+          "sha256": "648eb9f75c269afe44cd9236aa2d3c36eac9c927ef8b7d00ae488935b89f9dbd",
+          "size_bytes": 6341
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-06-28.png",
+          "sha256": "d0bb9c865c0f40d79faa0087d6772f922ec127a052a90e1f2f7c7cacf0005c06",
+          "size_bytes": 407495
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "9553fd079c2c55a3d35ed0f3a0c159b0634d4531ded6229697eedb3d5603aa9d",
+          "size_bytes": 35960
+        }
+      ],
+      "report_date": "2026-06-28"
+    },
+    {
+      "archive_id": "608131c043c156ff883e75cb92bea8e1e368fc3815825fc07ceeb9695a101645",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-29.png",
+          "sha256": "9407d44bb93bd90c187c5e924242b7133590bd617422f4735533a9da1d622262",
+          "size_bytes": 241604
+        },
+        {
+          "path": "charts/dashboard_2026-06-29.png",
+          "sha256": "18c422d75dce1eb89e371141666ed0e1215577ee843da015611475ee60af2d7a",
+          "size_bytes": 450194
+        },
+        {
+          "path": "charts/features_2026-06-29.json",
+          "sha256": "dd8472d3adf3c66dc75cb192f4a690d5288e719653505166da8be8e57c866b13",
+          "size_bytes": 6342
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "55603a84c108d432010f858f7cdf7b14036fdf4be23e99fa3a35d4a5a1377d84",
+          "size_bytes": 35000
+        }
+      ],
+      "report_date": "2026-06-29"
+    },
+    {
+      "archive_id": "9673d8972389abc179b5a612aa37aba109b6157f8ff7a7fbb85dc6a3ee68bacb",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-06-30.png",
+          "sha256": "ab1c196222fc6d9dc877bef15d58f09384bd8d9d716fc1c1a4a433634daa6ebe",
+          "size_bytes": 241933
+        },
+        {
+          "path": "charts/dashboard_2026-06-30.png",
+          "sha256": "18268536e9c85584416b3118f399478a43dc2e60824d1bacbadee704ef2bd0b3",
+          "size_bytes": 449688
+        },
+        {
+          "path": "charts/features_2026-06-30.json",
+          "sha256": "28d503149d1c4b1b16cc662126719e32195ac698223d361506d61d03382883a6",
+          "size_bytes": 6362
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "0692bedbda557cd7bb3ca0b9341303747f8f114dca648b8541a5de2f600a5f7e",
+          "size_bytes": 29727
+        }
+      ],
+      "report_date": "2026-06-30"
+    },
+    {
+      "archive_id": "cd086b3771c770faaee8b84c7b8e86a7620f452ccb08f713c929ea1d82e19fb8",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-01.png",
+          "sha256": "e08e38f6b9512169a1632dd50a7dadfeb21711bca9f876713928edcb93bcf0d5",
+          "size_bytes": 243635
+        },
+        {
+          "path": "charts/dashboard_2026-07-01.png",
+          "sha256": "256290cdad7b267cd8ed1d68692731c9f803051291c5a2a4a7c75d4bc52cad59",
+          "size_bytes": 437082
+        },
+        {
+          "path": "charts/features_2026-07-01.json",
+          "sha256": "00697b3602430411c99aea89be5352fe85532e8f6abb58ba67e9c38183fa0d85",
+          "size_bytes": 6334
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "5921259a06925403e07ecbea50154cdc304fce717259f7b64b2a99dd7d786d9c",
+          "size_bytes": 27898
+        }
+      ],
+      "report_date": "2026-07-01"
+    },
+    {
+      "archive_id": "e96ae0c129a15c1e417cc9a86a48feef18be2f50fff5d366301d6d9ce0d0e08a",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-02.png",
+          "sha256": "e08e38f6b9512169a1632dd50a7dadfeb21711bca9f876713928edcb93bcf0d5",
+          "size_bytes": 243635
+        },
+        {
+          "path": "charts/dashboard_2026-07-02.png",
+          "sha256": "d0c10e5926e865d358cdb9344c1da1ff227f4618ea05d7fcd025363a947e3147",
+          "size_bytes": 388188
+        },
+        {
+          "path": "charts/features_2026-07-02.json",
+          "sha256": "b5d21cecff49c9fbe21666c08640c936168c97c5db4bbb59cba731dae8ebd8aa",
+          "size_bytes": 6352
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "f7632edff45727987aa07381525a7e361f15d623c4ffb369fe43f89500d969a8",
+          "size_bytes": 28882
+        }
+      ],
+      "report_date": "2026-07-02"
+    },
+    {
+      "archive_id": "c4b80e2d8faea572779f14cd2621dddd70141576e3a53fca2485875321e0c36c",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-03.png",
+          "sha256": "dd3ad7cc5ebec69949824a2f057facf2db942ef647a3ec47c139e5285b2fc310",
+          "size_bytes": 244217
+        },
+        {
+          "path": "charts/dashboard_2026-07-03.png",
+          "sha256": "0141b7569b38aa1f63a86ac09f87ed8298ed7161fbd086a9e0aac3f586cf7ce7",
+          "size_bytes": 438564
+        },
+        {
+          "path": "charts/features_2026-07-03.json",
+          "sha256": "91facfa0a7d4d2e239b88fdbe1bf72251d18d5e3c6e85cfd86a2372ec5f1bb62",
+          "size_bytes": 6356
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "caa6af22ff61d25fb9e0e24b93e6779849811287a28d090f8916750b689569f3",
+          "size_bytes": 30336
+        }
+      ],
+      "report_date": "2026-07-03"
+    },
+    {
+      "archive_id": "ff96e6d484bfcff3e0a18defb8a30b279b213e86c8d10f0b38fb14fc79cb13cd",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-04.png",
+          "sha256": "5640a96e7e4948eada319818f7d7a575782244fa41540f1e0e37c78032adcb3a",
+          "size_bytes": 241642
+        },
+        {
+          "path": "charts/dashboard_2026-07-04.png",
+          "sha256": "fe461cbbb0f377b6c808903c879e7cb49249470e888e5dcb3db5c97e707acd97",
+          "size_bytes": 435261
+        },
+        {
+          "path": "charts/features_2026-07-04.json",
+          "sha256": "16f3190ca5e906f44a5061cc1de4be9dc0926d7fedf6460aaf0434de476f64c2",
+          "size_bytes": 3731
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "2547ca2b01a6123b52df5d3d00cc36e7aef62ed05bae06670742b4bc85a113d6",
+          "size_bytes": 30200
+        }
+      ],
+      "report_date": "2026-07-04"
+    },
+    {
+      "archive_id": "06606b8449d9f0c5457053688f867a9c5ea9c43beb262e0cf266bf2a54c2fdc7",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-05.png",
+          "sha256": "5640a96e7e4948eada319818f7d7a575782244fa41540f1e0e37c78032adcb3a",
+          "size_bytes": 241642
+        },
+        {
+          "path": "charts/dashboard_2026-07-05.png",
+          "sha256": "07aaad627a0bd8aa156e732f8115457fed6175988280ae271b7e4951ad5e9f7c",
+          "size_bytes": 435244
+        },
+        {
+          "path": "charts/features_2026-07-05.json",
+          "sha256": "cf13219faf86d84f071d12601c1a99f56bb435facba949d1bcf13cae9a42c4a6",
+          "size_bytes": 3728
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-07-05.png",
+          "sha256": "000a620b47d565b7218487000bc9b7583c2ff1f46979dd54dea8a99be044a2b3",
+          "size_bytes": 420310
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "6a410a401e1dd771529f1253a07f53d8a4f5df4aaa7d32727e7d166695474900",
+          "size_bytes": 35287
+        }
+      ],
+      "report_date": "2026-07-05"
+    },
+    {
+      "archive_id": "e32c222f7614435f86f021298533f86552ad8093ba10d5235bdc5f88930c25ff",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-06.png",
+          "sha256": "5640a96e7e4948eada319818f7d7a575782244fa41540f1e0e37c78032adcb3a",
+          "size_bytes": 241642
+        },
+        {
+          "path": "charts/dashboard_2026-07-06.png",
+          "sha256": "ef40be84244678ce2f0ea5ed7b7f47bfae9a0e3c0d67fbbeb2b9977525d43c31",
+          "size_bytes": 440291
+        },
+        {
+          "path": "charts/features_2026-07-06.json",
+          "sha256": "cf13219faf86d84f071d12601c1a99f56bb435facba949d1bcf13cae9a42c4a6",
+          "size_bytes": 3728
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "3b08274b2dcbe8ac727c8840b3688eccf0c7ad36896377543b411d34591d0daa",
+          "size_bytes": 35826
+        }
+      ],
+      "report_date": "2026-07-06"
+    },
+    {
+      "archive_id": "756579073554e255f05dad04e96f8c2f2a417d7b362867cfb3da58aa9240619d",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-07.png",
+          "sha256": "5c7c41ef1372f5b353f5ade100faa8e6bcc9298fcae24635e3672bb103aae555",
+          "size_bytes": 244434
+        },
+        {
+          "path": "charts/dashboard_2026-07-07.png",
+          "sha256": "f4c19bcbe811a18df8f29bc45212ead8f3d16c378e21d1563635a4c57e47fe0e",
+          "size_bytes": 451813
+        },
+        {
+          "path": "charts/features_2026-07-07.json",
+          "sha256": "272c6c2a5887401105d29bda5955f8d5ae79fbf4bc14f5951e5fb096c489ffb8",
+          "size_bytes": 6354
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "7686df7c57213988175941b7c779b9e312ddbfcb2750417e1d611fa2546250a3",
+          "size_bytes": 28590
+        }
+      ],
+      "report_date": "2026-07-07"
+    },
+    {
+      "archive_id": "ea92371f0e62b97f1b1f2071c0fc33033e870b58b37f1630442aa355afe2b8e2",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-08.png",
+          "sha256": "f9869cdaf35be29aef6c6615d77b795b3db61039562f4954fb1ebbb18ef64c24",
+          "size_bytes": 244186
+        },
+        {
+          "path": "charts/dashboard_2026-07-08.png",
+          "sha256": "8976e673690b44813790ffff2c84626f2978907ae82aae96c157294d118f299f",
+          "size_bytes": 449176
+        },
+        {
+          "path": "charts/features_2026-07-08.json",
+          "sha256": "51b96d4b8ad82eff10453952b3a3e3c13aacbe1a937801f5d9d01a1b717f9241",
+          "size_bytes": 6343
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "2836e8c10e1dc49358dd3e058b52a9c98413cc21ffae8ab2860f1b9c7b120d47",
+          "size_bytes": 28875
+        }
+      ],
+      "report_date": "2026-07-08"
+    },
+    {
+      "archive_id": "3271523b86f6aaa477ea6d7365bfb56dbd8230dfe2ee14a2d0e094720a149e17",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-09.png",
+          "sha256": "5ae0543e6cc5dade427ea54af379edfea5c6fda66518c630c20ae2b989caaf96",
+          "size_bytes": 242377
+        },
+        {
+          "path": "charts/dashboard_2026-07-09.png",
+          "sha256": "0cc93e44fa7f1da86ffa7c6c6a14b337cee0091048a4d3c44a2ae7d30b442ec5",
+          "size_bytes": 448471
+        },
+        {
+          "path": "charts/features_2026-07-09.json",
+          "sha256": "e3e4fdfef0661267dd7d9c3a8223d442b4f09a07cec9295b359e477a025af146",
+          "size_bytes": 6351
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "74e09f4c9871274d842c079485df03f7dbe1cb6beb9b2c09f2d85cc028f73e3e",
+          "size_bytes": 29702
+        }
+      ],
+      "report_date": "2026-07-09"
+    },
+    {
+      "archive_id": "e97040c4fe994dff3aa9dd929b5edec50f955240e59e2763d80b951cf6176ca9",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-10.png",
+          "sha256": "996437a5f65725a1b93833239e384062b3720dbdb213d03e57fb311fbf94a449",
+          "size_bytes": 242829
+        },
+        {
+          "path": "charts/dashboard_2026-07-10.png",
+          "sha256": "679c63e5b3493d2a5dd8bc30fce8726623546720344d6483015d33b55271bd34",
+          "size_bytes": 448730
+        },
+        {
+          "path": "charts/features_2026-07-10.json",
+          "sha256": "da12168ecae330835005e77b2aed66ee6f45bcedc4e72b074bd3f6fa3fcf0190",
+          "size_bytes": 6377
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "503fc7076d973eddb351cdf8e6843f013f70a26a19f0ed2b205cb200131db3ac",
+          "size_bytes": 30975
+        }
+      ],
+      "report_date": "2026-07-10"
+    },
+    {
+      "archive_id": "527f6c8963a2b083a9ebdadc9a2fef4deaeecb96b5f6e6303d0e5d63ba4c293f",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-11.png",
+          "sha256": "a3687f1f149fadf3f60eec2186f2ab79da8566367fbabcf0572d67d083b00aa8",
+          "size_bytes": 330968
+        },
+        {
+          "path": "charts/dashboard_2026-07-11.png",
+          "sha256": "8431ae198a1f4672df74350f8a137283a4ebbda7b5ae9a7fab974d28a79f0b76",
+          "size_bytes": 443639
+        },
+        {
+          "path": "charts/features_2026-07-11.json",
+          "sha256": "2c7c024ca00f189749db7a4b1a238d77bb0bdce4f0fa9586949fd91a45054557",
+          "size_bytes": 6343
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "c04c85bc4588fa97e502e72064ae8d8b51dbea6e9fe727b32211142680d454b8",
+          "size_bytes": 29644
+        }
+      ],
+      "report_date": "2026-07-11"
+    },
+    {
+      "archive_id": "81879c1839c9e08441970adeb2ab6f507da860c22270ca8c7e9a35b812cf4748",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-12.png",
+          "sha256": "a3687f1f149fadf3f60eec2186f2ab79da8566367fbabcf0572d67d083b00aa8",
+          "size_bytes": 330968
+        },
+        {
+          "path": "charts/dashboard_2026-07-12.png",
+          "sha256": "a149358cc5c13dad1d61c4f0d844845c1e44fdd9c34b256b1bc53425c9964833",
+          "size_bytes": 450767
+        },
+        {
+          "path": "charts/features_2026-07-12.json",
+          "sha256": "6951e601faeee79c225450f2f7e8fad4d1378ec7b4ac501fb369d2d205dbe6ac",
+          "size_bytes": 6345
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-07-12.png",
+          "sha256": "5920249c1a740de11045498c2879a49c973732d56ccc1202ad921fa668bb76d3",
+          "size_bytes": 411246
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "9420d4d3b64d2838641c5696bf0aea7562d67eb3211135ae938f27172863a075",
+          "size_bytes": 34866
+        }
+      ],
+      "report_date": "2026-07-12"
+    },
+    {
+      "archive_id": "127454ebaefb181a3b4c008613999c43e06c21748b388e9ba09672d38f81a47c",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-13.png",
+          "sha256": "a3687f1f149fadf3f60eec2186f2ab79da8566367fbabcf0572d67d083b00aa8",
+          "size_bytes": 330968
+        },
+        {
+          "path": "charts/dashboard_2026-07-13.png",
+          "sha256": "528413c8f67d5879b0fe6e3b145602c8367590b7d2a3a13b159b35bdae807f4f",
+          "size_bytes": 453174
+        },
+        {
+          "path": "charts/features_2026-07-13.json",
+          "sha256": "6951e601faeee79c225450f2f7e8fad4d1378ec7b4ac501fb369d2d205dbe6ac",
+          "size_bytes": 6345
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "d7be0fa074e3650cbc1907a982992c5cd2474443f66366794e19b244ced2a2f3",
+          "size_bytes": 35095
+        }
+      ],
+      "report_date": "2026-07-13"
+    },
+    {
+      "archive_id": "8843f1be7affd50016f33a5da776cb336a3370de9adffb9017000fbc8f2b57a9",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-14.png",
+          "sha256": "e0339b7efbe82be46431095fd68fe0910be78bb37dddb2e1183c450e9021ee6a",
+          "size_bytes": 243913
+        },
+        {
+          "path": "charts/dashboard_2026-07-14.png",
+          "sha256": "ed59045fb1101b26058f3d763e916395316d52b7e2c018d61809d33dd40b61a2",
+          "size_bytes": 456759
+        },
+        {
+          "path": "charts/features_2026-07-14.json",
+          "sha256": "f6cbfb5702e988d75d6a9644ecd8fac9f80d28783521ad770f2cfc94615f2998",
+          "size_bytes": 6355
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "728c1b0448d2a3ce204e52001a30006ad4d777dab554ed2edaaecfe77a4b421e",
+          "size_bytes": 30217
+        }
+      ],
+      "report_date": "2026-07-14"
+    },
+    {
+      "archive_id": "04e2add94b278855f62ec070a2a437aa847f978559dcb3a1d48fe8fc727920fd",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-15.png",
+          "sha256": "2295cbd850af71080b4ddb6863df998567a75489553b2a43757b8c303afe99d6",
+          "size_bytes": 241005
+        },
+        {
+          "path": "charts/dashboard_2026-07-15.png",
+          "sha256": "a2d2e79d1ddbabba9580388fc9d25ba97bb5449ffdb07be09357e9543b9a7216",
+          "size_bytes": 446176
+        },
+        {
+          "path": "charts/features_2026-07-15.json",
+          "sha256": "262211812bf1482a1f458b7450d9413c315ec81e8ba3e1f1bf4ada93b48bb5e4",
+          "size_bytes": 6354
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "8a9f44cf373c9e8b53c55e4f40133e98a265d0573f5b09d5a47cc67cd4f326f4",
+          "size_bytes": 30811
+        }
+      ],
+      "report_date": "2026-07-15"
+    },
+    {
+      "archive_id": "1245d4e9da3eb685759e78872543634467ea5b38b5fe1f6fa63571351536b7be",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-16.png",
+          "sha256": "0dcef03583f5cb434f6249923ed594884e62f47f968c7bd7ac91043785aebee2",
+          "size_bytes": 240545
+        },
+        {
+          "path": "charts/dashboard_2026-07-16.png",
+          "sha256": "a8316f7f993e9e274e19cb9895e70556b2097c8af0f8249c22d6ee397313aada",
+          "size_bytes": 437548
+        },
+        {
+          "path": "charts/features_2026-07-16.json",
+          "sha256": "50d79ee4f18472be1164903f5ddae925f360519a2cd1325b1eba9388fe66faa9",
+          "size_bytes": 6354
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "288a6d8c867f0d6e4a2369baf95dc02ef77a862018ee54b38e4c8970d5692563",
+          "size_bytes": 31676
+        }
+      ],
+      "report_date": "2026-07-16"
+    },
+    {
+      "archive_id": "d912188c8d27d0b738602664e553f0c974d1df09daba202db19947e2169d83ed",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-17.png",
+          "sha256": "f61658fadb4215ec70b6d57be9b29b648e951a89a8ab5d71b8da9ac1c4bb2ef9",
+          "size_bytes": 241615
+        },
+        {
+          "path": "charts/dashboard_2026-07-17.png",
+          "sha256": "a381c1ba00fe3f940ea8d54f12cc512d83a074a55a8cb3be58a672427e50630b",
+          "size_bytes": 446918
+        },
+        {
+          "path": "charts/features_2026-07-17.json",
+          "sha256": "0a56cb22376f9380426e50a7d113af65949a220e1d3e4a98a7758c9cf5a2c7f3",
+          "size_bytes": 6352
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "d931bc732acb6c7cfbc1c8c239c4ecc5fb91d57cc2effd57da671034960b5032",
+          "size_bytes": 30744
+        }
+      ],
+      "report_date": "2026-07-17"
+    },
+    {
+      "archive_id": "cfa500123b705c5b13a9c52d979ad8ad093ebc07a167c5b71cc09713dabe9db2",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-18.png",
+          "sha256": "fe432406d1c297ce9fce24fb5957439de831efa1d3bddb83213ecde8cd0183fc",
+          "size_bytes": 245096
+        },
+        {
+          "path": "charts/dashboard_2026-07-18.png",
+          "sha256": "307ef7aaa406d611f49b64aa5857b3e94ba1d794a8fc9bbb874a9ace190d55f9",
+          "size_bytes": 440781
+        },
+        {
+          "path": "charts/features_2026-07-18.json",
+          "sha256": "af9eed0f922fc2d1867c7d8b1300562ad2ec6101b5db30173d25dc2b1903e56e",
+          "size_bytes": 6352
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "ece0efed23d282c367f3696d699983ac7147f376c3aeb460b6cda848b1e2b671",
+          "size_bytes": 30398
+        }
+      ],
+      "report_date": "2026-07-18"
+    },
+    {
+      "archive_id": "a5da88f216c3eecf99c200737085057e1b1197276515212916c88a68ba615395",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-19.png",
+          "sha256": "fe432406d1c297ce9fce24fb5957439de831efa1d3bddb83213ecde8cd0183fc",
+          "size_bytes": 245096
+        },
+        {
+          "path": "charts/dashboard_2026-07-19.png",
+          "sha256": "02e7e39e25a7366ccdb9327620557a85b8ceeeaafc917425a1422e41dc80ae32",
+          "size_bytes": 444190
+        },
+        {
+          "path": "charts/features_2026-07-19.json",
+          "sha256": "d56ac561bb6a4f0040909a5830fd436799a2652af2ad47da8a0771a78ed44b32",
+          "size_bytes": 6352
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-07-19.png",
+          "sha256": "ce3acf82ce7dbbba1ada8df88b651eb688f2bfbffd78cdf810b90af963d4eacc",
+          "size_bytes": 406680
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "20c3c15b30d2e5347086b31560b63e27e495697bb82b1ffa42dd17481fd5131d",
+          "size_bytes": 37165
+        }
+      ],
+      "report_date": "2026-07-19"
+    },
+    {
+      "archive_id": "bdbac212c5dd7cb14923b154268cfac65b2115d9ba641168118d2e34f87b33ca",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-20.png",
+          "sha256": "fe432406d1c297ce9fce24fb5957439de831efa1d3bddb83213ecde8cd0183fc",
+          "size_bytes": 245096
+        },
+        {
+          "path": "charts/dashboard_2026-07-20.png",
+          "sha256": "3e68122eb407454334ea1d0cefb7d5564634a6208ff64acbe2fcbca2839f8131",
+          "size_bytes": 447344
+        },
+        {
+          "path": "charts/features_2026-07-20.json",
+          "sha256": "d56ac561bb6a4f0040909a5830fd436799a2652af2ad47da8a0771a78ed44b32",
+          "size_bytes": 6352
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "d63cc321c18c08b77bae6ff20576ba07add7a1f0701380ee7336b46e52d3a1d3",
+          "size_bytes": 34604
+        }
+      ],
+      "report_date": "2026-07-20"
+    },
+    {
+      "archive_id": "a1827cc6b2b5e2947d252363fa0af76130cdc005eb589c7c0205cd69f8f75ea1",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-21.png",
+          "sha256": "0bd9776c9348814ec62dea03ff25590fc658843c6fc3f812ff444086f2b422c3",
+          "size_bytes": 241966
+        },
+        {
+          "path": "charts/dashboard_2026-07-21.png",
+          "sha256": "25a1038df7101cd023642f78760d45f90a05a79fa7a74d8207e43ac016bf2b57",
+          "size_bytes": 450670
+        },
+        {
+          "path": "charts/features_2026-07-21.json",
+          "sha256": "fb1871cd0118eecfad31dce48c296f835553a3944af2e539fd5c2c855c797893",
+          "size_bytes": 6372
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "71a984352b442ff228cd69b3c1e99e316b745acdea507886283ffa6d4d8f3bc1",
+          "size_bytes": 28424
+        }
+      ],
+      "report_date": "2026-07-21"
+    },
+    {
+      "archive_id": "e86926af6c2f54b9abf1911e0bf8f55de583cfc0bf7513b24a35775853aad98a",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-22.png",
+          "sha256": "9db493cb142193bcd568571f23ebbfe1eb748c15325c54364786e6af41179fb0",
+          "size_bytes": 242804
+        },
+        {
+          "path": "charts/dashboard_2026-07-22.png",
+          "sha256": "14e64f3edd4f47f454b4df6a144bf88efe3f318a853678174a674a32a16af679",
+          "size_bytes": 431870
+        },
+        {
+          "path": "charts/features_2026-07-22.json",
+          "sha256": "5378593eb6e9a42a2d32faec00e76af35c567c991fc5d36931205472a40a96f2",
+          "size_bytes": 6332
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "8359a33880c8f8a74fbc478c59f205157b13470a3f57df05320ea8202677ec3b",
+          "size_bytes": 29132
+        }
+      ],
+      "report_date": "2026-07-22"
+    },
+    {
+      "archive_id": "23debd8865b27ae9bc4b8b6434c99eed38037406a3b967d060febe890b1d2cba",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-23.png",
+          "sha256": "96143bf26abfc51ea67c482ed0bfe455609204dd90081a2c2f4171ea17a39dc5",
+          "size_bytes": 243436
+        },
+        {
+          "path": "charts/dashboard_2026-07-23.png",
+          "sha256": "0fb0fd4ded25ca12456e2bfbb240ddcc945ceeb0dd87a5cb3840d5a860cdb8e4",
+          "size_bytes": 445460
+        },
+        {
+          "path": "charts/features_2026-07-23.json",
+          "sha256": "33603c324e8e7d1128b6fc101c8bb09e20727ceacf22fb9a99457fed0f69d4be",
+          "size_bytes": 6363
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "1489c052ab6784722896f9cb98b62f90981f62236611988e8e2768d68b9c2fad",
+          "size_bytes": 29279
+        }
+      ],
+      "report_date": "2026-07-23"
+    },
+    {
+      "archive_id": "36ec8750200e350cf097486c8a31787b4485f0200e2da44f68ed169104d0f9e9",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-24.png",
+          "sha256": "3e4a236a8f1287b27f2e939b4aa90a5544137451fd3c0cebff0f35c0442652c3",
+          "size_bytes": 243604
+        },
+        {
+          "path": "charts/dashboard_2026-07-24.png",
+          "sha256": "d2758b3740dc814b3562d662ace44a117f94b56b9eabb0673f7d767043ccf1d5",
+          "size_bytes": 437740
+        },
+        {
+          "path": "charts/features_2026-07-24.json",
+          "sha256": "36381573e715c919e2b2e05ff97b2fd09222dcddb9390436ba8f209d8bc07e39",
+          "size_bytes": 6346
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "74b141483d500c8a75f29df8dde7cc15f318e1bd7788d3d0b404ff0a1943f691",
+          "size_bytes": 32287
+        }
+      ],
+      "report_date": "2026-07-24"
+    },
+    {
+      "archive_id": "69dae3f3eceee54cc67db5043716fa46472133fb43dacb5904223324603d4ea9",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-25.png",
+          "sha256": "f5cc05690672c4b01d56a09d93d569f75bc333f0954876ef367cef6c3634c1f4",
+          "size_bytes": 243625
+        },
+        {
+          "path": "charts/dashboard_2026-07-25.png",
+          "sha256": "abdec53f41839417a40a73e35d506b6167293252d7caeef57e2af9cae2d75a54",
+          "size_bytes": 436812
+        },
+        {
+          "path": "charts/features_2026-07-25.json",
+          "sha256": "a36a00b43ed9d2b1e341ada12814f5cbf6841aae2bef742da055605ec261653d",
+          "size_bytes": 6368
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "ecd9aa6b832b27eb482d2c8b7f4a89109c80fd774955ee16a7bf9da80d6f1496",
+          "size_bytes": 30756
+        }
+      ],
+      "report_date": "2026-07-25"
+    },
+    {
+      "archive_id": "5c7965c639cfc01e379a0b13b38561010d12794ad8b8f7e19464f682ca7a603c",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-26.png",
+          "sha256": "f5cc05690672c4b01d56a09d93d569f75bc333f0954876ef367cef6c3634c1f4",
+          "size_bytes": 243625
+        },
+        {
+          "path": "charts/dashboard_2026-07-26.png",
+          "sha256": "d00aed65dcb46e186183bf9be8d4f14bd052c6c92ada0dec333644e0f6d947a9",
+          "size_bytes": 437504
+        },
+        {
+          "path": "charts/features_2026-07-26.json",
+          "sha256": "bc56c7afac76df2c4dfd2dfd771a6a87c713bbdf8ec66e18857fa3a0341ac1c5",
+          "size_bytes": 6368
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-07-26.png",
+          "sha256": "50da2902e6045de594d5febcba04c5da72a598069240f88e55ea6eb9d2300d44",
+          "size_bytes": 405340
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "a2d5bfaef8210b73f8fb04a4d6aff8b3a4ac2a8f95531a2afe81c16f32964778",
+          "size_bytes": 35084
+        }
+      ],
+      "report_date": "2026-07-26"
+    },
+    {
+      "archive_id": "e05e723cadb39c568f7481d45a596a8d69f780e1d3f2b5f603e7e0b1a9a717fc",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-27.png",
+          "sha256": "f5cc05690672c4b01d56a09d93d569f75bc333f0954876ef367cef6c3634c1f4",
+          "size_bytes": 243625
+        },
+        {
+          "path": "charts/dashboard_2026-07-27.png",
+          "sha256": "cf92de39acba2db9ee049d38797af53d154f893efbdfcf76b5bad91ceae3a202",
+          "size_bytes": 438046
+        },
+        {
+          "path": "charts/features_2026-07-27.json",
+          "sha256": "bc56c7afac76df2c4dfd2dfd771a6a87c713bbdf8ec66e18857fa3a0341ac1c5",
+          "size_bytes": 6368
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "5d6ac0f00e13631fc893ec3f77a8a84c305f639b4e411fb1d7b4626af88c7a01",
+          "size_bytes": 34384
+        }
+      ],
+      "report_date": "2026-07-27"
+    },
+    {
+      "archive_id": "fa59e6161d367bfe39046a5751760ec9dba67612aab2ed1972f40a49c68cda07",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-28.png",
+          "sha256": "47ff688e7db8051481a69bb91d692f4c15b5e49717429c2cc99388fcf632849d",
+          "size_bytes": 240640
+        },
+        {
+          "path": "charts/dashboard_2026-07-28.png",
+          "sha256": "de0fdd45dfd89424207a49f36c58ca2aa150461c4eebf727ed5a220d92d7cdde",
+          "size_bytes": 450633
+        },
+        {
+          "path": "charts/features_2026-07-28.json",
+          "sha256": "0443c89b0e29af3b59302054f755b3b797524eebfc4a6373f7ee9124c3d4e07e",
+          "size_bytes": 6347
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "3c4f89bfbd4ff113566141a529ee39d637bc9b78511ffa1d5db4eab7f9439909",
+          "size_bytes": 30949
+        }
+      ],
+      "report_date": "2026-07-28"
+    },
+    {
+      "archive_id": "46aee379598b5bb76b42bc8bf699487891518f05d4728399bb10d97979e4ef61",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-29.png",
+          "sha256": "afe594713275b2fa26a8916b796207e6799dbaddb85abb9a1e028b951d53da9b",
+          "size_bytes": 240851
+        },
+        {
+          "path": "charts/dashboard_2026-07-29.png",
+          "sha256": "bfb6561aeb56f26bb0f3ce857d631358cfd3f0c3de0febc75ef90bc947a05737",
+          "size_bytes": 441188
+        },
+        {
+          "path": "charts/features_2026-07-29.json",
+          "sha256": "b0958d36af3e61a53bed0f14c378ca8116eeeaacbcb61c70888640215b288185",
+          "size_bytes": 6366
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "de8969cbf2233fff558e86d37e2a97ba4b61cd5485bbb6fa4d50c2be0e407975",
+          "size_bytes": 29137
+        }
+      ],
+      "report_date": "2026-07-29"
+    },
+    {
+      "archive_id": "a875685ff3540eea41bf6d031f1b73bc9a6c9b884a9d37a6e5ef4e5fe3e2255f",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-30.png",
+          "sha256": "66cef3f6719f1cbdd88b4363d6e49e3dd9c5a9356dc837d286eee91ef65d3274",
+          "size_bytes": 243053
+        },
+        {
+          "path": "charts/dashboard_2026-07-30.png",
+          "sha256": "184bb09afc68e30c4557454fb7c5534abed21f4c85d235c5a66bcf58fb3a29c1",
+          "size_bytes": 455076
+        },
+        {
+          "path": "charts/features_2026-07-30.json",
+          "sha256": "415f96919665d2a6799b4f9e9c03910c25199fea2f01c58d3ae0ba40079375be",
+          "size_bytes": 6357
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "915fc44d783b1758c4c46517ee31f554bd3352642ff188ce8a3f8f94a59dec74",
+          "size_bytes": 30592
+        }
+      ],
+      "report_date": "2026-07-30"
+    },
+    {
+      "archive_id": "0f7224af63ac33af6ac8588f66053b4b04c8c3ac894f79ae6a4cacd59e25760d",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-07-31.png",
+          "sha256": "83c331f37011f1e2f2238248459e732eca5d570368c7a2db40d86fe0f88d4557",
+          "size_bytes": 242222
+        },
+        {
+          "path": "charts/dashboard_2026-07-31.png",
+          "sha256": "c79abe5a5abc1090bc453cfe89616b6a5b99b55798a5cac81e74dd35d19c2329",
+          "size_bytes": 439657
+        },
+        {
+          "path": "charts/features_2026-07-31.json",
+          "sha256": "7c07afebf25a643e3ec93a25674f09212c9174fed78eeda829e098c980f85443",
+          "size_bytes": 6359
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "2441d63149663fa5311d7c7f2fb8d9cb5b0cbe9fbb131b47257292b4a424eb83",
+          "size_bytes": 32323
+        }
+      ],
+      "report_date": "2026-07-31"
+    },
+    {
+      "archive_id": "757fced25c04844693b8589b42a3798100161587103f2aa3b87dc2358faab300",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-08-01.png",
+          "sha256": "c569185350ac444206145f69f4572c87ebdadcb32d4c4eed22b0e461ca287039",
+          "size_bytes": 238974
+        },
+        {
+          "path": "charts/dashboard_2026-08-01.png",
+          "sha256": "568d123549b4506bb3864e82661a6c351624010fc820ff7d5da55df7a4c37c17",
+          "size_bytes": 435857
+        },
+        {
+          "path": "charts/features_2026-08-01.json",
+          "sha256": "35284f8b6dc0dbe779cf12bd57f65f0cb5bbd980ac33c6b674b5a56c171e4dba",
+          "size_bytes": 6347
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "c270cfce18b99ddde889996bf00317768051560b7e14f79ef3f6f17df7fedf69",
+          "size_bytes": 31281
+        }
+      ],
+      "report_date": "2026-08-01"
+    },
+    {
+      "archive_id": "52bebd1fa21d88a0fd34d9dfffb159115fe81bd17d355c697519582a5f8d6c40",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-08-02.png",
+          "sha256": "c569185350ac444206145f69f4572c87ebdadcb32d4c4eed22b0e461ca287039",
+          "size_bytes": 238974
+        },
+        {
+          "path": "charts/dashboard_2026-08-02.png",
+          "sha256": "0c42e69b4892a1e98be12c2a412de8fd6ab5524b638376e3dd17bc25640804c5",
+          "size_bytes": 436546
+        },
+        {
+          "path": "charts/features_2026-08-02.json",
+          "sha256": "f6b4750e3449d1c434383d99413919317a6a16dc90c4beb4f4770e7c8ed4552b",
+          "size_bytes": 6345
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-08-02.png",
+          "sha256": "fb718a8eac801da0849e92be094431394cb638d5d6cf5971b1ab1df46fac630a",
+          "size_bytes": 402585
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "719f6b2ed45d2298aeefe9d2c717469945029b1917eed4b02953c354bdc1c1f6",
+          "size_bytes": 33978
+        }
+      ],
+      "report_date": "2026-08-02"
+    },
+    {
+      "archive_id": "e8a630f71c90bb09721f2bea7d318d12a01fdb894f140b873bf7d0cb4325b24c",
+      "files": [
+        {
+          "path": "._README.md",
+          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
+          "size_bytes": 4096
+        },
+        {
+          "path": "charts/daily_one_chart_2026-08-03.png",
+          "sha256": "c569185350ac444206145f69f4572c87ebdadcb32d4c4eed22b0e461ca287039",
+          "size_bytes": 238974
+        },
+        {
+          "path": "charts/dashboard_2026-08-03.png",
+          "sha256": "59798f1bceebb65dd2c48c2b9d8aed7c3ef8243edcbe38c5e258457ab6d6931b",
+          "size_bytes": 438539
+        },
+        {
+          "path": "charts/features_2026-08-03.json",
+          "sha256": "f6b4750e3449d1c434383d99413919317a6a16dc90c4beb4f4770e7c8ed4552b",
+          "size_bytes": 6345
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "4613b503b9d494182ec1f7bbe7bf5167fcb3894c624ae4ed29615ebae55345db",
+          "size_bytes": 35205
+        }
+      ],
+      "report_date": "2026-08-03"
+    }
+  ],
+  "schema_version": "report-archive-integrity-index-v1",
+  "scope": "All dated archive payload files; generated README.md and per-date manifest.json are excluded."
+}

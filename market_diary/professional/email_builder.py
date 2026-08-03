@@ -132,7 +132,7 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
         )
 
     dashboard_block = (
-        f'<div style="margin:16px 0;"><img src="cid:{dashboard_cid}" alt="Research dashboard" style="max-width:100%; border:1px solid #d0d7de; border-radius:8px;"></div>'
+        f'<div style="margin:22px 0 28px;"><img src="cid:{dashboard_cid}" alt="Research dashboard" style="display:block; max-width:100%; border-top:1px solid #d8dde1; border-bottom:1px solid #d8dde1;"></div>'
         if dashboard_cid
         else ""
     )
@@ -143,28 +143,28 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
 
     return f"""\
 <html>
-  <body style="font-family:Segoe UI, Arial, sans-serif; color:#1f2328; line-height:1.5; margin:0; padding:24px; background:#f6f8fa;">
-    <div style="max-width:860px; margin:0 auto; background:#ffffff; border:1px solid #d0d7de; border-radius:12px; padding:24px;">
-      <div style="font-size:12px; color:#59636e; margin-bottom:8px;">Hong Kong sell-side morning briefing</div>
-      <h1 style="margin:0 0 12px 0; font-size:24px;">{meta.get('briefing_date', meta.get('report_date', ''))}</h1>
-      <p style="margin:0 0 12px 0; color:#59636e;">Global markets through: {meta.get('global_market_date', meta.get('effective_date', ''))} | HK/China local data through: {meta.get('hk_data_date', meta.get('data_through', ''))}</p>
-      <p style="font-size:18px; margin:0 0 16px 0;"><strong>{pulse}</strong></p>
-      <p style="margin:0 0 16px 0; color:#59636e;">{ " | ".join(quality_parts) if quality_parts else "Market-quality diagnostics were not available." }</p>
+  <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#111820; line-height:1.58; margin:0; padding:28px; background:#eef1f2;">
+    <div style="max-width:900px; margin:0 auto; background:#ffffff; border-top:7px solid #123a56; padding:38px 42px 44px;">
+      <div style="font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#1f5f8b; margin-bottom:12px;">Hong Kong institutional research</div>
+      <h1 style="margin:0 0 10px; font-size:31px; line-height:1.18; font-weight:650;">Morning Research Workbench</h1>
+      <p style="margin:0 0 20px; color:#58656f; font-size:13px;">Issue {meta.get('briefing_date', meta.get('report_date', ''))} | Global markets through {meta.get('global_market_date', meta.get('effective_date', ''))} | HK/China through {meta.get('hk_data_date', meta.get('data_through', ''))}</p>
+      <p style="font-family:Georgia,'Times New Roman',serif; font-size:20px; line-height:1.45; margin:0 0 22px; padding-left:16px; border-left:4px solid #1f5f8b; color:#26343e;"><strong>{pulse}</strong></p>
+      <p style="margin:0 0 18px; color:#58656f; font-size:13px;">{ " | ".join(quality_parts) if quality_parts else "Market-quality diagnostics were not available." }</p>
       {"<p style='margin:0 0 16px 0;'><strong>Release recommendation:</strong> " + release_recommendation.get('label', 'N/A') + " | " + release_recommendation.get('reason', '') + "</p>" if release_recommendation else ""}
       {dashboard_block}
-      <h2 style="font-size:18px; margin:20px 0 8px 0;">Deep-read setup</h2>
+      <h2 style="font-size:18px; margin:30px 0 10px; padding-top:10px; border-top:2px solid #123a56;">Deep-read setup</h2>
       <p style="margin:0 0 16px 0;">{deep_read}</p>
-      <h2 style="font-size:18px; margin:20px 0 8px 0;">Top checklist</h2>
+      <h2 style="font-size:18px; margin:30px 0 10px; padding-top:10px; border-top:2px solid #123a56;">Top checklist</h2>
       <ol style="padding-left:20px; margin:0 0 16px 0;">
         {''.join(checklist_items) if checklist_items else '<li>No priority items were available.</li>'}
       </ol>
-      <h2 style="font-size:18px; margin:20px 0 8px 0;">Today ahead</h2>
+      <h2 style="font-size:18px; margin:30px 0 10px; padding-top:10px; border-top:2px solid #123a56;">Today ahead</h2>
       <ul style="padding-left:20px; margin:0 0 16px 0;">
         {''.join(focus_items) if focus_items else '<li>No same-day focus items were available.</li>'}
       </ul>
-      {"<h2 style='font-size:18px; margin:20px 0 8px 0;'>Hong Kong local checks</h2><ul style='padding-left:20px; margin:0 0 16px 0;'>" + ''.join(hk_local_items) + "</ul>" if hk_local_items else ""}
-      {"<h2 style='font-size:18px; margin:20px 0 8px 0;'>Use guidance</h2><ul style='padding-left:20px; margin:0 0 16px 0;'>" + ''.join(guidance_items) + "</ul>" if guidance_items else ""}
-      <h2 style="font-size:18px; margin:20px 0 8px 0;">Suggested market answer</h2>
+      {"<h2 style='font-size:18px; margin:30px 0 10px; padding-top:10px; border-top:2px solid #123a56;'>Hong Kong local checks</h2><ul style='padding-left:20px; margin:0 0 16px 0;'>" + ''.join(hk_local_items) + "</ul>" if hk_local_items else ""}
+      {"<h2 style='font-size:18px; margin:30px 0 10px; padding-top:10px; border-top:2px solid #123a56;'>Use guidance</h2><ul style='padding-left:20px; margin:0 0 16px 0;'>" + ''.join(guidance_items) + "</ul>" if guidance_items else ""}
+      <h2 style="font-size:18px; margin:30px 0 10px; padding-top:10px; border-top:2px solid #123a56;">Suggested market answer</h2>
       <p style="margin:0 0 8px 0;">{interview_answer or 'Use the attached full report for a more detailed view.'}</p>
       <p style="margin:16px 0 0 0; color:#59636e;">The full markdown report and dashboard image are attached for desktop follow-up.</p>
     </div>

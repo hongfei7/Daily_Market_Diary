@@ -1,0 +1,4 @@
+interface:
+  display_name: "Thesis Tracker"
+  short_description: "Track thesis changes and disconfirming evidence"
+  default_prompt: "Use $thesis-tracker to evaluate how today’s verified evidence changes each coverage thesis."

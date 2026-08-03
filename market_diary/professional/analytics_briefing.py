@@ -31,18 +31,23 @@ def build_catalyst_calendar(
         if item.get("status") in {"Upcoming", "Central bank"}:
             catalysts.append(
                 {
-                    "date": report_date,
+                    "date": item.get("date") or report_date,
                     "time": item.get("time", ""),
                     "event": item.get("event", ""),
                     "category": item.get("status", ""),
                     "impact": item.get("impact", ""),
                     "importance": item.get("attention", 3),
                     "score": item.get("score", 0),
+                    "as_of": item.get("as_of", report_date),
+                    "source": item.get("source", ""),
+                    "source_url": item.get("source_url", item.get("url", "")),
                 }
             )
 
     for item in (sector_data or {}).get("earnings_calendar", []) or []:
-        earnings_date = item.get("date") or report_date
+        earnings_date = str(item.get("date") or "").strip()
+        if not earnings_date:
+            continue
         catalysts.append(
             {
                 "date": earnings_date,
@@ -52,28 +57,37 @@ def build_catalyst_calendar(
                 "impact": f"EPS est. {item.get('eps_estimate')} / revenue est. {item.get('revenue_estimate')}",
                 "importance": 4,
                 "score": 72,
+                "as_of": item.get("as_of", earnings_date),
+                "source": item.get("source", ""),
+                "source_url": item.get("source_url", item.get("url", "")),
             }
         )
 
     for item in (risk_data or {}).get("upcoming_events", []) or []:
+        event_date = str(item.get("date") or "").strip()
+        if not event_date:
+            continue
         catalysts.append(
             {
-                "date": item.get("date", report_date),
+                "date": event_date,
                 "time": "",
                 "event": item.get("description", ""),
                 "category": item.get("type", "Event"),
                 "impact": "Watch whether it changes risk budgets or the theme-trading cadence",
                 "importance": {"critical": 5, "high": 4, "medium": 3}.get(item.get("importance"), 2),
                 "score": {"critical": 85, "high": 76, "medium": 65}.get(item.get("importance"), 55),
+                "as_of": item.get("as_of", event_date),
+                "source": item.get("source", ""),
+                "source_url": item.get("source_url", item.get("url", "")),
             }
         )
 
     for bucket_items in watchlists.values():
         for item in bucket_items:
             catalyst = item.get("upcoming_catalyst")
-            if not catalyst:
+            catalyst_date = str(item.get("catalyst_date") or "").strip()
+            if not catalyst or not catalyst_date:
                 continue
-            catalyst_date = item.get("catalyst_date") or report_date
             catalysts.append(
                 {
                     "date": catalyst_date,
@@ -83,6 +97,9 @@ def build_catalyst_calendar(
                     "impact": item.get("thesis", ""),
                     "importance": 3,
                     "score": 60,
+                    "as_of": item.get("as_of", catalyst_date),
+                    "source": item.get("source", ""),
+                    "source_url": item.get("source_url", item.get("url", "")),
                 }
             )
 
@@ -259,6 +276,9 @@ def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[
                 "company": item.get("company", ""),
                 "time": item.get("time", ""),
                 "comparison": f"EPS est. {item.get('eps_estimate', 'N/A')} | revenue est. {item.get('revenue_estimate', 'N/A')}",
+                "as_of": item.get("as_of", item.get("date", "")),
+                "source": item.get("source", ""),
+                "source_url": item.get("source_url", item.get("url", "")),
             }
         )
 

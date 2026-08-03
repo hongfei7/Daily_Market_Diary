@@ -88,6 +88,25 @@ def test_unhedged_yield_direction_conflict_is_review_warning():
     assert warning["severity"] == "review"
 
 
+def test_company_event_without_source_is_blocking_warning():
+    bundle = _bundle("S&P 500 fell -0.24% while the risk-off backdrop held.")
+    bundle["provenance_audit"] = {"status": "ok"}
+    bundle["company_events"] = {
+        "earnings": [{"ticker": "0700.HK", "comparison": "EPS est. 4.15 HKD"}],
+        "ratings": [],
+    }
+    result = run_fact_check(bundle)
+    assert result["status"] == "warning"
+    assert any(item["type"] == "missing_event_source" for item in result["source_warnings"])
+
+
+def test_truncated_llm_text_is_flagged():
+    bundle = _bundle("This is a sufficiently long narrative sentence that appears to end abruptly with its.")
+    result = run_fact_check(bundle)
+    assert result["status"] == "warning"
+    assert any(item["type"] == "truncated_text" for item in result["source_warnings"])
+
+
 def main() -> None:
     test_us10y_change_and_level_are_not_confused()
     test_us10y_wrong_change_is_flagged_as_critical()
@@ -95,6 +114,8 @@ def main() -> None:
     test_explicit_regime_conflict_is_review_warning()
     test_conditional_yield_watchpoint_is_not_a_logic_warning()
     test_unhedged_yield_direction_conflict_is_review_warning()
+    test_company_event_without_source_is_blocking_warning()
+    test_truncated_llm_text_is_flagged()
     print("Fact checker test passed")
 
 

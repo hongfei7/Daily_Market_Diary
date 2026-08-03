@@ -10,17 +10,16 @@ pip install -e . --no-deps
 Optional LLM environment variables:
 
 ```bash
-export DEEPSEEK_API_KEY="your_deepseek_api_key"
-export LLM_BASE_URL="http://api.deepseek.com"
-export LLM_MODEL="deepseek-v4-pro"
-```
-
-If DeepSeek is unavailable, the pipeline falls back to the existing MiniMax setup:
-
-```bash
 export MINIMAX_API_KEY="your_minimax_api_key"
 export LLM_BASE_URL="https://api.minimaxi.com/v1"
 export LLM_MODEL="MiniMax-M2.7"
+export LLM_PRIMARY_PROVIDER="minimax"
+```
+
+Optionally configure DeepSeek for fallback and non-publishing financial-skill shadow runs:
+
+```bash
+export DEEPSEEK_API_KEY="your_deepseek_api_key"
 ```
 
 The professional pipeline now uses a multi-call LLM design:

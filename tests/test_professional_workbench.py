@@ -252,7 +252,7 @@ def main():
         dashboard_path = os.path.join(chart_dir, "test_dashboard.png")
         generate_dashboard(bundle, dashboard_path)
         assert os.path.exists(dashboard_path)
-        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v7"
+        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v8"
         assert _regime_impact_color("US 10Y", 0.6) != _regime_impact_color("S&P 500", 0.6)
         assert _regime_impact_color("DXY", -0.3) == _regime_impact_color("S&P 500", 0.6)
 
@@ -323,6 +323,8 @@ def main():
     assert "![Daily One Chart](charts/test_dashboard.png)" not in report
     assert "Curated overnight stories" in report
     assert "LLM Quick Takes" in report
+    assert "Confirmation / invalidation" in report
+    assert "indicator definitions" not in report.lower()
     assert "Market data quality" in report
     assert "Live local" in report
     assert "China 10Y" in report
@@ -331,7 +333,7 @@ def main():
     assert "Pending adapter" not in report
     assert "No extra leadership read was generated" not in report
     assert "No extra follow-through check was generated" not in report
-    assert "Aggregate Balance helps frame whether linked-rate liquidity conditions are tight or comfortable." in report
+    assert "Aggregate Balance helps frame whether linked-rate liquidity conditions are tight or comfortable." not in report
     assert "funding conditions and equity-duration pressure." in report
     assert "conditions are tight or\n" not in report
 

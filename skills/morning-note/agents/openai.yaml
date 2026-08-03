@@ -1,0 +1,4 @@
+interface:
+  display_name: "Morning Note"
+  short_description: "Build a decision-first institutional morning note"
+  default_prompt: "Use $morning-note to turn today’s verified market bundle into a concise, decision-first morning note."

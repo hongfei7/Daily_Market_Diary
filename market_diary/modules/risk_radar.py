@@ -1,92 +1,23 @@
 """Risk radar and event watch adapters."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List
+
+from market_diary.modules.provenance import unavailable_record
 
 
 class RiskRadar:
     """Build a compact risk watchlist for the morning briefing."""
 
-    KEY_LEVELS = {
-        "HSI": {
-            "resistance": [17500, 18000, 18500],
-            "support": [16800, 16500, 16000],
-        },
-        "HSCEI": {
-            "resistance": [6400, 6600, 6800],
-            "support": [6100, 6000, 5850],
-        },
-        "DXY": {
-            "resistance": [104.5, 105.0, 105.5],
-            "support": [103.0, 102.5, 102.0],
-        },
-        "US10Y": {
-            "resistance": [4.40, 4.50, 4.60],
-            "support": [4.20, 4.10, 4.00],
-        },
-        "USD/HKD": {
-            "resistance": [7.85],
-            "support": [7.80, 7.78, 7.75],
-        },
-    }
+    KEY_LEVELS: Dict[str, Dict[str, List[float]]] = {}
 
     def fetch_geopolitical_risks(self) -> List[Dict]:
-        """Return placeholder geopolitical risks."""
-        return [
-            {
-                "region": "Middle East",
-                "event": "Regional tension remains elevated",
-                "risk_level": "high",
-                "impact": "Oil, freight costs, and safe-haven demand",
-                "last_update": datetime.now().isoformat(),
-            },
-            {
-                "region": "US-China",
-                "event": "Technology export-control rhetoric remains active",
-                "risk_level": "medium",
-                "impact": "China internet, semiconductors, and supply chains",
-                "last_update": datetime.now().isoformat(),
-            },
-        ]
+        """Return no geopolitical claims without a dated news source."""
+        return []
 
     def fetch_upcoming_events(self, days_ahead: int = 7) -> List[Dict]:
-        """Return a rolling list of near-term market events."""
-        today = datetime.now().date()
-        events = [
-            {
-                "date": (today + timedelta(days=1)).strftime("%Y-%m-%d"),
-                "type": "China Data",
-                "description": "China activity and credit-related macro releases",
-                "importance": "high",
-            },
-            {
-                "date": (today + timedelta(days=2)).strftime("%Y-%m-%d"),
-                "type": "Fed Speakers",
-                "description": "Federal Reserve speakers on rates and growth",
-                "importance": "medium",
-            },
-            {
-                "date": (today + timedelta(days=4)).strftime("%Y-%m-%d"),
-                "type": "Options Expiry",
-                "description": "Monthly options expiration",
-                "importance": "high",
-            },
-            {
-                "date": (today + timedelta(days=6)).strftime("%Y-%m-%d"),
-                "type": "Policy Watch",
-                "description": "Mainland policy window and liquidity signals",
-                "importance": "medium",
-            },
-        ]
-
-        cutoff = today + timedelta(days=days_ahead)
-        filtered = []
-        for event in events:
-            event_date = datetime.strptime(event["date"], "%Y-%m-%d").date()
-            if today <= event_date <= cutoff:
-                filtered.append(event)
-
-        return filtered
+        """Return no events without a verified event-calendar source."""
+        return []
 
     def fetch_technical_levels(self, current_prices: Dict) -> Dict:
         """Compare current prices with a small set of risk-monitoring thresholds."""
@@ -117,30 +48,8 @@ class RiskRadar:
         return analysis
 
     def fetch_sentiment_indicators(self) -> Dict:
-        """Return placeholder sentiment readings."""
-        return {
-            "aaii_bull_bear": {
-                "bullish": 42.5,
-                "neutral": 28.3,
-                "bearish": 29.2,
-                "interpretation": "Neutral to slightly bullish",
-            },
-            "fear_greed_index": {
-                "value": 58,
-                "level": "Greed",
-            },
-            "put_call_ratio": {
-                "equity": 0.68,
-                "index": 1.15,
-                "interpretation": "Single-stock optimism with index hedging",
-            },
-            "vix_term_structure": {
-                "front_month": 19.2,
-                "second_month": 20.5,
-                "slope": "contango",
-                "interpretation": "Volatility curve still implies contained stress",
-            },
-        }
+        """Return no sentiment readings without a verified market-data source."""
+        return {}
 
     def format_for_report(
         self,
@@ -241,9 +150,17 @@ def fetch_risk_data(current_prices: Dict = None) -> Dict:
     sentiment = radar.fetch_sentiment_indicators()
 
     return {
+        "status": "unavailable",
         "geopolitical_risks": geo_risks,
         "upcoming_events": events,
         "technical_levels": tech_levels,
         "sentiment_indicators": sentiment,
         "formatted_text": radar.format_for_report(geo_risks, events, tech_levels, sentiment),
+        "provenance": [
+            unavailable_record(
+                "Risk and sentiment event feed",
+                datetime.now().date().isoformat(),
+                "No verified geopolitical, event-calendar, sentiment, or technical-level provider is configured.",
+            )
+        ],
     }

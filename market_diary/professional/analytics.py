@@ -52,6 +52,9 @@ def _market_data_status(market_data: Dict[str, Any]) -> str:
 
 
 def _sector_data_status(sector_data: Dict[str, Any]) -> str:
+    explicit_status = str((sector_data or {}).get("status", "") or "").strip()
+    if explicit_status:
+        return explicit_status
     hkex_status = str((((sector_data or {}).get("hkex_announcements", {}) or {}).get("status", "")) or "").strip()
     if hkex_status in {"error", "timeout", "partial"}:
         return hkex_status
@@ -66,6 +69,9 @@ def _sector_data_status(sector_data: Dict[str, Any]) -> str:
 
 
 def _movers_data_status(movers_data: Dict[str, Any]) -> str:
+    explicit_status = str((movers_data or {}).get("status", "") or "").strip()
+    if explicit_status:
+        return explicit_status
     short_sell_status = str((((movers_data or {}).get("short_sell", {}) or {}).get("status", "")) or "").strip()
     if short_sell_status in {"error", "timeout", "partial"}:
         return short_sell_status
@@ -226,5 +232,7 @@ def build_professional_bundle(
             "ah_premium": {"status": _default_source_status(ah_premium_data)},
             "hk_local": {"status": _default_source_status(hk_local_data, fallback_ok=bool(hk_local_metrics))},
             "china_rates": {"status": _default_source_status(china_rates_data, fallback_ok=bool(china_rate_metrics))},
+            "macro_calendar": {"status": _default_source_status(macro_data)},
+            "risk_feed": {"status": _default_source_status(risk_data)},
         },
     }

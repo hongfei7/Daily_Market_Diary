@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -266,31 +267,139 @@ def _logic_warnings(bundle: Dict[str, Any], full_text: str) -> List[Dict[str, st
     return warnings
 
 
+def _source_and_date_warnings(bundle: Dict[str, Any]) -> Tuple[int, List[Dict[str, str]]]:
+    """Validate structured event claims that numeric regexes cannot cover."""
+    checked = 0
+    warnings: List[Dict[str, str]] = []
+    enforce_item_sources = bool(bundle.get("provenance_audit"))
+    if not enforce_item_sources:
+        return checked, warnings
+
+    company_events = bundle.get("company_events", {}) or {}
+    for bucket in ("earnings", "ratings"):
+        for index, item in enumerate(company_events.get(bucket, []) or []):
+            if not isinstance(item, dict):
+                continue
+            checked += 1
+            if not str(item.get("source_url", item.get("url", "")) or "").strip():
+                warnings.append(
+                    {
+                        "type": "missing_event_source",
+                        "severity": "critical",
+                        "message": f"{bucket}[{index}] is a publishable company-event claim without source_url.",
+                    }
+                )
+            if not str(item.get("as_of", item.get("release_time", "")) or "").strip():
+                warnings.append(
+                    {
+                        "type": "missing_event_as_of",
+                        "severity": "critical",
+                        "message": f"{bucket}[{index}] is missing an as_of or release timestamp.",
+                    }
+                )
+
+    for index, item in enumerate(bundle.get("macro_agenda", []) or []):
+        if not isinstance(item, dict):
+            continue
+        checked += 1
+        if not str(item.get("source_url", item.get("url", "")) or "").strip():
+            warnings.append(
+                {
+                    "type": "missing_macro_source",
+                    "severity": "critical",
+                    "message": f"macro_agenda[{index}] is missing source_url.",
+                }
+            )
+        event_date = str(item.get("date", "") or "").strip()
+        if event_date:
+            try:
+                datetime.strptime(event_date, "%Y-%m-%d")
+            except ValueError:
+                warnings.append(
+                    {
+                        "type": "invalid_event_date",
+                        "severity": "critical",
+                        "message": f"macro_agenda[{index}] has invalid date `{event_date}`.",
+                    }
+                )
+
+    for index, item in enumerate(bundle.get("catalysts", []) or []):
+        if not isinstance(item, dict):
+            continue
+        checked += 1
+        if not str(item.get("source_url", item.get("url", "")) or "").strip():
+            warnings.append(
+                {
+                    "type": "missing_catalyst_source",
+                    "severity": "critical",
+                    "message": f"catalysts[{index}] is a dated event without source_url.",
+                }
+            )
+
+    for index, item in enumerate((bundle.get("risk", {}) or {}).get("geopolitical_risks", []) or []):
+        if not isinstance(item, dict):
+            continue
+        checked += 1
+        if not str(item.get("source_url", item.get("url", "")) or "").strip():
+            warnings.append(
+                {
+                    "type": "missing_risk_source",
+                    "severity": "critical",
+                    "message": f"geopolitical_risks[{index}] is missing source_url.",
+                }
+            )
+
+    return checked, warnings
+
+
+def _truncation_warnings(llm_sections: Dict[str, Any]) -> List[Dict[str, str]]:
+    warnings: List[Dict[str, str]] = []
+    incomplete_tail = re.compile(r"\b(?:a|an|and|at|by|for|from|in|its|of|on|or|the|to|with)\.?$", re.IGNORECASE)
+    for path, text in _iter_texts(llm_sections):
+        normalized = text.strip()
+        if len(normalized) < 40:
+            continue
+        if normalized.endswith(("...", "…", "[trimmed]")) or incomplete_tail.search(normalized):
+            warnings.append(
+                {
+                    "type": "truncated_text",
+                    "severity": "critical",
+                    "message": f"Narrative field `{path}` appears truncated.",
+                }
+            )
+    return warnings[:12]
+
+
 def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
     llm_sections = bundle.get("llm_sections", {}) or {}
     texts = list(_iter_texts(llm_sections))
-    if not texts:
-        return {
-            "status": "skipped",
-            "summary": "No narrative overlay text was available for validation.",
-            "numeric_claims_checked": 0,
-            "numeric_mismatches": [],
-            "logic_warnings": [],
-        }
-
-    checked, mismatches = _claim_mismatches(bundle, texts)
+    deterministic_sections = {
+        "overview": bundle.get("overview", {}),
+        "macro_agenda": bundle.get("macro_agenda", []),
+        "company_events": bundle.get("company_events", {}),
+        "sector_digest": bundle.get("sector_digest", {}),
+        "movers_digest": bundle.get("movers_digest", {}),
+        "risk": bundle.get("risk", {}),
+    }
+    all_texts = texts + list(_iter_texts(deterministic_sections, "deterministic"))
+    checked, mismatches = _claim_mismatches(bundle, all_texts)
     full_text = "\n".join(text for _, text in texts)
     logic_warnings = _logic_warnings(bundle, full_text)
+    structured_checked, source_warnings = _source_and_date_warnings(bundle)
+    source_warnings.extend(_truncation_warnings(llm_sections))
     critical_count = sum(1 for item in mismatches if item.get("severity") == "critical")
     review_count = (
         sum(1 for item in mismatches if item.get("severity") == "review")
         + sum(1 for item in logic_warnings if item.get("severity", "review") == "review")
     )
-    status = "warning" if critical_count or review_count else "ok"
+    source_critical = sum(1 for item in source_warnings if item.get("severity") == "critical")
+    source_review = sum(1 for item in source_warnings if item.get("severity") == "review")
+    status = "warning" if critical_count or review_count or source_critical or source_review else "ok"
     summary = (
         f"Checked {checked} numeric claims; "
         f"{len(mismatches)} numeric mismatch(es), {len(logic_warnings)} logic warning(s); "
-        f"{critical_count} critical, {review_count} review."
+        f"{structured_checked} structured claims, {len(source_warnings)} source/text warning(s); "
+        f"{critical_count + source_critical} critical, {review_count + source_review} review."
     )
     return {
         "status": status,
@@ -298,4 +407,6 @@ def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
         "numeric_claims_checked": checked,
         "numeric_mismatches": mismatches[:12],
         "logic_warnings": logic_warnings[:12],
+        "structured_claims_checked": structured_checked,
+        "source_warnings": source_warnings[:12],
     }

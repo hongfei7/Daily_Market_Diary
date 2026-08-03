@@ -1,0 +1,4 @@
+interface:
+  display_name: "Catalyst Calendar"
+  short_description: "Prioritize verified catalysts and scenario paths"
+  default_prompt: "Use $catalyst-calendar to rank verified upcoming catalysts and define confirmation and invalidation checks."

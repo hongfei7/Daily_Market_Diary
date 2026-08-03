@@ -67,18 +67,24 @@ def _render_executive_summary(bundle: Dict[str, Any], pulse: str) -> str:
     elif leadership:
         lines.append(f"- **Hong Kong lens:** {leadership}.")
 
-    catalyst_titles: List[str] = []
-    for item in must_watch:
-        title = str(item.get("title", "")).strip()
-        if not title or title == pulse:
-            continue
-        if title in catalyst_titles:
-            continue
-        catalyst_titles.append(title)
-        if len(catalyst_titles) >= 2:
-            break
-    if catalyst_titles:
-        lines.append(f"- **Top catalysts:** {'; '.join(catalyst_titles)}.")
+    confirmation = _safe_sentence_clip(llm_sections.get("hk_follow_through", ""), 175)
+    if not confirmation:
+        focus_lines = ((bundle.get("today_forward", {}) or {}).get("focus_lines", []) or [])
+        confirmation = _safe_sentence_clip(focus_lines[0] if focus_lines else "", 175)
+    if confirmation:
+        lines.append(f"- **What would confirm it:** {confirmation}")
+
+    invalidation = _safe_sentence_clip(llm_sections.get("risk_check", ""), 175)
+    if invalidation:
+        lines.append(f"- **What could break it:** {invalidation}")
+
+    if len(lines) < 3:
+        for item in must_watch:
+            title = _safe_sentence_clip(item.get("title", ""), 90)
+            summary = _safe_sentence_clip(item.get("summary", ""), 130)
+            if title and summary:
+                lines.append(f"- **Priority evidence:** {title} — {summary}")
+                break
 
     if not lines:
         return "- **Executive summary pending:** rely on the section headlines and key tables below."
@@ -765,9 +771,112 @@ def _render_sources(bundle: Dict[str, Any], limit: int | None = None) -> str:
     return "\n".join(lines)
 
 
+def _percent(value: Any, digits: int = 1) -> str:
+    try:
+        return f"{float(value) * 100:.{digits}f}%"
+    except (TypeError, ValueError):
+        return "N/A"
+
+
+def _render_performance(bundle: Dict[str, Any]) -> str:
+    performance = bundle.get("performance", {}) or {}
+    if not performance or performance.get("status") in {"disabled", "error"}:
+        return "Historical signal diagnostics were unavailable for this run."
+
+    data_quality = performance.get("data_quality", {}) or {}
+    lines = [
+        f"- **Readiness:** {str(performance.get('status', 'unknown')).replace('_', ' ')} | "
+        f"{data_quality.get('observations', 0)} market observations | "
+        f"{data_quality.get('active_signal_dates', 0)} active signal dates",
+        "- **Execution rule:** use only the next available close after publication; 10 bps turnover cost by default. Current-day signals never receive same-day returns.",
+    ]
+    rows = []
+    for name, payload in (performance.get("benchmarks", {}) or {}).items():
+        metrics = payload.get("metrics", {}) or {}
+        rows.append(
+            (
+                name,
+                metrics.get("sessions", 0),
+                _percent(metrics.get("cumulative_return_net")),
+                _percent(metrics.get("benchmark_return")),
+                _percent(metrics.get("excess_return")),
+                _percent(metrics.get("max_drawdown")),
+                _percent(metrics.get("hit_rate_active_sessions")),
+            )
+        )
+    if rows:
+        lines.append(
+            _make_table(
+                ["Benchmark", "Sessions", "Signal net", "Buy & hold", "Excess", "Max drawdown", "Hit rate"],
+                rows,
+            )
+        )
+
+    hsi_events = ((performance.get("benchmarks", {}) or {}).get("Hang Seng Index", {}) or {}).get("event_horizons", {}) or {}
+    if hsi_events:
+        event_rows = [
+            (
+                f"{horizon} sessions",
+                item.get("resolved_signals", 0),
+                _percent(item.get("hit_rate")),
+                _percent(item.get("average_directional_return_net")),
+            )
+            for horizon, item in hsi_events.items()
+        ]
+        lines.append("\n**Hang Seng event-horizon diagnostics**")
+        lines.append(_make_table(["Horizon", "Resolved", "Hit rate", "Average net return"], event_rows))
+
+    rel_path = str(performance.get("rel_path", "") or "")
+    if rel_path:
+        lines.append(f"\n![Published signal performance]({rel_path})")
+    conflicts = data_quality.get("conflicts", []) or []
+    exclusions = data_quality.get("excluded_non_session_observations", []) or []
+    if conflicts or exclusions:
+        lines.append(
+            f"- **Data-quality caveat:** {len(conflicts)} conflicting historical price revision(s) and "
+            f"{len(exclusions)} weekend pseudo-session observation(s) were handled explicitly; inspect the ledger before relying on the result."
+        )
+    lines.append(
+        "- **Use boundary:** this is a close-to-close research diagnostic, not an executable strategy or investment recommendation; dividends, financing, borrow and market impact are excluded."
+    )
+    return "\n".join(lines)
+
+
+def _render_source_health(bundle: Dict[str, Any]) -> str:
+    health = bundle.get("source_health", {}) or {}
+    if not health:
+        return "- Source-health diagnostics were not attached."
+    coverage = health.get("coverage", {}) or {}
+    lines = [
+        f"- **Source health:** {str(health.get('status', 'unknown')).replace('_', ' ')} | "
+        f"{coverage.get('healthy', 0)} healthy | {coverage.get('degraded', 0)} degraded | "
+        f"{coverage.get('unavailable', 0)} unavailable"
+    ]
+    attention = [item for item in (health.get("sources", []) or []) if item.get("critical") or item.get("status") != "healthy"]
+    if attention:
+        lines.append(
+            _make_table(
+                ["Source", "Critical", "Status", "Score", "Freshest age", "Policy"],
+                [
+                    (
+                        item.get("source", ""),
+                        "Yes" if item.get("critical") else "No",
+                        item.get("status", ""),
+                        item.get("score", ""),
+                        f"{item.get('freshest_age_days')}d" if item.get("freshest_age_days") is not None else "Unknown",
+                        f"≤{item.get('max_age_days', '')}d",
+                    )
+                    for item in attention[:8]
+                ],
+            )
+        )
+    return "\n".join(lines)
+
+
 def _render_report_quality(bundle: Dict[str, Any]) -> str:
     quality = bundle.get("report_quality", {}) or {}
     fact_check = bundle.get("fact_check", {}) or {}
+    provenance_audit = bundle.get("provenance_audit", {}) or {}
     if not quality:
         return "Report-quality diagnostics were not available."
 
@@ -836,6 +945,21 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
             lines.append(_make_table(["Severity", "Field", "Claim", "Type", "Claimed", "Expected", "Snippet"], rows))
         if logic_warnings:
             lines.extend(f"- Logic warning: {item.get('message', '')}" for item in logic_warnings[:6])
+        source_warnings = fact_check.get("source_warnings", []) or []
+        if source_warnings:
+            lines.extend(f"- Source/text warning: {item.get('message', '')}" for item in source_warnings[:6])
+
+    if provenance_audit:
+        lines.append("\n**Source provenance validation**")
+        lines.append(
+            f"- Status: {provenance_audit.get('status', 'unknown')} | "
+            f"records checked: {provenance_audit.get('checked_records', 0)} | "
+            f"unavailable: {provenance_audit.get('unavailable_records', 0)}"
+        )
+        lines.extend(f"- Provenance error: {item}" for item in (provenance_audit.get("errors", []) or [])[:6])
+
+    lines.append("\n**Source health and freshness**")
+    lines.append(_render_source_health(bundle))
 
     adapter_rows = quality.get("adapter_status", []) or []
     if adapter_rows:

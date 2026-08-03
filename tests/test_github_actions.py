@@ -73,6 +73,7 @@ def check_project_imports() -> bool:
         "professional.fact_checker",
         "professional.llm_enhancer",
         "professional.models",
+        "professional.performance",
         "professional.report_blocks",
         "professional.report_formatting",
         "professional.report_quality",
@@ -82,6 +83,7 @@ def check_project_imports() -> bool:
         "professional.report_sections",
         "professional.report_text",
         "professional.runtime_audit",
+        "professional.source_health",
         "professional.trend_pack",
     ]
 
@@ -161,15 +163,32 @@ def check_workflow_guardrails() -> bool:
         print("FAIL morning workflow must run the full pytest-backed suite")
         return False
     required_llm_config = (
+        "LLM_PRIMARY_PROVIDER",
+        "MINIMAX_API_KEY",
         "DEEPSEEK_API_KEY",
         "deepseek-v4-pro",
-        "http://api.deepseek.com",
+        "https://api.deepseek.com",
         "MiniMax-M2.7",
     )
     for marker in required_llm_config:
         if marker not in morning:
             print(f"FAIL missing LLM provider fallback config: {marker}")
             return False
+    if "OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}" not in morning:
+        print("FAIL MiniMax must remain the production primary provider")
+        return False
+    if "continuing with delivery" in morning or "set +e" in morning:
+        print("FAIL runtime audit must block automatic delivery")
+        return False
+    if "git reset --hard" in morning:
+        print("FAIL scheduled publishing must not discard generated ledgers or rewrite archive state")
+        return False
+    if "Runtime audit failed; email, archive publishing, and WeCom delivery are blocked." not in morning:
+        print("FAIL workflow is missing the hard runtime-audit gate")
+        return False
+    if "reports_professional/performance/*" not in morning:
+        print("FAIL signal performance artifacts must be retained with each workflow run")
+        return False
     print("OK  workflows use current actions and full regression coverage")
     return True
 

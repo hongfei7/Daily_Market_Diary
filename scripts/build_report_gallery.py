@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import os
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Optional
@@ -24,6 +25,9 @@ class ReportEntry:
     daily_chart_path: Optional[Path]
     trend_pack_path: Optional[Path]
     raw_bundle_path: Optional[Path]
+    manifest_path: Optional[Path]
+    source_health: str
+    performance_status: str
 
 
 def _first_match(text: str, pattern: str) -> str:
@@ -56,6 +60,16 @@ def _find_one(folder: Path, pattern: str) -> Optional[Path]:
     return matches[0] if matches else None
 
 
+def _json_status(path: Path) -> str:
+    if not path.exists():
+        return "N/A"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "Invalid"
+    return str(payload.get("status", "N/A")).replace("_", " ") if isinstance(payload, dict) else "Invalid"
+
+
 def _entry_from_date_dir(date_dir: Path) -> Optional[ReportEntry]:
     report_path = date_dir / "morning_briefing.md"
     if not report_path.exists():
@@ -67,6 +81,7 @@ def _entry_from_date_dir(date_dir: Path) -> Optional[ReportEntry]:
     quality = _first_match(text, r"^> Report quality:\s*`([^`]+)`") or "N/A"
     charts_dir = date_dir / "charts"
     raw_dir = date_dir / "raw"
+    audit_dir = date_dir / "audit"
     date_value = date_dir.name
 
     return ReportEntry(
@@ -79,6 +94,9 @@ def _entry_from_date_dir(date_dir: Path) -> Optional[ReportEntry]:
         daily_chart_path=_find_one(charts_dir, f"daily_one_chart_{date_value}.png"),
         trend_pack_path=_find_one(charts_dir, f"hk_trend_pack_{date_value}.png"),
         raw_bundle_path=_find_one(raw_dir, f"{date_value}_bundle.json"),
+        manifest_path=_find_one(date_dir, "manifest.json"),
+        source_health=_json_status(audit_dir / "source_health.json"),
+        performance_status=_json_status(audit_dir / "performance_summary.json"),
     )
 
 
@@ -154,6 +172,8 @@ archive/YYYY-MM-DD/
 |-- README.md
 |-- morning_briefing.md
 |-- charts/
+|-- audit/
+|-- manifest.json
 `-- raw/
 ```
 
@@ -162,6 +182,11 @@ Each dated folder also includes a `README.md`, so opening that folder on GitHub 
 Root-level generated files are runtime output. Browse `latest/` for the newest report or the organized `archive/` folder for history.
 
 The same structure is used for daily trading reports, Sunday weekly reviews, weekend event-watch reports, and holiday reopen playbooks.
+
+Published date payloads are immutable and carry a SHA-256 manifest. Source-health and backtest snapshots are archived separately from the optional full raw bundle.
+
+- [Signal performance ledger](./performance/README.md)
+- [Full archive integrity index](./archive/integrity_manifest.json)
 
 ## Report Gallery
 
@@ -183,12 +208,19 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 
 def _landing_asset_lines(entry: ReportEntry, base: Path) -> List[str]:
-    return [
+    lines = [
         f"- Dashboard: {_rel_link(entry.dashboard_path, base, 'Open image')}",
         f"- Daily One Chart: {_rel_link(entry.daily_chart_path, base, 'Open image')}",
         f"- Trend Pack: {_rel_link(entry.trend_pack_path, base, 'Open image')}",
         f"- Raw bundle: {_rel_link(entry.raw_bundle_path, base, 'Open bundle')}",
     ]
+    if entry.manifest_path is not None:
+        lines.append(f"- Integrity manifest: {_rel_link(entry.manifest_path, base, 'Verify SHA-256 payload')}")
+    if entry.source_health != "N/A":
+        lines.append(f"- Source health: `{entry.source_health}`")
+    if entry.performance_status != "N/A":
+        lines.append(f"- Backtest status: `{entry.performance_status}`")
+    return lines
 
 
 def _dashboard_preview(entry: ReportEntry, base: Path) -> str:

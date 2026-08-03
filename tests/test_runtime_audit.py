@@ -45,6 +45,9 @@ def _bundle():
         "meta": {"briefing_date": "2026-04-14"},
         "report_quality": {"score": 90.0, "warnings": []},
         "fact_check": {"status": "ok", "summary": "Checked 3 numeric claims; 0 numeric mismatch(es), 0 logic warning(s)."},
+        "provenance_audit": {"status": "ok", "checked_records": 3, "unavailable_records": 0, "errors": [], "warnings": []},
+        "source_health": {"status": "healthy", "critical_failures": []},
+        "performance": {"status": "insufficient_history", "methodology": {"look_ahead_guard": True}},
         "llm_sections": {"task_meta": {"tasks": {"overnight_review": {"status": "ok"}}}},
     }
 
@@ -94,6 +97,14 @@ def main() -> None:
         language_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
         assert language_audit["status"] == "error"
         assert any("non-English" in item for item in language_audit["errors"])
+
+        bundle = _bundle()
+        bundle["provenance_audit"] = {"status": "error", "errors": ["market_data: missing provenance records"]}
+        (root / "raw" / "2026-04-14_bundle.json").write_text(json.dumps(bundle), encoding="utf-8")
+        (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY, encoding="utf-8")
+        provenance_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        assert provenance_audit["status"] == "error"
+        assert any("provenance" in item.lower() for item in provenance_audit["errors"])
     finally:
         shutil.rmtree(root, ignore_errors=True)
 

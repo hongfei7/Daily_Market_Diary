@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import html as html_lib
 import json
 import os
 import re
@@ -340,66 +341,172 @@ def send_summary(webhook_url: str, bundle: Dict[str, Any], report_date: str, dry
 
 HTML_CSS = """\
 <style>
+  :root {
+    --ink: #111820;
+    --navy: #123a56;
+    --blue: #1f5f8b;
+    --muted: #58656f;
+    --line: #d8dde1;
+    --soft: #f4f6f7;
+    --positive: #17683a;
+    --negative: #a2332b;
+  }
+  * { box-sizing: border-box; }
+  html { background: #eef1f2; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
                  "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial,
                  sans-serif;
-    color: #1f2328; line-height: 1.65; max-width: 720px; margin: 0 auto;
-    padding: 16px; background: #fff; font-size: 15px;
+    color: var(--ink); line-height: 1.58; max-width: 1240px; margin: 0 auto;
+    padding: 0 30px 56px; background: #fff; font-size: 15px;
   }
-  h1 { font-size: 22px; border-bottom: 2px solid #1677ff; padding-bottom: 8px; margin: 24px 0 16px; }
-  h2 { font-size: 18px; color: #1677ff; margin: 20px 0 10px; padding: 6px 0; border-bottom: 1px solid #e8e8e8; }
-  h3 { font-size: 16px; margin: 16px 0 8px; color: #333; }
-  h4, h5, h6 { font-size: 15px; margin: 14px 0 6px; }
-  p { margin: 0 0 10px; }
+  h1, h2, h3, h4, h5, h6 { color: var(--ink); letter-spacing: -0.015em; }
+  h1 { font-size: 30px; line-height: 1.15; margin: 44px 0 20px; }
+  h2 { font-size: 24px; line-height: 1.2; margin: 54px 0 20px; padding-top: 14px; border-top: 3px solid var(--navy); }
+  h3 { font-size: 19px; line-height: 1.3; margin: 34px 0 13px; }
+  h4 { font-size: 16px; margin: 26px 0 10px; color: var(--navy); }
+  h5, h6 { font-size: 15px; margin: 22px 0 8px; }
+  p { margin: 0 0 13px; }
   blockquote {
-    border-left: 3px solid #1677ff; padding: 6px 12px; margin: 10px 0;
-    background: #f0f5ff; color: #555; font-size: 14px;
+    border-left: 4px solid var(--navy); padding: 11px 16px; margin: 16px 0 22px;
+    background: var(--soft); color: #3d4952; font-size: 14px;
   }
+  blockquote p:last-child { margin-bottom: 0; }
+  .report-shell { border-top: 7px solid var(--navy); }
+  .report-header {
+    padding: 44px 0 34px; border-bottom: 1px solid var(--line); margin-bottom: 28px;
+  }
+  .report-eyebrow {
+    margin: 0 0 12px; color: var(--blue); font-size: 12px; font-weight: 700;
+    letter-spacing: .13em; text-transform: uppercase;
+  }
+  .report-header h1 { margin: 0; max-width: 820px; font-size: 40px; font-weight: 650; }
+  .report-date { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
+  .report-deck {
+    max-width: 900px; margin: 24px 0 0; padding-left: 18px; border-left: 4px solid var(--blue);
+    font-family: Georgia, "Times New Roman", serif; font-size: 21px; line-height: 1.45; color: #26343e;
+  }
+  .report-grid { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 48px; align-items: start; }
+  .report-toc { position: sticky; top: 18px; padding-top: 10px; }
+  .report-toc-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .report-toc a { display: block; margin-top: 10px; color: #43515b; font-size: 12px; line-height: 1.35; text-decoration: none; }
+  .report-toc a:hover { color: var(--blue); }
+  .report-content { min-width: 0; max-width: 940px; }
+  .report-content > h1:first-child { display: none; }
+  .table-shell { width: 100%; margin: 18px 0 24px; overflow-x: auto; border-top: 2px solid var(--navy); }
   table {
-    width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px;
+    width: 100%; border-collapse: collapse; margin: 0; font-size: 13px;
   }
   th {
-    background: #1677ff; color: #fff; padding: 8px 10px; text-align: left;
-    font-weight: 600;
+    background: #fff; color: var(--navy); padding: 10px 11px; text-align: left;
+    font-weight: 700; border-bottom: 1px solid #aeb8bf; vertical-align: bottom;
   }
   td {
-    padding: 7px 10px; border-bottom: 1px solid #f0f0f0;
+    padding: 10px 11px; border-bottom: 1px solid #e2e6e8; vertical-align: top;
   }
-  tr:nth-child(even) td { background: #fafafa; }
-  img { max-width: 100%; height: auto; border-radius: 6px; margin: 8px 0; }
+  tr:nth-child(even) td { background: #f8f9f9; }
+  tbody tr:hover td { background: #f1f4f5; }
+  th:first-child, td:first-child { font-weight: 650; }
+  .move-positive { color: var(--positive); font-weight: 700; white-space: nowrap; }
+  .move-negative { color: var(--negative); font-weight: 700; white-space: nowrap; }
+  img { display: block; max-width: 100%; height: auto; margin: 22px 0 30px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   code {
-    background: #f5f5f5; padding: 2px 5px; border-radius: 3px;
+    background: #f1f3f4; padding: 2px 5px;
     font-family: "SF Mono", "Fira Code", "Consolas", monospace; font-size: 13px;
   }
   pre {
-    background: #f6f8fa; padding: 12px; border-radius: 6px; overflow-x: auto;
-    font-size: 12px; line-height: 1.5; border: 1px solid #e1e4e8;
+    background: #f4f6f7; padding: 14px; overflow-x: auto;
+    font-size: 12px; line-height: 1.5; border-left: 3px solid var(--navy);
   }
   pre code { background: none; padding: 0; }
-  ul, ol { padding-left: 22px; margin: 6px 0 10px; }
-  li { margin: 3px 0; }
-  strong { color: #1a1a1a; }
-  a { color: #1677ff; text-decoration: none; }
+  ul, ol { padding-left: 23px; margin: 8px 0 16px; }
+  li { margin: 6px 0; }
+  strong { color: #10171d; }
+  a { color: var(--blue); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  hr { border: none; border-top: 1px solid #e8e8e8; margin: 20px 0; }
-  .report-header {
-    background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
-    color: #fff; padding: 20px 24px; border-radius: 10px; margin-bottom: 20px;
-  }
-  .report-header h1 { color: #fff; border: none; margin: 0 0 6px; font-size: 22px; }
-  .report-header p { color: rgba(255,255,255,0.85); margin: 2px 0; font-size: 13px; }
+  hr { border: none; border-top: 1px solid var(--line); margin: 34px 0; }
   .report-footer {
-    margin-top: 30px; padding: 16px; background: #f6f8fa; border-radius: 8px;
-    font-size: 12px; color: #8c8c8c; text-align: center;
+    margin-top: 54px; padding: 20px 0; border-top: 1px solid var(--line);
+    font-size: 12px; color: #75818a; text-align: left;
+  }
+  @media (max-width: 860px) {
+    body { padding: 0 18px 40px; }
+    .report-header { padding: 32px 0 26px; }
+    .report-header h1 { font-size: 32px; }
+    .report-deck { font-size: 18px; }
+    .report-grid { display: block; }
+    .report-toc { position: static; display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 0 0 20px; border-bottom: 1px solid var(--line); }
+    .report-toc-title { width: 100%; }
+    .report-toc a { margin: 0; }
+    h2 { font-size: 21px; margin-top: 42px; }
+    h3 { font-size: 18px; }
+    table { min-width: 700px; }
+  }
+  @media print {
+    html { background: #fff; }
+    body { max-width: none; padding: 0; font-size: 10.5pt; }
+    .report-toc { display: none; }
+    .report-grid { display: block; }
+    .report-content { max-width: none; }
+    .table-shell { overflow: visible; break-inside: avoid; }
+    table { min-width: 0; }
+    h2, h3, img { break-after: avoid; }
   }
 </style>"""
+
+
+def _structure_report_html(body_html: str) -> tuple[str, List[tuple[str, str]]]:
+    seen: Dict[str, int] = {}
+    toc: List[tuple[str, str]] = []
+
+    def _heading(match: re.Match) -> str:
+        level = match.group("level")
+        inner = match.group("inner")
+        label = re.sub(r"<[^>]+>", "", inner)
+        slug = re.sub(r"[^a-z0-9]+", "-", label.lower()).strip("-") or "section"
+        count = seen.get(slug, 0) + 1
+        seen[slug] = count
+        if count > 1:
+            slug = f"{slug}-{count}"
+        if level == "2":
+            toc.append((slug, label))
+        return f'<h{level} id="{slug}">{inner}</h{level}>'
+
+    body_html = re.sub(
+        r'<h(?P<level>[2-3])>(?P<inner>.*?)</h(?P=level)>',
+        _heading,
+        body_html,
+        flags=re.DOTALL,
+    )
+    body_html = re.sub(r"<table>(.*?)</table>", r'<div class="table-shell"><table>\1</table></div>', body_html, flags=re.DOTALL)
+
+    def _movement_cell(match: re.Match) -> str:
+        inner = match.group("inner")
+        movement = re.search(
+            r"(?<![0-9])(?P<strong><strong>)?(?P<move>[+-][0-9][0-9,.]*(?:\.[0-9]+)?(?:%|bp|bn|mn)?)(?P<close></strong>)?",
+            inner,
+        )
+        if not movement:
+            return match.group(0)
+        css_class = "move-positive" if movement.group("move").startswith("+") else "move-negative"
+        decorated = (
+            inner[: movement.start()]
+            + f'<span class="{css_class}">'
+            + movement.group(0)
+            + "</span>"
+            + inner[movement.end() :]
+        )
+        return f"<td>{decorated}</td>"
+
+    body_html = re.sub(r"<td>(?P<inner>.*?)</td>", _movement_cell, body_html, flags=re.DOTALL)
+    return body_html, toc
 
 
 def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir: Optional[Path] = None) -> str:
     """Convert markdown report to a self-contained HTML document with embedded images."""
     # Convert MD to HTML body
     body_html = mistune.html(md_text)
+    body_html, toc = _structure_report_html(body_html)
 
     # Collect search dirs for resolving relative image paths
     search_dirs = [output_dir]
@@ -445,6 +552,9 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
     )
 
     title = f"HK Morning Brief | {report_date}"
+    pulse_match = re.search(r"^- \*\*Market pulse:\*\*\s*(.+)$", md_text, flags=re.MULTILINE)
+    pulse = html_lib.escape(pulse_match.group(1).strip() if pulse_match else "Evidence-led Hong Kong market briefing and decision checklist.")
+    toc_html = "".join(f'<a href="#{slug}">{html_lib.escape(label)}</a>' for slug, label in toc)
 
     return f"""\
 <!DOCTYPE html>
@@ -456,13 +566,25 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
 {HTML_CSS}
 </head>
 <body>
-<div class="report-header">
-  <h1>{title}</h1>
-  <p>Generated by Morning Research Workbench</p>
-</div>
-{body_html}
-<div class="report-footer">
-  Morning Research Workbench | Generated {report_date}
+<div class="report-shell">
+  <header class="report-header">
+    <p class="report-eyebrow">Hong Kong institutional research</p>
+    <h1>Morning Research Workbench</h1>
+    <p class="report-date">Issue date {report_date} · Decision brief · Source-audited</p>
+    <p class="report-deck">{pulse}</p>
+  </header>
+  <div class="report-grid">
+    <nav class="report-toc" aria-label="Report sections">
+      <div class="report-toc-title">In this issue</div>
+      {toc_html}
+    </nav>
+    <main class="report-content">
+      {body_html}
+    </main>
+  </div>
+  <div class="report-footer">
+    Morning Research Workbench · Generated {report_date} · For research review, not investment advice
+  </div>
 </div>
 </body>
 </html>"""

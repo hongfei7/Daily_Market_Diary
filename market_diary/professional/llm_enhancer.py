@@ -261,10 +261,12 @@ def _model_candidates(llm_config: Dict[str, Any], task_name: str) -> List[Tuple[
     primary_provider = get_default_provider()
     candidates = [(primary_provider, model, route_name)]
     available_providers = get_available_providers()
-    if primary_provider == "deepseek" and "minimax" in available_providers:
+    for fallback_provider in available_providers:
+        if fallback_provider == primary_provider:
+            continue
         route = _route_config(llm_config, route_name)
-        fallback_model = _route_fallback_model(route, "minimax")
-        candidates.append(("minimax", fallback_model, f"{route_name}:fallback"))
+        fallback_model = _route_fallback_model(route, fallback_provider)
+        candidates.append((fallback_provider, fallback_model, f"{route_name}:fallback"))
     return candidates
 
 
