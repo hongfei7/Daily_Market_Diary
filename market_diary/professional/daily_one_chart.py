@@ -8,15 +8,15 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, Rectangle
 
 
-INK = "#102a43"
-SLATE = "#486581"
-LINE = "#d9e2ec"
-FIG_BG = "#f8fafc"
+INK = "#111820"
+SLATE = "#58656f"
+LINE = "#d8dde1"
+FIG_BG = "#ffffff"
 PANEL_BG = "#ffffff"
 GREEN = "#1f7a3e"
 RED = "#b42318"
 AMBER = "#d97706"
-BLUE = "#0b4f71"
+BLUE = "#123a56"
 
 
 def _parse_float(value: Any) -> float | None:
@@ -642,13 +642,12 @@ PLOTTERS = {
 def _draw_side_panel(ax, story: Dict[str, Any]) -> None:
     ax.axis("off")
     ax.add_patch(
-        FancyBboxPatch(
+        Rectangle(
             (0, 0),
             1,
             1,
-            boxstyle="round,pad=0.018,rounding_size=0.025",
             transform=ax.transAxes,
-            linewidth=1.0,
+            linewidth=0.8,
             edgecolor=LINE,
             facecolor=PANEL_BG,
         )
@@ -683,8 +682,8 @@ def generate_daily_one_chart(bundle: Dict[str, Any], output_path: str) -> Dict[s
     PLOTTERS.get(story["kind"], _plot_risk_score)(ax, bundle)
     _draw_side_panel(side_ax, story)
 
-    fig.text(0.07, 0.08, _safe_text(textwrap.fill(story["caption"], width=120)), fontsize=10.5, color="#334e68")
-    fig.text(0.07, 0.045, _safe_text(f"Source: {story['source']}"), fontsize=9.4, color="#627d98")
+    fig.text(0.07, 0.08, _safe_text(textwrap.fill(story["caption"], width=120)), fontsize=10.5, color=SLATE)
+    fig.text(0.07, 0.045, _safe_text(f"Source: {story['source']}"), fontsize=9.4, color="#75818a")
 
     fig.subplots_adjust(left=0.09, right=0.96, top=0.92, bottom=0.18)
     fig.savefig(output_path, dpi=170, bbox_inches="tight")

@@ -16,6 +16,7 @@ from market_diary.professional.report_blocks import (
     _render_macro_watchpoints,
     _render_news_table,
     _render_overseas_review_block,
+    _render_performance,
     _render_report_quality,
     _render_sources,
     _render_theme_deep_dive,
@@ -97,7 +98,7 @@ def render_professional_report(
 {_render_risk_dashboard(bundle)}
 
 ### 1.5 {checklist_title}
-{_render_top_items(bundle.get('must_watch', []) or [], limit=5)}
+{_render_top_items(bundle.get('must_watch', []) or [], limit=4)}
 
 ## Layer 2 | Deep Read (20-30 min)
 
@@ -157,6 +158,9 @@ def render_professional_report(
 
 ### Report Quality and Validation
 {_render_report_quality(bundle)}
+
+### Historical Signal Performance
+{_render_performance(bundle)}
 
 ### Source Links
 {_render_sources(bundle)}

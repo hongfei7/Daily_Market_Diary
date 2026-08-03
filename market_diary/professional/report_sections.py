@@ -63,6 +63,185 @@ def _render_selected_news(bundle: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _signal_direction(value: Any, deadband: float = 0.05) -> int:
+    if value is None:
+        return 0
+    if isinstance(value, str):
+        cleaned = value.replace("**", "").replace("%", "").replace("bp", "").replace(",", "").strip()
+        try:
+            value = float(cleaned)
+        except ValueError:
+            return 0
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return 0
+    if number > deadband:
+        return 1
+    if number < -deadband:
+        return -1
+    return 0
+
+
+def _cross_asset_move(bundle: Dict[str, Any], category: str, name: str) -> float | None:
+    return _summary_pct(bundle, category, name)
+
+
+def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple[str, str]:
+    direction = _signal_direction(move)
+    spx = _cross_asset_move(bundle, "Equities", "S&P 500")
+    nasdaq = _cross_asset_move(bundle, "Equities", "Nasdaq 100")
+    hsi = _cross_asset_move(bundle, "Equities", "Hang Seng Index")
+    hstech = _cross_asset_move(bundle, "Equities", "Hang Seng TECH ETF")
+    us10y = _cross_asset_move(bundle, "Rates", "10Y Treasury")
+    dxy = _cross_asset_move(bundle, "FX", "DXY")
+    cnh = _cross_asset_move(bundle, "FX", "USD/CNH")
+    copper = _cross_asset_move(bundle, "Commodities", "Copper")
+    vix = _cross_asset_move(bundle, "Vol", "VIX")
+
+    if name == "S&P 500":
+        interpretation = (
+            "US beta improved, raising the global risk floor for Hong Kong."
+            if direction > 0
+            else "US beta weakened, reducing the external risk cushion for Hong Kong."
+            if direction < 0
+            else "US beta was flat and offers little directional lead for Hong Kong."
+        )
+        check = "Confirm with Nasdaq breadth and a same-direction VIX move; invalidate if offshore-China proxies diverge."
+    elif name == "Nasdaq 100":
+        relative = None if nasdaq is None or spx is None else nasdaq - spx
+        if relative is not None and relative > 0.15:
+            interpretation = "Growth outperformed broad beta, a supportive style signal for Hong Kong internet and platform names."
+        elif relative is not None and relative < -0.15:
+            interpretation = "Growth lagged broad beta, warning that headline risk-on may not transmit cleanly to HSTECH."
+        else:
+            interpretation = "Growth tracked broad beta, so the move looks market-wide rather than duration-led."
+        check = "Confirm through HSTECH versus HSI leadership; higher US yields would weaken the read."
+    elif name == "Hang Seng Index":
+        interpretation = (
+            "Hong Kong broad beta strengthened, but local flow must confirm whether the move is investable."
+            if direction > 0
+            else "Hong Kong broad beta weakened and needs offshore or policy support to stabilize."
+            if direction < 0
+            else "The headline index was flat; style leadership and flow matter more than index direction."
+        )
+        check = "Confirm with Southbound participation and breadth; invalidate if USD/CNH weakens while turnover fades."
+    elif name == "Hang Seng TECH ETF":
+        relative = None if hstech is None or hsi is None else hstech - hsi
+        if relative is not None and relative > 0.1:
+            interpretation = "Hong Kong growth led broad beta, improving the platform/internet style signal."
+        elif relative is not None and relative < -0.1:
+            interpretation = "Hong Kong growth lagged, so broad-index strength is not yet a duration signal."
+        else:
+            interpretation = "Growth and broad beta moved together; there is no decisive style rotation yet."
+        check = "Confirm with stable CNH, Southbound buying and lower yields; invalidate on growth underperformance with rising yields."
+    elif name == "10Y Treasury":
+        interpretation = (
+            "The yield proxy rose, tightening the discount-rate backdrop for long-duration Hong Kong growth."
+            if direction > 0
+            else "The yield proxy fell, easing the valuation headwind for duration-sensitive equities."
+            if direction < 0
+            else "The yield proxy was stable and did not materially change the valuation backdrop."
+        )
+        check = "Confirm through Nasdaq/HSTECH relative performance; invalidate if growth leads despite the opposing rate move."
+    elif name == "China 10Y":
+        interpretation = (
+            "Higher local yields may indicate firmer growth or tighter financial conditions; price action alone cannot distinguish them."
+            if direction > 0
+            else "Lower local yields may reflect easing support or softer demand; the signal is ambiguous without growth confirmation."
+            if direction < 0
+            else "Local yields were stable and provide little incremental macro signal."
+        )
+        check = "Use CSI 300, copper and official credit/activity data to separate growth optimism from demand weakness."
+    elif name == "CN-US 10Y spread":
+        interpretation = (
+            "The relative yield gap moved toward China, modestly easing the carry disadvantage."
+            if direction > 0
+            else "The relative yield gap moved further against China, increasing carry and FX sensitivity."
+            if direction < 0
+            else "The relative yield gap was broadly unchanged."
+        )
+        check = "Confirm through USD/CNH and foreign-risk proxies; invalidate if FX remains stable despite further spread pressure."
+    elif name == "DXY":
+        interpretation = (
+            "A firmer dollar tightens the external-liquidity backdrop and can pressure offshore-China risk appetite."
+            if direction > 0
+            else "A softer dollar eases an external-liquidity headwind for Hong Kong risk assets."
+            if direction < 0
+            else "The dollar was range-bound and adds little directional information."
+        )
+        check = "Confirm with USD/CNH moving in the same risk direction; divergence reduces conviction."
+    elif name == "USD/CNH":
+        interpretation = (
+            "A higher USD/CNH means a weaker offshore renminbi, a headwind for offshore-China sentiment."
+            if direction > 0
+            else "A stronger offshore renminbi supports the external-risk backdrop for Hong Kong equities."
+            if direction < 0
+            else "CNH was stable, removing an immediate FX impulse but not confirming equity direction."
+        )
+        check = "Confirm with FXI/HSTECH and Southbound flow; invalidate if equities move opposite to FX with strong local participation."
+    elif name == "USD/HKD":
+        interpretation = (
+            "A move toward the weak-side convertibility boundary keeps Hong Kong funding sensitivity in focus."
+            if direction > 0
+            else "A move away from the weak-side boundary modestly eases linked-rate funding pressure."
+            if direction < 0
+            else "The spot rate was stable; boundary distance matters more than the daily move."
+        )
+        check = "Confirm with HIBOR and Aggregate Balance; spot alone is not a liquidity conclusion."
+    elif name == "Brent Crude":
+        interpretation = (
+            "Higher oil raises the inflation and margin-cost question; whether it is growth-positive depends on copper and cyclicals."
+            if direction > 0
+            else "Lower oil eases cost pressure but may also reflect softer demand."
+            if direction < 0
+            else "Oil was stable and adds little incremental macro pressure."
+        )
+        check = "Copper moving with oil supports a demand read; divergence toward gold favors a supply/geopolitical explanation."
+    elif name == "Gold":
+        interpretation = (
+            "Gold strength may reflect hedge demand or falling real yields; it is not a standalone risk-off signal."
+            if direction > 0
+            else "Gold weakness reduces the haven signal unless real yields or the dollar explain the move."
+            if direction < 0
+            else "Gold was stable and does not alter the hedge-demand read."
+        )
+        check = "Cross-check DXY, US yields and VIX before assigning a risk-regime interpretation."
+    elif name == "Copper":
+        interpretation = (
+            "Copper strength supports the global-demand and China-cyclical read."
+            if direction > 0
+            else "Copper weakness challenges a broad growth-recovery narrative."
+            if direction < 0
+            else "Copper was flat and provides no strong growth confirmation."
+        )
+        check = "Confirm through China equities and activity data; invalidate if cyclicals and credit indicators disagree."
+    elif name == "VIX":
+        interpretation = (
+            "Higher implied volatility raises the tail-risk premium and weakens risk-on conviction."
+            if direction > 0
+            else "Lower implied volatility reduces near-term stress, but is supportive only if equity breadth confirms."
+            if direction < 0
+            else "Volatility was stable and does not change the tail-risk assessment."
+        )
+        check = "Confirm with equity breadth and credit-sensitive assets; invalidate if lower VIX accompanies narrow or falling equities."
+    else:
+        interpretation = "The move is a monitoring input, not a conclusion on its own."
+        check = "Require confirmation from related prices, local flow and dated fundamental evidence."
+
+    # Keep currently observed cross-asset tensions visible in the most important rate/growth rows.
+    if name == "Nasdaq 100" and _signal_direction(us10y) > 0 and _signal_direction(nasdaq) > 0:
+        interpretation += " Growth advanced despite higher yields, showing momentum resilience but also higher reversal sensitivity."
+    if name == "DXY" and _signal_direction(dxy) < 0 and _signal_direction(cnh) >= 0:
+        interpretation += " CNH did not confirm the relief, so the liquidity signal is incomplete."
+    if name == "Brent Crude" and _signal_direction(move) > 0 and _signal_direction(copper) < 0:
+        interpretation += " Copper divergence leans away from a clean demand-recovery interpretation."
+    if name == "S&P 500" and _signal_direction(spx) > 0 and _signal_direction(vix) < 0:
+        interpretation += " Falling volatility confirms lower near-term stress."
+
+    return interpretation, check
+
+
 def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
     rows = [
         ("Equities", "S&P 500", "S&P 500", "US large-cap risk appetite"),
@@ -87,15 +266,28 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
     china_10y_metric = _bundle_metric(bundle, "china_rates", "china_10y")
     spread_metric = _bundle_metric(bundle, "china_rates", "cn_us_10y_spread")
 
+    main_labels = {
+        "S&P 500",
+        "Nasdaq 100",
+        "Hang Seng Index",
+        "Hang Seng TECH",
+        "US 10Y",
+        "China 10Y",
+        "DXY",
+        "USD/CNH",
+        "VIX",
+    }
+    secondary_assets: List[str] = []
+
     for category, name, label, note in rows:
         if name == "China 10Y":
             price = china_10y_metric.get("display_value", "N/A")
             pct = china_10y_metric.get("change_display", "")
-            read = f"{note} | {_status_label(china_10y_metric.get('status', 'unavailable'))} | {_compact_source_as_of(china_10y_metric)}"
+            read = note
         elif name == "CN-US 10Y spread":
             price = spread_metric.get("display_value", "N/A")
             pct = spread_metric.get("change_display", "")
-            read = f"{note} | {_status_label(spread_metric.get('status', 'unavailable'))} | {_compact_source_as_of(spread_metric)}"
+            read = note
         else:
             price = _summary_price(bundle, category, name)
             pct = _summary_pct(bundle, category, name)
@@ -106,7 +298,18 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         if str(last_value).strip() == "N/A" and str(move_value).strip() in {"", "N/A"}:
             hidden_assets.append(label)
             continue
-        table_rows.append((label, last_value, move_value, _truncate(read, 92, suffix="")))
+        if label not in main_labels:
+            secondary_assets.append(label)
+            continue
+        interpretation, confirmation = _asset_interpretation(bundle, name, pct if pct not in (None, "") else move_value)
+        table_rows.append(
+            (
+                label,
+                f"{last_value} / {move_value}",
+                _safe_sentence_clip(interpretation, 230),
+                _safe_sentence_clip(confirmation, 185),
+            )
+        )
 
     if not table_rows:
         return "Market snapshot coverage was limited for this run; use the local-flow and rates tables below as the firmer evidence."
@@ -116,7 +319,14 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
             f"_Coverage gate: {len(hidden_assets)} unavailable market fields are suppressed from the main table; source status remains in the appendix._"
         )
         lines.append("")
-    lines.append(_make_table(["Asset", "Last", "1D move", "Read"], table_rows))
+    lines.append(
+        "_Decision-useful subset: each row states the implication and the next test. Descriptive secondary monitors are kept out of the five-minute scan._"
+    )
+    lines.append("")
+    lines.append(_make_table(["Signal", "Last / move", "Interpretation", "Confirmation / invalidation"], table_rows))
+    if secondary_assets:
+        lines.append("")
+        lines.append(f"_Secondary monitors retained in the source bundle: {', '.join(secondary_assets)}._")
     return "\n".join(lines)
 
 
@@ -153,7 +363,6 @@ def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
             "AH premium index",
             "USD/HKD spot vs band",
             "HIBOR 1M",
-            "Aggregate Balance",
             "Hong Kong leadership",
         ),
     )
@@ -196,7 +405,7 @@ def _render_risk_dashboard(bundle: Dict[str, Any]) -> str:
                 f"{item.get('delta', 0):+}",
                 _truncate(item.get("evidence", ""), 80, suffix=""),
             )
-            for item in components[:6]
+            for item in components[:4]
         ]
         lines.append("")
         lines.append(_make_table(["Component", "Score impact", "Evidence"], rows))

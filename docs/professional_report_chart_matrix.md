@@ -11,7 +11,7 @@ For a Hong Kong sell-side morning note, charts should answer four questions quic
 
 ## Visual dashboard
 
-The visual dashboard should be a six-panel overview rather than a text wall:
+The visual dashboard should be a four-panel decision page rather than a text wall:
 
 1. Global regime board
    - Cross-asset 1D moves for S&P 500, Nasdaq 100, HSI, HSTECH, FXI, US 10Y, DXY, WTI, Gold, VIX
@@ -37,17 +37,7 @@ The visual dashboard should be a six-panel overview rather than a text wall:
    - Earnings / policy / conference catalysts
    - Purpose: convert the note into a work plan
 
-5. Coverage pulse
-   - One line per bucket: core coverage / focus pool / learning pool
-   - Show name, 1D move, range position
-   - Purpose: keep personal coverage actionable
-
-6. Desk framing
-   - Risk score
-   - Hong Kong style read
-   - Data coverage
-   - Three first questions to ask
-   - Purpose: prepare the one-minute spoken market answer
+Risk score, Hong Kong style, data coverage, and report mode remain compact header fields. Coverage-name detail stays in the report so the visual does not become a text dashboard.
 
 ## Daily One Chart
 

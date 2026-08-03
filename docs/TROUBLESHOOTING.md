@@ -43,7 +43,7 @@ Fix:
 
 ```bash
 set DEEPSEEK_API_KEY=your_key_here
-set LLM_BASE_URL=http://api.deepseek.com
+set LLM_BASE_URL=https://api.deepseek.com
 set LLM_MODEL=deepseek-v4-pro
 python market_diary/main_professional.py --date 2026-04-13
 ```

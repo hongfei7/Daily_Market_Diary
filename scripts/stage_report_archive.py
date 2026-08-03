@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import re
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Iterable, List, Set
 
@@ -14,6 +17,12 @@ ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE_DIR = ROOT / "reports_professional"
 ARCHIVE_ROOT = ARCHIVE_DIR / "archive"
 CHART_PATTERN = re.compile(r"charts/[A-Za-z0-9_.-]+")
+MANIFEST_SCHEMA = "report-archive-manifest-v1"
+INTEGRITY_INDEX_SCHEMA = "report-archive-integrity-index-v1"
+
+
+class ArchiveConflictError(RuntimeError):
+    """Raised when a published date would be silently overwritten."""
 
 
 def _run_git_add(paths: Iterable[Path]) -> None:
@@ -93,6 +102,145 @@ def _existing_archive_files(report_date: str) -> List[Path]:
     return sorted(path for path in date_dir.rglob("*") if path.is_file())
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _payload_files(date_dir: Path) -> List[Path]:
+    return sorted(
+        path
+        for path in date_dir.rglob("*")
+        if path.is_file() and path.name not in {"README.md", "manifest.json"}
+    )
+
+
+def build_archive_manifest(date_dir: Path, report_date: str) -> dict:
+    files = [
+        {
+            "path": path.relative_to(date_dir).as_posix(),
+            "size_bytes": path.stat().st_size,
+            "sha256": _sha256(path),
+        }
+        for path in _payload_files(date_dir)
+    ]
+    archive_id = hashlib.sha256(
+        json.dumps(files, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return {
+        "schema_version": MANIFEST_SCHEMA,
+        "report_date": report_date,
+        "archive_id": archive_id,
+        "immutability": "Published payload files are append-only. A conflicting rerun must use a new report date.",
+        "manifest_scope": "README.md is generated navigation and is intentionally excluded from payload hashes.",
+        "files": files,
+    }
+
+
+def write_archive_manifest(date_dir: Path, report_date: str) -> Path:
+    path = date_dir / "manifest.json"
+    path.write_text(
+        json.dumps(build_archive_manifest(date_dir, report_date), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def verify_archive_manifest(date_dir: Path) -> dict:
+    manifest_path = date_dir / "manifest.json"
+    if not manifest_path.exists():
+        return {"status": "legacy_unverified", "errors": ["manifest.json is missing"]}
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    expected = build_archive_manifest(date_dir, str(manifest.get("report_date", date_dir.name)))
+    errors = []
+    if manifest.get("schema_version") != MANIFEST_SCHEMA:
+        errors.append("unsupported manifest schema")
+    if manifest.get("archive_id") != expected.get("archive_id"):
+        errors.append("archive payload hash does not match manifest")
+    return {
+        "status": "ok" if not errors else "error",
+        "archive_id": manifest.get("archive_id", ""),
+        "files": len(manifest.get("files", []) or []),
+        "errors": errors,
+    }
+
+
+def build_archive_integrity_index(archive_root: Path = ARCHIVE_ROOT) -> dict:
+    entries = []
+    for date_dir in sorted(path for path in archive_root.iterdir() if path.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.name)):
+        manifest = build_archive_manifest(date_dir, date_dir.name)
+        entries.append(
+            {
+                "report_date": date_dir.name,
+                "archive_id": manifest["archive_id"],
+                "files": manifest["files"],
+            }
+        )
+    archive_id = hashlib.sha256(
+        json.dumps(entries, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return {
+        "schema_version": INTEGRITY_INDEX_SCHEMA,
+        "archive_id": archive_id,
+        "dates": len(entries),
+        "scope": "All dated archive payload files; generated README.md and per-date manifest.json are excluded.",
+        "entries": entries,
+    }
+
+
+def write_archive_integrity_index(archive_root: Path = ARCHIVE_ROOT) -> Path:
+    path = archive_root / "integrity_manifest.json"
+    payload = build_archive_integrity_index(archive_root)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def verify_archive_integrity_index(archive_root: Path = ARCHIVE_ROOT) -> dict:
+    path = archive_root / "integrity_manifest.json"
+    if not path.exists():
+        return {"status": "error", "errors": ["integrity_manifest.json is missing"]}
+    try:
+        stored = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"status": "error", "errors": [f"invalid integrity index: {exc}"]}
+    expected = build_archive_integrity_index(archive_root)
+    errors = []
+    if stored.get("schema_version") != INTEGRITY_INDEX_SCHEMA:
+        errors.append("unsupported integrity index schema")
+    if stored.get("archive_id") != expected.get("archive_id"):
+        errors.append("archive history hash does not match integrity index")
+    return {
+        "status": "ok" if not errors else "error",
+        "archive_id": stored.get("archive_id", ""),
+        "dates": stored.get("dates", 0),
+        "errors": errors,
+    }
+
+
+def _copy_audit_files(report_date: str, destination: Path) -> List[Path]:
+    copied: List[Path] = []
+    raw_dir = ARCHIVE_DIR / "raw"
+    for suffix in ("source_health", "performance_summary"):
+        src = raw_dir / f"{report_date}_{suffix}.json"
+        if src.exists():
+            copied.append(_copy_file(src, destination / "audit" / f"{suffix}.json"))
+    return copied
+
+
+def _performance_files() -> List[Path]:
+    root = ARCHIVE_DIR / "performance"
+    if not root.exists():
+        return []
+    return sorted(
+        path
+        for path in root.iterdir()
+        if path.is_file() and path.name in {"README.md", "signal_ledger.json", "performance_summary.json", "signal_performance.png"}
+    )
+
+
 def build_date_archive(
     report_date: str,
     include_all_charts: bool = False,
@@ -105,45 +253,54 @@ def build_date_archive(
             return _existing_archive_files(report_date)
         raise FileNotFoundError(f"Report not found in runtime output or archive: {report_path}")
 
-    date_dir = ARCHIVE_ROOT / report_date
-    if date_dir.exists():
-        shutil.rmtree(date_dir)
-    date_dir.mkdir(parents=True)
+    target_dir = ARCHIVE_ROOT / report_date
+    ARCHIVE_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=f".archive-{report_date}-", dir=str(ARCHIVE_ROOT)) as temp_root:
+        date_dir = Path(temp_root) / report_date
+        date_dir.mkdir(parents=True)
+        _copy_markdown(report_path, date_dir / "morning_briefing.md")
 
-    archived: Set[Path] = set()
-    archived.add(_copy_markdown(report_path, date_dir / "morning_briefing.md"))
-
-    if include_all_charts:
-        chart_paths = [
-            path
-            for path in sorted((ARCHIVE_DIR / "charts").glob("*"))
-            if path.is_file() and not path.name.startswith("test_")
-        ]
-    else:
-        chart_paths = [
+        report_text = report_path.read_text(encoding="utf-8", errors="replace")
+        chart_paths = {
             ARCHIVE_DIR / match
-            for match in CHART_PATTERN.findall(report_path.read_text(encoding="utf-8", errors="replace"))
+            for match in CHART_PATTERN.findall(report_text)
             if "/test_" not in match
-        ]
-        date_charts = [
-            path
-            for path in sorted((ARCHIVE_DIR / "charts").glob(f"*{report_date}*"))
-            if path.is_file() and not path.name.startswith("test_")
-        ]
-        chart_paths.extend(date_charts)
+        }
+        if include_all_charts:
+            chart_paths.update(
+                path
+                for path in sorted((ARCHIVE_DIR / "charts").glob(f"*{report_date}*"))
+                if path.is_file() and not path.name.startswith("test_")
+            )
+        for src in sorted(chart_paths):
+            if src.exists() and src.is_file():
+                _copy_file(src, date_dir / "charts" / src.name)
 
-    for src in chart_paths:
-        if src.exists() and src.is_file():
-            archived.add(_copy_file(src, date_dir / "charts" / src.name))
+        for audit_path in _copy_audit_files(report_date, date_dir):
+            _ = audit_path
+        if include_raw_bundle:
+            _copy_raw_files(report_date, date_dir)
+        candidate_manifest = write_archive_manifest(date_dir, report_date)
+        candidate_id = json.loads(candidate_manifest.read_text(encoding="utf-8"))["archive_id"]
 
-    if include_raw_bundle:
-        for raw_path in _copy_raw_files(report_date, date_dir):
-            archived.add(raw_path)
+        if target_dir.exists():
+            verification = verify_archive_manifest(target_dir)
+            if verification.get("status") == "ok" and verification.get("archive_id") == candidate_id:
+                return _existing_archive_files(report_date)
+            raise ArchiveConflictError(
+                f"Archive {report_date} already exists with different or legacy-unverified content; "
+                "published dates are immutable. Use a new report date instead of overwriting it."
+            )
 
+        shutil.move(str(date_dir), str(target_dir))
+
+    verification = verify_archive_manifest(target_dir)
+    if verification.get("status") != "ok":
+        raise RuntimeError(f"Archive manifest verification failed: {verification.get('errors', [])}")
+    archived = set(_existing_archive_files(report_date))
     readme = ARCHIVE_DIR / "README.md"
     if readme.exists():
         archived.add(readme)
-
     return sorted(archived)
 
 
@@ -175,6 +332,13 @@ def main(argv: List[str] | None = None) -> int:
         ):
             staged.add(path)
     for path in build_report_gallery():
+        staged.add(path)
+    integrity_index = write_archive_integrity_index()
+    verification = verify_archive_integrity_index()
+    if verification.get("status") != "ok":
+        raise RuntimeError(f"Archive integrity index verification failed: {verification.get('errors', [])}")
+    staged.add(integrity_index)
+    for path in _performance_files():
         staged.add(path)
 
     _run_git_add(sorted(staged))

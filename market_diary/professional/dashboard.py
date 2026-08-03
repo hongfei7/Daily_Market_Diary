@@ -8,16 +8,16 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, Rectangle
 
 
-INK = "#0f172a"
-SLATE = "#475467"
-LINE = "#d0d5dd"
+INK = "#111820"
+SLATE = "#58656f"
+LINE = "#d8dde1"
 PANEL_BG = "#ffffff"
-FIG_BG = "#eef2f6"
+FIG_BG = "#ffffff"
 GREEN = "#1f7a3e"
 RED = "#b42318"
 AMBER = "#b54708"
-BLUE = "#0b4f71"
-DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v7"
+BLUE = "#123a56"
+DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v8"
 CHART_CLIP_MARK = "~"
 
 
@@ -94,13 +94,12 @@ def _panel(ax) -> None:
     for spine in ax.spines.values():
         spine.set_visible(False)
     ax.add_patch(
-        FancyBboxPatch(
+        Rectangle(
             (0, 0),
             1,
             1,
-            boxstyle="round,pad=0.012,rounding_size=0.02",
             transform=ax.transAxes,
-            linewidth=1.0,
+            linewidth=0.8,
             edgecolor=LINE,
             facecolor=PANEL_BG,
             zorder=-10,
@@ -762,14 +761,13 @@ def _draw_header_card(fig, rect: Tuple[float, float, float, float], label: str, 
     ax = fig.add_axes(rect)
     ax.axis("off")
     ax.add_patch(
-        FancyBboxPatch(
+        Rectangle(
             (0, 0),
             1,
             1,
-            boxstyle="round,pad=0.018,rounding_size=0.04",
             transform=ax.transAxes,
-            linewidth=1.0,
-            edgecolor=LINE,
+            linewidth=0.8,
+            edgecolor="#b9c1c7",
             facecolor=PANEL_BG,
         )
     )
@@ -811,7 +809,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     fig.text(
         0.045,
         0.955,
-        f"Hong Kong Morning Dashboard | {report_date}",
+        f"Hong Kong Decision Dashboard | {report_date}",
         fontsize=24,
         fontweight="bold",
         ha="left",
@@ -827,7 +825,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
         color=regime_color,
         ha="center",
         va="center",
-        bbox=dict(boxstyle="round,pad=0.35", facecolor=PANEL_BG, edgecolor=LINE),
+        bbox=dict(boxstyle="square,pad=0.35", facecolor=PANEL_BG, edgecolor=LINE),
     )
 
     _draw_header_card(fig, (0.045, 0.825, 0.215, 0.068), "Risk score", f"{risk_score}/100 | {risk_bucket}", bucket_color)
@@ -881,7 +879,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     fig.text(
         0.045,
         0.025,
-        "Read order: regime -> Hong Kong local tape -> flow concentration -> catalyst ladder. Detailed watchlist and desk framing stay in the markdown report.",
+        "Decision sequence: global regime -> local confirmation -> flow concentration -> dated catalysts. Definitions and source metadata remain in the appendix.",
         fontsize=9.8,
         color=SLATE,
     )

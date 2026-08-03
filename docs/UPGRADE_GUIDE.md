@@ -74,7 +74,7 @@ cp .env.example .env
 
 Then populate:
 
-- `DEEPSEEK_API_KEY`, with `MINIMAX_API_KEY` or `OPENAI_API_KEY` as fallback
+- `MINIMAX_API_KEY` as primary, with `DEEPSEEK_API_KEY` as fallback and skill-shadow provider
 - optional `LLM_BASE_URL`
 - optional `LLM_MODEL`
 

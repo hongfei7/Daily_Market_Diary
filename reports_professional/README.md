@@ -12,6 +12,8 @@ archive/YYYY-MM-DD/
 |-- README.md
 |-- morning_briefing.md
 |-- charts/
+|-- audit/
+|-- manifest.json
 `-- raw/
 ```
 
@@ -20,6 +22,11 @@ Each dated folder also includes a `README.md`, so opening that folder on GitHub 
 Root-level generated files are runtime output. Browse `latest/` for the newest report or the organized `archive/` folder for history.
 
 The same structure is used for daily trading reports, Sunday weekly reviews, weekend event-watch reports, and holiday reopen playbooks.
+
+Published date payloads are immutable and carry a SHA-256 manifest. Source-health and backtest snapshots are archived separately from the optional full raw bundle.
+
+- [Signal performance ledger](./performance/README.md)
+- [Full archive integrity index](./archive/integrity_manifest.json)
 
 ## Report Gallery
 

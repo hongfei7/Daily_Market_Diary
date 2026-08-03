@@ -8,7 +8,7 @@ from openai import OpenAI
 
 
 DEEPSEEK_API_KEY_ENV = "DEEPSEEK_API_KEY"
-DEEPSEEK_BASE_URL = "http://api.deepseek.com"
+DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_MODEL = "deepseek-v4-pro"
 MINIMAX_API_KEY_ENV = "MINIMAX_API_KEY"
 MINIMAX_BASE_URL = "https://api.minimaxi.com/v1"
@@ -16,9 +16,9 @@ MINIMAX_MODEL = "MiniMax-M2.7"
 OPENAI_API_KEY_ENV = "OPENAI_API_KEY"
 
 _API_KEY_ENV_PROVIDERS = (
-    (DEEPSEEK_API_KEY_ENV, "deepseek"),
     (MINIMAX_API_KEY_ENV, "minimax"),
     (OPENAI_API_KEY_ENV, "minimax"),
+    (DEEPSEEK_API_KEY_ENV, "deepseek"),
 )
 _PROVIDER_API_KEY_ENVS = {
     "deepseek": (DEEPSEEK_API_KEY_ENV,),
@@ -109,14 +109,21 @@ def get_default_base_url(provider: str = "") -> str:
 
 
 def get_default_provider() -> str:
-    """Return the provider selected by API-key priority."""
-    return _resolve_api_key()[1] or "minimax"
+    """Return the configured primary provider, preferring MiniMax when available."""
+    explicit = (os.getenv("LLM_PRIMARY_PROVIDER") or "").strip().lower()
+    if explicit in _PROVIDER_API_KEY_ENVS and _resolve_api_key(explicit)[0]:
+        return explicit
+    if _resolve_api_key("minimax")[0]:
+        return "minimax"
+    if _resolve_api_key("deepseek")[0]:
+        return "deepseek"
+    return "minimax"
 
 
 def get_available_providers() -> list[str]:
     """Return configured providers in priority order."""
     providers = []
-    for provider in ("deepseek", "minimax"):
+    for provider in ("minimax", "deepseek"):
         api_key, _ = _resolve_api_key(provider)
         if api_key:
             providers.append(provider)

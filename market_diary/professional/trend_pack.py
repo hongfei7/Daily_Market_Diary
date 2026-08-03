@@ -17,15 +17,15 @@ from market_diary.modules.adapter_stockconnect import fetch_stock_connect_data
 from market_diary.modules.hk_local_data import HKMA_LIQUIDITY_URL, REQUEST_TIMEOUT, USER_AGENT
 
 
-INK = "#102a43"
-SLATE = "#486581"
-LINE = "#d9e2ec"
-FIG_BG = "#f8fafc"
+INK = "#111820"
+SLATE = "#58656f"
+LINE = "#d8dde1"
+FIG_BG = "#ffffff"
 PANEL_BG = "#ffffff"
 GREEN = "#1f7a3e"
 RED = "#b42318"
 AMBER = "#d97706"
-BLUE = "#0b4f71"
+BLUE = "#123a56"
 DEFAULT_CACHE_ROOT = os.path.join("reports_professional", "raw", "trend_cache")
 
 

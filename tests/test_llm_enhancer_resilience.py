@@ -41,7 +41,7 @@ def _restore_env(snapshot) -> None:
 
 
 def test_effective_max_workers_caps_minimax_parallelism() -> None:
-    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL"]
+    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL", "LLM_PRIMARY_PROVIDER"]
     prior_env = _preserve_env(env_names)
     os.environ.pop("DEEPSEEK_API_KEY", None)
     os.environ.pop("MINIMAX_API_KEY", None)
@@ -49,6 +49,7 @@ def test_effective_max_workers_caps_minimax_parallelism() -> None:
     os.environ["LLM_MODEL"] = "MiniMax-M2.7"
     os.environ.pop("LLM_BASE_URL", None)
     os.environ.pop("OPENAI_BASE_URL", None)
+    os.environ.pop("LLM_PRIMARY_PROVIDER", None)
     try:
         workers = _effective_max_workers({"max_workers": 4, "provider_parallelism": {"minimax": 1}}, ["news_selection"])
     finally:
@@ -58,7 +59,7 @@ def test_effective_max_workers_caps_minimax_parallelism() -> None:
 
 
 def test_effective_max_workers_caps_minimax_fallback_route() -> None:
-    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL"]
+    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL", "LLM_PRIMARY_PROVIDER"]
     prior_env = _preserve_env(env_names)
     os.environ.pop("DEEPSEEK_API_KEY", None)
     os.environ["MINIMAX_API_KEY"] = "test-minimax-key"
@@ -66,6 +67,7 @@ def test_effective_max_workers_caps_minimax_fallback_route() -> None:
     os.environ.pop("LLM_MODEL", None)
     os.environ.pop("LLM_BASE_URL", None)
     os.environ.pop("OPENAI_BASE_URL", None)
+    os.environ.pop("LLM_PRIMARY_PROVIDER", None)
     try:
         workers = _effective_max_workers(load_professional_config()["llm"], ["news_selection"])
     finally:
@@ -75,7 +77,7 @@ def test_effective_max_workers_caps_minimax_fallback_route() -> None:
 
 
 def test_deepseek_defaults_when_secret_present() -> None:
-    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL"]
+    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL", "LLM_PRIMARY_PROVIDER"]
     prior_env = _preserve_env(env_names)
     os.environ["DEEPSEEK_API_KEY"] = "test-deepseek-key"
     os.environ.pop("MINIMAX_API_KEY", None)
@@ -83,6 +85,7 @@ def test_deepseek_defaults_when_secret_present() -> None:
     os.environ.pop("LLM_MODEL", None)
     os.environ.pop("LLM_BASE_URL", None)
     os.environ.pop("OPENAI_BASE_URL", None)
+    os.environ.pop("LLM_PRIMARY_PROVIDER", None)
     try:
         model = get_default_model()
         base_url = get_default_base_url()
@@ -91,32 +94,33 @@ def test_deepseek_defaults_when_secret_present() -> None:
         _restore_env(prior_env)
 
     assert model == "deepseek-v4-pro"
-    assert base_url == "http://api.deepseek.com"
+    assert base_url == "https://api.deepseek.com"
     assert workers == 4
 
 
-def test_deepseek_adds_minimax_fallback_candidate() -> None:
-    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL"]
+def test_minimax_primary_adds_deepseek_fallback_candidate() -> None:
+    env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL", "LLM_PRIMARY_PROVIDER"]
     prior_env = _preserve_env(env_names)
     os.environ["DEEPSEEK_API_KEY"] = "test-deepseek-key"
     os.environ["MINIMAX_API_KEY"] = "test-minimax-key"
     os.environ.pop("OPENAI_API_KEY", None)
     os.environ.pop("LLM_MODEL", None)
-    os.environ["LLM_BASE_URL"] = "http://api.deepseek.com"
+    os.environ["LLM_BASE_URL"] = "https://api.minimaxi.com/v1"
     os.environ.pop("OPENAI_BASE_URL", None)
+    os.environ.pop("LLM_PRIMARY_PROVIDER", None)
     try:
         candidates = _model_candidates(load_professional_config()["llm"], "news_selection")
         providers = get_available_providers()
-        fallback_base_url = get_default_base_url("minimax")
+        fallback_base_url = get_default_base_url("deepseek")
     finally:
         _restore_env(prior_env)
 
-    assert providers == ["deepseek", "minimax"]
+    assert providers == ["minimax", "deepseek"]
     assert candidates == [
-        ("deepseek", "deepseek-v4-pro", "default_model"),
-        ("minimax", "MiniMax-M2.7", "default_model:fallback"),
+        ("minimax", "MiniMax-M2.7", "default_model"),
+        ("deepseek", "deepseek-v4-pro", "default_model:fallback"),
     ]
-    assert fallback_base_url == "https://api.minimaxi.com/v1"
+    assert fallback_base_url == "https://api.deepseek.com"
 
 
 def test_cache_path_changes_when_prompt_changes() -> None:
@@ -140,7 +144,7 @@ def main() -> None:
     test_effective_max_workers_caps_minimax_parallelism()
     test_effective_max_workers_caps_minimax_fallback_route()
     test_deepseek_defaults_when_secret_present()
-    test_deepseek_adds_minimax_fallback_candidate()
+    test_minimax_primary_adds_deepseek_fallback_candidate()
     test_cache_path_changes_when_prompt_changes()
     test_llm_response_truncation_guard()
     print("LLM enhancer resilience test passed")

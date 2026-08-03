@@ -98,6 +98,9 @@ def build_sector_news_digest(sector_data: Dict[str, Any], config: Dict[str, Any]
                 "action": change.get("action", ""),
                 "summary": f"{change.get('from_rating', '')} -> {change.get('to_rating', '')}",
                 "target_change": f"{change.get('previous_target', '')} -> {change.get('price_target', '')}",
+                "as_of": change.get("as_of", change.get("date", "")),
+                "source": change.get("source", ""),
+                "source_url": change.get("source_url", change.get("url", "")),
             }
         )
 

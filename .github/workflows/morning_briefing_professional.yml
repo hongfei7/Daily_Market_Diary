@@ -43,10 +43,7 @@ jobs:
         run: |
           git fetch origin main
           git checkout main
-          git pull --ff-only origin main || {
-            echo "Fast-forward pull failed; resetting to origin/main as fallback."
-            git reset --hard origin/main
-          }
+          git pull --ff-only origin main
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -66,10 +63,11 @@ jobs:
           TZ: Asia/Shanghai
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M2.7' }}
+          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M2.7' || 'deepseek-v4-pro' }}
+          LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
           echo "=== Environment Info ==="
           echo "Event: $GITHUB_EVENT_NAME"
@@ -87,7 +85,7 @@ jobs:
           for k in ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY"]:
               v = (os.getenv(k) or "").strip()
               print(f"{k}: present={bool(v)}, len={len(v)}")
-          for k in ["OPENAI_BASE_URL", "LLM_BASE_URL", "LLM_MODEL"]:
+          for k in ["OPENAI_BASE_URL", "LLM_BASE_URL", "LLM_MODEL", "LLM_PRIMARY_PROVIDER"]:
               print(f"{k}: {os.getenv(k)}")
           PY
 
@@ -96,10 +94,11 @@ jobs:
           TZ: Asia/Shanghai
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M2.7' }}
+          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M2.7' || 'deepseek-v4-pro' }}
+          LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
           echo "Running system tests..."
           python scripts/run_tests.py --pytest
@@ -109,10 +108,11 @@ jobs:
           TZ: Asia/Shanghai
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'http://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M2.7' }}
+          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M2.7' || 'deepseek-v4-pro' }}
+          LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
           BRIEFING_DATE="$(date +%F)"
           echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
@@ -134,11 +134,21 @@ jobs:
         env:
           TZ: Asia/Shanghai
         run: |
-          set +e
+          set -e
           mkdir -p reports_professional
           AUDIT_LOG="reports_professional/audit_${BRIEFING_DATE}.txt"
-          python scripts/audit_professional_run.py --report-date "$BRIEFING_DATE" > "$AUDIT_LOG" 2>&1
-          AUDIT_STATUS=$?
+          if ! python scripts/audit_professional_run.py --report-date "$BRIEFING_DATE" > "$AUDIT_LOG" 2>&1; then
+            cat "$AUDIT_LOG"
+            {
+              echo "### Runtime audit"
+              echo
+              echo '```text'
+              cat "$AUDIT_LOG"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Runtime audit failed; email, archive publishing, and WeCom delivery are blocked."
+            exit 1
+          fi
           cat "$AUDIT_LOG"
           {
             echo "### Runtime audit"
@@ -147,9 +157,6 @@ jobs:
             cat "$AUDIT_LOG"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$AUDIT_STATUS" -ne 0 ]; then
-            echo "::warning::Audit found issues (exit code $AUDIT_STATUS); continuing with delivery."
-          fi
 
       - name: Send briefing email
         env:
@@ -182,10 +189,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git fetch origin main
-          git merge --ff-only origin/main || {
-            echo "Fast-forward merge failed; resetting to origin/main as fallback."
-            git reset --hard origin/main
-          }
+          git merge --ff-only origin/main
 
           STAGE_ARGS=(--report-date "$BRIEFING_DATE" --include-all-charts)
           if [ "${{ github.event.inputs.include_raw_bundle }}" = "true" ]; then
@@ -226,6 +230,7 @@ jobs:
             reports_professional/*.html
             reports_professional/charts/*.png
             reports_professional/charts/*.json
+            reports_professional/performance/*
             reports_professional/raw/*.json
             reports_professional/audit_*.txt
           retention-days: 30

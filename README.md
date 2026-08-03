@@ -16,12 +16,15 @@ Each run writes a self-contained report package under `reports_professional/`.
 - Hong Kong trend pack when enabled
 - Chart feature JSON
 - Structured raw bundle for audit and debugging
+- Source-health snapshot with freshness and authority checks
+- Append-only published-signal ledger and look-ahead-safe performance diagnostic
 - GitHub-readable archive pages
 
 The stable reader entry is:
 
 - [Latest professional report](reports_professional/latest/README.md)
 - [Report archive gallery](reports_professional/README.md)
+- [Signal performance ledger](reports_professional/performance/README.md)
 
 ## Core Workflow
 
@@ -37,38 +40,51 @@ The core report structure does not depend on an LLM. If the LLM layer is disable
 
 ## LLM Provider Setup
 
-The primary LLM provider is DeepSeek. MiniMax remains the fallback provider.
+The primary LLM provider is MiniMax. DeepSeek is the fallback provider and runs the three financial skills in non-publishing shadow mode when its key is available. Claude is not called.
 
 For GitHub Actions, configure these repository secrets:
 
-- `DEEPSEEK_API_KEY` for the primary provider
-- `MINIMAX_API_KEY` for fallback
+- `MINIMAX_API_KEY` for the primary provider
+- `DEEPSEEK_API_KEY` for fallback and skill shadow runs
 - SMTP secrets if email delivery is enabled
 
 The scheduled workflow maps them to:
 
 ```text
-DeepSeek: DEEPSEEK_API_KEY, http://api.deepseek.com, deepseek-v4-pro
 MiniMax:  MINIMAX_API_KEY, https://api.minimaxi.com/v1, MiniMax-M2.7
+DeepSeek: DEEPSEEK_API_KEY, https://api.deepseek.com, deepseek-v4-pro
 ```
 
 For local development:
 
 ```bash
-export DEEPSEEK_API_KEY="your_deepseek_key"
-export LLM_BASE_URL="http://api.deepseek.com"
-export LLM_MODEL="deepseek-v4-pro"
-```
-
-To use MiniMax locally instead:
-
-```bash
 export MINIMAX_API_KEY="your_minimax_key"
 export LLM_BASE_URL="https://api.minimaxi.com/v1"
 export LLM_MODEL="MiniMax-M2.7"
+export LLM_PRIMARY_PROVIDER="minimax"
+```
+
+To enable DeepSeek fallback and the provider-agnostic skill shadow run:
+
+```bash
+export DEEPSEEK_API_KEY="your_deepseek_key"
 ```
 
 Use `--no-llm` when you want a deterministic run with no model calls.
+
+### Financial skills and research plugins
+
+Three project-local, provider-agnostic skills run in shadow mode when `DEEPSEEK_API_KEY` is available:
+
+- `skills/morning-note`
+- `skills/catalyst-calendar`
+- `skills/thesis-tracker`
+
+Their output is stored under `skill_shadow` in the raw bundle, requires human review, and is never merged into the published report. Public Equity Investing and Data Analytics are Codex-side tools for manual follow-up research; they are not callable from GitHub Actions and are not CI dependencies. Claude models are not configured.
+
+Set `DMD_SKILL_SHADOW_ENABLED=0` to disable the three extra DeepSeek calls without disabling the production MiniMax narrative layer.
+
+The report content hierarchy and visual rules are documented in `docs/professional_report_design_system.md`.
 
 ## Installation
 
@@ -130,6 +146,7 @@ It runs daily on a UTC schedule aligned to Hong Kong / Beijing morning time. The
 - audits the generated output
 - sends email when SMTP secrets are present
 - archives published reports back to `main`
+- verifies an immutable SHA-256 archive manifest and updates the signal ledger
 - uploads reports and raw outputs as workflow artifacts
 
 Manual workflow dispatch supports:
@@ -168,7 +185,8 @@ market_diary/
 
 reports_professional/
 |-- latest/                     # stable latest report entry
-`-- archive/                    # dated GitHub-readable report archive
+|-- archive/                    # immutable dated report packages and manifests
+`-- performance/                # tracked signal ledger, methodology, summary, and chart
 
 scripts/                        # test, audit, archive, email helpers
 tests/                          # regression suite
@@ -193,6 +211,8 @@ Important config areas:
 - `watchlists.focus_pool`
 - `watchlists.learning_pool`
 - `macro_indicator_map`
+- `source_health`
+- `performance`
 - `llm.routes`
 - `llm.tasks`
 
@@ -200,6 +220,8 @@ Local secrets such as `.env` and `.apikey` are intentionally ignored and must no
 
 ## Output Policy
 
-Published report pages and selected chart assets are committed under `reports_professional/archive/`. Runtime scratch output, raw caches, email previews, local virtual environments, and secret files should stay out of source control.
+Published report pages and selected chart assets are committed under `reports_professional/archive/`. New date packages carry a deterministic SHA-256 manifest and cannot be silently overwritten by a rerun. A full-history integrity index covers legacy dates without rewriting their contents. Compact source-health and performance snapshots are archived even when the full raw bundle is not committed.
 
 Raw bundles are committed only when `include_raw_bundle` is explicitly enabled for an archive publish run.
+
+The tracked performance ledger uses the published risk regime, enters only at the next available close, applies turnover cost, excludes weekend pseudo-sessions, and records late-price conflicts. It is a research diagnostic rather than an investable track record. See [Archive, Source Health, and Backtest](docs/data_archive_backtest.md).

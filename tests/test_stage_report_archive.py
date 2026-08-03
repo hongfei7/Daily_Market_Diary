@@ -24,7 +24,7 @@ def _load_stage_module():
     return module
 
 
-def test_raw_bundle_is_opt_in_for_archive() -> None:
+def test_archive_manifest_is_verified_and_raw_bundle_is_opt_in() -> None:
     stage = _load_stage_module()
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -53,10 +53,40 @@ def test_raw_bundle_is_opt_in_for_archive() -> None:
         assert f"reports_professional/archive/{report_date}/raw/{report_date}_bundle.json" not in archived_rel
         assert not (stage.ARCHIVE_ROOT / report_date / "raw" / f"{report_date}_bundle.json").exists()
         assert not (stage.ARCHIVE_ROOT / report_date / "README.md").exists()
+        assert (stage.ARCHIVE_ROOT / report_date / "manifest.json").exists()
+        assert stage.verify_archive_manifest(stage.ARCHIVE_ROOT / report_date)["status"] == "ok"
+        stage.write_archive_integrity_index(stage.ARCHIVE_ROOT)
+        history_audit = stage.verify_archive_integrity_index(stage.ARCHIVE_ROOT)
+        assert history_audit["status"] == "ok"
+        assert history_audit["dates"] == 1
 
-        archived_with_raw = stage.build_date_archive(report_date, include_raw_bundle=True)
-        archived_with_raw_rel = {path.relative_to(root).as_posix() for path in archived_with_raw}
-        assert f"reports_professional/archive/{report_date}/raw/{report_date}_bundle.json" in archived_with_raw_rel
+        try:
+            stage.build_date_archive(report_date, include_raw_bundle=True)
+        except stage.ArchiveConflictError:
+            pass
+        else:
+            raise AssertionError("A published archive must not be overwritten by a conflicting rerun")
+
+
+def test_raw_bundle_can_be_included_on_first_publish() -> None:
+    stage = _load_stage_module()
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        report_root = root / "reports_professional"
+        chart_root = report_root / "charts"
+        raw_root = report_root / "raw"
+        chart_root.mkdir(parents=True)
+        raw_root.mkdir(parents=True)
+        report_date = "2026-04-20"
+        (report_root / f"{report_date}_morning_briefing.md").write_text("# Report\n", encoding="utf-8")
+        (raw_root / f"{report_date}_bundle.json").write_text("{}", encoding="utf-8")
+        stage.ROOT = root
+        stage.ARCHIVE_DIR = report_root
+        stage.ARCHIVE_ROOT = report_root / "archive"
+
+        archived = stage.build_date_archive(report_date, include_raw_bundle=True)
+        archived_rel = {path.relative_to(root).as_posix() for path in archived}
+        assert f"reports_professional/archive/{report_date}/raw/{report_date}_bundle.json" in archived_rel
 
 
 def test_all_dates_include_archived_only_reports() -> None:
@@ -79,7 +109,8 @@ def test_all_dates_include_archived_only_reports() -> None:
 
 
 def main() -> None:
-    test_raw_bundle_is_opt_in_for_archive()
+    test_archive_manifest_is_verified_and_raw_bundle_is_opt_in()
+    test_raw_bundle_can_be_included_on_first_publish()
     test_all_dates_include_archived_only_reports()
     print("Stage report archive test passed")
 

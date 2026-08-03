@@ -177,6 +177,12 @@ def audit_generated_run(
             errors.append("Bundle is missing report_quality diagnostics.")
         if not bundle.get("fact_check"):
             errors.append("Bundle is missing fact_check diagnostics.")
+        if not bundle.get("provenance_audit"):
+            errors.append("Bundle is missing provenance_audit diagnostics.")
+        if not bundle.get("source_health"):
+            errors.append("Bundle is missing source_health diagnostics.")
+        if not bundle.get("performance"):
+            errors.append("Bundle is missing performance diagnostics.")
 
         meta = bundle.get("meta", {}) or {}
         if str(meta.get("briefing_date", "")) != report_date:
@@ -185,10 +191,29 @@ def audit_generated_run(
         report_quality = bundle.get("report_quality", {}) or {}
         if report_quality.get("warnings"):
             warnings.extend(str(item) for item in (report_quality.get("warnings", []) or [])[:8])
+        release_recommendation = report_quality.get("release_recommendation", {}) or {}
+        if release_recommendation.get("action") == "manual_review":
+            errors.append("Report quality requires manual review; automatic distribution is blocked.")
 
         fact_check = bundle.get("fact_check", {}) or {}
-        if fact_check.get("status") == "warning":
-            warnings.append("Fact-check guardrail reported warnings.")
+        if fact_check.get("status") in {"warning", "error"}:
+            errors.append("Fact-check guardrail has unresolved warnings or errors.")
+
+        provenance_audit = bundle.get("provenance_audit", {}) or {}
+        if provenance_audit.get("status") != "ok":
+            details = "; ".join(str(item) for item in (provenance_audit.get("errors", []) or [])[:4])
+            errors.append(f"Source provenance validation failed{': ' + details if details else '.'}")
+
+        source_health = bundle.get("source_health", {}) or {}
+        if source_health.get("status") == "failed":
+            failures = ", ".join(str(item) for item in (source_health.get("critical_failures", []) or []))
+            errors.append(f"Critical source-health policy failed{': ' + failures if failures else '.'}")
+
+        performance = bundle.get("performance", {}) or {}
+        if (performance.get("methodology", {}) or {}).get("look_ahead_guard") is not True:
+            errors.append("Performance diagnostics are missing the look-ahead guard.")
+        if performance.get("status") == "error":
+            warnings.append(f"Performance tracking failed: {performance.get('error', 'unknown error')}")
 
         llm_sections = bundle.get("llm_sections", {}) or {}
         task_meta = (llm_sections.get("task_meta", {}) or {}).get("tasks", {}) or {}

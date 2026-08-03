@@ -3,6 +3,8 @@
 from datetime import datetime
 from typing import Dict, List
 
+from market_diary.modules.provenance import unavailable_record
+
 
 class MacroCalendar:
     """Provide a lightweight macro calendar payload for the morning briefing."""
@@ -22,71 +24,16 @@ class MacroCalendar:
         }
 
     def _fetch_released_data(self, date: str) -> List[Dict]:
-        """Return placeholder released data until a premium calendar is wired in."""
-        return [
-            {
-                "time": "09:30",
-                "country": "China",
-                "indicator": "Trade Balance",
-                "actual": "USD 85.2bn",
-                "forecast": "USD 79.0bn",
-                "previous": "USD 80.6bn",
-                "impact": "medium",
-                "surprise": "beat",
-            },
-            {
-                "time": "20:30",
-                "country": "US",
-                "indicator": "CPI MoM",
-                "actual": "0.3%",
-                "forecast": "0.2%",
-                "previous": "0.4%",
-                "impact": "high",
-                "surprise": "beat",
-            },
-        ]
+        """Return no release claims until a verified calendar source is configured."""
+        return []
 
     def _fetch_upcoming_data(self, date: str) -> List[Dict]:
-        """Return placeholder upcoming data for the requested date."""
-        return [
-            {
-                "time": "09:20",
-                "country": "China",
-                "indicator": "Loan Prime Rate",
-                "forecast": "3.45%",
-                "previous": "3.45%",
-                "impact": "medium",
-            },
-            {
-                "time": "20:30",
-                "country": "US",
-                "indicator": "Retail Sales MoM",
-                "forecast": "0.3%",
-                "previous": "0.6%",
-                "impact": "high",
-            },
-        ]
+        """Return no upcoming claims until a verified calendar source is configured."""
+        return []
 
     def fetch_central_bank_events(self, date: str) -> List[Dict]:
-        """Return placeholder central-bank events and speeches."""
-        return [
-            {
-                "time": "10:00",
-                "bank": "PBOC",
-                "event_type": "liquidity",
-                "speaker": "Open Market Operations Desk",
-                "title": "Daily liquidity operation window",
-                "importance": "medium",
-            },
-            {
-                "time": "22:00",
-                "bank": "Federal Reserve",
-                "event_type": "speech",
-                "speaker": "Jerome Powell",
-                "title": "Economic outlook remarks",
-                "importance": "high",
-            },
-        ]
+        """Return no central-bank claims until a verified calendar source is configured."""
+        return []
 
     def format_for_report(self, calendar_data: Dict, cb_events: List[Dict]) -> str:
         """Format the macro payload into a readable fallback text block."""
@@ -137,7 +84,15 @@ def fetch_macro_data(date: str) -> Dict:
     cb_events = calendar.fetch_central_bank_events(date)
 
     return {
+        "status": "unavailable",
         "calendar": calendar_data,
         "central_bank_events": cb_events,
         "formatted_text": calendar.format_for_report(calendar_data, cb_events),
+        "provenance": [
+            unavailable_record(
+                "Macro calendar",
+                date,
+                "No verified macro-calendar provider is configured; fabricated fallback events are disabled.",
+            )
+        ],
     }

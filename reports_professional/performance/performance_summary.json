@@ -1,0 +1,125 @@
+{
+  "benchmarks": {
+    "Hang Seng Index": {
+      "event_horizons": {
+        "1": {
+          "average_directional_return_net": 0.000476,
+          "hit_rate": 0.5152,
+          "resolved_signals": 33
+        },
+        "20": {
+          "average_directional_return_net": -0.006617,
+          "hit_rate": 0.4583,
+          "resolved_signals": 24
+        },
+        "5": {
+          "average_directional_return_net": -0.000495,
+          "hit_rate": 0.5806,
+          "resolved_signals": 31
+        }
+      },
+      "metrics": {
+        "active_sessions": 29,
+        "annualized_return": -0.017467,
+        "annualized_volatility": 0.157613,
+        "average_daily_return": -2.063e-05,
+        "benchmark_return": -0.019316,
+        "cumulative_return_net": -0.004396,
+        "excess_return": 0.01492,
+        "hit_rate_active_sessions": 0.4828,
+        "max_drawdown": -0.090069,
+        "median_daily_return": 0.0,
+        "sessions": 63,
+        "sharpe_zero_rf": -0.033,
+        "status": "ready"
+      }
+    },
+    "Hang Seng TECH": {
+      "event_horizons": {
+        "1": {
+          "average_directional_return_net": 0.001151,
+          "hit_rate": 0.4848,
+          "resolved_signals": 33
+        },
+        "20": {
+          "average_directional_return_net": -0.005705,
+          "hit_rate": 0.4583,
+          "resolved_signals": 24
+        },
+        "5": {
+          "average_directional_return_net": -1.8e-05,
+          "hit_rate": 0.5161,
+          "resolved_signals": 31
+        }
+      },
+      "metrics": {
+        "active_sessions": 29,
+        "annualized_return": -0.097184,
+        "annualized_volatility": 0.230563,
+        "average_daily_return": -0.00030013,
+        "benchmark_return": -0.052863,
+        "cumulative_return_net": -0.025235,
+        "excess_return": 0.027628,
+        "hit_rate_active_sessions": 0.4483,
+        "max_drawdown": -0.134678,
+        "median_daily_return": -0.001,
+        "sessions": 63,
+        "sharpe_zero_rf": -0.328,
+        "status": "ready"
+      }
+    }
+  },
+  "data_quality": {
+    "active_signal_dates": 70,
+    "conflicts": [
+      "2026-05-29 Hang Seng Index: 25006.16 versus 25182.39; selected newer publication 25182.39",
+      "2026-05-29 Hang Seng TECH: 4.782 versus 4.784; selected newer publication 4.784",
+      "2026-06-05 Hang Seng Index: 25253.4 versus 24961.95; selected newer publication 24961.95",
+      "2026-06-05 Hang Seng TECH: 4.87 versus 4.786; selected newer publication 4.786",
+      "2026-06-12 Hang Seng TECH: 4.56 versus 4.61; selected newer publication 4.61",
+      "2026-06-26 Hang Seng TECH: 4.33 versus 4.18; selected newer publication 4.18",
+      "2026-06-26 Hang Seng Index: 23076.91 versus 22671.86; selected newer publication 22671.86",
+      "2026-07-03 Hang Seng Index: 23055.03 versus 23350.03; selected newer publication 23350.03",
+      "2026-07-03 Hang Seng TECH: 4.364 versus 4.416; selected newer publication 4.416",
+      "2026-07-10 Hang Seng Index: 24030.18 versus 24175.12; selected newer publication 24175.12",
+      "2026-07-10 Hang Seng TECH: 4.64 versus 4.634; selected newer publication 4.634",
+      "2026-07-17 Hang Seng Index: 25008.6 versus 24562.24; selected newer publication 24562.24",
+      "2026-07-17 Hang Seng TECH: 4.748 versus 4.534; selected newer publication 4.534",
+      "2026-07-24 Hang Seng Index: 25210.81 versus 24963.23; selected newer publication 24963.23",
+      "2026-07-24 Hang Seng TECH: 4.61 versus 4.542; selected newer publication 4.542",
+      "2026-07-31 Hang Seng Index: 25858.88 versus 25884.43; selected newer publication 25884.43",
+      "2026-07-31 Hang Seng TECH: 4.718 versus 4.73; selected newer publication 4.73"
+    ],
+    "excluded_non_session_observations": [
+      "2026-04-26: excluded non-session weekend effective date",
+      "2026-05-03: excluded non-session weekend effective date",
+      "2026-05-31: excluded non-session weekend effective date",
+      "2026-06-07: excluded non-session weekend effective date",
+      "2026-06-14: excluded non-session weekend effective date",
+      "2026-06-21: excluded non-session weekend effective date"
+    ],
+    "first_observation": "2026-04-16",
+    "last_observation": "2026-07-31",
+    "observations": 64,
+    "signals": 86
+  },
+  "methodology": {
+    "execution": "A signal can enter only at the next available benchmark close after its market as-of date.",
+    "horizons_sessions": [
+      1,
+      5,
+      20
+    ],
+    "limitations": [
+      "Close-to-close research diagnostic; it is not an executable intraday strategy or investment recommendation.",
+      "Legacy signals are reconstructed from immutable published Markdown and may lack current source-health fields.",
+      "No dividends, financing, borrow, market impact, taxes, or benchmark reconstitution effects are modeled."
+    ],
+    "look_ahead_guard": true,
+    "portfolio": "Latest published signal per market as-of date; close-to-close returns with turnover costs.",
+    "signal": "Published deterministic risk regime mapped to long (+1), neutral (0), or short (-1).",
+    "transaction_cost_bps": 10.0
+  },
+  "schema_version": "signal-performance-v1",
+  "status": "ready_with_caveats"
+}
