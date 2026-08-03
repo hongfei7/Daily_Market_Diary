@@ -252,7 +252,7 @@ def main():
         dashboard_path = os.path.join(chart_dir, "test_dashboard.png")
         generate_dashboard(bundle, dashboard_path)
         assert os.path.exists(dashboard_path)
-        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v8"
+        assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v9"
         assert _regime_impact_color("US 10Y", 0.6) != _regime_impact_color("S&P 500", 0.6)
         assert _regime_impact_color("DXY", -0.3) == _regime_impact_color("S&P 500", 0.6)
 
@@ -306,11 +306,11 @@ def main():
         )
     assert "Morning Research Workbench" in report
     assert "Layer 1 | Scan" in report
-    assert "One-Line Market Pulse" in report
-    assert "Layer 3 | Thinking" in report
+    assert "5-minute decision scan" in report
+    assert "Layer 3 | Decision Deepening" in report
     assert "Daily One Chart" in report
     assert "Hong Kong Trend Pack" in report
-    assert "Risk Dashboard" in report
+    assert "Decision Board" in report
     assert "Flow Tracker and Attribution" in report
     assert "HKEX Announcements" in report
     assert "Stock Connect Southbound Active Names" in report

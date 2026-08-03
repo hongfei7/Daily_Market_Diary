@@ -73,9 +73,11 @@ def render_professional_report(
 
     report = f"""# Morning Research Workbench | {briefing_date}
 
-> Designed for a Hong Kong sell-side commute: Layer 1 `Scan`, Layer 2 `Deep Read`, Layer 3 `Thinking`  
+> **Commute reading route:** `5-minute decision scan` → `25-30 minute deep read` → `10-15 minute optional appendix`
+>
 > Mode: `{day_mode.get('label', 'Trading day')}` | {day_mode.get('note', '')}
-> Briefing date: `{briefing_date}` | Review date: `{review_date}` | Global request: `{global_date}` | HK/China request: `{hk_date}` | Market effective date: `{meta.get('effective_date', '')}` | Generated at: `{meta.get('generated_at', '')}`
+
+_Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective `{meta.get('effective_date', '')}` | Generated `{meta.get('generated_at', '')}`_
 
 ## Executive Summary
 
@@ -85,19 +87,17 @@ def render_professional_report(
 
 {dashboard_md}## {layer_one_title}
 
-### 1.1 One-Line Market Pulse
-{pulse}
-
 ### 1.2 Global Asset Price Dashboard
 {_render_global_asset_dashboard(bundle)}
 
 ### 1.3 {hk_quick_title}
 {_render_hk_quick_checks(bundle)}
 
-### 1.4 Risk Dashboard
+### 1.4 Decision Board
 {_render_risk_dashboard(bundle)}
 
-### 1.5 {checklist_title}
+**{checklist_title}**
+
 {_render_top_items(bundle.get('must_watch', []) or [], limit=4)}
 
 ## Layer 2 | Deep Read (20-30 min)
@@ -115,10 +115,12 @@ def render_professional_report(
 {non_trading_lens if not is_trading_day else ""}{_render_hk_review_block(bundle)}
 
 ### 2.3 Flow Tracker and Attribution
-#### Cross-Asset Attribution v1
+**Cross-Asset Attribution**
+
 {_render_attribution(bundle)}
 
-#### Flow Tracker
+**Local Flow Tracker**
+
 {_render_flow_tracker(bundle)}
 
 ### 2.4 Macro and Policy Tracking
@@ -128,7 +130,8 @@ def render_professional_report(
 
 {_render_macro_table(bundle)}
 
-#### Positioning and Risk Backdrop
+**Positioning and Risk Backdrop**
+
 {_render_flows(bundle)}
 {"".join(f"- Geopolitics: {item.get('region', '')} | {item.get('event', '')} | Impact: {item.get('impact', '')}\n" for item in ((bundle.get('risk', {}) or {}).get('geopolitical_risks', []) or [])[:3])}
 
@@ -140,7 +143,7 @@ def render_professional_report(
 ### 2.6 Today's Core Names
 {_render_watchlists(bundle, item_limit=2, story_limit=1, bucket_order=["Core coverage", "Priority follow-up"])}
 
-## Layer 3 | Thinking (10-15 min)
+## Layer 3 | Decision Deepening (10-15 min)
 
 ### 3.1 Rotating Theme Deep Dive
 {_render_theme_deep_dive(bundle)}
@@ -148,7 +151,7 @@ def render_professional_report(
 ### 3.2 {today_ahead_title}
 {_render_today_forward(bundle)}
 
-{daily_chart_section}{trend_pack_section}## Traceable Appendix
+{daily_chart_section}{trend_pack_section}## Optional Appendix | Traceability and Performance (10-15 min)
 
 ### Report Metadata
 {appendix_meta_block}

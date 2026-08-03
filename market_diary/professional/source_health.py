@@ -18,8 +18,8 @@ DEGRADED_STATUSES = {
 }
 
 DEFAULT_SOURCE_POLICIES: Dict[str, Dict[str, Any]] = {
-    "market_data": {"critical": True, "max_age_days": 4},
-    "hk_local": {"critical": True, "max_age_days": 4},
+    "market_data": {"critical": True, "max_age_days": 4, "min_fresh_ratio": 0.8},
+    "hk_local": {"critical": True, "max_age_days": 4, "min_fresh_ratio": 1.0},
     "stock_connect": {"critical": False, "max_age_days": 4},
     "ah_premium": {"critical": False, "max_age_days": 4},
     "china_rates": {"critical": False, "max_age_days": 7},
@@ -98,29 +98,26 @@ def build_source_health(
         records = [record for record in (records or []) if isinstance(record, Mapping)]
         critical = bool(policy.get("critical", False))
         max_age_days = max(0, int(policy.get("max_age_days", 7) or 7))
+        min_fresh_ratio = max(0.0, min(float(policy.get("min_fresh_ratio", 1.0 if critical else 0.0) or 0.0), 1.0))
 
         status_values = [_status_value(record.get("status")) for record in records]
         active_records = [record for record in records if _status_value(record.get("status")) > 0]
         ages = [_record_age_days(record, reference) for record in active_records]
         valid_ages = [age for age in ages if age is not None]
         freshest_age = min(valid_ages) if valid_ages else None
+        oldest_age = max(valid_ages) if valid_ages else None
         future_dated = sum(1 for age in valid_ages if age < 0)
-        stale = freshest_age is None or freshest_age > max_age_days
+        fresh_records = sum(1 for age in ages if age is not None and 0 <= age <= max_age_days)
+        stale_records = sum(1 for age in ages if age is not None and age > max_age_days)
+        unknown_age_records = sum(1 for age in ages if age is None)
+        fresh_ratio = fresh_records / len(active_records) if active_records else 0.0
+        stale = not active_records or fresh_ratio < min_fresh_ratio
 
         completeness = len(active_records) / len(records) if records else 0.0
         availability = _average(status_values)
         authority = _average(_source_type_value(record.get("source_type")) for record in active_records)
         confidence = _average(float(record.get("confidence", 0.0) or 0.0) for record in active_records)
-        if freshest_age is None:
-            freshness = 0.0
-        elif freshest_age < 0:
-            freshness = 0.0
-        elif freshest_age <= max_age_days:
-            freshness = 1.0
-        elif freshest_age <= max_age_days * 2:
-            freshness = 0.5
-        else:
-            freshness = 0.0
+        freshness = fresh_ratio if not future_dated else 0.0
 
         score = 100.0 * (
             0.35 * availability
@@ -133,6 +130,8 @@ def build_source_health(
             status = "failed" if critical else "unavailable"
         elif stale or score < 65:
             status = "failed" if critical and freshness == 0.0 else "degraded"
+            if critical and fresh_ratio < min_fresh_ratio:
+                status = "failed"
         else:
             status = "healthy"
 
@@ -140,8 +139,8 @@ def build_source_health(
             warnings.append(f"{source_key}: provenance contains a future as-of date.")
         if stale:
             warnings.append(
-                f"{source_key}: freshest record is "
-                f"{freshest_age if freshest_age is not None else 'unknown'} day(s) old; policy is {max_age_days}."
+                f"{source_key}: {fresh_records}/{len(active_records)} active records meet the {max_age_days}-day freshness policy; "
+                f"required ratio is {min_fresh_ratio:.0%}."
             )
         if status in {"failed", "unavailable"}:
             warnings.append(f"{source_key}: no decision-grade record was available.")
@@ -155,6 +154,12 @@ def build_source_health(
                 "records": len(records),
                 "active_records": len(active_records),
                 "freshest_age_days": freshest_age,
+                "oldest_age_days": oldest_age,
+                "fresh_records": fresh_records,
+                "stale_records": stale_records,
+                "unknown_age_records": unknown_age_records,
+                "fresh_ratio": round(fresh_ratio, 4),
+                "min_fresh_ratio": min_fresh_ratio,
                 "max_age_days": max_age_days,
                 "dimensions": {
                     "availability": round(availability * 100.0, 1),
@@ -192,6 +197,6 @@ def build_source_health(
         "warnings": warnings[:20],
         "methodology": {
             "dimensions": ["availability", "completeness", "authority", "confidence", "freshness"],
-            "note": "A high-authority source can still fail on freshness or availability; scores do not replace provenance records.",
+            "note": "Freshness is measured across every active record, not only the freshest item. Authority never overrides stale or unavailable evidence.",
         },
     }

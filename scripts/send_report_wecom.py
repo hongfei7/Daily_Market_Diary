@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "market_diary"))
 
 from professional.report_formatting import _truncate, _fmt_pct, _fmt_price
+from professional.instruments import format_summary_change
 
 
 WECOM_MARKDOWN_BYTE_LIMIT = 4096
@@ -182,14 +183,15 @@ def _market_snapshot_lines(bundle: Dict[str, Any]) -> List[str]:
     # Line 2: US equities
     spx = _price_line("SPX", _p("Equities", "S&P 500"), _c("Equities", "S&P 500"))
     ndx = _price_line("NDX", _p("Equities", "Nasdaq 100"), _c("Equities", "Nasdaq 100"))
-    hstech = _price_line("HSTECH", _p("Equities", "Hang Seng TECH ETF"), _c("Equities", "Hang Seng TECH ETF"))
+    hstech = _price_line("3033.HK ETF", _p("Equities", "Hang Seng TECH ETF"), _c("Equities", "Hang Seng TECH ETF"))
     lines.append(f"> {spx} | {ndx} | {hstech}")
 
     # Line 3: Rates / FX / Commodities
     parts = []
     us10y = _p("Rates", "10Y Treasury")
     if us10y is not None:
-        parts.append(f"**US10Y** {_fmt_price(us10y, 2)}%")
+        rate_item = _item("Rates", "10Y Treasury")
+        parts.append(f"**US10Y** {_fmt_price(us10y, 3)}% {format_summary_change(rate_item)}")
     dxy = _p("FX", "DXY")
     if dxy is not None:
         parts.append(f"**DXY** {_fmt_price(dxy, 1)}")
@@ -348,8 +350,8 @@ HTML_CSS = """\
     --muted: #58656f;
     --line: #d8dde1;
     --soft: #f4f6f7;
-    --positive: #17683a;
-    --negative: #a2332b;
+    --positive: #1f5f8b;
+    --negative: #b54708;
   }
   * { box-sizing: border-box; }
   html { background: #eef1f2; }
@@ -382,6 +384,10 @@ HTML_CSS = """\
   }
   .report-header h1 { margin: 0; max-width: 820px; font-size: 40px; font-weight: 650; }
   .report-date { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
+  .reading-route {
+    display: inline-block; margin: 14px 0 0; padding: 7px 10px; background: #e9f1f5;
+    color: var(--navy); font-size: 12px; font-weight: 700;
+  }
   .report-deck {
     max-width: 900px; margin: 24px 0 0; padding-left: 18px; border-left: 4px solid var(--blue);
     font-family: Georgia, "Times New Roman", serif; font-size: 21px; line-height: 1.45; color: #26343e;
@@ -440,7 +446,7 @@ HTML_CSS = """\
     .report-toc a { margin: 0; }
     h2 { font-size: 21px; margin-top: 42px; }
     h3 { font-size: 18px; }
-    table { min-width: 700px; }
+    table { min-width: 620px; }
   }
   @media print {
     html { background: #fff; }
@@ -558,7 +564,7 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
 
     return f"""\
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -571,6 +577,7 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
     <p class="report-eyebrow">Hong Kong institutional research</p>
     <h1>Morning Research Workbench</h1>
     <p class="report-date">Issue date {report_date} · Decision brief · Source-audited</p>
+    <p class="reading-route">5 min scan · 25–30 min deep read · optional 10–15 min appendix</p>
     <p class="report-deck">{pulse}</p>
   </header>
   <div class="report-grid">

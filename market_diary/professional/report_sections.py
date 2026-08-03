@@ -16,6 +16,7 @@ from market_diary.professional.report_formatting import (
     _truncate,
 )
 from market_diary.professional.relevance import canonical_hk_leadership, is_relevant_llm_story
+from market_diary.professional.instruments import format_summary_change, summary_change
 
 
 def _safe_sentence_clip(text: Any, limit: int = 160) -> str:
@@ -84,6 +85,10 @@ def _signal_direction(value: Any, deadband: float = 0.05) -> int:
 
 
 def _cross_asset_move(bundle: Dict[str, Any], category: str, name: str) -> float | None:
+    if category == "Rates":
+        item = ((bundle.get("market_summary", {}) or {}).get(category, {}) or {}).get(name, {}) or {}
+        value, unit = summary_change(item)
+        return value if unit == "bp" else None
     return _summary_pct(bundle, category, name)
 
 
@@ -113,10 +118,10 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
         if relative is not None and relative > 0.15:
             interpretation = "Growth outperformed broad beta, a supportive style signal for Hong Kong internet and platform names."
         elif relative is not None and relative < -0.15:
-            interpretation = "Growth lagged broad beta, warning that headline risk-on may not transmit cleanly to HSTECH."
+            interpretation = "Growth lagged broad beta, warning that headline risk-on may not transmit cleanly to the 3033.HK ETF proxy."
         else:
             interpretation = "Growth tracked broad beta, so the move looks market-wide rather than duration-led."
-        check = "Confirm through HSTECH versus HSI leadership; higher US yields would weaken the read."
+        check = "Confirm through the 3033.HK ETF versus HSI leadership; higher US yields would weaken the read."
     elif name == "Hang Seng Index":
         interpretation = (
             "Hong Kong broad beta strengthened, but local flow must confirm whether the move is investable."
@@ -143,7 +148,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "The yield proxy was stable and did not materially change the valuation backdrop."
         )
-        check = "Confirm through Nasdaq/HSTECH relative performance; invalidate if growth leads despite the opposing rate move."
+        check = "Confirm through Nasdaq and 3033.HK ETF relative performance; invalidate if growth leads despite the opposing rate move."
     elif name == "China 10Y":
         interpretation = (
             "Higher local yields may indicate firmer growth or tighter financial conditions; price action alone cannot distinguish them."
@@ -179,7 +184,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "CNH was stable, removing an immediate FX impulse but not confirming equity direction."
         )
-        check = "Confirm with FXI/HSTECH and Southbound flow; invalidate if equities move opposite to FX with strong local participation."
+        check = "Confirm with FXI, the 3033.HK ETF proxy and Southbound flow; invalidate if equities move opposite to FX with strong local participation."
     elif name == "USD/HKD":
         interpretation = (
             "A move toward the weak-side convertibility boundary keeps Hong Kong funding sensitivity in focus."
@@ -247,7 +252,7 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         ("Equities", "S&P 500", "S&P 500", "US large-cap risk appetite"),
         ("Equities", "Nasdaq 100", "Nasdaq 100", "Growth and duration leadership"),
         ("Equities", "Hang Seng Index", "Hang Seng Index", "Hong Kong broad beta"),
-        ("Equities", "Hang Seng TECH ETF", "Hang Seng TECH", "Hong Kong growth / platform read-through"),
+        ("Equities", "Hang Seng TECH ETF", "Hang Seng TECH ETF (3033.HK)", "Listed proxy for Hong Kong growth / platform leadership"),
         ("Equities", "CSI 300", "CSI 300", "Mainland large-cap tone"),
         ("Rates", "10Y Treasury", "US 10Y", "Global discount-rate anchor"),
         ("Rates", "China 10Y", "China 10Y", "China local rates anchor"),
@@ -270,7 +275,7 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         "S&P 500",
         "Nasdaq 100",
         "Hang Seng Index",
-        "Hang Seng TECH",
+        "Hang Seng TECH ETF (3033.HK)",
         "US 10Y",
         "China 10Y",
         "DXY",
@@ -290,10 +295,13 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
             read = note
         else:
             price = _summary_price(bundle, category, name)
-            pct = _summary_pct(bundle, category, name)
+            item = ((bundle.get("market_summary", {}) or {}).get(category, {}) or {}).get(name, {}) or {}
+            pct = format_summary_change(item) if category == "Rates" else _summary_pct(bundle, category, name)
             read = note
 
         last_value = price if isinstance(price, str) else _fmt_price(price)
+        if category == "Rates" and name == "10Y Treasury" and last_value != "N/A":
+            last_value = f"{last_value}%"
         move_value = pct if isinstance(pct, str) and pct else _fmt_alert_pct(pct)
         if str(last_value).strip() == "N/A" and str(move_value).strip() in {"", "N/A"}:
             hidden_assets.append(label)
@@ -301,7 +309,10 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         if label not in main_labels:
             secondary_assets.append(label)
             continue
-        interpretation, confirmation = _asset_interpretation(bundle, name, pct if pct not in (None, "") else move_value)
+        interpretation_value = pct
+        if category == "Rates" and name == "10Y Treasury":
+            interpretation_value, _ = summary_change(item)
+        interpretation, confirmation = _asset_interpretation(bundle, name, interpretation_value if interpretation_value not in (None, "") else move_value)
         table_rows.append(
             (
                 label,
@@ -417,7 +428,7 @@ def _render_non_trading_focus(bundle: Dict[str, Any]) -> str:
     if not focus:
         return ""
 
-    lines: List[str] = ["#### Non-Trading Focus Map", f"- {focus.get('summary', '')}"]
+    lines: List[str] = ["**Non-Trading Focus Map**", f"- {focus.get('summary', '')}"]
     still_moving = focus.get("still_moving", []) or []
     if still_moving:
         rows = [
@@ -465,7 +476,7 @@ def _render_weekly_review(bundle: Dict[str, Any]) -> str:
     if not weekly:
         return ""
 
-    lines: List[str] = ["#### Weekly Review Map", f"- {weekly.get('summary', '')}"]
+    lines: List[str] = ["**Weekly Review Map**", f"- {weekly.get('summary', '')}"]
     method_note = weekly.get("method_note", "")
     if method_note:
         lines.append(f"- Method note: {method_note}")

@@ -1,0 +1,34 @@
+{
+  "archive_id": "0abd188b904ff14203b00b693829bc515232cf06f96a09435ed6c0b9ac9ec74b",
+  "files": [
+    {
+      "path": "charts/daily_one_chart_2026-07-26.png",
+      "sha256": "f5cc05690672c4b01d56a09d93d569f75bc333f0954876ef367cef6c3634c1f4",
+      "size_bytes": 243625
+    },
+    {
+      "path": "charts/dashboard_2026-07-26.png",
+      "sha256": "d00aed65dcb46e186183bf9be8d4f14bd052c6c92ada0dec333644e0f6d947a9",
+      "size_bytes": 437504
+    },
+    {
+      "path": "charts/features_2026-07-26.json",
+      "sha256": "bc56c7afac76df2c4dfd2dfd771a6a87c713bbdf8ec66e18857fa3a0341ac1c5",
+      "size_bytes": 6368
+    },
+    {
+      "path": "charts/hk_trend_pack_2026-07-26.png",
+      "sha256": "50da2902e6045de594d5febcba04c5da72a598069240f88e55ea6eb9d2300d44",
+      "size_bytes": 405340
+    },
+    {
+      "path": "morning_briefing.md",
+      "sha256": "a2d5bfaef8210b73f8fb04a4d6aff8b3a4ac2a8f95531a2afe81c16f32964778",
+      "size_bytes": 35084
+    }
+  ],
+  "immutability": "Published payload files are append-only. A conflicting rerun must use a new report date.",
+  "manifest_scope": "README.md is generated navigation and is intentionally excluded from payload hashes.",
+  "report_date": "2026-07-26",
+  "schema_version": "report-archive-manifest-v1"
+}

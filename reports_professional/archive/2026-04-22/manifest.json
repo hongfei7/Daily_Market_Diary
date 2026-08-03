@@ -1,0 +1,39 @@
+{
+  "archive_id": "01fd26ff5b3c90ac491b10ebe5cfbae5cc7e3ddb7c8ca9901e83caf6a4fc1cf2",
+  "files": [
+    {
+      "path": "charts/daily_one_chart_2026-04-22.png",
+      "sha256": "591f1733d4e3e9eb13fc1e2e001a1da68f620ae1671a7dcff026212a6c1f463e",
+      "size_bytes": 263984
+    },
+    {
+      "path": "charts/dashboard_2026-04-22.png",
+      "sha256": "5f9be15007dcccfa2735c04403064fc6c840e1d7a1f7d9d6c2947413853e2b87",
+      "size_bytes": 444518
+    },
+    {
+      "path": "charts/features_2026-04-22.json",
+      "sha256": "861b5430c559b71125c6b4c769adc67fd5e7785df1a768413caee96433bf3564",
+      "size_bytes": 6336
+    },
+    {
+      "path": "charts/hk_trend_pack_2026-04-22.png",
+      "sha256": "4878861da91dbf1f58c5a8eb2bcd9d43907e6c13609029c32b0bd9a5e6db70a5",
+      "size_bytes": 417558
+    },
+    {
+      "path": "morning_briefing.md",
+      "sha256": "406e3ce88d1365c4118343615760d7d1831501690e9fe07bd4c89e3727294b30",
+      "size_bytes": 40411
+    },
+    {
+      "path": "raw/2026-04-22_bundle.json",
+      "sha256": "9915fa9097308b809676712eaac75145fe1652faf3146e64e83ac21af9dcc888",
+      "size_bytes": 298446
+    }
+  ],
+  "immutability": "Published payload files are append-only. A conflicting rerun must use a new report date.",
+  "manifest_scope": "README.md is generated navigation and is intentionally excluded from payload hashes.",
+  "report_date": "2026-04-22",
+  "schema_version": "report-archive-manifest-v1"
+}

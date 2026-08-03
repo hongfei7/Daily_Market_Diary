@@ -16,9 +16,25 @@ def _fixture():
                 "Equities": {
                     "S&P 500": {"Price": 5000, "Pct Change": "1.20%"},
                     "Hang Seng Index": {"Price": 17450, "Pct Change": "0.95%"},
-                    "Hang Seng TECH ETF": {"Price": 4.88, "Pct Change": "1.30%"},
+                    "Hang Seng TECH ETF": {
+                        "Price": 4.88,
+                        "Pct Change": "1.30%",
+                        "Display Name": "Hang Seng TECH ETF (3033.HK)",
+                        "Price Unit": "HKD_per_share",
+                        "Change Unit": "pct",
+                        "Change Value": 1.3,
+                        "Change Display": "+1.30%",
+                    },
                 },
-                "Rates": {"10Y Treasury": {"Price": 4.15, "Pct Change": "-0.60%"}},
+                "Rates": {
+                    "10Y Treasury": {
+                        "Price": 4.15,
+                        "Price Unit": "yield_pct",
+                        "Change Unit": "bp",
+                        "Change Value": -2.5,
+                        "Change Display": "-2.5bp",
+                    }
+                },
                 "FX": {
                     "DXY": {"Price": 104.2, "Pct Change": "-0.35%"},
                     "USD/CNH": {"Price": 7.18, "Pct Change": "0.10%"},
@@ -91,20 +107,17 @@ def main() -> None:
     html = build_email_html(bundle, dashboard_cid="research_dashboard")
 
     assert "Hong Kong Morning Briefing" in subject
-    assert "Top checklist" in text
-    assert "Run health:" in text
-    assert "Release recommendation:" in text
-    assert "Guidance summary:" in text
-    assert "Use guidance:" in text
-    assert "- ADVISORY:" in text or "- BLOCKING:" in text
-    assert "Deep-read setup" in html
+    assert "READ THIS FIRST" in text
+    assert "QUALITY:" in text
+    assert "DEEP-READ SETUP" in text
+    assert "DEEP READ" in html
     assert "cid:research_dashboard" in html
-    assert "Hong Kong local checks" in text
+    assert "HONG KONG LOCAL CHECKS" in text
     assert "Hong Kong local checks" in html
-    assert "Run health" in html
-    assert "Guidance" in html
-    assert "Release recommendation" in html
-    assert "Use guidance" in html
+    assert "DECISION FRAME" in html
+    assert "3033.HK" in html
+    assert "-2.5bp" in html
+    assert 'name="viewport"' in html
 
     print("Email delivery test passed")
 

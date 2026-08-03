@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Optional
 
+from market_diary.professional.instruments import format_summary_change, summary_change
+
 
 def _parse_pct(value: Any) -> Optional[float]:
     if value is None:
@@ -49,13 +51,19 @@ def _summary_item(summary: Dict[str, Any], category: str, name: str) -> Dict[str
 def _snapshot_row(summary: Dict[str, Any], category: str, name: str, label: str, question: str) -> Dict[str, Any]:
     item = _summary_item(summary, category, name)
     price = _parse_float(item.get("Price"))
-    change_pct = _parse_pct(item.get("Pct Change"))
+    change_value, change_unit = summary_change(item)
     return {
-        "label": label,
+        "label": str(item.get("Display Name") or label),
+        "short_label": label,
         "category": category,
         "symbol": name,
         "price": price,
-        "change_pct": change_pct,
+        "price_unit": str(item.get("Price Unit", "quoted_price") or "quoted_price"),
+        "security_type": str(item.get("Security Type", category.lower()) or category.lower()),
+        "change_value": change_value,
+        "change_unit": change_unit,
+        "change_display": format_summary_change(item),
+        "change_pct": change_value if change_unit == "pct" else None,
         "question": question,
     }
 
@@ -67,7 +75,7 @@ def build_market_snapshot(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
         ("Equities", "Euro Stoxx 50", "Euro Stoxx 50", "European risk appetite"),
         ("Equities", "Hang Seng Index", "Hang Seng Index", "Hong Kong beta"),
         ("Equities", "Hang Seng China Enterprises", "HSCEI", "China SOE / H-share tone"),
-        ("Equities", "Hang Seng TECH ETF", "Hang Seng TECH", "Hong Kong growth / internet tone"),
+        ("Equities", "Hang Seng TECH ETF", "3033.HK ETF", "Hong Kong growth / internet proxy"),
         ("Equities", "China Large-Cap (FXI)", "China proxy (FXI)", "China sentiment"),
         ("Rates", "10Y Treasury", "US 10Y", "Rates path"),
         ("FX", "DXY", "DXY", "Global liquidity"),
@@ -84,7 +92,7 @@ def build_market_snapshot(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 def _get_row(rows: Iterable[Dict[str, Any]], label: str) -> Dict[str, Any]:
     for row in rows:
-        if row.get("label") == label:
+        if row.get("label") == label or row.get("short_label") == label:
             return row
     return {}
 
@@ -132,10 +140,10 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
     spx = _get_row(rows, "S&P 500").get("change_pct")
     ndx = _get_row(rows, "Nasdaq 100").get("change_pct")
     hsi = _get_row(rows, "Hang Seng Index").get("change_pct")
-    hstech = _get_row(rows, "Hang Seng TECH").get("change_pct")
+    hstech = _get_row(rows, "3033.HK ETF").get("change_pct")
     fxi = _get_row(rows, "China proxy (FXI)").get("change_pct")
     dxy = _get_row(rows, "DXY").get("change_pct")
-    us10y = _get_row(rows, "US 10Y").get("change_pct")
+    us10y_bp = _get_row(rows, "US 10Y").get("change_value")
     vix = _get_row(rows, "VIX").get("change_pct")
     oil = _get_row(rows, "WTI crude").get("change_pct")
     gold = _get_row(rows, "Gold").get("change_pct")
@@ -148,8 +156,8 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
         score += -1 if dxy > 0.3 else 1 if dxy < -0.3 else 0
     if vix is not None:
         score += -1 if vix > 1.0 else 1 if vix < -1.0 else 0
-    if us10y is not None:
-        score += -1 if us10y > 0.5 else 1 if us10y < -0.5 else 0
+    if us10y_bp is not None:
+        score += -1 if us10y_bp > 5.0 else 1 if us10y_bp < -5.0 else 0
 
     if score >= 2:
         risk_regime = "Risk-On"
@@ -161,14 +169,14 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
     chart_read = build_chart_read(chart_features)
     usd_net = (chart_features.get("fx_composite", {}) or {}).get("net_pp") or 0
     usd_bias = "USD stronger" if usd_net > 0.15 else "USD softer" if usd_net < -0.15 else "USD range-bound"
-    rate_bias = "lower yields supported duration" if (us10y or 0) < -0.5 else "higher yields pressured valuations" if (us10y or 0) > 0.5 else "rates were not the dominant driver"
+    rate_bias = "lower yields supported duration" if (us10y_bp or 0) < -5.0 else "higher yields pressured valuations" if (us10y_bp or 0) > 5.0 else "rates were not the dominant driver"
     asset_div = chart_features.get("divergence", {}) or {}
     divergence_text = f"{asset_div.get('best_asset')} outperformed {asset_div.get('worst_asset')}" if asset_div else "cross-asset divergence stayed modest"
     theme = f"{risk_regime} backdrop with {usd_bias}, {rate_bias}, and {divergence_text}"
 
     notes = [
-        f"Risk appetite snapshot: S&P 500 {_format_signed(spx)} / Nasdaq 100 {_format_signed(ndx)} / Hang Seng {_format_signed(hsi)} / HSTECH {_format_signed(hstech)} / FXI {_format_signed(fxi)}.",
-        f"Rates and liquidity: US 10Y {_format_signed(us10y)} / DXY {_format_signed(dxy)} / VIX {_format_signed(vix)}.",
+        f"Risk appetite snapshot: S&P 500 {_format_signed(spx)} / Nasdaq 100 {_format_signed(ndx)} / Hang Seng {_format_signed(hsi)} / 3033.HK ETF {_format_signed(hstech)} / FXI {_format_signed(fxi)}.",
+        f"Rates and liquidity: US 10Y {_format_signed(us10y_bp, digits=1, suffix='bp')} / DXY {_format_signed(dxy)} / VIX {_format_signed(vix)}.",
         f"Commodities and hedges: WTI {_format_signed(oil)} / Gold {_format_signed(gold)}.",
     ]
 
@@ -176,7 +184,7 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
         f"Is risk appetite rising or fading? The overnight tape reads closer to `{risk_regime}`.",
         "Did rates expectations move? Focus on whether US 10Y, DXY, and growth style moved together.",
         "Were commodities the real story? Watch WTI and gold for geopolitics versus inflation signals.",
-        "Is Hong Kong setup internet-led, SOE-led, or broad beta-led? Compare HSTECH, HSCEI, and HSI.",
+        "Is Hong Kong setup growth-led, SOE-led, or broad beta-led? Compare the 3033.HK ETF proxy, HSCEI, and HSI.",
         "Did offshore markets move China risk appetite? Focus on HSI, FXI, USD/CNH, and USD/HKD.",
     ]
 
@@ -194,7 +202,7 @@ def build_hk_desk_view(summary: Dict[str, Any]) -> Dict[str, Any]:
     rows = build_market_snapshot(summary)
     hsi = _get_row(rows, "Hang Seng Index").get("change_pct")
     hscei = _get_row(rows, "HSCEI").get("change_pct")
-    hstech = _get_row(rows, "Hang Seng TECH").get("change_pct")
+    hstech = _get_row(rows, "3033.HK ETF").get("change_pct")
     fxi = _get_row(rows, "China proxy (FXI)").get("change_pct")
     usdcnh = _get_row(rows, "USD/CNH").get("change_pct")
     usdhkd = _get_row(rows, "USD/HKD").get("price")
@@ -210,7 +218,7 @@ def build_hk_desk_view(summary: Dict[str, Any]) -> Dict[str, Any]:
         leadership = "Leadership could not be determined cleanly"
 
     lines = [
-        f"Hang Seng {_format_signed(hsi)} / HSCEI {_format_signed(hscei)} / HSTECH {_format_signed(hstech)}.",
+        f"Hang Seng {_format_signed(hsi)} / HSCEI {_format_signed(hscei)} / 3033.HK ETF {_format_signed(hstech)}.",
         f"Offshore China proxy FXI {_format_signed(fxi)} and USD/CNH {_format_signed(usdcnh)} frame cross-border risk appetite.",
         f"USD/HKD last traded around {_fmt_price_for_hk(usdhkd)}, which keeps the Hong Kong funding lens in focus.",
     ]

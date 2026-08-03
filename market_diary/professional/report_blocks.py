@@ -127,7 +127,7 @@ def _render_watchlists(
     ordered_buckets = bucket_order or list(watchlists.keys())
     for bucket in ordered_buckets:
         items = watchlists.get(bucket, []) or []
-        sections.append(f"#### {bucket}")
+        sections.append(f"**{bucket}**")
         if not items:
             sections.append("No names were highlighted in this bucket for the current run.\n")
             continue
@@ -222,7 +222,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     if not tracker:
         return "Dedicated local-flow detail was limited for this run."
 
-    lines: List[str] = ["##### Flow Takeaways"]
+    lines: List[str] = ["**Flow Takeaways**"]
     summary = tracker.get("summary", "Flow evidence was mixed rather than decisive.")
     if summary:
         lines.append(f"- {summary}")
@@ -234,7 +234,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
 
     stock_connect = (tracker.get("stock_connect", {}) or {}).get("data", {}) or {}
     southbound_active = ((stock_connect.get("southbound", {}) or {}).get("top_active", []) or [])[:5]
-    lines.append("##### Stock Connect Southbound Active Names")
+    lines.append("**Stock Connect Southbound Active Names**")
     if southbound_active:
         rows = [
             (
@@ -256,7 +256,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
 
     ah_premium = (tracker.get("ah_premium", {}) or {}).get("data", {}) or {}
     ah_rows = ah_premium.get("top_premium", []) or []
-    lines.append("##### AH Premium Dispersion")
+    lines.append("**AH Premium Dispersion**")
     if ah_rows:
         rows = [
             (
@@ -280,7 +280,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     short_value = tracker.get("short_sell_top_value", []) or []
     short_rows = watch_hits or short_ratio
     if short_rows:
-        lines.append("##### HKEX Short-Selling Watch")
+        lines.append("**HKEX Short-Selling Watch**")
         rows = [
             (
                 item.get("ticker") or f"{item.get('code', '')}.HK",
@@ -304,7 +304,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     if not southbound_active:
         proxy_table = _render_hk_etf_proxy_table(bundle)
         if "No Hong Kong or offshore-China ETF proxy data" not in proxy_table:
-            lines.append("##### ETF Proxy Read")
+            lines.append("**ETF Proxy Read**")
             lines.append("_Use this only when official Stock Connect / local-flow detail is incomplete._")
             lines.append(proxy_table)
     return "\n".join(lines).strip()
@@ -356,7 +356,7 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
 
     lines: List[str] = []
     setup = str(llm_sections.get("deep_read_setup", "") or "").strip()
-    lines.append("#### Market Setup")
+    lines.append("**Market Setup**")
     lines.extend(
         _render_labeled_paragraphs(
             setup,
@@ -370,13 +370,13 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
     drivers = _compact_bullets(llm_sections.get("overnight_drivers", []) or [], limit=4, width=140)
     if drivers:
         lines.append("")
-        lines.append("#### Key Drivers")
+        lines.append("**Key Drivers**")
         lines.extend(f"- {item}" for item in drivers)
 
     hk_implication = str(llm_sections.get("overnight_hk_implication", "") or "").strip()
     hk_lines, suppressed_hk_lines = _compact_hk_read_lines(_compact_bullets(hk_desk_view.get("lines", []) or [], limit=5, width=140), limit=3)
     lines.append("")
-    lines.append("#### Hong Kong Read-Through")
+    lines.append("**Hong Kong Read-Through**")
     leadership = str(hk_desk_view.get("leadership", "") or "").strip()
     if leadership:
         lines.append(f"**Desk lens.** {leadership}.")
@@ -395,7 +395,7 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
     watch_points = _compact_bullets((chart_read.get("fx", []) or []) + (chart_read.get("assets", []) or []), limit=4, width=150)
     if watch_points:
         lines.append("")
-        lines.append("#### Watch Points")
+        lines.append("**Watch Points**")
         lines.extend(f"- {item}" for item in watch_points)
 
     return "\n".join(lines)
@@ -408,7 +408,7 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     lines: List[str] = []
     setup = str(llm_sections.get("hk_review_setup", "") or "").strip()
     if setup:
-        lines.append("#### Local Tape Setup")
+        lines.append("**Local Tape Setup**")
         lines.extend(
             _render_labeled_paragraphs(
                 setup,
@@ -420,11 +420,11 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
         lines.append("")
 
     leadership = _resolved_hk_leadership(bundle)
-    lines.append("#### Style and Local Leadership")
+    lines.append("**Style and Local Leadership**")
     if leadership:
         lines.append(f"**Style leadership.** {leadership}.")
     else:
-        lines.append("**Style leadership.** Check HSI, HSCEI, and HSTECH first to separate broad-beta, old-economy, and growth leadership.")
+        lines.append("**Style leadership.** Check HSI, HSCEI, and the 3033.HK ETF proxy first to separate broad-beta, old-economy, and growth leadership.")
 
     hk_lines, suppressed_hk_lines = _compact_hk_read_lines(hk_desk_view.get("lines", []) or [], limit=3)
     for line in hk_lines:
@@ -435,7 +435,7 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
         )
 
     lines.append("")
-    lines.append("#### Flow Confirmation")
+    lines.append("**Flow Confirmation**")
     if _has_official_stock_connect_flow(bundle):
         lines.append("Official Stock Connect evidence is available; use Section 2.3 to confirm whether local money supports the price action.")
     else:
@@ -445,7 +445,7 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     if not follow_through:
         follow_through = "Confirm the opening read through Southbound active names, short-selling concentration, USD/CNH, and USD/HKD funding pressure."
     lines.append("")
-    lines.append("#### Follow-Through Checklist")
+    lines.append("**Follow-Through Checklist**")
     lines.append(f"**Follow-through check.** {_condense_sentence(follow_through, 260)}")
 
     if not _has_official_stock_connect_flow(bundle):
@@ -464,7 +464,7 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
     sections: List[str] = []
 
     if llm_sections.get("company_takeaway"):
-        sections.append("#### Company Event Takeaway")
+        sections.append("**Company Event Takeaway**")
         sections.extend(
             _render_labeled_paragraphs(
                 llm_sections.get("company_takeaway", ""),
@@ -477,13 +477,13 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
 
     company_notes = llm_sections.get("company_notes", []) or []
     if company_notes:
-        sections.append("#### LLM Quick Takes")
+        sections.append("**LLM Quick Takes**")
         for item in company_notes[:6]:
             sections.append(f"- **{item.get('ticker', '')}** | {_truncate(item.get('commentary', ''), 170, suffix='')}")
         sections.append("")
 
     announcements = company_events.get("announcements", []) or []
-    sections.append("#### HKEX Announcements")
+    sections.append("**HKEX Announcements**")
     if announcements:
         rows = [
             (
@@ -501,7 +501,7 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
     sections.append("")
 
     earnings = company_events.get("earnings", []) or []
-    sections.append("#### Earnings / Results Watch")
+    sections.append("**Earnings / Results Watch**")
     if earnings:
         rows = [
             (
@@ -517,7 +517,7 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
         sections.append("No earnings items were scheduled in the current window.")
 
     ratings = company_events.get("ratings", []) or []
-    sections.append("\n#### Rating Changes")
+    sections.append("\n**Rating Changes**")
     if ratings:
         sections.extend(
             f"- **{item.get('ticker', '')}** | {item.get('firm', '')} | {item.get('action', '')} | {item.get('summary', '')} | PT {item.get('target_change', '')}"
@@ -526,7 +526,7 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
     else:
         sections.append("- No rating-change items were highlighted in the current sell-side feed.")
 
-    sections.append("\n#### IPO Watch")
+    sections.append("\n**IPO Watch**")
     sections.append(f"- {company_events.get('ipo_watch', 'IPO monitoring was not part of this run.')}")
     return "\n".join(sections)
 
@@ -789,6 +789,7 @@ def _render_performance(bundle: Dict[str, Any]) -> str:
         f"{data_quality.get('observations', 0)} market observations | "
         f"{data_quality.get('active_signal_dates', 0)} active signal dates",
         "- **Execution rule:** use only the next available close after publication; 10 bps turnover cost by default. Current-day signals never receive same-day returns.",
+        "- **Interpretation boundary:** results are exploratory until a benchmark reaches 252 sessions and 100 active-signal sessions.",
     ]
     rows = []
     for name, payload in (performance.get("benchmarks", {}) or {}).items():
@@ -856,15 +857,20 @@ def _render_source_health(bundle: Dict[str, Any]) -> str:
     if attention:
         lines.append(
             _make_table(
-                ["Source", "Critical", "Status", "Score", "Freshest age", "Policy"],
+                ["Source", "Critical", "Status", "Score", "Fresh coverage", "Age range", "Policy"],
                 [
                     (
                         item.get("source", ""),
                         "Yes" if item.get("critical") else "No",
                         item.get("status", ""),
                         item.get("score", ""),
-                        f"{item.get('freshest_age_days')}d" if item.get("freshest_age_days") is not None else "Unknown",
-                        f"≤{item.get('max_age_days', '')}d",
+                        f"{item.get('fresh_records', 0)}/{item.get('active_records', 0)}",
+                        (
+                            f"{item.get('freshest_age_days')}–{item.get('oldest_age_days')}d"
+                            if item.get("freshest_age_days") is not None
+                            else "Unknown"
+                        ),
+                        f"≤{item.get('max_age_days', '')}d / ≥{float(item.get('min_fresh_ratio', 0) or 0):.0%}",
                     )
                     for item in attention[:8]
                 ],
@@ -927,6 +933,9 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
     if fact_check:
         lines.append("\n**Narrative fact-check guardrail**")
         lines.append(f"- {fact_check.get('summary', 'Fact-check summary was not attached for this run.')}")
+        degraded_fields = fact_check.get("degraded_fields", []) or []
+        if degraded_fields:
+            lines.append(f"- **Deterministic fallback fields:** {', '.join(str(item) for item in degraded_fields[:8])}")
         mismatches = fact_check.get("numeric_mismatches", []) or []
         logic_warnings = fact_check.get("logic_warnings", []) or []
         if mismatches:

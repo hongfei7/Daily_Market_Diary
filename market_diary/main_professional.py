@@ -34,6 +34,7 @@ from market_diary.modules.provenance import (
     audit_source_provenance,
     collect_source_provenance,
     ensure_payload_provenance,
+    provenance_record,
 )
 from market_diary.modules.risk_radar import fetch_risk_data
 from market_diary.modules.sector_news import fetch_sector_data
@@ -49,7 +50,7 @@ from market_diary.professional.date_policy import (
     previous_weekday as _previous_weekday,
     resolve_report_dates,
 )
-from market_diary.professional.fact_checker import run_fact_check
+from market_diary.professional.fact_checker import apply_fact_check_fallbacks, run_fact_check
 from market_diary.professional.llm_enhancer import generate_llm_sections
 from market_diary.professional.performance import refresh_performance_tracking
 from market_diary.professional.skill_shadow import generate_skill_shadow
@@ -259,6 +260,31 @@ def _attach_provenance(payload: Dict[str, Any], global_date: str, hk_date: str, 
     market_available = int(market_quality.get("available", 0) or 0)
     market_total = int(market_quality.get("total", 0) or 0)
     market_status = "ok" if market_available and market_available == market_total else "partial" if market_available else "unavailable"
+    market_records = []
+    for category, category_items in (market.get("summary", {}) or {}).items():
+        if not isinstance(category_items, dict):
+            continue
+        for raw_name, item in category_items.items():
+            if not isinstance(item, dict):
+                continue
+            quality = str(item.get("Quality", "fresh") or "fresh").lower()
+            status = "stale_public" if quality == "stale" else "ok"
+            market_records.append(
+                provenance_record(
+                    source_name=f"Yahoo Finance: {item.get('Display Name') or raw_name}",
+                    source_url="https://finance.yahoo.com/",
+                    as_of=str(item.get("As Of") or global_date),
+                    source_type="public",
+                    status=status,
+                    confidence=0.8 if status == "ok" else 0.55,
+                    note=(
+                        f"{category} quote; instrument_id={item.get('Instrument ID', 'unmapped')}; "
+                        f"symbol={item.get('Source Symbol', 'unknown')}; change_unit={item.get('Change Unit', 'pct')}."
+                    ),
+                )
+            )
+    if market_records:
+        market["provenance"] = market_records
     payload["market"] = ensure_payload_provenance(
         market,
         source_name="Yahoo Finance market quotes",
@@ -638,7 +664,17 @@ def main() -> None:
             "skills": {},
         }
     try:
+        initial_fact_check = run_fact_check(bundle)
+        degraded_fields = apply_fact_check_fallbacks(bundle, initial_fact_check)
         bundle["fact_check"] = run_fact_check(bundle)
+        bundle["fact_check"]["degraded_fields"] = degraded_fields
+        bundle["fact_check"]["initial_summary"] = initial_fact_check.get("summary", "")
+        if degraded_fields and bundle["fact_check"].get("status") == "ok":
+            bundle["fact_check"]["status"] = "warning"
+            bundle["fact_check"]["summary"] = (
+                f"{bundle['fact_check'].get('summary', '')} "
+                f"Replaced {len(degraded_fields)} unsafe narrative field(s) with deterministic fallback copy."
+            ).strip()
     except Exception as exc:
         print(f"[runtime] Fact-check guardrail failed (non-fatal): {_error_summary(exc)}")
         bundle["fact_check"] = {"status": "error", "error": _error_summary(exc)}
@@ -661,7 +697,7 @@ def main() -> None:
                 output_dir=output_dir,
                 archive_root=os.path.join(output_dir, "archive"),
                 chart_path=performance_chart_path,
-                benchmarks=tuple(performance_config.get("benchmarks", ["Hang Seng Index", "Hang Seng TECH"])),
+                benchmarks=tuple(performance_config.get("benchmarks", ["Hang Seng Index", "Hang Seng TECH ETF (3033.HK)"])),
                 horizons=tuple(performance_config.get("horizons_sessions", [1, 5, 20])),
                 cost_bps=float(performance_config.get("transaction_cost_bps", 10.0)),
             )

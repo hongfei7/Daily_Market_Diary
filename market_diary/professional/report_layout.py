@@ -65,7 +65,7 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
     )
 
     if is_weekly_review:
-        layer_one_title = "Layer 1 | Weekly Scan (5-10 min)"
+        layer_one_title = "Layer 1 | Weekly Scan (5 min)"
         checklist_title = "Next Week Checklist"
         today_ahead_title = "Next Week Calendar and Reopen Prep"
         overseas_title = "Weekly Cross-Asset Review"
@@ -76,7 +76,7 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
             "and convert them into next-week preparation rather than treating Saturday as a fresh cash-market session.\n\n"
         )
     elif is_trading_day:
-        layer_one_title = "Layer 1 | Scan (5-10 min)"
+        layer_one_title = "Layer 1 | Scan (5 min)"
         checklist_title = "Morning Checklist"
         today_ahead_title = "Today Ahead and Trading Calendar"
         overseas_title = "Overnight Overseas Market Review"
@@ -84,7 +84,7 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
         hk_review_title = "Hong Kong / A-share Previous-Day Review"
         mode_lens = ""
     else:
-        layer_one_title = "Layer 1 | Reset (5-10 min)"
+        layer_one_title = "Layer 1 | Reset (5 min)"
         checklist_title = "Next Open Checklist"
         today_ahead_title = "Next Session Outlook and Calendar"
         overseas_title = "Still-Moving Global Financial Actions"

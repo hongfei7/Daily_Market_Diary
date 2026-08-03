@@ -6,6 +6,8 @@ from datetime import datetime
 import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from market_diary.professional.instruments import summary_change
+
 
 CHANGE_PCT_TOLERANCE = 0.25
 LEVEL_PCT_TOLERANCE = 0.05
@@ -57,10 +59,12 @@ def _metric_value(bundle: Dict[str, Any], section: str, key: str) -> Optional[fl
 
 def _market_fact(bundle: Dict[str, Any], category: str, name: str, label: str, aliases: List[str]) -> Dict[str, Any]:
     item = _summary_item(bundle, category, name)
+    change_value, change_unit = summary_change(item)
     return {
         "label": label,
         "aliases": aliases,
-        "change_pct": _parse_pct(item.get("Pct Change")),
+        "change_pct": change_value if change_unit == "pct" else None,
+        "change_bp": change_value if change_unit == "bp" else None,
         "level_pct": _parse_pct(item.get("Price")) if category in {"Rates"} else None,
         "level": _parse_pct(item.get("Price")) if category in {"Vol"} else None,
     }
@@ -81,7 +85,13 @@ def _fact_registry(bundle: Dict[str, Any]) -> List[Dict[str, Any]]:
         _market_fact(bundle, "Equities", "S&P 500", "S&P 500", ["S&P 500", "SPX"]),
         _market_fact(bundle, "Equities", "Nasdaq 100", "Nasdaq 100", ["Nasdaq", "Nasdaq 100", "NDX"]),
         _market_fact(bundle, "Equities", "Hang Seng Index", "Hang Seng Index", ["Hang Seng", "HSI", "Hang Seng Index"]),
-        _market_fact(bundle, "Equities", "Hang Seng TECH ETF", "Hang Seng TECH", ["HSTECH", "Hang Seng TECH"]),
+        _market_fact(
+            bundle,
+            "Equities",
+            "Hang Seng TECH ETF",
+            "Hang Seng TECH ETF (3033.HK)",
+            ["3033.HK ETF", "HSTECH ETF", "Hang Seng TECH ETF", "HSTECH"],
+        ),
         _market_fact(bundle, "Equities", "China Large-Cap (FXI)", "FXI", ["FXI"]),
         _market_fact(bundle, "FX", "DXY", "DXY", ["DXY", "dollar index"]),
         _market_fact(bundle, "FX", "USD/CNH", "USD/CNH", ["USD/CNH", "USDCNH"]),
@@ -131,6 +141,10 @@ def _claim_patterns(alias: str) -> List[Tuple[str, re.Pattern[str]]]:
     return [
         (
             "change_pct",
+            re.compile(rf"\b{escaped}\b\s*(?:[:|,/·]\s*)?{pct_number}", re.IGNORECASE),
+        ),
+        (
+            "change_pct",
             re.compile(rf"\b{escaped}\b[^\n.%;]{{0,{CLAIM_GAP}}}?\b{change_verb}\b[^\n.;]{{0,{CLAIM_GAP}}}?{pct_number}", re.IGNORECASE),
         ),
         (
@@ -140,6 +154,10 @@ def _claim_patterns(alias: str) -> List[Tuple[str, re.Pattern[str]]]:
         (
             "change_bp",
             re.compile(rf"\b{escaped}\b[^\n.;]{{0,{CLAIM_GAP}}}?\b{change_verb}\b[^\n.;]{{0,{CLAIM_GAP}}}?{bp_number}", re.IGNORECASE),
+        ),
+        (
+            "change_bp",
+            re.compile(rf"\b{escaped}\b\s*(?:[:|,/·]\s*)?{bp_number}", re.IGNORECASE),
         ),
     ]
 
@@ -165,6 +183,7 @@ def _claim_mismatches(bundle: Dict[str, Any], texts: List[Tuple[str, str]]) -> T
     checked = 0
     mismatches: List[Dict[str, Any]] = []
     seen = set()
+    checked_seen = set()
     for fact in _fact_registry(bundle):
         for path, text in texts:
             for alias in fact["aliases"]:
@@ -177,6 +196,10 @@ def _claim_mismatches(bundle: Dict[str, Any], texts: List[Tuple[str, str]]) -> T
                         claimed = _parse_pct(match.group("value"))
                         if claimed is None:
                             continue
+                        checked_key = (path, fact["label"], kind, match.start(), match.end())
+                        if checked_key in checked_seen:
+                            continue
+                        checked_seen.add(checked_key)
                         checked += 1
                         if abs(claimed - expected) > tolerance:
                             snippet = text[max(match.start() - 50, 0) : min(match.end() + 50, len(text))]
@@ -226,43 +249,44 @@ def _contains_unhedged_any(text: str, phrases: Iterable[str]) -> bool:
             if idx == -1:
                 break
             context = lowered[max(0, idx - 80) : min(len(lowered), idx + len(phrase) + 80)]
-            if not any(marker in context for marker in conditional_markers):
+            prefix = lowered[max(0, idx - 28) : idx]
+            negated = re.search(r"(?:\bnot\b|\bno\b|\bwithout\b|\bneither\b|n't).{0,24}$", prefix)
+            if not negated and not any(marker in context for marker in conditional_markers):
                 return True
             start = idx + len(phrase)
     return False
 
 
-def _logic_warnings(bundle: Dict[str, Any], full_text: str) -> List[Dict[str, str]]:
+def _logic_warnings(bundle: Dict[str, Any], texts: List[Tuple[str, str]]) -> List[Dict[str, str]]:
     warnings: List[Dict[str, str]] = []
-    text = full_text.lower()
-    if not text:
+    if not texts:
         return warnings
 
     risk_regime = str((bundle.get("overview", {}) or {}).get("risk_regime", "")).lower()
     risk_on_assertions = ["risk-on backdrop", "risk-on regime", "risk-on setup", "risk-on tape", "risk appetite improved", "risk appetite rose"]
     risk_off_assertions = ["risk-off backdrop", "risk-off regime", "risk-off setup", "risk-off tape", "risk appetite deteriorated", "risk appetite faded"]
-    if "risk-on" in risk_regime and _contains_any(text, risk_off_assertions):
-        warnings.append({"type": "risk_regime", "severity": "review", "message": "Narrative asserts a risk-off setup while the deterministic overview is risk-on."})
-    if "risk-off" in risk_regime and _contains_any(text, risk_on_assertions):
-        warnings.append({"type": "risk_regime", "severity": "review", "message": "Narrative asserts a risk-on setup while the deterministic overview is risk-off."})
-
     dxy = _parse_pct(_summary_item(bundle, "FX", "DXY").get("Pct Change"))
-    if dxy is not None:
-        if dxy > 0.30 and _contains_unhedged_any(text, ["softer dollar", "weaker dollar", "dollar softened"]):
-            warnings.append({"type": "fx_logic", "severity": "review", "message": "Narrative says the dollar softened, but DXY was materially higher."})
-        if dxy < -0.30 and _contains_unhedged_any(text, ["stronger dollar", "firmer dollar", "dollar strengthened"]):
-            warnings.append({"type": "fx_logic", "severity": "review", "message": "Narrative says the dollar strengthened, but DXY was materially lower."})
-
-    us10y = _parse_pct(_summary_item(bundle, "Rates", "10Y Treasury").get("Pct Change"))
-    if us10y is not None:
-        if us10y > 0.50 and _contains_unhedged_any(text, ["lower yields", "yields fell", "yields declined"]):
-            warnings.append({"type": "rates_logic", "severity": "review", "message": "Narrative says yields fell, but US 10Y was materially higher."})
-        if us10y < -0.50 and _contains_unhedged_any(text, ["higher yields", "yields rose", "yields climbed"]):
-            warnings.append({"type": "rates_logic", "severity": "review", "message": "Narrative says yields rose, but US 10Y was materially lower."})
-
+    us10y, us10y_unit = summary_change(_summary_item(bundle, "Rates", "10Y Treasury"))
     southbound = ((bundle.get("hk_local", {}) or {}).get("southbound_net_flow", {}) or {})
-    if southbound.get("status") == "unavailable" and _contains_any(text, ["southbound net buy", "southbound net inflow", "southbound bought"]):
-        warnings.append({"type": "flow_availability", "severity": "review", "message": "Narrative discusses Southbound net buying although the normalized metric is unavailable."})
+
+    for path, raw_text in texts:
+        text = raw_text.lower()
+        if "risk-on" in risk_regime and _contains_any(text, risk_off_assertions):
+            warnings.append({"field": path, "type": "risk_regime", "severity": "review", "message": "Narrative asserts a risk-off setup while the deterministic overview is risk-on."})
+        if "risk-off" in risk_regime and _contains_any(text, risk_on_assertions):
+            warnings.append({"field": path, "type": "risk_regime", "severity": "review", "message": "Narrative asserts a risk-on setup while the deterministic overview is risk-off."})
+        if dxy is not None:
+            if dxy > 0.30 and _contains_unhedged_any(text, ["softer dollar", "weaker dollar", "dollar softened"]):
+                warnings.append({"field": path, "type": "fx_logic", "severity": "review", "message": "Narrative says the dollar softened, but DXY was materially higher."})
+            if dxy < -0.30 and _contains_unhedged_any(text, ["stronger dollar", "firmer dollar", "dollar strengthened"]):
+                warnings.append({"field": path, "type": "fx_logic", "severity": "review", "message": "Narrative says the dollar strengthened, but DXY was materially lower."})
+        if us10y is not None and us10y_unit == "bp":
+            if us10y > 5.0 and _contains_unhedged_any(text, ["lower yields", "yields fell", "yields declined"]):
+                warnings.append({"field": path, "type": "rates_logic", "severity": "review", "message": "Narrative says yields fell, but US 10Y was materially higher."})
+            if us10y < -5.0 and _contains_unhedged_any(text, ["higher yields", "yields rose", "yields climbed"]):
+                warnings.append({"field": path, "type": "rates_logic", "severity": "review", "message": "Narrative says yields rose, but US 10Y was materially lower."})
+        if southbound.get("status") == "unavailable" and _contains_any(text, ["southbound net buy", "southbound net inflow", "southbound bought"]):
+            warnings.append({"field": path, "type": "flow_availability", "severity": "review", "message": "Narrative discusses Southbound net buying although the normalized metric is unavailable."})
 
     return warnings
 
@@ -362,6 +386,7 @@ def _truncation_warnings(llm_sections: Dict[str, Any]) -> List[Dict[str, str]]:
         if normalized.endswith(("...", "…", "[trimmed]")) or incomplete_tail.search(normalized):
             warnings.append(
                 {
+                    "field": path,
                     "type": "truncated_text",
                     "severity": "critical",
                     "message": f"Narrative field `{path}` appears truncated.",
@@ -371,7 +396,11 @@ def _truncation_warnings(llm_sections: Dict[str, Any]) -> List[Dict[str, str]]:
 
 
 def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
-    llm_sections = bundle.get("llm_sections", {}) or {}
+    llm_sections = {
+        key: value
+        for key, value in (bundle.get("llm_sections", {}) or {}).items()
+        if key != "task_meta"
+    }
     texts = list(_iter_texts(llm_sections))
     deterministic_sections = {
         "overview": bundle.get("overview", {}),
@@ -383,8 +412,7 @@ def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
     }
     all_texts = texts + list(_iter_texts(deterministic_sections, "deterministic"))
     checked, mismatches = _claim_mismatches(bundle, all_texts)
-    full_text = "\n".join(text for _, text in texts)
-    logic_warnings = _logic_warnings(bundle, full_text)
+    logic_warnings = _logic_warnings(bundle, texts)
     structured_checked, source_warnings = _source_and_date_warnings(bundle)
     source_warnings.extend(_truncation_warnings(llm_sections))
     critical_count = sum(1 for item in mismatches if item.get("severity") == "critical")
@@ -395,6 +423,7 @@ def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
     source_critical = sum(1 for item in source_warnings if item.get("severity") == "critical")
     source_review = sum(1 for item in source_warnings if item.get("severity") == "review")
     status = "warning" if critical_count or review_count or source_critical or source_review else "ok"
+    release_blocking = bool(critical_count or source_critical)
     summary = (
         f"Checked {checked} numeric claims; "
         f"{len(mismatches)} numeric mismatch(es), {len(logic_warnings)} logic warning(s); "
@@ -403,6 +432,7 @@ def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
     )
     return {
         "status": status,
+        "release_blocking": release_blocking,
         "summary": summary,
         "numeric_claims_checked": checked,
         "numeric_mismatches": mismatches[:12],
@@ -410,3 +440,44 @@ def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
         "structured_claims_checked": structured_checked,
         "source_warnings": source_warnings[:12],
     }
+
+
+_PATH_TOKEN = re.compile(r"([^.[\]]+)|\[(\d+)\]")
+
+
+def _clear_path(root: Dict[str, Any], path: str) -> bool:
+    tokens: List[str | int] = []
+    for key, index in _PATH_TOKEN.findall(path):
+        tokens.append(int(index) if index else key)
+    if not tokens:
+        return False
+    cursor: Any = root
+    for token in tokens[:-1]:
+        try:
+            cursor = cursor[token]
+        except (KeyError, IndexError, TypeError):
+            return False
+    final = tokens[-1]
+    try:
+        if isinstance(cursor, dict) and isinstance(final, str):
+            cursor[final] = ""
+        elif isinstance(cursor, list) and isinstance(final, int):
+            cursor[final] = ""
+        else:
+            return False
+    except (IndexError, TypeError):
+        return False
+    return True
+
+
+def apply_fact_check_fallbacks(bundle: Dict[str, Any], fact_check: Dict[str, Any]) -> List[str]:
+    """Remove unsafe LLM fields so deterministic report copy can take over."""
+    candidate_paths = set()
+    for group in ("numeric_mismatches", "logic_warnings", "source_warnings"):
+        for item in fact_check.get(group, []) or []:
+            path = str(item.get("field", "") or "")
+            if path and not path.startswith("deterministic"):
+                candidate_paths.add(path)
+    llm_sections = bundle.get("llm_sections", {}) or {}
+    cleared = [path for path in sorted(candidate_paths) if _clear_path(llm_sections, path)]
+    return cleared

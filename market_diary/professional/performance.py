@@ -12,7 +12,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 
 SCHEMA_VERSION = "signal-performance-v1"
-DEFAULT_BENCHMARKS = ("Hang Seng Index", "Hang Seng TECH")
+HSTECH_ETF_BENCHMARK = "Hang Seng TECH ETF (3033.HK)"
+DEFAULT_BENCHMARKS = ("Hang Seng Index", HSTECH_ETF_BENCHMARK)
 DEFAULT_HORIZONS = (1, 5, 20)
 REGIME_POSITION = {"risk-on": 1, "risk on": 1, "neutral": 0, "risk-off": -1, "risk off": -1}
 
@@ -52,7 +53,7 @@ def _summary_price(bundle: Mapping[str, Any], category: str, name: str) -> float
 def _bundle_prices(bundle: Mapping[str, Any]) -> Dict[str, float]:
     candidates = {
         "Hang Seng Index": ("Equities", "Hang Seng Index"),
-        "Hang Seng TECH": ("Equities", "Hang Seng TECH ETF"),
+        HSTECH_ETF_BENCHMARK: ("Equities", "Hang Seng TECH ETF"),
     }
     prices: Dict[str, float] = {}
     for label, (category, name) in candidates.items():
@@ -132,11 +133,11 @@ def parse_archived_report(path: Path) -> Tuple[Dict[str, Any] | None, Dict[str, 
         if len(cells) < 2:
             continue
         label = cells[0]
-        if label not in {"Hang Seng Index", "Hang Seng TECH"}:
+        if label not in {"Hang Seng Index", "Hang Seng TECH", HSTECH_ETF_BENCHMARK}:
             continue
         price = _number(cells[1].split("/")[0])
         if price is not None and price > 0:
-            prices[label] = price
+            prices[HSTECH_ETF_BENCHMARK if label == "Hang Seng TECH" else label] = price
 
     observation = None
     if market_as_of and prices:
@@ -166,13 +167,15 @@ def parse_archived_report(path: Path) -> Tuple[Dict[str, Any] | None, Dict[str, 
 def _merge_observations(observations: Iterable[Mapping[str, Any]]) -> Tuple[List[Dict[str, Any]], List[str]]:
     by_date: Dict[str, Dict[str, Any]] = {}
     conflicts: List[str] = []
+    conflicted_keys: set[tuple[str, str]] = set()
     for raw in observations:
         as_of = _parse_date(raw.get("as_of"))
         prices: Dict[str, float] = {}
         for name, value in (raw.get("prices", {}) or {}).items():
             parsed = _number(value)
             if parsed is not None and parsed > 0:
-                prices[str(name)] = parsed
+                canonical_name = HSTECH_ETF_BENCHMARK if str(name) == "Hang Seng TECH" else str(name)
+                prices[canonical_name] = parsed
         if not as_of or not prices:
             continue
         if datetime.strptime(as_of, "%Y-%m-%d").weekday() >= 5:
@@ -189,17 +192,15 @@ def _merge_observations(observations: Iterable[Mapping[str, Any]]) -> Tuple[List
             continue
         existing = by_date[as_of]["prices"]
         for name, value in prices.items():
+            conflict_key = (as_of, name)
+            if conflict_key in conflicted_keys:
+                continue
             if name in existing and not math.isclose(existing[name], value, rel_tol=1e-6, abs_tol=1e-6):
-                use_newer = bool(report_date and report_date >= str(by_date[as_of].get("report_date", "")))
-                selected = value if use_newer else existing[name]
                 conflicts.append(
-                    f"{as_of} {name}: {existing[name]} versus {value}; selected "
-                    f"{'newer publication' if use_newer else 'existing publication'} {selected}"
+                    f"{as_of} {name}: {existing[name]} versus {value}; excluded conflicted observation"
                 )
-                if use_newer:
-                    existing[name] = value
-                    by_date[as_of]["report_date"] = report_date
-                    by_date[as_of]["source"] = raw.get("source", "")
+                existing.pop(name, None)
+                conflicted_keys.add(conflict_key)
                 continue
             existing.setdefault(name, value)
     return [by_date[key] for key in sorted(by_date)], conflicts
@@ -294,7 +295,11 @@ def _event_outcomes(
     prices = [(date_value, price) for date_value, price in prices if price is not None and price > 0]
     outcomes: List[Dict[str, Any]] = []
     for signal in _active_signals(signals):
-        entry_candidates = [index for index, (date_value, _) in enumerate(prices) if date_value > signal.get("market_as_of", "")]
+        entry_candidates = [
+            index
+            for index, (date_value, _) in enumerate(prices)
+            if date_value > signal.get("market_as_of", "") and date_value >= signal.get("report_date", "")
+        ]
         if not entry_candidates:
             continue
         entry_index = entry_candidates[0]
@@ -330,15 +335,19 @@ def _metrics(series: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     benchmark_returns = [float(row.get("underlying_return", 0.0) or 0.0) for row in series]
     active_returns = [value for value, row in zip(returns, series) if int(row.get("position", 0) or 0) != 0]
     sessions = len(returns)
+    active_sessions = len(active_returns)
+    decision_grade = sessions >= 252 and active_sessions >= 100
     strategy_total = math.prod(1.0 + value for value in returns) - 1.0 if returns else 0.0
     benchmark_total = math.prod(1.0 + value for value in benchmark_returns) - 1.0 if benchmark_returns else 0.0
     volatility = pstdev(returns) * math.sqrt(252) if sessions >= 20 and pstdev(returns) > 0 else None
     annualized = (1.0 + strategy_total) ** (252.0 / sessions) - 1.0 if sessions >= 20 and strategy_total > -1 else None
     sharpe = mean(returns) / pstdev(returns) * math.sqrt(252) if sessions >= 20 and pstdev(returns) > 0 else None
     return {
-        "status": "ready" if sessions >= 20 else "insufficient_history",
+        "status": "decision_grade" if decision_grade else "exploratory",
         "sessions": sessions,
-        "active_sessions": len(active_returns),
+        "active_sessions": active_sessions,
+        "active_exposure_ratio": round(active_sessions / sessions, 4) if sessions else 0.0,
+        "sample_gate": {"minimum_sessions": 252, "minimum_active_sessions": 100},
         "cumulative_return_net": round(strategy_total, 6),
         "benchmark_return": round(benchmark_total, 6),
         "excess_return": round(strategy_total - benchmark_total, 6),
@@ -387,16 +396,14 @@ def build_performance_ledger(
 
     price_conflicts = [item for item in conflicts if " versus " in item]
     excluded_non_sessions = [item for item in conflicts if "excluded non-session" in item]
-    any_ready = any(value["metrics"]["status"] == "ready" for value in results.values())
-    overall_status = "insufficient_history"
-    if any_ready:
-        overall_status = "ready_with_caveats" if conflicts else "ready"
+    any_decision_grade = any(value["metrics"]["status"] == "decision_grade" for value in results.values())
+    overall_status = "decision_grade_with_caveats" if any_decision_grade and conflicts else "decision_grade" if any_decision_grade else "exploratory_with_caveats" if conflicts else "exploratory"
     return {
         "schema_version": SCHEMA_VERSION,
         "status": overall_status,
         "methodology": {
             "signal": "Published deterministic risk regime mapped to long (+1), neutral (0), or short (-1).",
-            "execution": "A signal can enter only at the next available benchmark close after its market as-of date.",
+            "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",
             "portfolio": "Latest published signal per market as-of date; close-to-close returns with turnover costs.",
             "transaction_cost_bps": float(cost_bps),
             "horizons_sessions": [int(value) for value in horizons],
@@ -405,6 +412,7 @@ def build_performance_ledger(
                 "Close-to-close research diagnostic; it is not an executable intraday strategy or investment recommendation.",
                 "Legacy signals are reconstructed from immutable published Markdown and may lack current source-health fields.",
                 "No dividends, financing, borrow, market impact, taxes, or benchmark reconstitution effects are modeled.",
+                "Results remain exploratory until a benchmark has at least 252 sessions and 100 active-signal sessions.",
             ],
         },
         "data_quality": {

@@ -226,9 +226,9 @@ def build_must_watch(
         items.append(
             {
                 "bucket": "High-frequency data",
-                "title": f"{tracker.get('label')} {_format_signed(tracker.get('change_pct'))}",
+                "title": f"{tracker.get('label')} {tracker.get('change_display') or _format_signed(tracker.get('change_pct'))}",
                 "summary": tracker.get("interpretation", ""),
-                "score": int(abs(tracker.get("change_pct") or 0) * 10) + 40,
+                "score": int(float(tracker.get("priority", 0) or 0) * 10) + 40,
             }
         )
 

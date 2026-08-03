@@ -212,6 +212,7 @@ def _release_recommendation(
     runtime_guidance: List[Dict[str, str]],
     provenance_status: str = "",
     fact_status: str = "",
+    fact_blocking: bool = False,
     source_health_status: str = "",
 ) -> Dict[str, str]:
     blocking_count = sum(1 for item in runtime_guidance if item.get("level") == "blocking")
@@ -230,11 +231,11 @@ def _release_recommendation(
             "label": "Manual review",
             "reason": "A critical data source failed its availability or freshness policy; automatic distribution is blocked.",
         }
-    if fact_status in {"warning", "error"}:
+    if fact_status == "error" or fact_blocking:
         return {
             "action": "manual_review",
             "label": "Manual review",
-            "reason": "Fact validation produced unresolved warnings or errors; automatic distribution is blocked.",
+            "reason": "Fact validation produced a release-blocking error; automatic distribution is blocked.",
         }
     if blocking_count:
         return {
@@ -242,7 +243,7 @@ def _release_recommendation(
             "label": "Manual review",
             "reason": "Critical source failures were detected; check the blocking guidance before sending the report externally.",
         }
-    if has_failed or has_caveat:
+    if fact_status == "warning" or has_failed or has_caveat:
         return {
             "action": "send_with_caveats",
             "label": "Send with caveats",
@@ -339,11 +340,14 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
     fact_check = bundle.get("fact_check", {}) or {}
     provenance_status = str(provenance_audit.get("status", "") or "")
     fact_status = str(fact_check.get("status", "") or "")
+    fact_blocking = bool(fact_check.get("release_blocking", fact_status == "error"))
     source_health_status = str((bundle.get("source_health", {}) or {}).get("status", "") or "")
     if provenance_status == "error":
         runtime_guidance.insert(0, _guidance("blocking", "Source provenance is incomplete or invalid; do not distribute automatically."))
-    if fact_status in {"warning", "error"}:
-        runtime_guidance.insert(0, _guidance("blocking", "Fact validation has unresolved findings; review them before distribution."))
+    if fact_status == "error" or fact_blocking:
+        runtime_guidance.insert(0, _guidance("blocking", "Fact validation has a release-blocking finding; review it before distribution."))
+    elif fact_status == "warning":
+        runtime_guidance.insert(0, _guidance("advisory", "Questionable narrative fields were removed; use the deterministic fallback copy and review the audit trail."))
     if source_health_status == "failed":
         failures = ", ".join((bundle.get("source_health", {}) or {}).get("critical_failures", []) or [])
         runtime_guidance.insert(0, _guidance("blocking", f"Critical source freshness or availability failed: {failures or 'unspecified source'}."))
@@ -352,6 +356,7 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
         runtime_guidance,
         provenance_status=provenance_status,
         fact_status=fact_status,
+        fact_blocking=fact_blocking,
         source_health_status=source_health_status,
     )
     blocking_guidance = sum(1 for item in runtime_guidance if item.get("level") == "blocking")

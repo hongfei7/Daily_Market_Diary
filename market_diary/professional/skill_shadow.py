@@ -101,7 +101,8 @@ def _build_shadow_prompt(skill_name: str, context: Dict[str, Any]) -> str:
     return (
         "Execute the following provider-agnostic financial research skill in shadow mode. "
         "The output is for human comparison only and must not contain investment advice. "
-        "Use only supplied facts and return strict JSON.\n\n"
+        "Use only supplied facts and return strict JSON. Keep the whole answer under 700 words, "
+        "prioritize the three most material findings, and omit generic background.\n\n"
         + _load_skill_text(skill_name)
         + "\n\nVerified context JSON:\n"
         + json.dumps(context, ensure_ascii=False, default=str)
@@ -181,6 +182,19 @@ def generate_skill_shadow(
         enabled = True
     if not enabled:
         return {"status": "disabled", "mode": "shadow", "publish": False, "skills": {}}
+
+    cadence = str(shadow_config.get("cadence", "weekly") or "weekly").lower()
+    force_run = (os.getenv("DMD_SKILL_SHADOW_FORCE") or "").strip().lower() in {"1", "true", "yes", "on"}
+    day_mode = str((bundle.get("day_mode", {}) or {}).get("mode", "") or "")
+    if cadence == "weekly" and day_mode != "weekly_review" and not force_run:
+        return {
+            "status": "skipped",
+            "mode": "shadow",
+            "publish": False,
+            "cadence": cadence,
+            "reason": "Weekly research shadow is reserved for the weekly review to protect the daily delivery SLA and token budget.",
+            "skills": {},
+        }
 
     provider = str(shadow_config.get("provider", "deepseek") or "deepseek").strip().lower()
     if runner is None and provider not in get_available_providers():

@@ -4,7 +4,9 @@ import ast
 import hashlib
 import json
 import os
+import threading
 import time
+from contextlib import nullcontext
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -80,9 +82,9 @@ TASK_FEW_SHOTS: Dict[str, str] = {
     "news_selection": """Example JSON:
 {"summary":"Overnight news flow tilted constructive for Hong Kong because softer US rates and internet-related headlines mattered more than isolated defensive news.","selected_news":[{"headline":"Example headline","why_it_matters":"It changes the market's earnings or policy framing.","hk_market_impact":"Most relevant for Hong Kong internet and growth sentiment.","importance":"A"}]}""",
     "overnight_review": """Example JSON:
-{"paragraph":"US equities rose because softer inflation and lower yields supported duration-sensitive sectors, while oil stabilized enough to keep the geopolitical premium contained. For Hong Kong, the key question is whether offshore China proxies confirm that the move was broad risk appetite rather than only US mega-cap leadership.","drivers":["Softer inflation reduced rates pressure.","Lower yields supported growth and internet names."],"hk_open_implication":"A constructive open is more credible if HSTECH and FXI also confirm the move."}""",
+{"paragraph":"US equities rose because softer inflation and lower yields supported duration-sensitive sectors, while oil stabilized enough to keep the geopolitical premium contained. For Hong Kong, the key question is whether offshore China proxies confirm that the move was broad risk appetite rather than only US mega-cap leadership.","drivers":["Softer inflation reduced rates pressure.","Lower yields supported growth and internet names."],"hk_open_implication":"A constructive open is more credible if the 3033.HK Hang Seng TECH ETF proxy and FXI also confirm the move."}""",
     "hk_review": """Example JSON:
-{"paragraph":"Hong Kong and A-share follow-through should be judged through style leadership, not index direction alone. If HSTECH outperforms HSCEI while USD/CNH stays stable, the market is more likely to read the overnight tape as supportive for growth rather than just broad beta.","local_leadership":"Growth-led if HSTECH outperforms HSCEI.","follow_through":"Watch whether CSI 300 and offshore China proxies confirm the same style read."}""",
+{"paragraph":"Hong Kong and A-share follow-through should be judged through style leadership, not index direction alone. If the 3033.HK Hang Seng TECH ETF proxy outperforms HSCEI while USD/CNH stays stable, the market is more likely to read the overnight tape as supportive for growth rather than just broad beta.","local_leadership":"Growth-led if the 3033.HK ETF proxy outperforms HSCEI.","follow_through":"Watch whether CSI 300 and offshore China proxies confirm the same style read."}""",
     "macro_interpretation": """Example JSON:
 {"paragraph":"The macro calendar matters because it can quickly reprice the rates-and-dollar backdrop that is supporting today's opening setup. If the data surprise is material, growth leadership could either extend or reverse early in the session.","watchpoints":["US yields and DXY after the release.","Whether Hong Kong growth proxies hold their opening tone."]}""",
     "company_commentary": """Example JSON:
@@ -258,10 +260,25 @@ def _resolve_model(llm_config: Dict[str, Any], task_name: str) -> Tuple[str, str
 
 
 def _model_candidates(llm_config: Dict[str, Any], task_name: str) -> List[Tuple[str, str, str]]:
+    task_config = _task_config(llm_config, task_name)
+    preferred_provider = str(task_config.get("provider", "") or "").strip().lower()
     model, route_name = _resolve_model(llm_config, task_name)
     primary_provider = get_default_provider()
-    candidates = [(primary_provider, model, route_name)]
     available_providers = get_available_providers()
+    if preferred_provider and preferred_provider in available_providers:
+        route = _route_config(llm_config, route_name)
+        candidates = [
+            (preferred_provider, _route_fallback_model(route, preferred_provider), f"{route_name}:preferred")
+        ]
+        ordered_fallbacks = [primary_provider] + [provider for provider in available_providers if provider != primary_provider]
+        for fallback_provider in ordered_fallbacks:
+            if fallback_provider == preferred_provider or fallback_provider not in available_providers:
+                continue
+            fallback_model = _route_fallback_model(route, fallback_provider)
+            candidates.append((fallback_provider, fallback_model, f"{route_name}:fallback"))
+        return candidates
+
+    candidates = [(primary_provider, model, route_name)]
     for fallback_provider in available_providers:
         if fallback_provider == primary_provider:
             continue
@@ -372,13 +389,18 @@ def _effective_max_workers(llm_config: Dict[str, Any], task_names: Optional[List
     provider_caps = (llm_config.get("provider_parallelism", {}) or {})
     selected_tasks = task_names or list((llm_config.get("tasks", {}) or {}).keys()) or ["default_model"]
 
+    caps = []
+    has_uncapped_task = False
     for task_name in selected_tasks:
         resolved_task = task_name if task_name in (llm_config.get("tasks", {}) or {}) else "default_model"
-        model_name, _ = _resolve_model(llm_config, resolved_task)
+        candidates = _model_candidates(llm_config, resolved_task)
+        model_name = candidates[0][1] if candidates else _resolve_model(llm_config, resolved_task)[0]
         cap = _provider_cap_for_model(provider_caps, model_name)
         if cap is not None:
-            requested = min(requested, cap)
-    return requested
+            caps.append(cap)
+        else:
+            has_uncapped_task = True
+    return requested if has_uncapped_task else min([requested, *caps]) if caps else requested
 
 
 def _hash_context(task_name: str, context: Dict[str, Any], model: str, prompt: str) -> str:
@@ -717,6 +739,12 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
 
 
 def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRunner:
+    provider_semaphores = {
+        str(provider): threading.Semaphore(max(int(cap), 1))
+        for provider, cap in ((llm_config.get("provider_parallelism", {}) or {}).items())
+        if str(cap).isdigit()
+    }
+
     def runner(task_name: str, context: Dict[str, Any], prompt: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         task_config = _task_config(llm_config, task_name)
         retries = max(int(llm_config.get("max_retries", 2)), 0) + 1
@@ -749,16 +777,18 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                 total_attempts += 1
                 try:
                     client = get_client(provider)
-                    response = client.chat.completions.create(
-                        model=model,
-                        messages=[
-                            {"role": "system", "content": LLM_SYSTEM_PROMPT},
-                            {"role": "user", "content": prompt},
-                        ],
-                        temperature=temperature,
-                        max_tokens=max_tokens,
-                        extra_body=get_completion_extra_body(provider, model),
-                    )
+                    guard = provider_semaphores.get(provider)
+                    with guard if guard is not None else nullcontext():
+                        response = client.chat.completions.create(
+                            model=model,
+                            messages=[
+                                {"role": "system", "content": LLM_SYSTEM_PROMPT},
+                                {"role": "user", "content": prompt},
+                            ],
+                            temperature=temperature,
+                            max_tokens=max_tokens,
+                            extra_body=get_completion_extra_body(provider, model),
+                        )
                     raw = _extract_response_text(response.choices[0].message.content)
                     last_raw_excerpt = raw[:240].replace("\n", " ").strip()
                     finish_reason = _choice_finish_reason(response)
@@ -773,11 +803,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                         excerpt = f" Raw excerpt: {last_raw_excerpt}" if last_raw_excerpt else ""
                         raise ValueError(f"LLM returned an empty or non-parseable structured payload.{excerpt}")
                     _save_cache(cache_dir, task_name, context, model, prompt, coerced)
-                    status = (
-                        "ok"
-                        if route_name == _resolve_model(llm_config, task_name)[1]
-                        else "fallback_ok"
-                    )
+                    status = "fallback_ok" if route_name.endswith(":fallback") else "ok"
                     return coerced, {
                         "status": status,
                         "model": model,

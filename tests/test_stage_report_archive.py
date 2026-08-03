@@ -55,6 +55,9 @@ def test_archive_manifest_is_verified_and_raw_bundle_is_opt_in() -> None:
         assert not (stage.ARCHIVE_ROOT / report_date / "README.md").exists()
         assert (stage.ARCHIVE_ROOT / report_date / "manifest.json").exists()
         assert stage.verify_archive_manifest(stage.ARCHIVE_ROOT / report_date)["status"] == "ok"
+        (stage.ARCHIVE_ROOT / report_date / "._morning_briefing.md").write_bytes(b"appledouble")
+        assert stage.verify_archive_manifest(stage.ARCHIVE_ROOT / report_date)["status"] == "ok"
+        assert all("._" not in item["path"] for item in stage.build_archive_manifest(stage.ARCHIVE_ROOT / report_date, report_date)["files"])
         stage.write_archive_integrity_index(stage.ARCHIVE_ROOT)
         history_audit = stage.verify_archive_integrity_index(stage.ARCHIVE_ROOT)
         assert history_audit["status"] == "ok"

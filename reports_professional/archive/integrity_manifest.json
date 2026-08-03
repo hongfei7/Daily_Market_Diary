@@ -1,15 +1,10 @@
 {
-  "archive_id": "b4c7f4f7dcf117b0faf4c9331fc92d0f374c086bb34978c74e8bf81d8dcbd64e",
+  "archive_id": "48a4676c7bd215a5ce841a207beb846912d23d9ef37a328018cab31d4b826e53",
   "dates": 86,
   "entries": [
     {
-      "archive_id": "f03d0a1b58400c4d0fc0c5f63ccc2068b73ef5df74565423a1f4bf3cf2aa8239",
+      "archive_id": "9daf3f7a7bc9f45312e251e074b2a936794ec1b63a6753aebd0aab784772529d",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-04-17.png",
           "sha256": "fddda7b1e2524be8b6b08cd30d90c25e517cd7091fe7f36bcdd6a22f1d2cf313",
@@ -44,13 +39,8 @@
       "report_date": "2026-04-17"
     },
     {
-      "archive_id": "d17780041b0d8ede56db6aea58884b478abaa47804206cec56594eea048cac19",
+      "archive_id": "cf01151a31969c7b8494c2325c6a7e25388084d3cc5999e5ccf537bcdf73961c",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-04-21.png",
           "sha256": "fa291d56e3b6e8d28282675ba7115cd6d328e7268281d4295df3d028ce316d1e",
@@ -85,13 +75,8 @@
       "report_date": "2026-04-21"
     },
     {
-      "archive_id": "58a4806929ab623fcc21f3cc290a9949cf3c91029b0fbc850a9dee8d844b6b63",
+      "archive_id": "01fd26ff5b3c90ac491b10ebe5cfbae5cc7e3ddb7c8ca9901e83caf6a4fc1cf2",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-04-22.png",
           "sha256": "591f1733d4e3e9eb13fc1e2e001a1da68f620ae1671a7dcff026212a6c1f463e",
@@ -126,13 +111,8 @@
       "report_date": "2026-04-22"
     },
     {
-      "archive_id": "35c5ffb62aab74cf6954c2cd7e036055271ad1406ff3f57281e6f20111928f44",
+      "archive_id": "f923a106a10336ce701b73b29c055accc2fef425903f1df5b946b06bbe1b769d",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-04-23.png",
           "sha256": "bb932bd09e5d733fa53252c77a09255d7b1e5c202ecc10d167649f17f5f96841",
@@ -167,13 +147,8 @@
       "report_date": "2026-04-23"
     },
     {
-      "archive_id": "7b7bbc908ac696aed8d9ebab0c8bf2d6af136cbb205cfb861af15d12f6934697",
+      "archive_id": "bad1ccea347594726057a6797a8bd42d3e84cbe627c5e5aab83b8d49921306d2",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-04-24.png",
           "sha256": "c99b7c6a286e84ed1873364bf624a0f84485fbdf8db85c5ade3d52a51e49b8d3",
@@ -208,13 +183,8 @@
       "report_date": "2026-04-24"
     },
     {
-      "archive_id": "e68c6c2e9dcaaa4f9a5b3632a85d3f14f9c3ba0645461a2bee2cccd55c9b2d99",
+      "archive_id": "bb818682db82ea47e3a92e2f1db97a07313b802f93b1bf350538865f84138eb9",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-04-26.png",
           "sha256": "802df39c868429389f6b5a6a2eac034053dee78159f807fdd9be102367b88862",
@@ -249,13 +219,8 @@
       "report_date": "2026-04-26"
     },
     {
-      "archive_id": "a783df553469b10797914663c244c37523d6a740d2e889531e5e3a9068a81287",
+      "archive_id": "edc3061ca4d2d92d3ec2f2f19499a9f291a8cbf9b5858d4ccc4b33008f6b42ea",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-04-27.png",
           "sha256": "802df39c868429389f6b5a6a2eac034053dee78159f807fdd9be102367b88862",
@@ -290,13 +255,8 @@
       "report_date": "2026-04-27"
     },
     {
-      "archive_id": "1dc96f2b660fefc8e941f05d8e572759b7d16f61b4249f4438bd5d0700a3c89c",
+      "archive_id": "937a4b2ce612a123338654cc86c2bdfcb9b337f5d4876610ae76b9d2dc1f6eeb",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-04-30.png",
           "sha256": "bd3a9088b1425a9fccfc1818fa81563d7c100db3230d28a70786c81e504f0584",
@@ -331,13 +291,8 @@
       "report_date": "2026-04-30"
     },
     {
-      "archive_id": "7762495aa3a1ef0235e5eae8ca62e2e20cdf9dd0e9d1ff4f2d3b1cff44382cdd",
+      "archive_id": "bd8a50078075a2a32339d644afbd4c18d3ff17f13c0147926f77d3adcd0b4366",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-04.png",
           "sha256": "9d63156c9b132ef30aa29c545c20bca22076c207bca4c12b3992ecfbd9398b5e",
@@ -372,13 +327,8 @@
       "report_date": "2026-05-04"
     },
     {
-      "archive_id": "110017f6832c81971e144b83dc681995ddb44a11ea52af3d5611e541e16e0c95",
+      "archive_id": "f92319e6721cd076b076d094d13101d454e5c23a6095843d63e3f9f5cbbc82bd",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-06.png",
           "sha256": "937de464f29c3333ebf60d788cc77b2b69f45d1ca0c6d70b85ca3cf0acaa6587",
@@ -413,13 +363,8 @@
       "report_date": "2026-05-06"
     },
     {
-      "archive_id": "04a3130123dc3d3a532e59cbfded10a1f20d195f6583e2d0c585ce884425c5b3",
+      "archive_id": "c0fef943bba46baf78376010df46dd430a6b6ea52a3be965927cf2ca9be68ff1",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-07.png",
           "sha256": "c376b13c503b93bd0d1e4f4f6f30b92ff3679795d56bf59412a6a0ce0d7b2514",
@@ -454,13 +399,8 @@
       "report_date": "2026-05-07"
     },
     {
-      "archive_id": "ad3cd02d69343b27653e42de14bbe13ade353486d7ae6143a3676c0c0cea62b1",
+      "archive_id": "2a0b2b3d7fafe20733f346ecee6e1bf655255ae11bc76bb01ab1544d77307805",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-08.png",
           "sha256": "6006248012ef1d67f4fdd913ab981730697a8ff53661a0ab7e8e9bfbc75aa6e3",
@@ -495,13 +435,8 @@
       "report_date": "2026-05-08"
     },
     {
-      "archive_id": "c03bd071b27a105b1a5fbf2b3039c30b768d252c9dacb6f0ed18d84d391e680d",
+      "archive_id": "82d95d7def8dd300ad9fdb3c27ca428786b61343e2435ba8f41ab659b22242a0",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-19.png",
           "sha256": "88a0eb1e2fec01f688abf922cedd129468099d14fb24cae9d7a8646af0a6d57a",
@@ -526,13 +461,8 @@
       "report_date": "2026-05-19"
     },
     {
-      "archive_id": "4de4b5414684285270b372a8e19ab446a1185c14fc48f4026950fd84a728cb21",
+      "archive_id": "866b26c65864055c3626874196f2d6f012e8124c877595da594429022724d887",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-20.png",
           "sha256": "7eb19188ab87d7535bb9c0e8723db5274b72d743461a7ded9f9fba9803ef8ae2",
@@ -557,13 +487,8 @@
       "report_date": "2026-05-20"
     },
     {
-      "archive_id": "ad5b56f89764b4356f02f7dede034f5e76ff89fc6ec18a6d2fc77f63e1113e10",
+      "archive_id": "01a6a2ab1f6613bd32a0a0afc586cf232f5c78220c567a4772727fae149c1651",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-21.png",
           "sha256": "e7e3aa252783434dde5e8194fcedf3f8e6dcd5a3a8959e95ed13c3877e43a2da",
@@ -588,13 +513,8 @@
       "report_date": "2026-05-21"
     },
     {
-      "archive_id": "ae8ae43aec28503dcabadd728726eb17f11053e4421deb63314ded47a9c2a790",
+      "archive_id": "f49efd35499fcb902ad04492ff6c2b874e77946d0dba6f9116b2934eadbe8433",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-22.png",
           "sha256": "5f61aeaebb37a25ff51d60519ef1d42a7672b0361373e3b2a11e60e21997582a",
@@ -619,13 +539,8 @@
       "report_date": "2026-05-22"
     },
     {
-      "archive_id": "fc4c4380a9047954e1f5e6a7dc0ce1436a85940cc5b700eb045094677ee3c4d2",
+      "archive_id": "0238101267345f61862985f8c3272d53d0ee33a461ab25924cf39b86fdcebb2a",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-23.png",
           "sha256": "0c94e46dea16b960249bf6f5c3686b209993366f0ad4bd9053fbdb841b47fb65",
@@ -650,13 +565,8 @@
       "report_date": "2026-05-23"
     },
     {
-      "archive_id": "29996a10fa9f05005f303dc96c85b8fd2e02587f523111e1466091da41bf3f4c",
+      "archive_id": "227b0bd0b86f48e74c924f5165a228cc0e060d0ae6d5aeec8e7c75ac4897f8d5",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-27.png",
           "sha256": "1307ac7b4d8faad91dae999df14dea1a7902c5a3ea6b706eae5437d4bf8e62cf",
@@ -681,13 +591,8 @@
       "report_date": "2026-05-27"
     },
     {
-      "archive_id": "6782951b0ae8c21a94d5d71c5096594371e872a88d384fc1cf62e02de5f5cb85",
+      "archive_id": "15a355a08114f8a49c17527e9f17c6f8473a1e746f10639a7c7cd05ed2a31c92",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-28.png",
           "sha256": "ae501d0d640657a101505c3fb4ced509ac70ad5b21b98410321d9e0381d8c0d0",
@@ -712,13 +617,8 @@
       "report_date": "2026-05-28"
     },
     {
-      "archive_id": "240c2c1803f078942c22bb189311555b75dfa6073ac90b1530710788bf8efb75",
+      "archive_id": "1cb4ab8d5a8c6c2e239c1819198a8842359298a675da4066922f9a2f7498b070",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-29.png",
           "sha256": "953a21941efbe0d5821dbbc3de930e3e324defd980c8fa3eefe8994c73e50465",
@@ -743,13 +643,8 @@
       "report_date": "2026-05-29"
     },
     {
-      "archive_id": "7fa0678ebd51064457817e70e13956ba1365245ecc92c3de31a67ac41c25a113",
+      "archive_id": "e6852bc6554fc620d8b00928297667fc2ea95b4ec9b4e295c0063a14d4205a53",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-30.png",
           "sha256": "cccb757f8b76322562ceb4ef59e8307d3f1d2d541152eb2d034e6f2a20a62128",
@@ -774,13 +669,8 @@
       "report_date": "2026-05-30"
     },
     {
-      "archive_id": "d8e2a7336d238f770275d227bb9a764a3eec2de81ee9653f78d5a11c9091c90d",
+      "archive_id": "b7e5e74dc755e66876651f6d21e5bf2614a06603b6e46307ade2e37e20d1d3f6",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-05-31.png",
           "sha256": "cccb757f8b76322562ceb4ef59e8307d3f1d2d541152eb2d034e6f2a20a62128",
@@ -810,13 +700,8 @@
       "report_date": "2026-05-31"
     },
     {
-      "archive_id": "bab8ecc0016af9e08028b1b21c1141fe5b3cd35a91930bab81d666d5f6820c4c",
+      "archive_id": "6a535ff7e69b3ed957030ddbeab8acc1587e9ef289358845060d359e2f9d3e2f",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-01.png",
           "sha256": "cccb757f8b76322562ceb4ef59e8307d3f1d2d541152eb2d034e6f2a20a62128",
@@ -841,13 +726,8 @@
       "report_date": "2026-06-01"
     },
     {
-      "archive_id": "8b8371d96de4efa3243717363cff2f71c9a3a71a5dd80aae86df27107851ba5a",
+      "archive_id": "ec85a7bdbd43f786cb43c417e121b063c8ccd31cabfb996d1e09f40a9fdb8043",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-02.png",
           "sha256": "d917cd2c7a5c9bad455dcd804fb05fc611fce197e5db59b6ccbc71cbe571cd53",
@@ -872,13 +752,8 @@
       "report_date": "2026-06-02"
     },
     {
-      "archive_id": "f21ff056239b6d68412e8218f0b9626a0302557ad39d225ed8ad3003eb1e4f13",
+      "archive_id": "c211b5d55fc347cef4d32d2cb1b96e65879c3540e1d3545529957894451300e6",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-03.png",
           "sha256": "4eef38d6ab643def7f83ba9140422280e854b197efb1d5fc6b52cc1e1c08e689",
@@ -903,13 +778,8 @@
       "report_date": "2026-06-03"
     },
     {
-      "archive_id": "35fad0ae61c8b60de1bb1a2cf8fe3c1bbe02a6d21ad0bf97ac09cc1d7ae87ea2",
+      "archive_id": "914844beeb4cebf29f53419f2d6f9bd610729a99d9d2bf21ba93aa88d63cbf8c",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-04.png",
           "sha256": "1687f6a66e08bb20af236e7fa41abd5b7ed115ac06d9406e1ec15612cede0d9b",
@@ -934,13 +804,8 @@
       "report_date": "2026-06-04"
     },
     {
-      "archive_id": "39df28fa5281d8d95596e11087ebd051298ff2b53bc9b26b92cafcdcd6d6facc",
+      "archive_id": "711021e40707eee5f0a89ca0141079d715d21f1dd7679cd5de1dbc8f66a491cb",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-05.png",
           "sha256": "6b74c96ac597891566652d7558c7b66eac595eef7f7fd7b2f657ced92100d67a",
@@ -965,13 +830,8 @@
       "report_date": "2026-06-05"
     },
     {
-      "archive_id": "81abd2abe24f19e0a8b2eb1b38e02b46e4fc02b1c35c7006df52a1c3baf5a717",
+      "archive_id": "fa6903d29e7e5d52e2ac6e6999f155857271d24f8d81f1faf7409face7c26c57",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-06.png",
           "sha256": "2d37d92afdfaddd406d65d4a7513d6aae9bc3581ede27b977c14c4ebe5c808de",
@@ -996,13 +856,8 @@
       "report_date": "2026-06-06"
     },
     {
-      "archive_id": "f49bc76b31fef51e7c65150528b6a032a9926750b7a69c914108da1c75cccd7e",
+      "archive_id": "c60513b48c35995f5b744895861f5964aa2da124cfb488a2c43fa4901bcb2061",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-07.png",
           "sha256": "2d37d92afdfaddd406d65d4a7513d6aae9bc3581ede27b977c14c4ebe5c808de",
@@ -1032,13 +887,8 @@
       "report_date": "2026-06-07"
     },
     {
-      "archive_id": "b79649a6436b3129f4ed9b9a56102c874117a3470f9798af2d6d2ff9b3fa4986",
+      "archive_id": "b6cca885f81af1c147abd9d9fe41cecb421a4ec50f86c0a6d460da16f6a0f527",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-08.png",
           "sha256": "2d37d92afdfaddd406d65d4a7513d6aae9bc3581ede27b977c14c4ebe5c808de",
@@ -1063,13 +913,8 @@
       "report_date": "2026-06-08"
     },
     {
-      "archive_id": "bfbf2341622274e1e422cf6c7c18769fc728ea0afd8e2ce2d4db0f483d373812",
+      "archive_id": "b83b04912d26df27d797f10e3cfe369d5745dd39aa9ba2d5edebd4e1936e0278",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-09.png",
           "sha256": "96985fe2f1435141ff9afec63a74ccfd1367fa07a70a6f39dab28a7fec3b5b6d",
@@ -1094,13 +939,8 @@
       "report_date": "2026-06-09"
     },
     {
-      "archive_id": "66c454c085e706703c0074a396492d819cc864b84d1171355739de13db901574",
+      "archive_id": "d5326d40fa1eb250bc6aa23e4ff8b077277a5fcd642247a975be9e07cd765be6",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-10.png",
           "sha256": "5f6ed5aeb9e41bf7c2affb6a685f900713cb90f99317688f9ab78e4da3b9f7b7",
@@ -1125,13 +965,8 @@
       "report_date": "2026-06-10"
     },
     {
-      "archive_id": "53287633b495b1e6817d97226066e67940942064f2b5849a6ff24ebe8c4f5c90",
+      "archive_id": "0bf8d127e033bbc36c49c52f4159f69e963aac47a944b97e1e68afab74684b21",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-11.png",
           "sha256": "ff7879f9a48ea4b8f17fb65a48479d06fdd00c1cc2cbdd812522def0d41af666",
@@ -1156,13 +991,8 @@
       "report_date": "2026-06-11"
     },
     {
-      "archive_id": "2072eaf0d09627a4a130da752da1245c8de6b737dc029da9c744163f985ec851",
+      "archive_id": "83021e86d7283d2af4dfdb0cb1379733d5eb1f5b5f1f1079d0efb631bd65d8d2",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-12.png",
           "sha256": "46c2ccf9aa5dedd5e5e2e1ae94868b95bf0bc7f8c62a127d88ac3281bc131d26",
@@ -1187,13 +1017,8 @@
       "report_date": "2026-06-12"
     },
     {
-      "archive_id": "46ea9ecf14f08f395b73b0ea6d5a2498981594f259329862f5c93d0e0a21e517",
+      "archive_id": "05bdfc38f1b8e7603483483a24edd7c2c480efc49bb7e18de3c5eebea29fcb13",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-13.png",
           "sha256": "7e3e875f532679bff9df7f6ac2473fae2047564a1dc784ebff15e5303d358846",
@@ -1218,13 +1043,8 @@
       "report_date": "2026-06-13"
     },
     {
-      "archive_id": "e6f2f9a5e450ba78cc6d8a5500d97d918ec1b8ff25f6b95abe0293da1880e7f4",
+      "archive_id": "291a55cfa2fdbc6be34d63fe9acc4f401203701d2c170470025f6e6b7d8b4b8f",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-14.png",
           "sha256": "7e3e875f532679bff9df7f6ac2473fae2047564a1dc784ebff15e5303d358846",
@@ -1254,13 +1074,8 @@
       "report_date": "2026-06-14"
     },
     {
-      "archive_id": "592ec5ece2544be731f8eacc448827e62385f73f4d47b682eb3ce08a03086f4d",
+      "archive_id": "61e9ba9b10bdb6719e6332c7a466cba75c450365288818edfcbc3c0accda1ace",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-15.png",
           "sha256": "7e3e875f532679bff9df7f6ac2473fae2047564a1dc784ebff15e5303d358846",
@@ -1285,13 +1100,8 @@
       "report_date": "2026-06-15"
     },
     {
-      "archive_id": "25995e4f43977f78ed7f90863157580fe804ba85a70229a47aaa44a00b6c910f",
+      "archive_id": "097014fbbde82e227228490daa5a91b8d6c6a671f1e8b217a3fba8701cf1ed78",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-16.png",
           "sha256": "a79c9ad9ddbecd185876c2e808d340d1347c2a1c44c753597a9b98caf10b2aa9",
@@ -1316,13 +1126,8 @@
       "report_date": "2026-06-16"
     },
     {
-      "archive_id": "5bb76b6b855664c82c08a810cedb9df5ed394cf4b1146b979ab98c63c03ad53e",
+      "archive_id": "70e82e9ce8a513c9ba7e1a82eab8340840293ea00203dfcd07accde8f4b32c1f",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-17.png",
           "sha256": "e84288e8f95de6f0376c9b486cb7f4b174c1c0f0ee3b72876d81bbd18c2b3b92",
@@ -1347,13 +1152,8 @@
       "report_date": "2026-06-17"
     },
     {
-      "archive_id": "6085846c1a8f615f110e41f3a48d1aa171ce33296b1e2459c200b557a078db04",
+      "archive_id": "5008e13f9de77e4e0e276b44447c7e3b886c089451df01f1b9250925276c5c9b",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-18.png",
           "sha256": "bc16d2ec5f91f92e776944b96ba6d6b2da568ad92a3b798b0efa31355c24f2ca",
@@ -1378,13 +1178,8 @@
       "report_date": "2026-06-18"
     },
     {
-      "archive_id": "64e6731e515b371090c900c3ec352660b41355a24af17a3309b1679a70fdc39c",
+      "archive_id": "7ef2700a65c7f62900b36f6c968dbcedfabd369a00149fe1650d3aa86c7dc3d7",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-19.png",
           "sha256": "8c9ada0414999c5031130a97dbde249e7bac4fc6225d855a449e0102ddc7c78d",
@@ -1409,13 +1204,8 @@
       "report_date": "2026-06-19"
     },
     {
-      "archive_id": "acef0348957603aff4c5bbe324b3457bf88deea57f383505cc597dc574195698",
+      "archive_id": "5982041fefa4ad037dde47a24f1df8949acc210151359afd0bda8ac4a0d18d0b",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-20.png",
           "sha256": "8c9ada0414999c5031130a97dbde249e7bac4fc6225d855a449e0102ddc7c78d",
@@ -1440,13 +1230,8 @@
       "report_date": "2026-06-20"
     },
     {
-      "archive_id": "9ceb4f080fcb2f4ec6c50cc4aaa9a991f5af3df6b9ef6f508e0eb4f8130214a8",
+      "archive_id": "619bffb7f954038b9a00ea9044a93cf4b63146d19e07f9fdc25c82fa071ebfa0",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-21.png",
           "sha256": "8c9ada0414999c5031130a97dbde249e7bac4fc6225d855a449e0102ddc7c78d",
@@ -1476,13 +1261,8 @@
       "report_date": "2026-06-21"
     },
     {
-      "archive_id": "db68c031353746a31b98a8e714a521beb73e77c45d5287146622617aaba14a09",
+      "archive_id": "5aa6eceebf57f97f1d493ee8d1ef1d772d3b6852f37de95f7fe23febcc198114",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-22.png",
           "sha256": "8c9ada0414999c5031130a97dbde249e7bac4fc6225d855a449e0102ddc7c78d",
@@ -1507,13 +1287,8 @@
       "report_date": "2026-06-22"
     },
     {
-      "archive_id": "ddb0c2a32abae9af33e7ec3f556fed94920801a0effcc38ab5a0b55b509948ad",
+      "archive_id": "e97a7fbcc4e72ab1b27843566c06e6408aec120fd5f209bd37af4654a7041dbf",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-23.png",
           "sha256": "3b909e3e25e6a3ee39bb9ae691d1b3b90d5e404df809b852846d049c41ae28ef",
@@ -1538,13 +1313,8 @@
       "report_date": "2026-06-23"
     },
     {
-      "archive_id": "f7627d08294d645a6f620f41e27dc1d9c12cb8bc162cd722799ffcb9489f1b17",
+      "archive_id": "eba41aac54a853b41adf99c2608923e1eb69bd50e89cb3c7bdb3c043add0ac4f",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-24.png",
           "sha256": "241959e5a2c4ceabeee4233c109a2dda62fe360aeb4a4e0666950551ce849718",
@@ -1569,13 +1339,8 @@
       "report_date": "2026-06-24"
     },
     {
-      "archive_id": "f0414fc6249cb8b5ea26ca328a99a87218c54e29da6e9ce41feeb669d8554904",
+      "archive_id": "4e1a3a479422084693d225ff3c182e619cbce7a6c925ba0be36f44fb0854ee80",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-25.png",
           "sha256": "a704be5816d330970f102cf85b871a267ed1ed9b80ac34925b66ae655a71a8ac",
@@ -1600,13 +1365,8 @@
       "report_date": "2026-06-25"
     },
     {
-      "archive_id": "f8ea8318611812aad5cc7998a024aa5b750cceb34a8f698d87c15508e50493ca",
+      "archive_id": "a3be6bf1cc0e25c103a36c464bdba16fc9c9ea2d73fd8a168e9d5504016f8b26",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-26.png",
           "sha256": "5190eb56b4ec8f1ecbc4dfced8099bc36005bc346506e8318f7d0e5f48a3852b",
@@ -1631,13 +1391,8 @@
       "report_date": "2026-06-26"
     },
     {
-      "archive_id": "1be5e720995a0dfae083edb6858f70de5de1fac4f944aa4fa241a943df3b32f4",
+      "archive_id": "462a7459dbb4ded76bc5911532d83b757042a5bc2b95392d4182a515903a450f",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-27.png",
           "sha256": "9407d44bb93bd90c187c5e924242b7133590bd617422f4735533a9da1d622262",
@@ -1662,13 +1417,8 @@
       "report_date": "2026-06-27"
     },
     {
-      "archive_id": "dad056b09b10793714013a05eb80a32eae416a54968d10d27963967c8d97c81d",
+      "archive_id": "dd9a6a79b4f82cda4e93f18b99ea577d0c3454aaf0586eb91ac4b6971ec20dc5",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-28.png",
           "sha256": "9407d44bb93bd90c187c5e924242b7133590bd617422f4735533a9da1d622262",
@@ -1698,13 +1448,8 @@
       "report_date": "2026-06-28"
     },
     {
-      "archive_id": "608131c043c156ff883e75cb92bea8e1e368fc3815825fc07ceeb9695a101645",
+      "archive_id": "c53794a8a80a441f9964c16a454411ec0580497c8af9ffb6ae792eafb1d8d465",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-29.png",
           "sha256": "9407d44bb93bd90c187c5e924242b7133590bd617422f4735533a9da1d622262",
@@ -1729,13 +1474,8 @@
       "report_date": "2026-06-29"
     },
     {
-      "archive_id": "9673d8972389abc179b5a612aa37aba109b6157f8ff7a7fbb85dc6a3ee68bacb",
+      "archive_id": "62f017dd034c1eab012f5c624a56ea4e89c4ec83edcfed6babc7ba2e8524b79b",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-06-30.png",
           "sha256": "ab1c196222fc6d9dc877bef15d58f09384bd8d9d716fc1c1a4a433634daa6ebe",
@@ -1760,13 +1500,8 @@
       "report_date": "2026-06-30"
     },
     {
-      "archive_id": "cd086b3771c770faaee8b84c7b8e86a7620f452ccb08f713c929ea1d82e19fb8",
+      "archive_id": "c0ec508a3d49f4c21a2cce5e66ea6d27f3be2aa1bcf7642287187383d0e47311",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-01.png",
           "sha256": "e08e38f6b9512169a1632dd50a7dadfeb21711bca9f876713928edcb93bcf0d5",
@@ -1791,13 +1526,8 @@
       "report_date": "2026-07-01"
     },
     {
-      "archive_id": "e96ae0c129a15c1e417cc9a86a48feef18be2f50fff5d366301d6d9ce0d0e08a",
+      "archive_id": "08fa788ed3ade0b0f6d6e2798cc4b3af0de29845b85df929a142dc3e7b26f881",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-02.png",
           "sha256": "e08e38f6b9512169a1632dd50a7dadfeb21711bca9f876713928edcb93bcf0d5",
@@ -1822,13 +1552,8 @@
       "report_date": "2026-07-02"
     },
     {
-      "archive_id": "c4b80e2d8faea572779f14cd2621dddd70141576e3a53fca2485875321e0c36c",
+      "archive_id": "4f5bc0d9ac983e4b64385d6d9e4a55d881a69a6c2f6d5beb6a1cdf828e54bb5c",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-03.png",
           "sha256": "dd3ad7cc5ebec69949824a2f057facf2db942ef647a3ec47c139e5285b2fc310",
@@ -1853,13 +1578,8 @@
       "report_date": "2026-07-03"
     },
     {
-      "archive_id": "ff96e6d484bfcff3e0a18defb8a30b279b213e86c8d10f0b38fb14fc79cb13cd",
+      "archive_id": "ea308c46d4edaaf6dfc28df4aaf678e8330f466f489455ec220896c2f07f4218",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-04.png",
           "sha256": "5640a96e7e4948eada319818f7d7a575782244fa41540f1e0e37c78032adcb3a",
@@ -1884,13 +1604,8 @@
       "report_date": "2026-07-04"
     },
     {
-      "archive_id": "06606b8449d9f0c5457053688f867a9c5ea9c43beb262e0cf266bf2a54c2fdc7",
+      "archive_id": "304a80398358651752c704a5b31d8f4fe4dee32eaee104cd856569ab50cd30bd",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-05.png",
           "sha256": "5640a96e7e4948eada319818f7d7a575782244fa41540f1e0e37c78032adcb3a",
@@ -1920,13 +1635,8 @@
       "report_date": "2026-07-05"
     },
     {
-      "archive_id": "e32c222f7614435f86f021298533f86552ad8093ba10d5235bdc5f88930c25ff",
+      "archive_id": "dc272ad8aa6dd518d90ed97afbddc2d188583c1860fc9a4bdd8337482bc94c10",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-06.png",
           "sha256": "5640a96e7e4948eada319818f7d7a575782244fa41540f1e0e37c78032adcb3a",
@@ -1951,13 +1661,8 @@
       "report_date": "2026-07-06"
     },
     {
-      "archive_id": "756579073554e255f05dad04e96f8c2f2a417d7b362867cfb3da58aa9240619d",
+      "archive_id": "9daed246096b36a8c78a89786a5d11e8587a17ce7ff3b36f952f702f10e03de8",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-07.png",
           "sha256": "5c7c41ef1372f5b353f5ade100faa8e6bcc9298fcae24635e3672bb103aae555",
@@ -1982,13 +1687,8 @@
       "report_date": "2026-07-07"
     },
     {
-      "archive_id": "ea92371f0e62b97f1b1f2071c0fc33033e870b58b37f1630442aa355afe2b8e2",
+      "archive_id": "1042db5b334a1e5fde74196d05b2c6c45473994cf48dc21070723a4845f532ff",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-08.png",
           "sha256": "f9869cdaf35be29aef6c6615d77b795b3db61039562f4954fb1ebbb18ef64c24",
@@ -2013,13 +1713,8 @@
       "report_date": "2026-07-08"
     },
     {
-      "archive_id": "3271523b86f6aaa477ea6d7365bfb56dbd8230dfe2ee14a2d0e094720a149e17",
+      "archive_id": "2072e74dcf177fa36d236b31392551ae6269f40d1d4d466832e028b5bda4f4bf",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-09.png",
           "sha256": "5ae0543e6cc5dade427ea54af379edfea5c6fda66518c630c20ae2b989caaf96",
@@ -2044,13 +1739,8 @@
       "report_date": "2026-07-09"
     },
     {
-      "archive_id": "e97040c4fe994dff3aa9dd929b5edec50f955240e59e2763d80b951cf6176ca9",
+      "archive_id": "4bda5ceba48da1ccc7c6970f4e8c0ce9399bb9b1f7e5d78208f0ea67f95bd699",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-10.png",
           "sha256": "996437a5f65725a1b93833239e384062b3720dbdb213d03e57fb311fbf94a449",
@@ -2075,13 +1765,8 @@
       "report_date": "2026-07-10"
     },
     {
-      "archive_id": "527f6c8963a2b083a9ebdadc9a2fef4deaeecb96b5f6e6303d0e5d63ba4c293f",
+      "archive_id": "04b8086dcb63c90f3042f14bd12d3715e9d101f8dce66364a12a937fc85f8e39",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-11.png",
           "sha256": "a3687f1f149fadf3f60eec2186f2ab79da8566367fbabcf0572d67d083b00aa8",
@@ -2106,13 +1791,8 @@
       "report_date": "2026-07-11"
     },
     {
-      "archive_id": "81879c1839c9e08441970adeb2ab6f507da860c22270ca8c7e9a35b812cf4748",
+      "archive_id": "3177effb9224ccc3e4c7ce210b078dfc5a9b4d5a8e77892f020ed4504bed6397",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-12.png",
           "sha256": "a3687f1f149fadf3f60eec2186f2ab79da8566367fbabcf0572d67d083b00aa8",
@@ -2142,13 +1822,8 @@
       "report_date": "2026-07-12"
     },
     {
-      "archive_id": "127454ebaefb181a3b4c008613999c43e06c21748b388e9ba09672d38f81a47c",
+      "archive_id": "f4f8b6439cb7092c3a794d467f0c9e0c54b02f77c759c694a4bbecd110bd0130",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-13.png",
           "sha256": "a3687f1f149fadf3f60eec2186f2ab79da8566367fbabcf0572d67d083b00aa8",
@@ -2173,13 +1848,8 @@
       "report_date": "2026-07-13"
     },
     {
-      "archive_id": "8843f1be7affd50016f33a5da776cb336a3370de9adffb9017000fbc8f2b57a9",
+      "archive_id": "81efe4acc0b445e6278c73fd8a5080677380fb8ddf59f573bab8f64948e1b670",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-14.png",
           "sha256": "e0339b7efbe82be46431095fd68fe0910be78bb37dddb2e1183c450e9021ee6a",
@@ -2204,13 +1874,8 @@
       "report_date": "2026-07-14"
     },
     {
-      "archive_id": "04e2add94b278855f62ec070a2a437aa847f978559dcb3a1d48fe8fc727920fd",
+      "archive_id": "5dfc3549812667ed4c401c5a39e0848039831a7a689aa46c7b4964d9be6a5155",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-15.png",
           "sha256": "2295cbd850af71080b4ddb6863df998567a75489553b2a43757b8c303afe99d6",
@@ -2235,13 +1900,8 @@
       "report_date": "2026-07-15"
     },
     {
-      "archive_id": "1245d4e9da3eb685759e78872543634467ea5b38b5fe1f6fa63571351536b7be",
+      "archive_id": "03cbba1375fd93821c12d8999167735a5f03b23c7f3f7a671f6506f97105101d",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-16.png",
           "sha256": "0dcef03583f5cb434f6249923ed594884e62f47f968c7bd7ac91043785aebee2",
@@ -2266,13 +1926,8 @@
       "report_date": "2026-07-16"
     },
     {
-      "archive_id": "d912188c8d27d0b738602664e553f0c974d1df09daba202db19947e2169d83ed",
+      "archive_id": "8a4ba33d48d60c5bb33a70ffb37e13c0ca444aac8862edcf22bf1242c8e16fe4",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-17.png",
           "sha256": "f61658fadb4215ec70b6d57be9b29b648e951a89a8ab5d71b8da9ac1c4bb2ef9",
@@ -2297,13 +1952,8 @@
       "report_date": "2026-07-17"
     },
     {
-      "archive_id": "cfa500123b705c5b13a9c52d979ad8ad093ebc07a167c5b71cc09713dabe9db2",
+      "archive_id": "db766c1cd4d073dcbf7b0301fe14d530fc728016631f1ca9c39fe40a3c61b263",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-18.png",
           "sha256": "fe432406d1c297ce9fce24fb5957439de831efa1d3bddb83213ecde8cd0183fc",
@@ -2328,13 +1978,8 @@
       "report_date": "2026-07-18"
     },
     {
-      "archive_id": "a5da88f216c3eecf99c200737085057e1b1197276515212916c88a68ba615395",
+      "archive_id": "0bf464f3732762740d5646026bcd4a8d963b77963d758b274275aff422b37268",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-19.png",
           "sha256": "fe432406d1c297ce9fce24fb5957439de831efa1d3bddb83213ecde8cd0183fc",
@@ -2364,13 +2009,8 @@
       "report_date": "2026-07-19"
     },
     {
-      "archive_id": "bdbac212c5dd7cb14923b154268cfac65b2115d9ba641168118d2e34f87b33ca",
+      "archive_id": "fb1b86006e0ae5ee6103713618d8a02e2ebf5b58abffad0b80f8a4e88b707c79",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-20.png",
           "sha256": "fe432406d1c297ce9fce24fb5957439de831efa1d3bddb83213ecde8cd0183fc",
@@ -2395,13 +2035,8 @@
       "report_date": "2026-07-20"
     },
     {
-      "archive_id": "a1827cc6b2b5e2947d252363fa0af76130cdc005eb589c7c0205cd69f8f75ea1",
+      "archive_id": "65ef9df5807c3be974bbbcc0247c3d09f1f913220ffe724455e4dd79adb50987",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-21.png",
           "sha256": "0bd9776c9348814ec62dea03ff25590fc658843c6fc3f812ff444086f2b422c3",
@@ -2426,13 +2061,8 @@
       "report_date": "2026-07-21"
     },
     {
-      "archive_id": "e86926af6c2f54b9abf1911e0bf8f55de583cfc0bf7513b24a35775853aad98a",
+      "archive_id": "e367ce40cea9558dbf2064d0bf0f2bf0f0e2c3d79058cea01fec0605ac39b2e3",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-22.png",
           "sha256": "9db493cb142193bcd568571f23ebbfe1eb748c15325c54364786e6af41179fb0",
@@ -2457,13 +2087,8 @@
       "report_date": "2026-07-22"
     },
     {
-      "archive_id": "23debd8865b27ae9bc4b8b6434c99eed38037406a3b967d060febe890b1d2cba",
+      "archive_id": "15ed40db5416fb2ab76444fa34bcaf03a5e1325636f43151479d5530b702b98f",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-23.png",
           "sha256": "96143bf26abfc51ea67c482ed0bfe455609204dd90081a2c2f4171ea17a39dc5",
@@ -2488,13 +2113,8 @@
       "report_date": "2026-07-23"
     },
     {
-      "archive_id": "36ec8750200e350cf097486c8a31787b4485f0200e2da44f68ed169104d0f9e9",
+      "archive_id": "2de17156e4b82f313cae589f58069949cc42cca8b72400b5a1fdad69f055fb61",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-24.png",
           "sha256": "3e4a236a8f1287b27f2e939b4aa90a5544137451fd3c0cebff0f35c0442652c3",
@@ -2519,13 +2139,8 @@
       "report_date": "2026-07-24"
     },
     {
-      "archive_id": "69dae3f3eceee54cc67db5043716fa46472133fb43dacb5904223324603d4ea9",
+      "archive_id": "a9a3dd11e625a953f627246870506585b695c0ee172e659edd362b6dcf34d28c",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-25.png",
           "sha256": "f5cc05690672c4b01d56a09d93d569f75bc333f0954876ef367cef6c3634c1f4",
@@ -2550,13 +2165,8 @@
       "report_date": "2026-07-25"
     },
     {
-      "archive_id": "5c7965c639cfc01e379a0b13b38561010d12794ad8b8f7e19464f682ca7a603c",
+      "archive_id": "0abd188b904ff14203b00b693829bc515232cf06f96a09435ed6c0b9ac9ec74b",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-26.png",
           "sha256": "f5cc05690672c4b01d56a09d93d569f75bc333f0954876ef367cef6c3634c1f4",
@@ -2586,13 +2196,8 @@
       "report_date": "2026-07-26"
     },
     {
-      "archive_id": "e05e723cadb39c568f7481d45a596a8d69f780e1d3f2b5f603e7e0b1a9a717fc",
+      "archive_id": "03edeaad1865f99e049294bd18c27269d57318b74e9ed0e20b0370c29dd7d54f",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-27.png",
           "sha256": "f5cc05690672c4b01d56a09d93d569f75bc333f0954876ef367cef6c3634c1f4",
@@ -2617,13 +2222,8 @@
       "report_date": "2026-07-27"
     },
     {
-      "archive_id": "fa59e6161d367bfe39046a5751760ec9dba67612aab2ed1972f40a49c68cda07",
+      "archive_id": "634ac1692887cdf0b6dd5e97068d10d6d67f0b23541a06fe031dc685e3c30bac",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-28.png",
           "sha256": "47ff688e7db8051481a69bb91d692f4c15b5e49717429c2cc99388fcf632849d",
@@ -2648,13 +2248,8 @@
       "report_date": "2026-07-28"
     },
     {
-      "archive_id": "46aee379598b5bb76b42bc8bf699487891518f05d4728399bb10d97979e4ef61",
+      "archive_id": "ba9f983d53a82b4858ac2d2571a0e34cdefa90a4c7c55a948f18e19ce3743c9f",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-29.png",
           "sha256": "afe594713275b2fa26a8916b796207e6799dbaddb85abb9a1e028b951d53da9b",
@@ -2679,13 +2274,8 @@
       "report_date": "2026-07-29"
     },
     {
-      "archive_id": "a875685ff3540eea41bf6d031f1b73bc9a6c9b884a9d37a6e5ef4e5fe3e2255f",
+      "archive_id": "d0d255187cf5f98a19e809c7b8c971fb4772b8105c3c6dfeb763df1845194867",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-30.png",
           "sha256": "66cef3f6719f1cbdd88b4363d6e49e3dd9c5a9356dc837d286eee91ef65d3274",
@@ -2710,13 +2300,8 @@
       "report_date": "2026-07-30"
     },
     {
-      "archive_id": "0f7224af63ac33af6ac8588f66053b4b04c8c3ac894f79ae6a4cacd59e25760d",
+      "archive_id": "7f94ac3d212ae701074715d1ddb56e632a48392177e4212bd39f9922260971bf",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-07-31.png",
           "sha256": "83c331f37011f1e2f2238248459e732eca5d570368c7a2db40d86fe0f88d4557",
@@ -2741,13 +2326,8 @@
       "report_date": "2026-07-31"
     },
     {
-      "archive_id": "757fced25c04844693b8589b42a3798100161587103f2aa3b87dc2358faab300",
+      "archive_id": "a448182fb4b119533e1bee623ab3e74c3ded6f635650bd8de40f0abf3a779c62",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-08-01.png",
           "sha256": "c569185350ac444206145f69f4572c87ebdadcb32d4c4eed22b0e461ca287039",
@@ -2772,13 +2352,8 @@
       "report_date": "2026-08-01"
     },
     {
-      "archive_id": "52bebd1fa21d88a0fd34d9dfffb159115fe81bd17d355c697519582a5f8d6c40",
+      "archive_id": "a8354e29cfcd383f58475a0b8c220ec02c9f927d7ac56b0b53d3c674ed496645",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-08-02.png",
           "sha256": "c569185350ac444206145f69f4572c87ebdadcb32d4c4eed22b0e461ca287039",
@@ -2808,13 +2383,8 @@
       "report_date": "2026-08-02"
     },
     {
-      "archive_id": "e8a630f71c90bb09721f2bea7d318d12a01fdb894f140b873bf7d0cb4325b24c",
+      "archive_id": "973fe1883a83fb8a3e3fa5e11c556fb6ca628d7e5a2bfaa56bbbd77384db3e31",
       "files": [
-        {
-          "path": "._README.md",
-          "sha256": "020c6739822210bd9bc6b106afd58fcc020e91789dfb48eb3b7c9aaccabef9f7",
-          "size_bytes": 4096
-        },
         {
           "path": "charts/daily_one_chart_2026-08-03.png",
           "sha256": "c569185350ac444206145f69f4572c87ebdadcb32d4c4eed22b0e461ca287039",

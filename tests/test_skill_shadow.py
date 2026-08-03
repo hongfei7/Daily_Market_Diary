@@ -8,6 +8,7 @@ from professional.skill_shadow import SKILL_NAMES, generate_skill_shadow
 
 def _bundle():
     return {
+        "day_mode": {"mode": "weekly_review"},
         "meta": {"report_date": "2026-08-03"},
         "date_semantics": {"lines": ["Global data through 2026-08-02"]},
         "provenance_audit": {"status": "ok"},
@@ -72,9 +73,18 @@ def test_shadow_run_is_non_publishing_and_provider_agnostic() -> None:
     assert set(result["skills"]) == set(SKILL_NAMES)
 
 
+def test_daily_shadow_is_skipped_to_protect_sla() -> None:
+    bundle = _bundle()
+    bundle["day_mode"] = {"mode": "trading_day"}
+    result = generate_skill_shadow(bundle, config=load_professional_config(), runner=lambda *args: ({}, {}))
+    assert result["status"] == "skipped"
+    assert result["cadence"] == "weekly"
+
+
 def main() -> None:
     test_skill_files_are_project_local_and_complete()
     test_shadow_run_is_non_publishing_and_provider_agnostic()
+    test_daily_shadow_is_skipped_to_protect_sla()
     print("Skill shadow test passed")
 
 

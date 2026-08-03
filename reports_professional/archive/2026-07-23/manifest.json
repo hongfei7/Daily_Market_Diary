@@ -1,0 +1,29 @@
+{
+  "archive_id": "15ed40db5416fb2ab76444fa34bcaf03a5e1325636f43151479d5530b702b98f",
+  "files": [
+    {
+      "path": "charts/daily_one_chart_2026-07-23.png",
+      "sha256": "96143bf26abfc51ea67c482ed0bfe455609204dd90081a2c2f4171ea17a39dc5",
+      "size_bytes": 243436
+    },
+    {
+      "path": "charts/dashboard_2026-07-23.png",
+      "sha256": "0fb0fd4ded25ca12456e2bfbb240ddcc945ceeb0dd87a5cb3840d5a860cdb8e4",
+      "size_bytes": 445460
+    },
+    {
+      "path": "charts/features_2026-07-23.json",
+      "sha256": "33603c324e8e7d1128b6fc101c8bb09e20727ceacf22fb9a99457fed0f69d4be",
+      "size_bytes": 6363
+    },
+    {
+      "path": "morning_briefing.md",
+      "sha256": "1489c052ab6784722896f9cb98b62f90981f62236611988e8e2768d68b9c2fad",
+      "size_bytes": 29279
+    }
+  ],
+  "immutability": "Published payload files are append-only. A conflicting rerun must use a new report date.",
+  "manifest_scope": "README.md is generated navigation and is intentionally excluded from payload hashes.",
+  "report_date": "2026-07-23",
+  "schema_version": "report-archive-manifest-v1"
+}

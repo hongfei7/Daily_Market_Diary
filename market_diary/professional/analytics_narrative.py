@@ -81,7 +81,7 @@ def build_theme_deep_dive(
         signal_lines.append(f"{news.get('title', '')}: {news.get('why', '')}")
     for tracker in high_frequency[:2]:
         signal_lines.append(
-            f"{tracker.get('label', '')} {_format_signed(tracker.get('change_pct'))}: {tracker.get('interpretation', '')}"
+            f"{tracker.get('label', '')} {tracker.get('change_display') or _format_signed(tracker.get('change_pct'))}: {tracker.get('interpretation', '')}"
         )
     if not signal_lines:
         signal_lines.append("No clean thematic signal matched the current rotation, so use the section mainly as a checklist.")
@@ -192,7 +192,7 @@ def build_non_trading_focus(
         event_watch.append(
             {
                 "channel": item.get("category", ""),
-                "signal": f"{item.get('label', '')} {_format_signed(item.get('change_pct'))}",
+                "signal": f"{item.get('label', '')} {item.get('change_display') or _format_signed(item.get('change_pct'))}",
                 "why": item.get("interpretation", ""),
                 "next_check": "Keep this as the bridge signal until the next Hong Kong cash close confirms or rejects it.",
             }
@@ -264,27 +264,27 @@ def build_weekly_review(
         return {}
 
     rows = build_market_snapshot(summary)
-    selected_labels = ["S&P 500", "Nasdaq 100", "Hang Seng Index", "Hang Seng TECH", "DXY", "US 10Y", "Gold", "VIX"]
+    selected_labels = ["S&P 500", "Nasdaq 100", "Hang Seng Index", "3033.HK ETF", "DXY", "US 10Y", "Gold", "VIX"]
     cross_assets = []
     for label in selected_labels:
         row = _get_row(rows, label)
         if row:
             cross_assets.append(
                 {
-                    "asset": label,
-                    "latest_move": _format_signed(row.get("change_pct")),
+                    "asset": row.get("label", label),
+                    "latest_move": row.get("change_display") or _format_signed(row.get("change_pct")),
                     "read": row.get("question", ""),
                 }
             )
 
     hk_rows = []
-    for label in ["Hang Seng Index", "HSCEI", "Hang Seng TECH", "China proxy (FXI)", "USD/CNH", "USD/HKD"]:
+    for label in ["Hang Seng Index", "HSCEI", "3033.HK ETF", "China proxy (FXI)", "USD/CNH", "USD/HKD"]:
         row = _get_row(rows, label)
         if row:
             hk_rows.append(
                 {
-                    "signal": label,
-                    "latest_move": _format_signed(row.get("change_pct")),
+                    "signal": row.get("label", label),
+                    "latest_move": row.get("change_display") or _format_signed(row.get("change_pct")),
                     "read": row.get("question", ""),
                 }
             )
@@ -326,7 +326,7 @@ def build_weekly_review(
     desk_questions = [
         "Did Southbound flow confirm the index move, or was the week mainly offshore beta without local money follow-through?",
         "Did HIBOR and Aggregate Balance point to benign funding, or should tighter HKD liquidity be part of next week's risk case?",
-        "Was leadership broad enough beyond HSTECH / platform beta, or was the week concentrated in a narrow style pocket?",
+        "Was leadership broad enough beyond the 3033.HK ETF / platform beta proxy, or was the week concentrated in a narrow style pocket?",
         "Which dated macro, policy, earnings, or IPO catalyst can realistically change the next-week narrative?",
         "What single data point would invalidate the base-case market pulse by Monday or Tuesday morning?",
     ]

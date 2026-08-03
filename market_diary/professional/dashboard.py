@@ -17,7 +17,7 @@ GREEN = "#1f7a3e"
 RED = "#b42318"
 AMBER = "#b54708"
 BLUE = "#123a56"
-DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v8"
+DASHBOARD_LAYOUT_VERSION = "morning-dashboard-v9"
 CHART_CLIP_MARK = "~"
 
 
@@ -140,20 +140,24 @@ def _top_snapshot_rows(bundle: Dict[str, Any]) -> List[Dict[str, Any]]:
         "S&P 500",
         "Nasdaq 100",
         "Hang Seng Index",
-        "Hang Seng TECH",
+        "3033.HK ETF",
         "China proxy (FXI)",
-        "US 10Y",
         "DXY",
         "WTI crude",
         "Gold",
         "VIX",
     ]
-    table = {row.get("label"): row for row in rows if isinstance(row, dict)}
+    table = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        table[row.get("label")] = row
+        table[row.get("short_label")] = row
     return [table[label] for label in priority_order if label in table and table[label].get("change_pct") is not None][:10]
 
 
 def _bar_color(value: float) -> str:
-    return GREEN if value >= 0 else RED
+    return BLUE if value >= 0 else AMBER
 
 
 def _regime_impact_color(label: Any, value: float) -> str:
@@ -161,16 +165,16 @@ def _regime_impact_color(label: Any, value: float) -> str:
     if abs(value) < 0.05:
         return "#667085"
     if normalized in {"us 10y", "10y treasury"}:
-        return RED if value > 0 else GREEN
+        return AMBER if value > 0 else BLUE
     if normalized in {"dxy", "usd/cnh", "usd/hkd"}:
-        return RED if value > 0 else GREEN
+        return AMBER if value > 0 else BLUE
     if normalized in {"vix"}:
-        return RED if value > 0 else GREEN
+        return AMBER if value > 0 else BLUE
     if normalized in {"wti crude", "brent crude", "crude oil"}:
-        return RED if value > 0 else GREEN
+        return AMBER if value > 0 else BLUE
     if normalized in {"gold"}:
-        return AMBER if value > 0 else GREEN
-    return GREEN if value > 0 else RED
+        return AMBER if value > 0 else BLUE
+    return BLUE if value > 0 else AMBER
 
 
 def _dashboard_label(label: Any) -> str:
@@ -178,7 +182,8 @@ def _dashboard_label(label: Any) -> str:
         "S&P 500": "S&P 500",
         "Nasdaq 100": "Nasdaq",
         "Hang Seng Index": "HSI",
-        "Hang Seng TECH": "HSTECH",
+        "Hang Seng TECH ETF (3033.HK)": "3033 ETF",
+        "3033.HK ETF": "3033 ETF",
         "China proxy (FXI)": "FXI",
         "US 10Y": "US 10Y",
         "DXY": "DXY",
@@ -792,7 +797,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     fig = plt.figure(figsize=(14.2, 10.8), facecolor=FIG_BG)
     grid = fig.add_gridspec(2, 2, left=0.09, right=0.965, top=0.785, bottom=0.092, hspace=0.30, wspace=0.14)
 
-    report_date = bundle.get("meta", {}).get("report_date", "")
+    report_date = bundle.get("meta", {}).get("briefing_date", bundle.get("meta", {}).get("report_date", ""))
     theme = str((bundle.get("overview", {}) or {}).get("theme", "") or "")
     regime = str((bundle.get("overview", {}) or {}).get("risk_regime", "Neutral") or "Neutral")
     risk_dashboard = ((bundle.get("attribution", {}) or {}).get("risk_dashboard", {}) or {})
@@ -802,6 +807,15 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     quality = (bundle.get("meta", {}) or {}).get("market_quality", {}) or {}
     quality_text = _coverage_header_text(bundle)
     mode_label = str(((bundle.get("day_mode", {}) or {}).get("label", "") or "Trading day"))
+    rate_row = next(
+        (row for row in ((bundle.get("overview", {}) or {}).get("snapshot_rows", []) or []) if row.get("short_label") == "US 10Y"),
+        {},
+    )
+    rate_text = (
+        f"{float(rate_row.get('price')):.3f}% | {rate_row.get('change_display', 'N/A')}"
+        if rate_row.get("price") is not None
+        else "N/A"
+    )
 
     regime_color = GREEN if regime.lower() == "risk-on" else RED if regime.lower() == "risk-off" else AMBER
     bucket_color = GREEN if "on" in str(risk_bucket).lower() else RED if "off" in str(risk_bucket).lower() else AMBER
@@ -831,7 +845,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     _draw_header_card(fig, (0.045, 0.825, 0.215, 0.068), "Risk score", f"{risk_score}/100 | {risk_bucket}", bucket_color)
     _draw_header_card(fig, (0.285, 0.825, 0.275, 0.068), "HK style", leadership, INK)
     _draw_header_card(fig, (0.585, 0.825, 0.17, 0.068), "Data", quality_text, INK)
-    _draw_header_card(fig, (0.78, 0.825, 0.16, 0.068), "Mode", mode_label, BLUE)
+    _draw_header_card(fig, (0.78, 0.825, 0.16, 0.068), "US 10Y", rate_text, BLUE)
 
     ax_regime = fig.add_subplot(grid[0, 0])
     _panel(ax_regime)
@@ -839,7 +853,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     if not rows:
         _draw_evidence_coverage(ax_regime, bundle)
     else:
-        _panel_title(ax_regime, "Global regime board", "Color = estimated HK risk impact; bars = raw 1D move")
+        _panel_title(ax_regime, "Global regime board", "Bars show comparable 1D returns only (%)")
         raw_labels = [row.get("label", "") for row in rows]
         labels = [_dashboard_label(label) for label in raw_labels]
         values = [float(row.get("change_pct", 0) or 0) for row in rows]
@@ -883,6 +897,6 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
         fontsize=9.8,
         color=SLATE,
     )
-    fig.savefig(output_path, dpi=160, facecolor=fig.get_facecolor())
+    fig.savefig(output_path, dpi=140, facecolor=fig.get_facecolor())
     plt.close(fig)
     return os.path.basename(output_path)

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
+from market_diary.professional.instruments import summary_change
+
 
 def _parse_pct(value: Any) -> Optional[float]:
     if value is None:
@@ -114,7 +116,7 @@ def build_attribution(
     fxi = _summary_pct(summary, "Equities", "China Large-Cap (FXI)")
     dxy = _summary_pct(summary, "FX", "DXY")
     usdcnh = _summary_pct(summary, "FX", "USD/CNH")
-    us10y = _summary_pct(summary, "Rates", "10Y Treasury")
+    us10y, us10y_unit = summary_change(_summary_item(summary, "Rates", "10Y Treasury"))
     vix = _summary_pct(summary, "Vol", "VIX")
     brent = _summary_pct(summary, "Commodities", "Brent Crude")
     wti = _summary_pct(summary, "Commodities", "Crude Oil")
@@ -141,13 +143,13 @@ def build_attribution(
             implication="Broad beta matters if Hong Kong breadth confirms the overseas signal.",
         )
 
-    if us10y is not None and abs(us10y) >= 0.5:
+    if us10y is not None and us10y_unit == "bp" and abs(us10y) >= 5.0:
         _add_driver(
             drivers,
             name="Rates impulse",
             direction="supportive" if us10y < 0 else "drag",
-            score=abs(us10y) * 1.2,
-            evidence=f"US 10Y yield proxy moved {us10y:+.2f}%.",
+            score=abs(us10y) * 0.15,
+            evidence=f"US 10Y yield moved {us10y:+.1f}bp.",
             implication="Lower yields help long-duration growth; higher yields pressure valuation-sensitive sectors.",
         )
 
@@ -229,7 +231,7 @@ def build_attribution(
     if hstech is not None:
         delta = max(min(hstech * 5, 10), -10)
         risk_score += delta
-        add_component("HK growth", delta, f"HSTECH {hstech:+.2f}%")
+        add_component("HK growth ETF proxy", delta, f"3033.HK ETF {hstech:+.2f}%")
     if fxi is not None:
         delta = max(min(fxi * 5, 8), -8)
         risk_score += delta

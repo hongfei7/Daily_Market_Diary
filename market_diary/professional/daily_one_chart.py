@@ -197,7 +197,7 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
     southbound_signal = _southbound_signal(southbound, southbound_active)
 
     if short_rows and short_ratio is not None and short_signal["chart_worthy"]:
-        top_name = short_rows[0]
+        top_name = max(short_rows, key=lambda item: _parse_float(item.get("short_ratio_pct")) or 0.0)
         return {
             "kind": "short_selling",
             "title": "Daily One Chart | HKEX short-selling pressure map",
@@ -216,7 +216,7 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     if southbound_active and southbound_signal["chart_worthy"]:
-        top_name = southbound_active[0]
+        top_name = max(southbound_active, key=lambda item: _parse_float(item.get("total_turnover")) or 0.0)
         return {
             "kind": "stock_connect",
             "title": "Daily One Chart | Southbound active-name concentration",
@@ -285,7 +285,7 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
             "data_points": [
                 ("DXY", f"{(dxy or 0):+.2f}%"),
                 ("USD/CNH", f"{(usdcnh or 0):+.2f}%"),
-                ("HSTECH", f"{(hstech or 0):+.2f}%"),
+                ("3033.HK ETF", f"{(hstech or 0):+.2f}%"),
             ],
             "watch_points": [
                 "Strong growth with a firm dollar can still work, but the bar for follow-through is higher.",
@@ -302,7 +302,7 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
             "takeaway": "Oil is not just an energy chart; it changes inflation expectations, rates pressure, and sector leadership.",
             "data_points": [
                 ("Brent", f"{(brent or 0):+.2f}%"),
-                ("HSTECH", f"{(hstech or 0):+.2f}%"),
+                ("3033.HK ETF", f"{(hstech or 0):+.2f}%"),
                 ("FXI", f"{(fxi or 0):+.2f}%"),
             ],
             "watch_points": [
@@ -357,7 +357,7 @@ def _decorate_main(ax, title: str) -> None:
 
 def _plot_short_selling(ax, bundle: Dict[str, Any]) -> None:
     rows = (bundle.get("flow_tracker", {}) or {}).get("short_sell_watchlist_hits", []) or (bundle.get("flow_tracker", {}) or {}).get("short_sell_top_ratio", []) or []
-    visible = rows[:8]
+    visible = sorted(rows, key=lambda item: _parse_float(item.get("short_ratio_pct")) or 0.0, reverse=True)[:8]
     labels = [f"{_ticker_label(item)}\n{item.get('name', '')}" for item in visible]
     ratios = [_parse_float(item.get("short_ratio_pct")) or 0 for item in visible]
     values = [_parse_float(item.get("short_turnover_hkd")) or 0 for item in visible]
@@ -398,7 +398,7 @@ def _plot_fx_vs_growth(ax, bundle: Dict[str, Any]) -> None:
     rows: List[Tuple[str, float]] = [
         ("DXY", _summary_pct(bundle, "FX", "DXY") or 0),
         ("USD/CNH", _summary_pct(bundle, "FX", "USD/CNH") or 0),
-        ("HSTECH", _summary_pct(bundle, "Equities", "Hang Seng TECH ETF") or 0),
+        ("3033 ETF", _summary_pct(bundle, "Equities", "Hang Seng TECH ETF") or 0),
         ("FXI", _summary_pct(bundle, "Equities", "China Large-Cap (FXI)") or 0),
     ]
     labels = [item[0] for item in rows]
@@ -417,7 +417,7 @@ def _plot_oil(ax, bundle: Dict[str, Any]) -> None:
         ("WTI", _summary_pct(bundle, "Commodities", "Crude Oil") or 0),
         ("Gold", _summary_pct(bundle, "Commodities", "Gold") or 0),
         ("HSI", _summary_pct(bundle, "Equities", "Hang Seng Index") or 0),
-        ("HSTECH", _summary_pct(bundle, "Equities", "Hang Seng TECH ETF") or 0),
+        ("3033 ETF", _summary_pct(bundle, "Equities", "Hang Seng TECH ETF") or 0),
     ]
     labels = [item[0] for item in rows]
     values = [item[1] for item in rows]
@@ -686,7 +686,7 @@ def generate_daily_one_chart(bundle: Dict[str, Any], output_path: str) -> Dict[s
     fig.text(0.07, 0.045, _safe_text(f"Source: {story['source']}"), fontsize=9.4, color="#75818a")
 
     fig.subplots_adjust(left=0.09, right=0.96, top=0.92, bottom=0.18)
-    fig.savefig(output_path, dpi=170, bbox_inches="tight")
+    fig.savefig(output_path, dpi=145, bbox_inches="tight")
     plt.close(fig)
 
     return {

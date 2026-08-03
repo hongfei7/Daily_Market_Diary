@@ -3,19 +3,20 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from market_diary.professional.analytics_market import _parse_float, _parse_pct, _summary_item
+from market_diary.professional.instruments import format_summary_change, summary_change
 
 
-def _tracker_interpretation(label: str, change_pct: Optional[float], chart_features: Dict[str, Any]) -> str:
-    value = change_pct or 0.0
+def _tracker_interpretation(label: str, change_value: Optional[float], chart_features: Dict[str, Any]) -> str:
+    value = change_value or 0.0
     if label == "DXY":
         if value > 0.3:
             return "A stronger dollar points to a more defensive or rate-differential driven tape."
         if value < -0.3:
             return "A softer dollar makes it easier for risk appetite and duration to extend."
     if label == "US 10Y":
-        if value > 0.5:
+        if value > 5.0:
             return "Higher yields can pressure long-duration and growth valuations."
-        if value < -0.5:
+        if value < -5.0:
             return "Lower yields tend to support growth style and gold."
     if label == "WTI crude":
         if value > 1.0:
@@ -56,16 +57,19 @@ def build_high_frequency_trackers(summary: Dict[str, Any], chart_features: Dict[
         item = _summary_item(summary, category, name)
         if not item:
             continue
-        change_pct = _parse_pct(item.get("Pct Change"))
+        change_value, change_unit = summary_change(item)
         rows.append(
             {
                 "label": label,
                 "category": category,
                 "symbol": name,
                 "price": _parse_float(item.get("Price")),
-                "change_pct": change_pct,
-                "interpretation": _tracker_interpretation(label, change_pct, chart_features),
-                "priority": abs(change_pct or 0.0),
+                "change_value": change_value,
+                "change_unit": change_unit,
+                "change_display": format_summary_change(item),
+                "change_pct": change_value if change_unit == "pct" else None,
+                "interpretation": _tracker_interpretation(label, change_value, chart_features),
+                "priority": abs(change_value or 0.0) / (10.0 if change_unit == "bp" else 1.0),
             }
         )
     rows.sort(key=lambda row: row.get("priority", 0), reverse=True)

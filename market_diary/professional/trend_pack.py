@@ -481,7 +481,7 @@ def _plot_liquidity(ax, data: List[Dict[str, Any]]) -> None:
 
 
 def _plot_leadership(ax, leadership: Dict[str, Any]) -> None:
-    _style_axis(ax, "Relative leadership", "30-session indexed performance: HSI vs HSCEI vs HSTECH")
+    _style_axis(ax, "Relative leadership", "30-session indexed performance: HSI vs HSCEI vs 3033.HK ETF proxy")
     dates = leadership.get("dates", []) or []
     series_map = leadership.get("series", {}) or {}
     if not dates or not series_map:
@@ -603,7 +603,7 @@ def summarize_hk_trend_pack_data(data: Dict[str, Any], sessions: int = 5) -> Dic
                     "signal": "HK style leadership",
                     "weekly_change": f"{leader['label']} led ({_fmt_signed(leader['delta'], 'pp')}); {laggard['label']} lagged ({_fmt_signed(laggard['delta'], 'pp')})",
                     "latest": f"{leader['label']} leadership",
-                    "read": "Use HSI / HSCEI / HSTECH spread to separate broad beta from growth-led rerating.",
+                    "read": "Use HSI / HSCEI / 3033.HK ETF spread to separate broad beta from growth-led rerating.",
                 }
             )
 
@@ -675,7 +675,7 @@ def generate_hk_trend_pack(
     return {
         "path": os.path.basename(output_path),
         "title": "Hong Kong Trend Pack",
-        "caption": "Four historical lenses: Southbound cumulative flow, HKMA funding and liquidity, HSI/HSCEI/HSTECH relative leadership, and A/H premium dispersion.",
+        "caption": "Four historical lenses: Southbound cumulative flow, HKMA funding and liquidity, HSI/HSCEI/3033.HK ETF relative leadership, and A/H premium dispersion.",
         "source": "HKEX Stock Connect, HKMA liquidity data, and public Yahoo Finance quotes",
         "rel_path": f"charts/{os.path.basename(output_path)}",
         "weekly_summary": weekly_summary,

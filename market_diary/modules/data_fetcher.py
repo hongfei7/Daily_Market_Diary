@@ -13,6 +13,7 @@ import requests
 import yfinance as yf
 
 from market_diary.modules.text_normalizer import normalize_news_text
+from market_diary.professional.instruments import annotate_summary_item
 
 
 NEWS_REQUEST_TIMEOUT = (
@@ -94,7 +95,7 @@ PLOT_ALIASES = {
     ("Equities", "Euro Stoxx 50"): "STOXX50E",
     ("Equities", "Hang Seng Index"): "HSI",
     ("Equities", "Hang Seng China Enterprises"): "HSCEI",
-    ("Equities", "Hang Seng TECH ETF"): "HSTECH",
+    ("Equities", "Hang Seng TECH ETF"): "HSTECH_ETF_3033",
     ("Equities", "CSI 300"): "CSI300",
     ("Equities", "ChiNext Index"): "CHINEXT",
     ("Equities", "Nikkei 225"): "NIKKEI225",
@@ -420,17 +421,13 @@ def _build_summary_payload(
     pct = (change / reference) * 100 if reference else 0.0
 
     as_of_str = as_of.strftime("%Y-%m-%d %H:%M") if as_of is not None and basis == "intraday_session" else as_of_date.isoformat()
-    summary_quality = quality
-    if quality == "fresh" and freshness_days > SUMMARY_STALE_AFTER_DAYS:
-        summary_quality = "stale"
-
     return {
         "Price": round(price, 4),
         "Change": round(change, 4),
         "Pct Change": f"{pct:.2f}%",
         "As Of": as_of_str,
         "Freshness Days": freshness_days,
-        "Quality": summary_quality,
+        "Quality": quality,
         "Source": source,
         "Basis": basis,
     }
@@ -501,7 +498,7 @@ def _build_summary_quality(summary_data: Dict[str, Dict[str, Any]]) -> Dict[str,
 
             available += 1
 
-            freshness_days = value.get("Freshness Days")
+            freshness_days = value.get("Trading Freshness Days", value.get("Freshness Days"))
             try:
                 freshness_days = int(freshness_days)
             except (TypeError, ValueError):
@@ -608,7 +605,13 @@ def fetch_market_data(
                 if result is None:
                     summary_data[category][name] = "No Data"
                 else:
-                    summary_data[category][name] = result
+                    summary_data[category][name] = annotate_summary_item(
+                        category,
+                        name,
+                        ticker,
+                        result,
+                        summary_date,
+                    )
             except Exception as exc:
                 print(f"[data] summary error: {name} ({ticker}) -> {type(exc).__name__}: {exc}")
                 summary_data[category][name] = "Error"

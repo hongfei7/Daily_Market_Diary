@@ -2,16 +2,28 @@ name: Daily Morning Briefing (Professional)
 
 on:
   schedule:
-    # 21:00 UTC = 05:00 Hong Kong / Beijing time, leaving a 30-minute buffer before the 05:30 target.
-    - cron: "0 21 * * *"
+    # 05:17 Hong Kong / Beijing: avoids the congested top of the hour.
+    - cron: "17 21 * * *"
+    # 06:47 Hong Kong / Beijing: recovery run only when today's archive is absent.
+    - cron: "47 22 * * *"
   workflow_dispatch:
     inputs:
       date:
-        description: "Calendar review date (YYYY-MM-DD, leave empty for yesterday in Hong Kong time)"
+        description: "Calendar review date (YYYY-MM-DD, leave empty for automatic resolution)"
         required: false
         type: string
       publish_archive:
         description: "Commit the generated report archive back to main"
+        required: false
+        default: false
+        type: boolean
+      deliver:
+        description: "Send email and WeCom after a successful manual run"
+        required: false
+        default: false
+        type: boolean
+      run_full_tests:
+        description: "Run the complete test suite before a manual generation"
         required: false
         default: false
         type: boolean
@@ -25,13 +37,18 @@ permissions:
   contents: write
 
 concurrency:
-  group: morning-briefing-professional-main
-  cancel-in-progress: true
+  # Scheduled runs queue instead of cancelling each other. Manual runs on other
+  # refs cannot cancel production.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   generate-briefing:
-    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TZ: Asia/Shanghai
+      REPORT_EMAIL_TO: hongfei_wu7@outlook.com
 
     steps:
       - name: Checkout repository
@@ -39,28 +56,57 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Sync with origin/main
+      - name: Sync scheduled run with origin/main
+        if: ${{ github.event_name == 'schedule' }}
         run: |
           git fetch origin main
-          git checkout main
-          git pull --ff-only origin main
+          git checkout -B main origin/main
+
+      - name: Resolve run gate and briefing date
+        id: gate
+        run: |
+          BRIEFING_DATE="$(date +%F)"
+          SHOULD_RUN=true
+          RUN_KIND=primary
+
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "47 22 * * *" ]; then
+            RUN_KIND=recovery
+            if [ -f "reports_professional/archive/$BRIEFING_DATE/morning_briefing.md" ]; then
+              SHOULD_RUN=false
+              echo "Primary report is already archived for $BRIEFING_DATE; recovery run is not needed."
+            fi
+          fi
+
+          echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
+          echo "DELIVERY_REQUIRED=${{ github.event_name == 'schedule' || inputs.deliver }}" >> "$GITHUB_ENV"
+          echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
+          echo "run_kind=$RUN_KIND" >> "$GITHUB_OUTPUT"
+          echo "Run kind: $RUN_KIND | briefing date: $BRIEFING_DATE | execute: $SHOULD_RUN"
 
       - name: Set up Python
+        if: ${{ steps.gate.outputs.should_run == 'true' }}
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: "pip"
 
+      - name: Validate manual archive target
+        if: ${{ steps.gate.outputs.should_run == 'true' && github.event_name == 'workflow_dispatch' && inputs.publish_archive && github.ref != 'refs/heads/main' }}
+        run: |
+          echo "::error::Manual archive publication is allowed only from refs/heads/main."
+          exit 1
+
       - name: Install dependencies
+        if: ${{ steps.gate.outputs.should_run == 'true' }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.lock
           pip install pytest==8.3.4
           pip install -e . --no-deps
 
-      - name: Debug environment
+      - name: Runtime preflight
+        if: ${{ steps.gate.outputs.should_run == 'true' }}
         env:
-          TZ: Asia/Shanghai
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
@@ -69,29 +115,23 @@ jobs:
           LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
           LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
-          echo "=== Environment Info ==="
-          echo "Event: $GITHUB_EVENT_NAME"
-          echo "Actor: $GITHUB_ACTOR"
-          echo "Beijing time: $(date)"
-          echo "UTC time: $(date -u)"
-          echo ""
-          echo "=== Python Info ==="
           python --version
-          pip list | grep -E "(pandas|numpy|matplotlib|openai|yfinance)"
-          echo ""
-          echo "=== API Key Check ==="
           python - <<'PY'
           import os
-          for k in ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY"]:
-              v = (os.getenv(k) or "").strip()
-              print(f"{k}: present={bool(v)}, len={len(v)}")
-          for k in ["OPENAI_BASE_URL", "LLM_BASE_URL", "LLM_MODEL", "LLM_PRIMARY_PROVIDER"]:
-              print(f"{k}: {os.getenv(k)}")
+          for key in ("DEEPSEEK_API_KEY", "MINIMAX_API_KEY"):
+              print(f"{key}: configured={bool((os.getenv(key) or '').strip())}")
+          print(f"LLM_PRIMARY_PROVIDER: {os.getenv('LLM_PRIMARY_PROVIDER')}")
+          print(f"LLM_MODEL: {os.getenv('LLM_MODEL')}")
           PY
+          python -m pytest -q tests/test_instruments.py tests/test_market_data_resilience.py
 
-      - name: Run system tests
+      - name: Run full test suite
+        if: ${{ steps.gate.outputs.should_run == 'true' && github.event_name == 'workflow_dispatch' && inputs.run_full_tests }}
+        run: python scripts/run_tests.py --pytest
+
+      - name: Generate morning briefing
+        if: ${{ steps.gate.outputs.should_run == 'true' }}
         env:
-          TZ: Asia/Shanghai
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
@@ -100,44 +140,41 @@ jobs:
           LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
           LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
-          echo "Running system tests..."
-          python scripts/run_tests.py --pytest
-
-      - name: Generate Morning Briefing
-        env:
-          TZ: Asia/Shanghai
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
-          LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
-        run: |
-          BRIEFING_DATE="$(date +%F)"
-          echo "BRIEFING_DATE=$BRIEFING_DATE" >> "$GITHUB_ENV"
           echo "Briefing date: $BRIEFING_DATE"
-          if [ -n "${{ github.event.inputs.date }}" ]; then
-            REVIEW_DATE="${{ github.event.inputs.date }}"
-            GLOBAL_DATE="$REVIEW_DATE"
-            HK_DATE="$REVIEW_DATE"
-            echo "Manual review date: $REVIEW_DATE"
-            echo "Manual global market request date: $GLOBAL_DATE"
-            echo "Manual HK/China local request date: $HK_DATE"
-            market-diary-professional --review-date "$REVIEW_DATE" --global-date "$GLOBAL_DATE" --hk-date "$HK_DATE" --briefing-date "$BRIEFING_DATE"
+          if [ -n "${{ inputs.date }}" ]; then
+            REVIEW_DATE="${{ inputs.date }}"
+            market-diary-professional \
+              --review-date "$REVIEW_DATE" \
+              --global-date "$REVIEW_DATE" \
+              --hk-date "$REVIEW_DATE" \
+              --briefing-date "$BRIEFING_DATE"
           else
-            echo "Scheduled run: letting main_professional.py resolve review/global/HK dates."
             market-diary-professional --briefing-date "$BRIEFING_DATE"
           fi
 
-      - name: Audit generated briefing
-        env:
-          TZ: Asia/Shanghai
+      - name: Render delivery previews
+        if: ${{ steps.gate.outputs.should_run == 'true' }}
         run: |
-          set -e
+          python scripts/send_report_email.py \
+            --report-date "$BRIEFING_DATE" \
+            --output-dir reports_professional \
+            --to "$REPORT_EMAIL_TO" \
+            --dry-run
+          python scripts/send_report_wecom.py \
+            --report-date "$BRIEFING_DATE" \
+            --output-dir reports_professional \
+            --mode full \
+            --dry-run
+
+      - name: Audit generated briefing
+        id: audit
+        if: ${{ steps.gate.outputs.should_run == 'true' }}
+        run: |
           mkdir -p reports_professional
           AUDIT_LOG="reports_professional/audit_${BRIEFING_DATE}.txt"
-          if ! python scripts/audit_professional_run.py --report-date "$BRIEFING_DATE" > "$AUDIT_LOG" 2>&1; then
+          if ! python scripts/audit_professional_run.py \
+            --report-date "$BRIEFING_DATE" \
+            --require-email-preview > "$AUDIT_LOG" 2>&1; then
             cat "$AUDIT_LOG"
             {
               echo "### Runtime audit"
@@ -146,7 +183,6 @@ jobs:
               cat "$AUDIT_LOG"
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
-            echo "::error::Runtime audit failed; email, archive publishing, and WeCom delivery are blocked."
             exit 1
           fi
           cat "$AUDIT_LOG"
@@ -158,41 +194,16 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Send briefing email
-        env:
-          REPORT_EMAIL_TO: hongfei_wu7@outlook.com
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM: ${{ secrets.SMTP_FROM }}
-          SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
-        run: |
-          if [ -z "$SMTP_HOST" ] || [ -z "$SMTP_USERNAME" ] || [ -z "$SMTP_PASSWORD" ]; then
-            echo "SMTP credentials are not configured; skipping email delivery."
-            exit 0
-          fi
-
-          python scripts/send_report_email.py \
-            --report-date "$BRIEFING_DATE" \
-            --output-dir reports_professional \
-            --to "$REPORT_EMAIL_TO"
-
       - name: Commit and push report archive
-        if: ${{ github.event_name == 'schedule' || github.event.inputs.publish_archive == 'true' }}
-        env:
-          TZ: Asia/Shanghai
+        id: archive
+        continue-on-error: true
+        if: ${{ steps.gate.outputs.should_run == 'true' && (github.event_name == 'schedule' || (inputs.publish_archive && github.ref == 'refs/heads/main')) }}
         run: |
-          set -e
-
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git fetch origin main
-          git merge --ff-only origin/main
-
-          STAGE_ARGS=(--report-date "$BRIEFING_DATE" --include-all-charts)
-          if [ "${{ github.event.inputs.include_raw_bundle }}" = "true" ]; then
+          STAGE_ARGS=(--report-date "$BRIEFING_DATE")
+          if [ "${{ inputs.include_raw_bundle }}" = "true" ]; then
             STAGE_ARGS+=(--include-raw-bundle)
           fi
           python scripts/stage_report_archive.py "${STAGE_ARGS[@]}"
@@ -203,28 +214,72 @@ jobs:
           fi
 
           git commit -m "chore: morning briefing (professional) $BRIEFING_DATE [skip ci]"
-          git push origin HEAD:main
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Archive push attempt $attempt failed; retrying after refetch."
+          done
+          exit 1
 
-          echo "Morning briefing generated and pushed to repository"
+      - name: Send briefing email
+        id: email
+        continue-on-error: true
+        if: ${{ steps.gate.outputs.should_run == 'true' && (github.event_name == 'schedule' || inputs.deliver) }}
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
+        run: |
+          if [ -z "$SMTP_HOST" ] || [ -z "$SMTP_USERNAME" ] || [ -z "$SMTP_PASSWORD" ]; then
+            echo "::error::SMTP credentials are incomplete; email delivery failed."
+            exit 1
+          fi
+          python scripts/send_report_email.py \
+            --report-date "$BRIEFING_DATE" \
+            --output-dir reports_professional \
+            --to "$REPORT_EMAIL_TO"
 
       - name: Send briefing to WeCom
+        id: wecom
+        continue-on-error: true
+        if: ${{ steps.gate.outputs.should_run == 'true' && (github.event_name == 'schedule' || inputs.deliver) }}
         env:
           WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
         run: |
           if [ -z "$WECOM_WEBHOOK_URL" ]; then
-            echo "WECOM_WEBHOOK_URL is not configured; skipping WeCom delivery."
-            exit 0
+            echo "::error::WECOM_WEBHOOK_URL is missing; WeCom delivery failed."
+            exit 1
           fi
           python scripts/send_report_wecom.py \
             --report-date "$BRIEFING_DATE" \
             --output-dir reports_professional \
             --mode full
 
+      - name: Verify publication outcome
+        if: ${{ always() && steps.gate.outputs.should_run == 'true' }}
+        run: |
+          FAILED=0
+          if [ "${{ github.event_name == 'schedule' || (inputs.publish_archive && github.ref == 'refs/heads/main') }}" = "true" ] && [ "${{ steps.archive.outcome }}" != "success" ]; then
+            echo "::error::Report generation passed, but archive publication failed."
+            FAILED=1
+          fi
+          if [ "$DELIVERY_REQUIRED" = "true" ] && [ "${{ steps.email.outcome }}" != "success" ] && [ "${{ steps.wecom.outcome }}" != "success" ]; then
+            echo "::error::Both email and WeCom delivery failed."
+            FAILED=1
+          fi
+          exit "$FAILED"
+
       - name: Upload reports as artifacts
-        if: always()
+        if: ${{ always() && steps.gate.outputs.should_run == 'true' }}
         uses: actions/upload-artifact@v6
         with:
-          name: morning-briefing-${{ github.run_number }}
+          name: morning-briefing-${{ github.run_number }}-${{ steps.gate.outputs.run_kind }}
           path: |
             reports_professional/*.md
             reports_professional/*.html

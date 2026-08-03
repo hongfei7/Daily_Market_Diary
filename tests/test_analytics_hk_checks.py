@@ -70,7 +70,7 @@ def test_hk_quick_checks_combine_local_metrics_and_market_proxies() -> None:
     assert "Southbound Net HK$4.0bn" in row_map["Southbound / Northbound net flow"]["value"]
     assert row_map["AH premium index"]["value"] == "32.40%"
     assert row_map["Hong Kong leadership"]["value"] == "Growth-led"
-    assert row_map["HSI vs HSTECH"]["value"] == "HSI +0.80% | HSTECH +1.30%"
+    assert row_map["HSI vs 3033.HK ETF"]["value"] == "HSI +0.80% | 3033.HK ETF +1.30%"
     assert "2800.HK +0.80% on 1.60x volume" in row_map["HK ETF flow proxy"]["value"]
     assert "QQQ" not in row_map["HK ETF flow proxy"]["value"]
 

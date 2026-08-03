@@ -127,13 +127,14 @@ def check_scheduled_archive_publish() -> bool:
     print("=" * 60)
 
     workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
-    required_condition = "github.event_name == 'schedule' || github.event.inputs.publish_archive == 'true'"
-    required_raw_guard = 'github.event.inputs.include_raw_bundle'
-    if required_condition not in workflow:
+    if "github.event_name == 'schedule'" not in workflow or "inputs.publish_archive" not in workflow:
         print("FAIL scheduled runs must publish the report archive")
         return False
-    if required_raw_guard not in workflow:
+    if "inputs.include_raw_bundle" not in workflow:
         print("FAIL raw bundle input must be safe for scheduled runs")
+        return False
+    if "--include-all-charts" in workflow:
+        print("FAIL production archive must retain only report-referenced charts")
         return False
     print("OK  scheduled runs publish the archive")
     return True
@@ -183,9 +184,18 @@ def check_workflow_guardrails() -> bool:
     if "git reset --hard" in morning:
         print("FAIL scheduled publishing must not discard generated ledgers or rewrite archive state")
         return False
-    if "Runtime audit failed; email, archive publishing, and WeCom delivery are blocked." not in morning:
-        print("FAIL workflow is missing the hard runtime-audit gate")
-        return False
+    required_sla_guards = (
+        'cron: "17 21 * * *"',
+        'cron: "47 22 * * *"',
+        "timeout-minutes: 35",
+        "cancel-in-progress: false",
+        "--require-email-preview",
+        "Both email and WeCom delivery failed",
+    )
+    for marker in required_sla_guards:
+        if marker not in morning:
+            print(f"FAIL workflow is missing SLA guard: {marker}")
+            return False
     if "reports_professional/performance/*" not in morning:
         print("FAIL signal performance artifacts must be retained with each workflow run")
         return False

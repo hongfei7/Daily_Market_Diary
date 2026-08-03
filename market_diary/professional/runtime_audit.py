@@ -20,8 +20,8 @@ REQUIRED_REPORT_SECTION_GROUPS = [
         ),
     ),
     ("Flow tracker", ("### 2.3 Flow Tracker and Attribution",)),
-    ("Stock Connect active names", ("#### Stock Connect Southbound Active Names",)),
-    ("A/H premium dispersion", ("#### AH Premium Dispersion",)),
+    ("Stock Connect active names", ("**Stock Connect Southbound Active Names**",)),
+    ("A/H premium dispersion", ("**AH Premium Dispersion**",)),
     ("Daily one chart", ("### 3.3 Daily One Chart",)),
     ("Report quality", ("### Report Quality and Validation",)),
 ]
@@ -35,6 +35,8 @@ FORBIDDEN_PHRASES = [
 
 NON_ENGLISH_SCRIPT_RE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]+")
 CLIPPED_CELL_RE = re.compile(r"(\.\.\.|…|\[trimmed\])\s*(?:\||$)", re.IGNORECASE)
+REPORT_TARGET_WORDS = (2200, 3200)
+REPORT_HARD_MAX_WORDS = 4200
 
 
 def _count_unescaped_pipes(text: str) -> int:
@@ -154,6 +156,22 @@ def audit_generated_run(
 
     report_text = report_path.read_text(encoding="utf-8") if report_path.exists() else ""
     bundle = _load_json(bundle_path) if bundle_path.exists() else {}
+    word_count = len(re.findall(r"\b[\w'-]+\b", re.sub(r"https?://\S+", "", report_text)))
+    heading_count = sum(1 for line in report_text.splitlines() if re.match(r"^#{1,6}\s+", line))
+    if word_count > REPORT_HARD_MAX_WORDS:
+        errors.append(
+            f"Report is too long for the commute edition: {word_count} words exceeds the {REPORT_HARD_MAX_WORDS}-word hard limit."
+        )
+    elif word_count > REPORT_TARGET_WORDS[1]:
+        warnings.append(
+            f"Report is {word_count} words; the commute-edition target is {REPORT_TARGET_WORDS[0]}-{REPORT_TARGET_WORDS[1]}."
+        )
+    elif report_text and word_count < REPORT_TARGET_WORDS[0]:
+        warnings.append(
+            f"Report is {word_count} words; verify that the deep-read layer is sufficient for a one-hour commute."
+        )
+    if heading_count > 28:
+        warnings.append(f"Report has {heading_count} headings; reduce navigation fragmentation below 28 where practical.")
 
     for label, markers in REQUIRED_REPORT_SECTION_GROUPS:
         if not any(marker in report_text for marker in markers):
@@ -196,8 +214,10 @@ def audit_generated_run(
             errors.append("Report quality requires manual review; automatic distribution is blocked.")
 
         fact_check = bundle.get("fact_check", {}) or {}
-        if fact_check.get("status") in {"warning", "error"}:
-            errors.append("Fact-check guardrail has unresolved warnings or errors.")
+        if fact_check.get("status") == "error" or fact_check.get("release_blocking"):
+            errors.append("Fact-check guardrail has a release-blocking error.")
+        elif fact_check.get("status") == "warning":
+            warnings.append("Fact-check review findings were downgraded to deterministic fallback fields; inspect the audit trail.")
 
         provenance_audit = bundle.get("provenance_audit", {}) or {}
         if provenance_audit.get("status") != "ok":
@@ -229,7 +249,7 @@ def audit_generated_run(
 
     if email_preview_path.exists():
         html = email_preview_path.read_text(encoding="utf-8")
-        for marker in ("Report quality", "Hong Kong local checks", "Deep-read setup"):
+        for marker in ("REPORT QUALITY", "Hong Kong local checks", "DEEP READ"):
             if marker not in html:
                 warnings.append(f"Email preview is missing expected marker: {marker}")
 
@@ -239,6 +259,13 @@ def audit_generated_run(
         "report_date": report_date,
         "errors": errors,
         "warnings": warnings,
+        "reading_profile": {
+            "word_count": word_count,
+            "heading_count": heading_count,
+            "target_words": list(REPORT_TARGET_WORDS),
+            "hard_max_words": REPORT_HARD_MAX_WORDS,
+            "estimated_total_minutes": "35-50 including charts and optional appendix",
+        },
         "checked_files": {
             "report": str(report_path),
             "bundle": str(bundle_path),

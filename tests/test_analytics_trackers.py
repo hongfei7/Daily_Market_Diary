@@ -7,7 +7,14 @@ from professional.analytics_trackers import build_high_frequency_trackers
 
 def test_high_frequency_trackers_sort_and_interpret() -> None:
     summary = {
-        "Rates": {"10Y Treasury": {"Price": 4.25, "Pct Change": "0.70%"}},
+        "Rates": {
+            "10Y Treasury": {
+                "Price": 4.25,
+                "Change Unit": "bp",
+                "Change Value": 7.0,
+                "Change Display": "+7.0bp",
+            }
+        },
         "FX": {
             "DXY": {"Price": 105.2, "Pct Change": "0.40%"},
             "USD/CNH": {"Price": 7.22, "Pct Change": "0.10%"},

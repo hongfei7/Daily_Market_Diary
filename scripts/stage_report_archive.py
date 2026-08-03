@@ -25,8 +25,17 @@ class ArchiveConflictError(RuntimeError):
     """Raised when a published date would be silently overwritten."""
 
 
+def _is_safe_archive_file(path: Path) -> bool:
+    """Exclude macOS metadata and hidden runtime files from tracked archives."""
+    return path.is_file() and not path.name.startswith(".")
+
+
 def _run_git_add(paths: Iterable[Path]) -> None:
-    normalized = [str(path.relative_to(ROOT)).replace("\\", "/") for path in paths]
+    normalized = [
+        str(path.relative_to(ROOT)).replace("\\", "/")
+        for path in paths
+        if _is_safe_archive_file(path)
+    ]
     if not normalized:
         return
     subprocess.run(["git", "add", "-f", *normalized], cwd=str(ROOT), check=True)
@@ -99,7 +108,7 @@ def _existing_archive_files(report_date: str) -> List[Path]:
     date_dir = ARCHIVE_ROOT / report_date
     if not date_dir.exists():
         return []
-    return sorted(path for path in date_dir.rglob("*") if path.is_file())
+    return sorted(path for path in date_dir.rglob("*") if _is_safe_archive_file(path))
 
 
 def _sha256(path: Path) -> str:
@@ -114,7 +123,7 @@ def _payload_files(date_dir: Path) -> List[Path]:
     return sorted(
         path
         for path in date_dir.rglob("*")
-        if path.is_file() and path.name not in {"README.md", "manifest.json"}
+        if _is_safe_archive_file(path) and path.name not in {"README.md", "manifest.json"}
     )
 
 
@@ -270,7 +279,7 @@ def build_date_archive(
             chart_paths.update(
                 path
                 for path in sorted((ARCHIVE_DIR / "charts").glob(f"*{report_date}*"))
-                if path.is_file() and not path.name.startswith("test_")
+                if _is_safe_archive_file(path) and not path.name.startswith("test_")
             )
         for src in sorted(chart_paths):
             if src.exists() and src.is_file():
@@ -324,7 +333,6 @@ def main(argv: List[str] | None = None) -> int:
     report_dates = _report_dates(args.report_date, args.all)
 
     for report_date in report_dates:
-        staged.add(ARCHIVE_ROOT / report_date)
         for path in build_date_archive(
             report_date,
             include_all_charts=args.include_all_charts,

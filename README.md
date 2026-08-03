@@ -40,7 +40,7 @@ The core report structure does not depend on an LLM. If the LLM layer is disable
 
 ## LLM Provider Setup
 
-The primary LLM provider is MiniMax. DeepSeek is the fallback provider and runs the three financial skills in non-publishing shadow mode when its key is available. Claude is not called.
+MiniMax-M3 is the primary synthesis provider. DeepSeek handles lower-cost news selection, macro extraction, and company-note structuring when available, remains the fallback for synthesis, and runs the weekly financial-skill shadow pass. Claude is not called.
 
 For GitHub Actions, configure these repository secrets:
 
@@ -74,7 +74,7 @@ Use `--no-llm` when you want a deterministic run with no model calls.
 
 ### Financial skills and research plugins
 
-Three project-local, provider-agnostic skills run in shadow mode when `DEEPSEEK_API_KEY` is available:
+Three project-local, provider-agnostic skills run in the weekly-review shadow pass when `DEEPSEEK_API_KEY` is available:
 
 - `skills/morning-note`
 - `skills/catalyst-calendar`
@@ -82,7 +82,7 @@ Three project-local, provider-agnostic skills run in shadow mode when `DEEPSEEK_
 
 Their output is stored under `skill_shadow` in the raw bundle, requires human review, and is never merged into the published report. Public Equity Investing and Data Analytics are Codex-side tools for manual follow-up research; they are not callable from GitHub Actions and are not CI dependencies. Claude models are not configured.
 
-Set `DMD_SKILL_SHADOW_ENABLED=0` to disable the three extra DeepSeek calls without disabling the production MiniMax narrative layer.
+They are skipped on ordinary daily runs to protect the 07:30 delivery SLA and token budget. Set `DMD_SKILL_SHADOW_FORCE=1` for an explicit daily diagnostic, or `DMD_SKILL_SHADOW_ENABLED=0` to disable them entirely without disabling the production MiniMax narrative layer.
 
 The report content hierarchy and visual rules are documented in `docs/professional_report_design_system.md`.
 
@@ -137,14 +137,15 @@ The scheduled workflow is defined in:
 
 - [.github/workflows/morning_briefing_professional.yml](.github/workflows/morning_briefing_professional.yml)
 
-It runs daily on a UTC schedule aligned to Hong Kong / Beijing morning time. The workflow:
+It targets delivery before 07:30 Hong Kong / Beijing time. The primary run starts at 05:17 and a 06:47 recovery run executes only when the date archive is still absent. The workflow:
 
 - checks out and syncs `main`
 - installs pinned dependencies
-- runs the regression suite
+- runs a narrow production preflight; the full suite is opt-in for manual dispatch and remains part of normal CI
 - generates the professional briefing
 - audits the generated output
-- sends email when SMTP secrets are present
+- renders and audits mobile delivery previews before publication
+- treats email and WeCom as independent delivery channels and fails when both are unavailable
 - archives published reports back to `main`
 - verifies an immutable SHA-256 archive manifest and updates the signal ledger
 - uploads reports and raw outputs as workflow artifacts
@@ -153,6 +154,8 @@ Manual workflow dispatch supports:
 
 - `date`: explicit calendar review date
 - `publish_archive`: commit the archive to `main`
+- `deliver`: send email and WeCom for a manual run
+- `run_full_tests`: run the full regression suite before a manual generation
 - `include_raw_bundle`: include raw JSON in the committed archive
 
 ## Tests
@@ -224,4 +227,4 @@ Published report pages and selected chart assets are committed under `reports_pr
 
 Raw bundles are committed only when `include_raw_bundle` is explicitly enabled for an archive publish run.
 
-The tracked performance ledger uses the published risk regime, enters only at the next available close, applies turnover cost, excludes weekend pseudo-sessions, and records late-price conflicts. It is a research diagnostic rather than an investable track record. See [Archive, Source Health, and Backtest](docs/data_archive_backtest.md).
+The tracked performance ledger uses the published risk regime, enters only at the first close on or after publication and after the market as-of date, applies turnover cost, excludes weekend pseudo-sessions, and excludes conflicting prices. Results remain exploratory until the minimum sample gate is met. See [Archive, Source Health, and Backtest](docs/data_archive_backtest.md).

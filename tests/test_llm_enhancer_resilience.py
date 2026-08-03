@@ -114,7 +114,8 @@ def test_minimax_primary_adds_deepseek_fallback_candidate() -> None:
     os.environ.pop("OPENAI_BASE_URL", None)
     os.environ.pop("LLM_PRIMARY_PROVIDER", None)
     try:
-        candidates = _model_candidates(load_professional_config()["llm"], "news_selection")
+        candidates = _model_candidates(load_professional_config()["llm"], "overnight_review")
+        fast_candidates = _model_candidates(load_professional_config()["llm"], "news_selection")
         providers = get_available_providers()
         fallback_base_url = get_default_base_url("deepseek")
     finally:
@@ -124,6 +125,10 @@ def test_minimax_primary_adds_deepseek_fallback_candidate() -> None:
     assert candidates == [
         ("minimax", "MiniMax-M3", "default_model"),
         ("deepseek", "deepseek-v4-pro", "default_model:fallback"),
+    ]
+    assert fast_candidates == [
+        ("deepseek", "deepseek-v4-pro", "fast_model:preferred"),
+        ("minimax", "MiniMax-M3", "fast_model:fallback"),
     ]
     assert fallback_base_url == "https://api.deepseek.com"
 

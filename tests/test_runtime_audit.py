@@ -27,8 +27,8 @@ REPORT_BODY = """# Morning Research Workbench | 2026-04-14
 | Southbound / Northbound net flow | Southbound +HK$2.2bn \\| Northbound N/A | Live public |
 
 ### 2.3 Flow Tracker and Attribution
-#### Stock Connect Southbound Active Names
-#### AH Premium Dispersion
+**Stock Connect Southbound Active Names**
+**AH Premium Dispersion**
 
 ### 3.3 Daily One Chart
 ![Daily One Chart](charts/daily_one_chart_2026-04-14.png)
@@ -63,7 +63,7 @@ def main() -> None:
         (root / "charts" / "dashboard_2026-04-14.png").write_bytes(b"png")
         (root / "charts" / "daily_one_chart_2026-04-14.png").write_bytes(b"png")
         (root / "2026-04-14_email_preview.html").write_text(
-            "<html><body>Report quality Deep-read setup Hong Kong local checks</body></html>", encoding="utf-8"
+            "<html><body>REPORT QUALITY DEEP READ Hong Kong local checks</body></html>", encoding="utf-8"
         )
 
         audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)

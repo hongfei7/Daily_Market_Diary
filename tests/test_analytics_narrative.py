@@ -138,7 +138,7 @@ def test_weekly_review_summarizes_cross_assets_and_hk_tape() -> None:
     assert weekly["window"]["start"] == "2026-04-06"
     assert "Risk-on backdrop" in weekly["summary"]
     assert weekly["cross_assets"][0]["asset"] == "S&P 500"
-    assert any(item["signal"] == "Hang Seng TECH" for item in weekly["hk_tape"])
+    assert any("3033.HK" in item["signal"] for item in weekly["hk_tape"])
     assert weekly["developments"][0]["item"] == "Policy support"
     assert weekly["next_week"][0]["event"] == "US CPI"
     assert weekly["flow_lines"][0] == "Flow evidence was supportive."

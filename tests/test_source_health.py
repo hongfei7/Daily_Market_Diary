@@ -48,7 +48,26 @@ def test_future_dated_critical_source_fails() -> None:
     assert any("future" in warning for warning in health["warnings"])
 
 
+def test_freshest_record_cannot_hide_stale_critical_assets() -> None:
+    health = build_source_health(
+        {
+            "market_data": [
+                _record("public", "ok", "2026-08-03"),
+                _record("public", "ok", "2026-07-20"),
+            ]
+        },
+        reference_date="2026-08-03",
+        policies={"market_data": {"critical": True, "max_age_days": 4, "min_fresh_ratio": 0.8}},
+    )
+    row = next(item for item in health["sources"] if item["source"] == "market_data")
+    assert health["status"] == "failed"
+    assert row["fresh_records"] == 1
+    assert row["stale_records"] == 1
+    assert row["fresh_ratio"] == 0.5
+
+
 if __name__ == "__main__":
     test_source_health_separates_authority_freshness_and_availability()
     test_future_dated_critical_source_fails()
+    test_freshest_record_cannot_hide_stale_critical_assets()
     print("Source health tests passed")

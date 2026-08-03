@@ -22,7 +22,7 @@ Use one four-panel page:
 - Concentration: the names or channels carrying the flow signal.
 - Catalyst ladder: only dated, sourced events that can change the view.
 
-Use a white background, dark navy rules, restrained green/red only for directional meaning, no gradients, minimal borders, direct labels, and a short decision sequence in the footer.
+Use a white background, dark navy rules, blue for supportive signals, amber for adverse signals, no gradients, minimal borders, direct labels, and a short decision sequence in the footer. Never mix percentage returns and basis-point moves on one axis.
 
 ### 2. Daily One Chart — every run
 
@@ -41,7 +41,7 @@ Keep nine high-signal rows in the five-minute scan. Each row contains the last v
 
 ### 4. Hong Kong Trend Pack — weekly runs only
 
-Use four shared-horizon panels: Southbound persistence, HIBOR/Aggregate Balance, HSI/HSCEI/HSTECH leadership, and A/H dispersion. Daily reports should not include it because one-day evidence cannot support the same conclusions.
+Use four shared-horizon panels: Southbound persistence, HIBOR/Aggregate Balance, HSI/HSCEI/3033.HK ETF-proxy leadership, and A/H dispersion. Daily reports should not include it because one-day evidence cannot support the same conclusions.
 
 ## Content budget
 
@@ -57,6 +57,8 @@ Use four shared-horizon panels: Southbound persistence, HIBOR/Aggregate Balance,
 Do not repeat a number already visible in the dashboard unless the sentence adds a new mechanism or decision test.
 
 ### Layer 2 — causal deep read
+
+Target 25–30 minutes and keep the complete report near 2,200–3,200 English words. The runtime audit warns outside that range and blocks reports above 4,200 words.
 
 Spend detail on cross-asset transmission, local-flow confirmation or contradiction, dated macro/company catalysts, disconfirming evidence, scenario paths, and sourced company implications.
 
@@ -74,11 +76,11 @@ The performance block must show the execution convention, sample size, net resul
 
 ## Automated versus human research
 
-- GitHub Actions uses deterministic code, MiniMax as the primary narrative provider, and DeepSeek as fallback plus a non-publishing skill shadow runner.
+- GitHub Actions uses deterministic code, MiniMax as the primary narrative provider, and DeepSeek as fallback plus a weekly non-publishing skill shadow runner.
 - `morning-note`, `catalyst-calendar`, and `thesis-tracker` shadow outputs are stored in the raw bundle for human comparison and never enter the published report.
 - Codex Public Equity Investing and Data Analytics plugins support manual follow-up research only. They are not available inside GitHub Actions and are not production dependencies.
 - Claude models are not configured or called.
 
 ## Release standard
 
-Every substantive statement must be traceable to a source URL and observation date. Missing provenance, failed critical-source freshness, truncated text, unsupported deterministic/LLM claims, or a disabled look-ahead guard block automated delivery.
+Every substantive statement must be traceable to a source URL and observation date. Questionable LLM fields are removed and replaced by deterministic copy. Missing provenance, failed critical-source freshness, unresolved critical numeric claims, truncated text that survives fallback, or a disabled look-ahead guard block automated delivery; review-only findings travel as caveats.
