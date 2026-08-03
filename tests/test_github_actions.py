@@ -190,7 +190,14 @@ def check_workflow_guardrails() -> bool:
         "timeout-minutes: 35",
         "cancel-in-progress: false",
         "--require-email-preview",
-        "Both email and WeCom delivery failed",
+        "--require-wecom-preview",
+        "Primary WeCom decision brief failed",
+        "Full report attachment was not delivered to WeCom",
+        "--mode summary",
+        "--mode file",
+        "status=success",
+        "archive_needed",
+        "primary run did not succeed",
     )
     for marker in required_sla_guards:
         if marker not in morning:

@@ -37,6 +37,7 @@ NON_ENGLISH_SCRIPT_RE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\ua
 CLIPPED_CELL_RE = re.compile(r"(\.\.\.|…|\[trimmed\])\s*(?:\||$)", re.IGNORECASE)
 REPORT_TARGET_WORDS = (2200, 3200)
 REPORT_HARD_MAX_WORDS = 4200
+WECOM_SAFE_MARKDOWN_BYTE_LIMIT = 3800
 
 
 def _count_unescaped_pipes(text: str) -> int:
@@ -127,6 +128,7 @@ def audit_generated_run(
     report_date: str,
     require_llm: bool = False,
     require_email_preview: bool = False,
+    require_wecom_preview: bool = False,
 ) -> Dict[str, Any]:
     root = Path(output_dir)
     report_path = root / f"{report_date}_morning_briefing.md"
@@ -134,6 +136,8 @@ def audit_generated_run(
     dashboard_path = root / "charts" / f"dashboard_{report_date}.png"
     daily_chart_path = root / "charts" / f"daily_one_chart_{report_date}.png"
     email_preview_path = root / f"{report_date}_email_preview.html"
+    wecom_preview_path = root / f"{report_date}_wecom_preview.md"
+    wecom_html_path = root / f"{report_date}_morning_briefing.html"
 
     errors: List[str] = []
     warnings: List[str] = []
@@ -153,6 +157,12 @@ def audit_generated_run(
         errors.append(f"Missing required email preview file: {email_preview_path}")
     elif email_preview_path.exists() and email_preview_path.stat().st_size == 0:
         errors.append(f"Email preview file is empty: {email_preview_path}")
+
+    for label, path in (("WeCom summary preview", wecom_preview_path), ("WeCom HTML preview", wecom_html_path)):
+        if require_wecom_preview and not path.exists():
+            errors.append(f"Missing required {label} file: {path}")
+        elif path.exists() and path.stat().st_size == 0:
+            errors.append(f"{label} file is empty: {path}")
 
     report_text = report_path.read_text(encoding="utf-8") if report_path.exists() else ""
     bundle = _load_json(bundle_path) if bundle_path.exists() else {}
@@ -253,6 +263,23 @@ def audit_generated_run(
             if marker not in html:
                 warnings.append(f"Email preview is missing expected marker: {marker}")
 
+    if wecom_preview_path.exists():
+        wecom_markdown = wecom_preview_path.read_text(encoding="utf-8")
+        byte_count = len(wecom_markdown.encode("utf-8"))
+        if byte_count > WECOM_SAFE_MARKDOWN_BYTE_LIMIT:
+            errors.append(
+                f"WeCom summary is {byte_count} bytes; safe delivery budget is {WECOM_SAFE_MARKDOWN_BYTE_LIMIT}."
+            )
+        for marker in ("5-minute scan", "## Decision frame", "**Invalidate:**", "Open full report"):
+            if marker not in wecom_markdown:
+                errors.append(f"WeCom summary preview is missing required marker: {marker}")
+
+    if wecom_html_path.exists():
+        wecom_html = wecom_html_path.read_text(encoding="utf-8")
+        for marker in ('name="viewport"', "reading-route", "report-grid", "Morning Research Workbench"):
+            if marker not in wecom_html:
+                errors.append(f"WeCom HTML preview is missing required marker: {marker}")
+
     status = "ok" if not errors else "error"
     return {
         "status": status,
@@ -272,6 +299,8 @@ def audit_generated_run(
             "dashboard": str(dashboard_path),
             "daily_chart": str(daily_chart_path),
             "email_preview": str(email_preview_path),
+            "wecom_preview": str(wecom_preview_path),
+            "wecom_html": str(wecom_html_path),
         },
     }
 

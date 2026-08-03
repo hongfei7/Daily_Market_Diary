@@ -65,19 +65,35 @@ def main() -> None:
         (root / "2026-04-14_email_preview.html").write_text(
             "<html><body>REPORT QUALITY DEEP READ Hong Kong local checks</body></html>", encoding="utf-8"
         )
+        (root / "2026-04-14_wecom_preview.md").write_text(
+            "# HK Morning Brief\n> **5-minute scan**\n## Decision frame\n> **Invalidate:** Risk check.\n"
+            "[Open full report | 35-50 min](https://example.com/report)",
+            encoding="utf-8",
+        )
+        (root / "2026-04-14_morning_briefing.html").write_text(
+            '<html><head><meta name="viewport"></head><body><div class="reading-route"></div>'
+            '<div class="report-grid">Morning Research Workbench</div></body></html>',
+            encoding="utf-8",
+        )
 
-        audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        audit = audit_generated_run(
+            root,
+            "2026-04-14",
+            require_llm=True,
+            require_email_preview=True,
+            require_wecom_preview=True,
+        )
         assert audit["status"] == "ok"
         assert not audit["errors"]
 
         broken_report = REPORT_BODY.replace("\\|", "|")
         (root / "2026-04-14_morning_briefing.md").write_text(broken_report, encoding="utf-8")
-        broken_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        broken_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert broken_audit["status"] == "error"
         assert any("Malformed markdown table" in item for item in broken_audit["errors"])
 
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nThis line was clipped...\n", encoding="utf-8")
-        clipped_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        clipped_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert clipped_audit["status"] == "error"
         assert any("clipped text" in item for item in clipped_audit["errors"])
 
@@ -85,16 +101,16 @@ def main() -> None:
             REPORT_BODY + "\nA headline may contain an ellipsis... without being clipped.\n",
             encoding="utf-8",
         )
-        natural_ellipsis_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        natural_ellipsis_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert natural_ellipsis_audit["status"] == "ok"
 
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nThis line was clipped [trimmed]\n", encoding="utf-8")
-        trimmed_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        trimmed_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert trimmed_audit["status"] == "error"
         assert any("clipped text" in item for item in trimmed_audit["errors"])
 
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY + "\nUnexpected non-English token: 찜흙\n", encoding="utf-8")
-        language_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        language_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert language_audit["status"] == "error"
         assert any("non-English" in item for item in language_audit["errors"])
 
@@ -102,7 +118,7 @@ def main() -> None:
         bundle["provenance_audit"] = {"status": "error", "errors": ["market_data: missing provenance records"]}
         (root / "raw" / "2026-04-14_bundle.json").write_text(json.dumps(bundle), encoding="utf-8")
         (root / "2026-04-14_morning_briefing.md").write_text(REPORT_BODY, encoding="utf-8")
-        provenance_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True)
+        provenance_audit = audit_generated_run(root, "2026-04-14", require_llm=True, require_email_preview=True, require_wecom_preview=True)
         assert provenance_audit["status"] == "error"
         assert any("provenance" in item.lower() for item in provenance_audit["errors"])
     finally:

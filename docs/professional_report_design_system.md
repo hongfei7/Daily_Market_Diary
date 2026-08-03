@@ -84,3 +84,7 @@ The performance block must show the execution convention, sample size, net resul
 ## Release standard
 
 Every substantive statement must be traceable to a source URL and observation date. Questionable LLM fields are removed and replaced by deterministic copy. Missing provenance, failed critical-source freshness, unresolved critical numeric claims, truncated text that survives fallback, or a disabled look-ahead guard block automated delivery; review-only findings travel as caveats.
+
+## Primary delivery contract
+
+WeCom is the production reading surface. Its first message is a decision brief capped at 3,800 UTF-8 bytes and must retain the base case, confirmation test, invalidation condition, source dates, market tape, and a valid archive link. A self-contained mobile HTML file follows for the full 35–50 minute commute read. Both assets are rendered and audited before publication, sent with bounded retries, and treated as required delivery outcomes. Email is a secondary copy and cannot mask a WeCom failure.

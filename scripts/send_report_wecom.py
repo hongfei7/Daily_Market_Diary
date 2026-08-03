@@ -28,11 +28,13 @@ import requests
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "market_diary"))
 
-from professional.report_formatting import _truncate, _fmt_pct, _fmt_price
+from professional.report_formatting import _fmt_pct, _fmt_price
 from professional.instruments import format_summary_change
 
 
 WECOM_MARKDOWN_BYTE_LIMIT = 4096
+# Keep a safety margin for platform-side normalization and future copy changes.
+WECOM_SAFE_MARKDOWN_BYTE_LIMIT = 3800
 WECOM_FILE_SIZE_LIMIT = 20 * 1024 * 1024  # 20 MB
 WECOM_IMAGE_SIZE_LIMIT = 2 * 1024 * 1024  # 2 MB
 
@@ -70,7 +72,7 @@ def _resolve_report_url(report_date: str) -> str:
     server = (os.getenv("GITHUB_SERVER_URL") or "https://github.com").strip()
     repo = (os.getenv("GITHUB_REPOSITORY") or "").strip()
     if repo:
-        return f"{server}/{repo}/blob/main/reports_professional/{report_date}_morning_briefing.md"
+        return f"{server}/{repo}/blob/main/reports_professional/archive/{report_date}/morning_briefing.md"
 
     return ""
 
@@ -124,12 +126,14 @@ def _wecom_upload(webhook_url: str, file_path: Path, media_type: str = "file") -
 def _fmt_color_change(value: Optional[float]) -> str:
     if value is None:
         return "N/A"
-    text = f"{value:+.2f}%"
-    if value >= 1.0:
-        return f'<font color="warning">{text}</font>'
-    if value <= -1.0:
-        return f'<font color="info">{text}</font>'
-    return text
+    return f"{value:+.2f}%"
+
+
+def _compact_text(value: Any, limit: int) -> str:
+    text = " ".join(str(value or "").split())
+    if len(text) <= limit:
+        return text
+    return text[: max(limit - 1, 0)].rstrip() + "…"
 
 
 def _price_line(symbol: str, price: Any, change: Any, color_sign: bool = True) -> str:
@@ -144,6 +148,13 @@ def _price_line(symbol: str, price: Any, change: Any, color_sign: bool = True) -
     else:
         c = _fmt_pct(change) if change is not None else "N/A"
     return f"**{symbol}** {p} {c}"
+
+
+def _local_display(bundle: Dict[str, Any], key: str) -> str:
+    item = ((bundle.get("hk_local", {}) or {}).get(key, {}) or {})
+    if not isinstance(item, dict):
+        return "N/A"
+    return str(item.get("display_value") or item.get("value") or "N/A")
 
 
 def _market_snapshot_lines(bundle: Dict[str, Any]) -> List[str]:
@@ -167,17 +178,8 @@ def _market_snapshot_lines(bundle: Dict[str, Any]) -> List[str]:
 
     # Line 1: HSI + turnover + short sell
     hsi = _price_line("HSI", _p("Equities", "Hang Seng Index"), _c("Equities", "Hang Seng Index"))
-    turnover_val = _item("Equities", "Hang Seng Index").get("Volume")
-    turnover_str = f"HK${float(turnover_val)/1e9:.1f}bn" if turnover_val is not None else "N/A"
-    short_sell_val = _item("Equities", "Hang Seng Index").get("Short Sell Ratio")
-    if short_sell_val is not None:
-        try:
-            ss = float(short_sell_val)
-            short_str = f"{ss:.1f}%"
-        except (TypeError, ValueError):
-            short_str = str(short_sell_val)
-    else:
-        short_str = "N/A"
+    turnover_str = _local_display(bundle, "main_board_turnover")
+    short_str = _local_display(bundle, "short_selling_ratio")
     lines.append(f"> {hsi} | Turnover {turnover_str} | SS {short_str}")
 
     # Line 2: US equities
@@ -211,7 +213,7 @@ def _market_snapshot_lines(bundle: Dict[str, Any]) -> List[str]:
     return lines
 
 
-def _hk_checks_line(bundle: Dict[str, Any]) -> str:
+def _hk_checks_line(bundle: Dict[str, Any], limit: int = 3) -> str:
     hk_checks = bundle.get("hk_quick_checks", []) or []
     parts = []
     count = 0
@@ -223,7 +225,7 @@ def _hk_checks_line(bundle: Dict[str, Any]) -> str:
             if metric and value:
                 parts.append(f"**{metric}** {value}")
                 count += 1
-                if count >= 4:
+                if count >= limit:
                     break
     return " | ".join(parts) if parts else ""
 
@@ -235,7 +237,7 @@ def _must_watch_lines(bundle: Dict[str, Any], limit: int = 3) -> List[str]:
     for idx, item in enumerate(items[:limit]):
         color = colors[idx] if idx < len(colors) else "info"
         title = str(item.get("title", ""))
-        summary = _truncate(str(item.get("summary", "")), 80)
+        summary = _compact_text(item.get("summary", ""), 80)
         lines.append(f'> <font color="{color}">[{idx + 1}] {title}</font>')
         if summary:
             lines.append(f"> {summary}")
@@ -247,7 +249,26 @@ def _today_lines(bundle: Dict[str, Any], limit: int = 3) -> List[str]:
     focus = today.get("focus_lines", []) or []
     if not focus:
         return []
-    return [f"> {_truncate(str(line), 100)}" for line in focus[:limit]]
+    return [f"> {_compact_text(line, 100)}" for line in focus[:limit]]
+
+
+def _append_group_with_budget(lines: List[str], group: List[str], footer: List[str]) -> None:
+    """Append as much of a lower-priority group as fits without losing the footer."""
+    if not group:
+        return
+    candidate = "\n".join([*lines, *group, *footer])
+    if len(candidate.encode("utf-8")) <= WECOM_SAFE_MARKDOWN_BYTE_LIMIT:
+        lines.extend(group)
+        return
+
+    header, *items = group
+    selected: List[str] = []
+    for line in items:
+        candidate = "\n".join([*lines, header, *selected, line, *footer])
+        if len(candidate.encode("utf-8")) <= WECOM_SAFE_MARKDOWN_BYTE_LIMIT:
+            selected.append(line)
+    if selected:
+        lines.extend([header, *selected])
 
 
 def build_summary_markdown(bundle: Dict[str, Any], report_date: str) -> str:
@@ -268,11 +289,19 @@ def build_summary_markdown(bundle: Dict[str, Any], report_date: str) -> str:
 
     report_url = _resolve_report_url(report_date)
 
-    lines = [f"# HK Morning Brief | {briefing_date}"]
+    risk_check = llm.get("risk_check") or "Reassess if rates, CNH, or Hong Kong breadth contradict the base case."
+    confirmation = (bundle.get("today_forward", {}) or {}).get("focus_lines", []) or []
+    report_link = f"[Open full report | 35-50 min]({report_url})" if report_url else "Full report attachment follows."
+    footer = ["", report_link]
+
+    lines = [
+        f"# HK Morning Brief | {briefing_date}",
+        "> **5-minute scan** | Full report: 35-50 minutes",
+    ]
 
     if pulse:
-        lines.append(f"> {_truncate(str(pulse), 120)}")
-    lines.append(f"> **Risk**: {risk} | **Quality**: {score}/{grade}")
+        lines.append(f"> {_compact_text(pulse, 120)}")
+    lines.append(f"> **Risk**: {risk} | **Quality**: {score}/100 ({grade})")
 
     if release:
         label = release.get("label", "")
@@ -280,7 +309,7 @@ def build_summary_markdown(bundle: Dict[str, Any], report_date: str) -> str:
         if label:
             tag = f"**Release**: {label}"
             if reason:
-                tag += f" ({_truncate(str(reason), 60)})"
+                tag += f" ({_compact_text(reason, 60)})"
             lines.append(f"> {tag}")
 
     date_parts = []
@@ -291,35 +320,30 @@ def build_summary_markdown(bundle: Dict[str, Any], report_date: str) -> str:
     if date_parts:
         lines.append(" | ".join(date_parts))
 
-    lines.append("## Markets")
-    lines.extend(_market_snapshot_lines(bundle))
+    lines.append("## Decision frame")
+    if confirmation:
+        lines.append(f"> **Confirm:** {_compact_text(confirmation[0], 110)}")
+    else:
+        lines.append("> **Confirm:** Watch Hong Kong breadth, CNH and local flow for same-day confirmation.")
+    lines.append(f"> **Invalidate:** {_compact_text(risk_check, 110)}")
+
+    _append_group_with_budget(lines, ["## Markets", *_market_snapshot_lines(bundle)], footer)
 
     mw_lines = _must_watch_lines(bundle)
     if mw_lines:
-        lines.append("## Priority")
-        lines.extend(mw_lines)
+        _append_group_with_budget(lines, ["## Priority", *mw_lines], footer)
 
     today = _today_lines(bundle)
     if today:
-        lines.append("## Today")
-        lines.extend(today)
+        _append_group_with_budget(lines, ["## Today", *today], footer)
 
     hk_line = _hk_checks_line(bundle)
     if hk_line:
-        lines.append(hk_line)
+        _append_group_with_budget(lines, ["## Local checks", hk_line], footer)
 
-    if report_url:
-        lines.append("")
-        lines.append(f"[Full Report]({report_url})")
-
-    body = "\n".join(lines)
-
-    # Trim to fit WeCom's 4096-byte limit
-    while len(body.encode("utf-8")) > WECOM_MARKDOWN_BYTE_LIMIT:
-        body = "\n".join(body.split("\n")[:-1])
-        if not body:
-            body = "Report too large for WeCom message."
-            break
+    body = "\n".join([*lines, *footer])
+    if len(body.encode("utf-8")) > WECOM_SAFE_MARKDOWN_BYTE_LIMIT:
+        raise ValueError("Required WeCom decision summary exceeds the safe markdown byte budget.")
 
     return body
 
@@ -330,7 +354,10 @@ def send_summary(webhook_url: str, bundle: Dict[str, Any], report_date: str, dry
     if dry_run:
         print("=== WeCom Markdown Message ===")
         print(markdown)
-        print(f"=== Byte count: {len(markdown.encode('utf-8'))} / {WECOM_MARKDOWN_BYTE_LIMIT} ===")
+        print(
+            f"=== Byte count: {len(markdown.encode('utf-8'))} / "
+            f"{WECOM_SAFE_MARKDOWN_BYTE_LIMIT} safe ({WECOM_MARKDOWN_BYTE_LIMIT} platform) ==="
+        )
     else:
         _wecom_post(webhook_url, {"msgtype": "markdown", "markdown": {"content": markdown}})
         print("WeCom markdown summary sent.")
@@ -652,8 +679,8 @@ def main() -> int:
 
     webhook_url = (os.getenv("WECOM_WEBHOOK_URL") or "").strip()
     if not webhook_url and not args.dry_run:
-        print("WECOM_WEBHOOK_URL is not set. Skipping WeCom delivery.")
-        return 0
+        print("WECOM_WEBHOOK_URL is not set; primary WeCom delivery cannot proceed.", file=sys.stderr)
+        return 1
 
     # Only load bundle for modes that need it (not file-only mode)
     bundle = None
@@ -661,11 +688,15 @@ def main() -> int:
         bundle = _load_bundle(output_dir, args.report_date)
 
     if args.mode == "summary":
-        send_summary(webhook_url, bundle, args.report_date, dry_run=args.dry_run)
+        markdown = send_summary(webhook_url, bundle, args.report_date, dry_run=args.dry_run)
+        if args.dry_run:
+            (output_dir / f"{args.report_date}_wecom_preview.md").write_text(markdown, encoding="utf-8")
     elif args.mode == "file":
         send_file(webhook_url, output_dir, args.report_date, dry_run=args.dry_run)
     elif args.mode == "full":
-        send_summary(webhook_url, bundle, args.report_date, dry_run=args.dry_run)
+        markdown = send_summary(webhook_url, bundle, args.report_date, dry_run=args.dry_run)
+        if args.dry_run:
+            (output_dir / f"{args.report_date}_wecom_preview.md").write_text(markdown, encoding="utf-8")
         send_file(webhook_url, output_dir, args.report_date, dry_run=args.dry_run)
     else:
         raise ValueError(f"Unknown mode: {args.mode}")

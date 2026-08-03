@@ -67,9 +67,28 @@ The current professional report is built around three commute-reading layers:
 3. `Layer 3 | Thinking`
    Rotating theme deep dive, forward calendar, daily one chart, and a personal view pad.
 
-## GitHub Actions Email Delivery
+## GitHub Actions WeCom Delivery
 
-The workflow can email the generated report to `hongfei_wu7@outlook.com` after each run.
+WeCom is the primary morning delivery channel. Configure this required GitHub repository secret:
+
+```text
+WECOM_WEBHOOK_URL
+```
+
+Each scheduled run sends two WeCom messages after the report passes audit and is archived:
+
+1. a sub-3,800-byte decision brief designed for a five-minute mobile scan;
+2. a self-contained HTML attachment containing the 35–50 minute full report and charts.
+
+Both messages use bounded retries. The workflow fails visibly if either primary-channel delivery is unsuccessful, even when the secondary email copy succeeds. Preview both assets without sending:
+
+```bash
+python scripts/send_report_wecom.py --report-date 2026-04-13 --output-dir reports_professional --mode full --dry-run
+```
+
+## Secondary Email Delivery
+
+The workflow can also email the generated report to `hongfei_wu7@outlook.com` as a secondary copy.
 
 Configure these GitHub repository secrets:
 
@@ -85,7 +104,7 @@ SMTP_USE_TLS
 Notes:
 
 - `SMTP_FROM` can usually be the same as `SMTP_USERNAME`.
-- If the SMTP secrets are not configured, the workflow will skip email delivery and still generate the report.
+- If the SMTP secrets are not configured, the workflow records a warning; successful WeCom delivery still satisfies the delivery path.
 - The email contains a mobile-friendly HTML summary and attaches the full markdown report.
 
 Preview the email locally without sending:

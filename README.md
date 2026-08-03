@@ -2,7 +2,7 @@
 
 Daily Market Diary is a professional morning research workbench for Hong Kong and offshore China market monitoring. It builds a structured pre-market briefing from market data, macro calendars, public flow indicators, watchlist news, chart features, and an optional LLM narrative layer.
 
-The project is designed for a repeatable research-desk workflow: collect the overnight setup, score the local Hong Kong tape, generate charts, render a Markdown briefing, archive the result, and optionally email it before the market opens.
+The project is designed for a repeatable research-desk workflow: collect the overnight setup, score the local Hong Kong tape, generate charts, render a Markdown briefing, archive the result, and deliver it primarily through WeCom before the market opens.
 
 > This repository is for research workflow automation. It is not investment advice.
 
@@ -34,7 +34,7 @@ The professional pipeline follows five stages:
 2. Collect market, macro, flow, watchlist, and news inputs.
 3. Build deterministic analytics and quality checks.
 4. Add optional LLM sections for narrative framing.
-5. Render Markdown, charts, archive pages, artifacts, and email output.
+5. Render Markdown, charts, archive pages, WeCom delivery assets, artifacts, and a secondary email copy.
 
 The core report structure does not depend on an LLM. If the LLM layer is disabled or unavailable, the deterministic report still runs.
 
@@ -46,7 +46,8 @@ For GitHub Actions, configure these repository secrets:
 
 - `MINIMAX_API_KEY` for the primary provider
 - `DEEPSEEK_API_KEY` for fallback and skill shadow runs
-- SMTP secrets if email delivery is enabled
+- `WECOM_WEBHOOK_URL` for the required primary delivery channel
+- SMTP secrets if the secondary email copy is enabled
 
 The scheduled workflow maps them to:
 
@@ -144,8 +145,9 @@ It targets delivery before 07:30 Hong Kong / Beijing time. The primary run start
 - runs a narrow production preflight; the full suite is opt-in for manual dispatch and remains part of normal CI
 - generates the professional briefing
 - audits the generated output
-- renders and audits mobile delivery previews before publication
-- treats email and WeCom as independent delivery channels and fails when both are unavailable
+- renders and audits the mobile WeCom summary, self-contained HTML attachment, and email preview before publication
+- sends the decision brief and full report to WeCom first, with bounded retries
+- treats WeCom as the required primary channel; a successful email copy does not hide a WeCom delivery failure
 - archives published reports back to `main`
 - verifies an immutable SHA-256 archive manifest and updates the signal ledger
 - uploads reports and raw outputs as workflow artifacts
@@ -154,7 +156,7 @@ Manual workflow dispatch supports:
 
 - `date`: explicit calendar review date
 - `publish_archive`: commit the archive to `main`
-- `deliver`: send email and WeCom for a manual run
+- `deliver`: send the primary WeCom brief and attachment plus the secondary email copy for a manual run
 - `run_full_tests`: run the full regression suite before a manual generation
 - `include_raw_bundle`: include raw JSON in the committed archive
 
@@ -191,7 +193,7 @@ reports_professional/
 |-- archive/                    # immutable dated report packages and manifests
 `-- performance/                # tracked signal ledger, methodology, summary, and chart
 
-scripts/                        # test, audit, archive, email helpers
+scripts/                        # test, audit, archive, WeCom and email helpers
 tests/                          # regression suite
 docs/                           # supporting documentation
 ```

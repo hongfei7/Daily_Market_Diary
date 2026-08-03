@@ -7,6 +7,10 @@ from professional.analytics import build_professional_bundle
 from professional.config import load_professional_config
 from professional.email_builder import build_email_html, build_email_subject, build_email_text
 from professional.report_quality import build_report_quality
+from scripts.send_report_wecom import (
+    WECOM_SAFE_MARKDOWN_BYTE_LIMIT,
+    build_summary_markdown,
+)
 
 
 def _fixture():
@@ -60,6 +64,7 @@ def _fixture():
             "data": {
                 "main_board_turnover": {"display_value": "HK$207.9bn", "status": "live_local", "source": "HKEX Daily Quotations", "as_of": "2026-04-13", "note": "Participation was active."},
                 "turnover_vs_20d": {"display_value": "1.18x | +18% vs 20D", "status": "live_local", "source": "HKEX Daily Quotations", "as_of": "2026-04-13", "note": "Trailing 20-session average turnover was HK$176.3bn."},
+                "short_selling_ratio": {"display_value": "15.2%", "status": "live_local", "source": "HKEX Daily Quotations", "as_of": "2026-04-13", "note": "Short activity was contained."},
                 "hibor_1m": {"display_value": "2.23%", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "Funding conditions were stable."},
                 "aggregate_balance": {"display_value": "HK$54.4bn", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "Liquidity remained ample."},
                 "base_rate": {"display_value": "4.00%", "status": "live_local", "source": "HKMA Daily Figures - Interbank Liquidity", "as_of": "2026-04-13", "note": "Base-rate anchor remained unchanged."},
@@ -98,6 +103,7 @@ def main() -> None:
     bundle["llm_sections"] = {
         "one_line_market_pulse": "Hong Kong opened with a modestly constructive overseas setup but still needs local flow confirmation.",
         "deep_read_setup": "The market tone was constructive but not decisive, with the dollar softer and volatility contained.",
+        "risk_check": "Reassess if yields rise, CNH weakens, or Hong Kong breadth narrows.",
         "interview_answer": "The setup is mildly constructive. I would still want local flow confirmation before becoming more aggressive.",
     }
     bundle["report_quality"] = build_report_quality(bundle)
@@ -118,6 +124,25 @@ def main() -> None:
     assert "3033.HK" in html
     assert "-2.5bp" in html
     assert 'name="viewport"' in html
+
+    previous_repo = os.environ.get("GITHUB_REPOSITORY")
+    os.environ["GITHUB_REPOSITORY"] = "example/Daily_Market_Diary"
+    try:
+        wecom = build_summary_markdown(bundle, "2026-04-13")
+    finally:
+        if previous_repo is None:
+            os.environ.pop("GITHUB_REPOSITORY", None)
+        else:
+            os.environ["GITHUB_REPOSITORY"] = previous_repo
+
+    assert len(wecom.encode("utf-8")) <= WECOM_SAFE_MARKDOWN_BYTE_LIMIT
+    assert "5-minute scan" in wecom
+    assert "## Decision frame" in wecom
+    assert "**Invalidate:**" in wecom
+    assert "Turnover HK$207.9bn" in wecom
+    assert "SS 15.2%" in wecom
+    assert "reports_professional/archive/2026-04-13/morning_briefing.md" in wecom
+    assert "Open full report | 35-50 min" in wecom
 
     print("Email delivery test passed")
 

@@ -34,6 +34,7 @@ on:
         type: boolean
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -64,16 +65,49 @@ jobs:
 
       - name: Resolve run gate and briefing date
         id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           BRIEFING_DATE="$(date +%F)"
           SHOULD_RUN=true
           RUN_KIND=primary
+          ARCHIVE_NEEDED=true
 
           if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "47 22 * * *" ]; then
             RUN_KIND=recovery
-            if [ -f "reports_professional/archive/$BRIEFING_DATE/morning_briefing.md" ]; then
+            RECENT_SUCCESS=false
+            if RUNS_JSON="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/morning_briefing_professional.yml/runs?event=schedule&status=success&per_page=10")"; then
+              export RUNS_JSON
+              RECENT_SUCCESS="$(python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timedelta, timezone
+
+          now = datetime.now(timezone.utc)
+          cutoff = now - timedelta(hours=4)
+          current_run = int(os.getenv("GITHUB_RUN_ID", "0") or 0)
+          payload = json.loads(os.environ.get("RUNS_JSON", "{}"))
+          recent = False
+          for run in payload.get("workflow_runs", []):
+              if int(run.get("id", 0) or 0) == current_run or run.get("conclusion") != "success":
+                  continue
+              started = datetime.fromisoformat(str(run.get("run_started_at", "")).replace("Z", "+00:00"))
+              if started >= cutoff:
+                  recent = True
+                  break
+          print("true" if recent else "false")
+          PY
+              )"
+            else
+              echo "::warning::Could not inspect the primary run; recovery will fail open and attempt delivery."
+            fi
+
+            if [ "$RECENT_SUCCESS" = "true" ]; then
               SHOULD_RUN=false
-              echo "Primary report is already archived for $BRIEFING_DATE; recovery run is not needed."
+              echo "The recent primary schedule completed successfully, including WeCom delivery; recovery is not needed."
+            elif [ -f "reports_professional/archive/$BRIEFING_DATE/morning_briefing.md" ]; then
+              ARCHIVE_NEEDED=false
+              echo "The report is archived but the primary run did not succeed; retrying WeCom delivery without rewriting the archive."
             fi
           fi
 
@@ -81,7 +115,8 @@ jobs:
           echo "DELIVERY_REQUIRED=${{ github.event_name == 'schedule' || inputs.deliver }}" >> "$GITHUB_ENV"
           echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
           echo "run_kind=$RUN_KIND" >> "$GITHUB_OUTPUT"
-          echo "Run kind: $RUN_KIND | briefing date: $BRIEFING_DATE | execute: $SHOULD_RUN"
+          echo "archive_needed=$ARCHIVE_NEEDED" >> "$GITHUB_OUTPUT"
+          echo "Run kind: $RUN_KIND | briefing date: $BRIEFING_DATE | execute: $SHOULD_RUN | archive: $ARCHIVE_NEEDED"
 
       - name: Set up Python
         if: ${{ steps.gate.outputs.should_run == 'true' }}
@@ -174,7 +209,8 @@ jobs:
           AUDIT_LOG="reports_professional/audit_${BRIEFING_DATE}.txt"
           if ! python scripts/audit_professional_run.py \
             --report-date "$BRIEFING_DATE" \
-            --require-email-preview > "$AUDIT_LOG" 2>&1; then
+            --require-email-preview \
+            --require-wecom-preview > "$AUDIT_LOG" 2>&1; then
             cat "$AUDIT_LOG"
             {
               echo "### Runtime audit"
@@ -197,7 +233,7 @@ jobs:
       - name: Commit and push report archive
         id: archive
         continue-on-error: true
-        if: ${{ steps.gate.outputs.should_run == 'true' && (github.event_name == 'schedule' || (inputs.publish_archive && github.ref == 'refs/heads/main')) }}
+        if: ${{ steps.gate.outputs.should_run == 'true' && steps.gate.outputs.archive_needed == 'true' && (github.event_name == 'schedule' || (inputs.publish_archive && github.ref == 'refs/heads/main')) }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -224,7 +260,53 @@ jobs:
           done
           exit 1
 
-      - name: Send briefing email
+      - name: Send primary WeCom decision brief
+        id: wecom
+        continue-on-error: true
+        if: ${{ steps.gate.outputs.should_run == 'true' && (github.event_name == 'schedule' || inputs.deliver) }}
+        env:
+          WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WECOM_WEBHOOK_URL" ]; then
+            echo "::error::WECOM_WEBHOOK_URL is missing; primary WeCom delivery failed."
+            exit 1
+          fi
+          for attempt in 1 2 3; do
+            if python scripts/send_report_wecom.py \
+              --report-date "$BRIEFING_DATE" \
+              --output-dir reports_professional \
+              --mode summary; then
+              exit 0
+            fi
+            echo "Primary WeCom summary attempt $attempt failed."
+            if [ "$attempt" -lt 3 ]; then sleep $((attempt * 5)); fi
+          done
+          exit 1
+
+      - name: Send full report attachment to WeCom
+        id: wecom_file
+        continue-on-error: true
+        if: ${{ steps.gate.outputs.should_run == 'true' && (github.event_name == 'schedule' || inputs.deliver) }}
+        env:
+          WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WECOM_WEBHOOK_URL" ]; then
+            echo "::error::WECOM_WEBHOOK_URL is missing; WeCom file delivery failed."
+            exit 1
+          fi
+          for attempt in 1 2; do
+            if python scripts/send_report_wecom.py \
+              --report-date "$BRIEFING_DATE" \
+              --output-dir reports_professional \
+              --mode file; then
+              exit 0
+            fi
+            echo "WeCom file attempt $attempt failed."
+            if [ "$attempt" -lt 2 ]; then sleep $((attempt * 5)); fi
+          done
+          exit 1
+
+      - name: Send secondary email copy
         id: email
         continue-on-error: true
         if: ${{ steps.gate.outputs.should_run == 'true' && (github.event_name == 'schedule' || inputs.deliver) }}
@@ -237,7 +319,7 @@ jobs:
           SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
         run: |
           if [ -z "$SMTP_HOST" ] || [ -z "$SMTP_USERNAME" ] || [ -z "$SMTP_PASSWORD" ]; then
-            echo "::error::SMTP credentials are incomplete; email delivery failed."
+            echo "::warning::SMTP credentials are incomplete; secondary email copy was not sent."
             exit 1
           fi
           python scripts/send_report_email.py \
@@ -245,33 +327,26 @@ jobs:
             --output-dir reports_professional \
             --to "$REPORT_EMAIL_TO"
 
-      - name: Send briefing to WeCom
-        id: wecom
-        continue-on-error: true
-        if: ${{ steps.gate.outputs.should_run == 'true' && (github.event_name == 'schedule' || inputs.deliver) }}
-        env:
-          WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
-        run: |
-          if [ -z "$WECOM_WEBHOOK_URL" ]; then
-            echo "::error::WECOM_WEBHOOK_URL is missing; WeCom delivery failed."
-            exit 1
-          fi
-          python scripts/send_report_wecom.py \
-            --report-date "$BRIEFING_DATE" \
-            --output-dir reports_professional \
-            --mode full
-
       - name: Verify publication outcome
         if: ${{ always() && steps.gate.outputs.should_run == 'true' }}
         run: |
           FAILED=0
-          if [ "${{ github.event_name == 'schedule' || (inputs.publish_archive && github.ref == 'refs/heads/main') }}" = "true" ] && [ "${{ steps.archive.outcome }}" != "success" ]; then
+          if [ "${{ steps.gate.outputs.archive_needed }}" = "true" ] && [ "${{ github.event_name == 'schedule' || (inputs.publish_archive && github.ref == 'refs/heads/main') }}" = "true" ] && [ "${{ steps.archive.outcome }}" != "success" ]; then
             echo "::error::Report generation passed, but archive publication failed."
             FAILED=1
           fi
-          if [ "$DELIVERY_REQUIRED" = "true" ] && [ "${{ steps.email.outcome }}" != "success" ] && [ "${{ steps.wecom.outcome }}" != "success" ]; then
-            echo "::error::Both email and WeCom delivery failed."
-            FAILED=1
+          if [ "$DELIVERY_REQUIRED" = "true" ]; then
+            if [ "${{ steps.wecom.outcome }}" != "success" ]; then
+              echo "::error::Primary WeCom decision brief failed; email does not satisfy the primary-channel SLA."
+              FAILED=1
+            fi
+            if [ "${{ steps.wecom_file.outcome }}" != "success" ]; then
+              echo "::error::Full report attachment was not delivered to WeCom."
+              FAILED=1
+            fi
+            if [ "${{ steps.email.outcome }}" != "success" ]; then
+              echo "::warning::Secondary email copy was unavailable."
+            fi
           fi
           exit "$FAILED"
 
