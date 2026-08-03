@@ -12,7 +12,7 @@ DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_MODEL = "deepseek-v4-pro"
 MINIMAX_API_KEY_ENV = "MINIMAX_API_KEY"
 MINIMAX_BASE_URL = "https://api.minimaxi.com/v1"
-MINIMAX_MODEL = "MiniMax-M2.7"
+MINIMAX_MODEL = "MiniMax-M3"
 OPENAI_API_KEY_ENV = "OPENAI_API_KEY"
 
 _API_KEY_ENV_PROVIDERS = (
@@ -136,6 +136,15 @@ def get_default_model(provider: str = "") -> str:
     if selected_provider == "deepseek":
         return DEEPSEEK_MODEL
     return MINIMAX_MODEL
+
+
+def get_completion_extra_body(provider: str = "", model: str = "") -> dict:
+    """Return provider-specific request options for clean completion parsing."""
+    selected_provider = (provider or get_default_provider()).strip().lower()
+    selected_model = (model or get_default_model(selected_provider)).strip().lower()
+    if selected_provider == "minimax" and selected_model == "minimax-m3":
+        return {"reasoning_split": True}
+    return {}
 
 
 def api_key_available() -> bool:
@@ -264,6 +273,7 @@ def generate_report(date_str, market_summary, news_headlines, chart_features_blo
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0.7,
+                extra_body=get_completion_extra_body(provider, model_name),
             )
             raw = response.choices[0].message.content
             return _sanitize_output(raw)

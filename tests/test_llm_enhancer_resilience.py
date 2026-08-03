@@ -4,7 +4,12 @@ import tempfile
 
 from _bootstrap import ROOT  # noqa: F401
 
-from market_diary.modules.llm_client import get_available_providers, get_default_base_url, get_default_model
+from market_diary.modules.llm_client import (
+    get_available_providers,
+    get_completion_extra_body,
+    get_default_base_url,
+    get_default_model,
+)
 from professional.config import load_professional_config
 from professional.llm_enhancer import (
     _cache_path,
@@ -46,7 +51,7 @@ def test_effective_max_workers_caps_minimax_parallelism() -> None:
     os.environ.pop("DEEPSEEK_API_KEY", None)
     os.environ.pop("MINIMAX_API_KEY", None)
     os.environ.pop("OPENAI_API_KEY", None)
-    os.environ["LLM_MODEL"] = "MiniMax-M2.7"
+    os.environ["LLM_MODEL"] = "MiniMax-M3"
     os.environ.pop("LLM_BASE_URL", None)
     os.environ.pop("OPENAI_BASE_URL", None)
     os.environ.pop("LLM_PRIMARY_PROVIDER", None)
@@ -117,17 +122,23 @@ def test_minimax_primary_adds_deepseek_fallback_candidate() -> None:
 
     assert providers == ["minimax", "deepseek"]
     assert candidates == [
-        ("minimax", "MiniMax-M2.7", "default_model"),
+        ("minimax", "MiniMax-M3", "default_model"),
         ("deepseek", "deepseek-v4-pro", "default_model:fallback"),
     ]
     assert fallback_base_url == "https://api.deepseek.com"
 
 
+def test_minimax_m3_splits_reasoning_from_final_content() -> None:
+    assert get_completion_extra_body("minimax", "MiniMax-M3") == {"reasoning_split": True}
+    assert get_completion_extra_body("minimax", "MiniMax-M2.7") == {}
+    assert get_completion_extra_body("deepseek", "deepseek-v4-pro") == {}
+
+
 def test_cache_path_changes_when_prompt_changes() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         base_context = {"overview": {"theme": "Rates"}}
-        path_one = _cache_path(tmpdir, "overnight_review", base_context, "MiniMax-M2.7", "Prompt A")
-        path_two = _cache_path(tmpdir, "overnight_review", base_context, "MiniMax-M2.7", "Prompt B")
+        path_one = _cache_path(tmpdir, "overnight_review", base_context, "MiniMax-M3", "Prompt A")
+        path_two = _cache_path(tmpdir, "overnight_review", base_context, "MiniMax-M3", "Prompt B")
 
     assert path_one != path_two
 

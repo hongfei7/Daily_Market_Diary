@@ -51,7 +51,7 @@ For GitHub Actions, configure these repository secrets:
 The scheduled workflow maps them to:
 
 ```text
-MiniMax:  MINIMAX_API_KEY, https://api.minimaxi.com/v1, MiniMax-M2.7
+MiniMax:  MINIMAX_API_KEY, https://api.minimaxi.com/v1, MiniMax-M3
 DeepSeek: DEEPSEEK_API_KEY, https://api.deepseek.com, deepseek-v4-pro
 ```
 
@@ -60,7 +60,7 @@ For local development:
 ```bash
 export MINIMAX_API_KEY="your_minimax_key"
 export LLM_BASE_URL="https://api.minimaxi.com/v1"
-export LLM_MODEL="MiniMax-M2.7"
+export LLM_MODEL="MiniMax-M3"
 export LLM_PRIMARY_PROVIDER="minimax"
 ```
 

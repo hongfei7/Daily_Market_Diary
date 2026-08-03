@@ -12,6 +12,7 @@ from market_diary.modules.llm_client import (
     api_key_available,
     get_available_providers,
     get_client,
+    get_completion_extra_body,
     get_default_model,
     get_default_provider,
 )
@@ -756,6 +757,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                         ],
                         temperature=temperature,
                         max_tokens=max_tokens,
+                        extra_body=get_completion_extra_body(provider, model),
                     )
                     raw = _extract_response_text(response.choices[0].message.content)
                     last_raw_excerpt = raw[:240].replace("\n", " ").strip()
