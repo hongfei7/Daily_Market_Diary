@@ -133,3 +133,35 @@ def test_hkex_announcements_reuses_single_session_for_all_sources(monkeypatch) -
     assert payload["status"] in {"ok", "partial"}
     assert payload["meta"]["available_count"] >= 1
     assert session_creations["count"] == 1
+
+
+def test_profit_warning_priority_requires_portfolio_relevance() -> None:
+    item = {
+        "code": "0229",
+        "company": "Raymond Industrial",
+        "title": "Profit warning / alert announcement",
+        "document": "Announcements Concerning Profit Warning",
+        "event_type": "Profit warning",
+    }
+
+    market_score = adapter_hkex_announce._importance_score(item, {"codes": set(), "names": set()})
+    portfolio_score = adapter_hkex_announce._importance_score(item, {"codes": {"0229"}, "names": set()})
+
+    assert adapter_hkex_announce._grade(market_score) == "C"
+    assert adapter_hkex_announce._grade(portfolio_score) == "A"
+
+
+def test_profit_warning_filing_extract_keeps_primary_facts() -> None:
+    text = """
+    The Group is expected to record a loss in the range of HK$10 million to HK$11 million
+    for the six months ended 30 June 2026 as compared to a net profit of HK$32.5 million in 2025.
+    The expected loss was mainly attributable to exchange losses and higher commodity prices.
+    The interim results announcement is expected to be published on 21 August 2026.
+    """
+
+    details = adapter_hkex_announce._extract_filing_details(text)
+
+    assert details["filing_detail_status"] == "parsed"
+    assert "HK$10 million to HK$11 million" in details["filing_extract"]
+    assert "exchange losses" in details["filing_drivers"]
+    assert "21 August 2026" in details["next_disclosure"]

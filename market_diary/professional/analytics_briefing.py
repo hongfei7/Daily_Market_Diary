@@ -267,6 +267,54 @@ def build_must_watch(
     return deduped
 
 
+def _event_feed_status(explicit_status: Any, rows: List[Dict[str, Any]]) -> str:
+    if rows:
+        return "ok"
+    status = str(explicit_status or "").strip().lower()
+    if status in {"ok", "partial", "unavailable", "timeout", "error", "not_covered"}:
+        return status
+    return "unavailable"
+
+
+def _announcement_priority(item: Dict[str, Any]) -> str:
+    if item.get("watchlist_match"):
+        return "Portfolio"
+    event_type = " ".join(
+        [str(item.get("event_type", "")), str(item.get("title", "")), str(item.get("document", ""))]
+    ).lower()
+    if any(token in event_type for token in ("trading halt", "suspension", "resumption", "inside information")):
+        return "High"
+    if float(item.get("score", 0) or 0) >= 3.5 and "profit warning" not in event_type:
+        return "Review"
+    return "Monitor"
+
+
+def _announcement_investor_read(item: Dict[str, Any]) -> str:
+    event_type = str(item.get("event_type", "") or "").lower()
+    if "profit warning" in event_type:
+        if item.get("filing_detail_status") == "parsed":
+            return "Estimate risk: separate recurring operating pressure from one-offs, then test the gap versus expectations."
+        return "Headline risk only: the filing magnitude was not parsed, so no EPS impact should be inferred yet."
+    if "result" in event_type:
+        return "Potential estimate reset: compare reported KPIs, guidance and capital return with the expectation bar."
+    if any(token in event_type for token in ("trading", "suspension", "resumption", "halt")):
+        return "Liquidity and event risk: confirm the reason, terms and reopening conditions before acting."
+    return "Monitor for an estimate, multiple, liquidity or thesis impact before elevating it into the decision brief."
+
+
+def _announcement_next_check(item: Dict[str, Any]) -> str:
+    if item.get("next_disclosure"):
+        return str(item.get("next_disclosure"))
+    event_type = str(item.get("event_type", "") or "").lower()
+    if "profit warning" in event_type:
+        return "Read the filing; quantify the profit bridge and compare it with the latest reported period."
+    if "result" in event_type:
+        return "Tie actuals and guidance to consensus before changing the thesis or watchlist status."
+    if any(token in event_type for token in ("trading", "suspension", "resumption", "halt")):
+        return "Verify the HKEX filing and liquidity conditions before the next tradable session."
+    return "Open the primary filing and identify the next dated confirmation point."
+
+
 def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[str, Any]) -> Dict[str, Any]:
     earnings_rows: List[Dict[str, Any]] = []
     for item in (sector_data or {}).get("earnings_calendar", []) or []:
@@ -282,7 +330,8 @@ def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[
             }
         )
 
-    hkex_announcements = ((sector_data or {}).get("hkex_announcements", {}) or {}).get("data", {}) or {}
+    hkex_payload = (sector_data or {}).get("hkex_announcements", {}) or {}
+    hkex_announcements = hkex_payload.get("data", {}) or {}
     watchlist_announcements = hkex_announcements.get("watchlist_hits", []) or []
     selected_announcements = watchlist_announcements or hkex_announcements.get("top_announcements", []) or []
     announcement_rows: List[Dict[str, Any]] = []
@@ -298,17 +347,46 @@ def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[
             "source": item.get("source", "HKEXnews"),
             "url": item.get("url", ""),
             "score": item.get("score", 0),
+            "priority": _announcement_priority(item),
+            "watchlist_match": bool(item.get("watchlist_match")),
+            "date_confidence": item.get("date_confidence", "confirmed"),
+            "filing_extract": item.get("filing_extract", ""),
+            "filing_drivers": item.get("filing_drivers", ""),
+            "next_disclosure": item.get("next_disclosure", ""),
+            "filing_detail_status": item.get("filing_detail_status", "headline_only"),
+            "investor_read": _announcement_investor_read(item),
+            "next_check": _announcement_next_check(item),
         }
         announcement_rows.append(row)
         if watchlist_announcements:
             watchlist_rows.append(row)
 
+    type_counts = {
+        "profit_warnings": len(hkex_announcements.get("profit_warnings", []) or []),
+        "results": len(hkex_announcements.get("results_announcements", []) or []),
+        "trading_status": len(hkex_announcements.get("trading_halts", []) or []),
+    }
+    hkex_meta = dict(hkex_payload.get("meta", {}) or {})
+    hkex_meta["status"] = str(hkex_payload.get("status", "unavailable") or "unavailable")
+    actionable_count = sum(1 for item in announcement_rows if item.get("priority") in {"Portfolio", "High", "Review"})
+    ratings = (sector_digest or {}).get("sell_side", []) or []
+    earnings_status = _event_feed_status((sector_data or {}).get("earnings_calendar_status"), earnings_rows)
+    ratings_status = _event_feed_status((sector_data or {}).get("analyst_changes_status"), ratings)
+
     return {
         "earnings": earnings_rows,
-        "ratings": (sector_digest or {}).get("sell_side", []) or [],
+        "earnings_status": earnings_status,
+        "ratings": ratings,
+        "ratings_status": ratings_status,
         "announcements": announcement_rows,
         "watchlist_announcements": watchlist_rows,
         "announcement_scope": "watchlist" if watchlist_announcements else "market",
-        "hkex_meta": ((sector_data or {}).get("hkex_announcements", {}) or {}).get("meta", {}) or {},
-        "ipo_watch": "IPO and grey-market monitoring is not yet part of the standard production pack.",
+        "hkex_meta": hkex_meta,
+        "event_summary": {
+            "official_filings": int(hkex_meta.get("available_count", len(hkex_announcements.get("top_announcements", []) or [])) or 0),
+            "watchlist_hits": len(watchlist_announcements),
+            "actionable_events": actionable_count + len(earnings_rows) + len(ratings),
+            "type_counts": type_counts,
+        },
+        "ipo_status": "not_covered",
     }

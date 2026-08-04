@@ -23,6 +23,10 @@ def test_professional_html_structure() -> None:
 | S&P 500 | 7,489 / +0.70% | US beta improved. | Confirm with breadth. |
 | VIX | 15.99 / -6.44% | Stress eased. | Invalidate if breadth narrows. |
 | Event date | 2026-08-03 | Dated catalyst. | Verify the source. |
+
+### 2.5 Company Catalysts and Risk Monitor
+
+<div class="company-event-monitor"><div class="event-monitor-summary">Decision-filtered events</div></div>
 """
     with tempfile.TemporaryDirectory() as tmpdir:
         html = _md_to_html(markdown, Path(tmpdir), "2026-08-03")
@@ -37,6 +41,10 @@ def test_professional_html_structure() -> None:
     assert "Morning Market Brief" in html
     assert "reading-path" in html
     assert "section-executive-summary" in html
+    assert "company-event-monitor" in html
+    assert "event-monitor-summary" in html
+    assert ".event-monitor-summary { display: block" in html
+    assert ".event-read-grid { display: block" in html
     assert "mobile-toc" in html
     assert 'name="viewport"' in html
     assert "overflow-x: hidden" in html

@@ -88,7 +88,7 @@ TASK_FEW_SHOTS: Dict[str, str] = {
     "macro_interpretation": """Example JSON:
 {"paragraph":"The macro calendar matters because it can quickly reprice the rates-and-dollar backdrop that is supporting today's opening setup. If the data surprise is material, growth leadership could either extend or reverse early in the session.","watchpoints":["US yields and DXY after the release.","Whether Hong Kong growth proxies hold their opening tone."]}""",
     "company_commentary": """Example JSON:
-{"paragraph":"Company-level flow is worth respecting because earnings and rating changes can reset near-term sector narratives faster than broad macro noise. Focus on names that can change estimates, valuation anchors, or read-throughs for Hong Kong peers.","company_notes":[{"ticker":"0001.HK","commentary":"Results were better than feared and matter because the beat supports margin expectations."}]}""",
+{"paragraph":"Only portfolio-relevant or estimate-changing company events deserve space in the morning decision brief; market-wide low-signal filings should remain aggregated.","company_notes":[{"ticker":"0001.HK","commentary":"Fact: the primary filing reset the profit range. Investor read: test whether the driver is recurring and how far it sits from expectations. Next check: update the earnings bridge before changing the thesis."}]}""",
     "theme_deep_dive": """Example JSON:
 {"paragraph":"The weekly theme still deserves attention because recent data points are starting to line up rather than remaining isolated headlines. The right question is whether the current signals are strong enough to move positioning, or whether they are only useful as watchlist preparation for the next catalyst window.","watch_items":["Signal one to verify.","Catalyst two to monitor."]}""",
     "final_framing": """Example JSON:
@@ -535,9 +535,14 @@ def _should_run_macro(bundle: Dict[str, Any]) -> Tuple[bool, str]:
 
 def _should_run_company(bundle: Dict[str, Any]) -> Tuple[bool, str]:
     company_events = bundle.get("company_events", {}) or {}
-    if (company_events.get("earnings", []) or []) or (company_events.get("ratings", []) or []) or _news_candidates(bundle, limit=3):
+    if (
+        (company_events.get("earnings", []) or [])
+        or (company_events.get("ratings", []) or [])
+        or (company_events.get("watchlist_announcements", []) or [])
+        or _news_candidates(bundle, limit=3)
+    ):
         return True, ""
-    return False, "No earnings, ratings, or sector-event items were available."
+    return False, "No portfolio-relevant company event or sector signal was available."
 
 
 def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str, Any]) -> Dict[str, Any]:

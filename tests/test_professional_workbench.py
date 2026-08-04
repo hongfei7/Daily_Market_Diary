@@ -359,7 +359,8 @@ def main():
     assert "Hong Kong Trend Pack" in report
     assert "Decision Board" in report
     assert "Flow Tracker and Attribution" in report
-    assert "HKEX Announcements" in report
+    assert "Company Catalysts and Risk Monitor" in report
+    assert "event-monitor-summary" in report
     assert "Stock Connect Southbound Active Names" in report
     assert "AH Premium Dispersion" in report
     assert "MEITUAN-W" in report

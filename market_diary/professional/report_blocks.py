@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 from typing import Any, Dict, List
 
 from market_diary.professional.report_formatting import (
@@ -458,6 +459,59 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _event_card_html(item: Dict[str, Any]) -> str:
+    priority = str(item.get("priority", "Monitor") or "Monitor")
+    priority_slug = priority.lower().replace(" ", "-")
+    company = str(item.get("company", "") or "").strip()
+    ticker = str(item.get("ticker", "") or "").strip()
+    identity = " · ".join(part for part in (company, ticker) if part) or "Market event"
+    event_type = str(item.get("event_type", "Company event") or "Company event")
+    release_time = str(item.get("release_time", item.get("time", "")) or "Timing not supplied")
+    fact = str(item.get("filing_extract") or item.get("what_changed") or item.get("title") or "Primary detail pending review.")
+    investor_read = str(item.get("investor_read") or "Assess whether the event changes estimates, valuation or thesis confidence.")
+    next_check = str(item.get("next_check") or "Open the primary source and identify the next dated confirmation point.")
+    drivers = str(item.get("filing_drivers", "") or "").strip()
+    source = str(item.get("source", "") or "Primary source")
+    url = str(item.get("source_url", item.get("url", "")) or "").strip()
+    source_link = (
+        f'<a class="event-source" href="{html.escape(url, quote=True)}">{html.escape(source)} filing ↗</a>'
+        if url.startswith(("http://", "https://"))
+        else f'<span class="event-source event-source-muted">{html.escape(source)}</span>'
+    )
+    drivers_html = (
+        f'<p class="event-drivers"><span>Drivers</span>{html.escape(_truncate(drivers, 260, suffix=""))}</p>'
+        if drivers
+        else ""
+    )
+    return f"""<article class="event-card priority-{priority_slug}">
+<div class="event-card-meta"><span class="event-priority">{html.escape(priority)}</span><span>{html.escape(event_type)}</span><time>{html.escape(release_time)}</time></div>
+<h5>{html.escape(identity)}</h5>
+<p class="event-fact">{html.escape(_truncate(fact, 330, suffix=""))}</p>
+{drivers_html}<div class="event-read-grid">
+<div><span>Investor read</span><p>{html.escape(_truncate(investor_read, 230, suffix=""))}</p></div>
+<div><span>Next check</span><p>{html.escape(_truncate(next_check, 230, suffix=""))}</p></div>
+</div>
+{source_link}
+</article>"""
+
+
+def _coverage_boundary(company_events: Dict[str, Any]) -> str:
+    missing: List[str] = []
+    if not (company_events.get("earnings", []) or []) and company_events.get("earnings_status") != "ok":
+        missing.append("Earnings calendar")
+    if not (company_events.get("ratings", []) or []) and company_events.get("ratings_status") != "ok":
+        missing.append("sell-side rating changes")
+    if company_events.get("ipo_status") == "not_covered":
+        missing.append("IPO / grey-market monitor")
+    if not missing:
+        return ""
+    return (
+        '<p class="event-coverage-note"><strong>Coverage boundary.</strong> '
+        + html.escape(", ".join(missing))
+        + " were not decision-grade in this run; their absence is not treated as confirmation that no event exists.</p>"
+    )
+
+
 def _render_company_events(bundle: Dict[str, Any]) -> str:
     company_events = bundle.get("company_events", {}) or {}
     llm_sections = bundle.get("llm_sections", {}) or {}
@@ -482,52 +536,92 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
             sections.append(f"- **{item.get('ticker', '')}** | {_truncate(item.get('commentary', ''), 170, suffix='')}")
         sections.append("")
 
-    announcements = company_events.get("announcements", []) or []
-    sections.append("**HKEX Announcements**")
-    if announcements:
-        rows = [
-            (
-                item.get("grade", ""),
-                item.get("ticker", ""),
-                item.get("event_type", ""),
-                item.get("release_time", ""),
-                _truncate(item.get("title", ""), 88, suffix=""),
-            )
-            for item in announcements[:8]
-        ]
-        sections.append(_make_table(["Grade", "Ticker", "Type", "Release time", "Title"], rows))
-    else:
-        sections.append("No material HKEX announcement items were captured in the current public feed.")
-    sections.append("")
+    summary = company_events.get("event_summary", {}) or {}
+    filings = int(summary.get("official_filings", 0) or 0)
+    watchlist_hits = int(summary.get("watchlist_hits", 0) or 0)
+    announced_actionable = int(summary.get("actionable_events", 0) or 0)
+    type_counts = summary.get("type_counts", {}) or {}
+    hkex_status = str((company_events.get("hkex_meta", {}) or {}).get("status", "unavailable") or "unavailable")
 
-    earnings = company_events.get("earnings", []) or []
-    sections.append("**Earnings / Results Watch**")
-    if earnings:
-        rows = [
-            (
-                item.get("ticker", ""),
-                item.get("company", ""),
-                item.get("time", ""),
-                _truncate(item.get("comparison", ""), 84, suffix=""),
-            )
-            for item in earnings[:6]
-        ]
-        sections.append(_make_table(["Ticker", "Company", "Timing", "Expectation framing"], rows))
-    else:
-        sections.append("No earnings items were scheduled in the current window.")
+    cards: List[Dict[str, Any]] = []
+    for item in company_events.get("announcements", []) or []:
+        if item.get("priority") in {"Portfolio", "High", "Review"}:
+            cards.append(dict(item))
 
-    ratings = company_events.get("ratings", []) or []
-    sections.append("\n**Rating Changes**")
-    if ratings:
-        sections.extend(
-            f"- **{item.get('ticker', '')}** | {item.get('firm', '')} | {item.get('action', '')} | {item.get('summary', '')} | PT {item.get('target_change', '')}"
-            for item in ratings[:6]
+    for item in company_events.get("earnings", []) or []:
+        cards.append(
+            {
+                **item,
+                "priority": "High",
+                "event_type": "Earnings",
+                "what_changed": item.get("comparison", "Expectation frame pending"),
+                "investor_read": "Potential estimate reset: compare actual KPIs and guidance with the stated expectation bar.",
+                "next_check": "Prepare the KPI and valuation bridge before the release window.",
+                "release_time": item.get("time", ""),
+                "url": item.get("source_url", ""),
+            }
         )
-    else:
-        sections.append("- No rating-change items were highlighted in the current sell-side feed.")
 
-    sections.append("\n**IPO Watch**")
-    sections.append(f"- {company_events.get('ipo_watch', 'IPO monitoring was not part of this run.')}")
+    for item in company_events.get("ratings", []) or []:
+        cards.append(
+            {
+                **item,
+                "priority": "Review",
+                "company": item.get("firm", ""),
+                "event_type": "Rating change",
+                "what_changed": " | ".join(
+                    part for part in (str(item.get("action", "")), str(item.get("summary", "")), f"PT {item.get('target_change')}" if item.get("target_change") else "") if part
+                ),
+                "investor_read": "Treat as a sentiment and estimate-change signal, not as primary company evidence.",
+                "next_check": "Check the estimate revisions and thesis logic behind the rating action.",
+                "release_time": item.get("as_of", ""),
+                "url": item.get("source_url", ""),
+            }
+        )
+
+    priority_rank = {"Portfolio": 0, "High": 1, "Review": 2, "Monitor": 3}
+    cards.sort(key=lambda item: (priority_rank.get(str(item.get("priority", "Monitor")), 4), str(item.get("release_time", ""))), reverse=False)
+    cards = cards[:4]
+
+    if watchlist_hits:
+        verdict = f"Portfolio attention required: {watchlist_hits} official filing{'s' if watchlist_hits != 1 else ''} matched the active coverage list."
+    elif announced_actionable:
+        verdict = f"No watchlist filing hit; {announced_actionable} market event{'s' if announced_actionable != 1 else ''} cleared the decision filter."
+    elif filings:
+        verdict = f"No immediate portfolio catalyst: {filings} official filings were screened and the low-signal market set stays aggregated."
+    elif hkex_status in {"ok", "partial"}:
+        verdict = "No portfolio-relevant HKEX filing was identified in the screened window."
+    else:
+        verdict = "Official HKEX filing coverage was unavailable; do not interpret the empty event set as a clean calendar."
+
+    hygiene_parts = []
+    for label, key in (("profit warnings", "profit_warnings"), ("results", "results"), ("trading-status notices", "trading_status")):
+        count = int(type_counts.get(key, 0) or 0)
+        if count:
+            hygiene_parts.append(f"{count} {label}")
+    hygiene = " · ".join(hygiene_parts) or "No categorized official filing count was available."
+
+    card_html = "\n".join(_event_card_html(item) for item in cards)
+    if not card_html:
+        card_html = """<div class="event-monitor-empty">
+<strong>No event cleared the portfolio decision filter.</strong>
+<p>Broad-market filings remain traceable in the source appendix; they are not expanded here without a watchlist, estimate or liquidity read-through.</p>
+</div>"""
+
+    sections.append(
+        f"""<div class="company-event-monitor">
+<div class="event-monitor-summary">
+<div class="event-summary-copy"><span class="event-kicker">Decision filter</span><h4>{html.escape(verdict)}</h4><p>{html.escape(hygiene)}</p></div>
+<div class="event-stats" aria-label="Company event summary">
+<div><strong>{filings}</strong><span>Official filings</span></div>
+<div><strong>{watchlist_hits}</strong><span>Watchlist hits</span></div>
+<div><strong>{announced_actionable}</strong><span>Actionable events</span></div>
+</div>
+</div>
+<div class="event-card-list">{card_html}</div>
+{_coverage_boundary(company_events)}
+</div>"""
+    )
     return "\n".join(sections)
 
 

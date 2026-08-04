@@ -6,6 +6,7 @@ from professional.analytics_briefing import (
     build_must_watch,
     build_source_links,
 )
+from professional.report_blocks import _render_company_events
 
 
 def test_briefing_builds_catalysts_links_and_must_watch() -> None:
@@ -128,6 +129,106 @@ def test_briefing_builds_catalysts_links_and_must_watch() -> None:
     assert "VIX -3.50%" in titles
     assert "NVDA +3.50%" in titles
     assert len(titles) == len(set(titles))
+
+
+def test_company_event_monitor_aggregates_low_signal_market_warnings() -> None:
+    sector_data = {
+        "earnings_calendar": [],
+        "earnings_calendar_status": "unavailable",
+        "analyst_changes_status": "unavailable",
+        "hkex_announcements": {
+            "status": "ok",
+            "data": {
+                "profit_warnings": [{"ticker": "00229.HK"}, {"ticker": "00474.HK"}],
+                "results_announcements": [],
+                "trading_halts": [],
+                "watchlist_hits": [],
+                "top_announcements": [
+                    {
+                        "grade": "C",
+                        "ticker": "00229.HK",
+                        "company": "Raymond Industrial",
+                        "event_type": "Profit warning",
+                        "title": "Profit warning / alert announcement",
+                        "release_time": "2026-08-03",
+                        "source": "HKEXnews",
+                        "url": "https://example.com/229.pdf",
+                        "score": 2.5,
+                        "watchlist_match": False,
+                    },
+                    {
+                        "grade": "C",
+                        "ticker": "00474.HK",
+                        "company": "Market Company",
+                        "event_type": "Profit warning",
+                        "title": "Profit warning / alert announcement",
+                        "release_time": "2026-08-03",
+                        "source": "HKEXnews",
+                        "url": "https://example.com/474.pdf",
+                        "score": 2.5,
+                        "watchlist_match": False,
+                    },
+                ],
+            },
+            "meta": {"source": "HKEXnews", "available_count": 2},
+        },
+    }
+
+    company_events = build_company_event_digest(sector_data, {"sell_side": []})
+    rendered = _render_company_events({"company_events": company_events, "llm_sections": {}})
+
+    assert company_events["event_summary"]["official_filings"] == 2
+    assert company_events["event_summary"]["watchlist_hits"] == 0
+    assert "No immediate portfolio catalyst" in rendered
+    assert "2 profit warnings" in rendered
+    assert "No event cleared the portfolio decision filter" in rendered
+    assert "00229.HK" not in rendered
+    assert "IPO and grey-market monitoring is not yet" not in rendered
+
+
+def test_company_event_monitor_expands_portfolio_filing() -> None:
+    filing = {
+        "grade": "A",
+        "ticker": "0700.HK",
+        "company": "Tencent",
+        "event_type": "Profit warning",
+        "title": "Profit warning / alert announcement",
+        "release_time": "2026-08-03",
+        "source": "HKEXnews",
+        "url": "https://example.com/700.pdf",
+        "score": 5.5,
+        "watchlist_match": True,
+        "filing_detail_status": "parsed",
+        "filing_extract": "The Group is expected to record a loss of HK$100 million.",
+        "filing_drivers": "The change was mainly attributable to a one-off impairment.",
+        "next_disclosure": "Final results are expected to be published on 20 August 2026.",
+    }
+    sector_data = {
+        "earnings_calendar": [],
+        "earnings_calendar_status": "unavailable",
+        "analyst_changes_status": "unavailable",
+        "hkex_announcements": {
+            "status": "ok",
+            "data": {
+                "profit_warnings": [filing],
+                "results_announcements": [],
+                "trading_halts": [],
+                "watchlist_hits": [filing],
+                "top_announcements": [filing],
+            },
+            "meta": {"source": "HKEXnews", "available_count": 1},
+        },
+    }
+
+    company_events = build_company_event_digest(sector_data, {"sell_side": []})
+    rendered = _render_company_events({"company_events": company_events, "llm_sections": {}})
+
+    assert "Portfolio attention required" in rendered
+    assert "Tencent · 0700.HK" in rendered
+    assert "expected to record a loss" in rendered
+    assert "one-off impairment" in rendered
+    assert "Investor read" in rendered
+    assert "Next check" in rendered
 
 
 if __name__ == "__main__":

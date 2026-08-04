@@ -189,7 +189,9 @@ def _fallback_sector_payload() -> Dict[str, Any]:
     return {
         "sector_news": {},
         "earnings_calendar": [],
+        "earnings_calendar_status": "unavailable",
         "analyst_changes": [],
+        "analyst_changes_status": "unavailable",
         "hkex_announcements": {"status": "timeout", "items": [], "data": []},
         "formatted_text": "",
     }

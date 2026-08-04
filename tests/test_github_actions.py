@@ -16,7 +16,7 @@ def check_basic_imports() -> bool:
     print("Test 1: Third-party imports")
     print("=" * 60)
 
-    required = ["pandas", "numpy", "matplotlib", "openai", "yfinance"]
+    required = ["pandas", "numpy", "matplotlib", "openai", "yfinance", "pypdf"]
     for module_name in required:
         try:
             __import__(module_name)

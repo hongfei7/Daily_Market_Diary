@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+from io import BytesIO
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 from urllib.parse import urljoin
@@ -13,6 +14,11 @@ from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+try:
+    from pypdf import PdfReader
+except ImportError:  # pragma: no cover - dependency is pinned in production.
+    PdfReader = None
+
 
 HKEXNEWS_HOST = "https://www1.hkexnews.hk"
 HKEXNEWS_PREDEFINED_TEMPLATE = "https://www1.hkexnews.hk/search/predefineddoc.xhtml?predefineddocuments={category_id}&lang=EN"
@@ -21,6 +27,10 @@ HKEXNEWS_SOURCE = "HKEXnews"
 USER_AGENT = "Daily-Market-Diary/3.1"
 REQUEST_TIMEOUT = float(os.environ.get("DMD_PUBLIC_REQUEST_TIMEOUT_SECONDS", "12"))
 REQUEST_RETRY_TOTAL = int(os.environ.get("DMD_PUBLIC_RETRY_TOTAL", "1"))
+FILING_TIMEOUT = float(os.environ.get("DMD_HKEX_FILING_TIMEOUT_SECONDS", "8"))
+FILING_MAX_BYTES = int(os.environ.get("DMD_HKEX_FILING_MAX_BYTES", str(5 * 1024 * 1024)))
+FILING_MAX_PAGES = int(os.environ.get("DMD_HKEX_FILING_MAX_PAGES", "3"))
+FILING_ENRICHMENT_LIMIT = int(os.environ.get("DMD_HKEX_FILING_ENRICHMENT_LIMIT", "2"))
 
 PREDEFINED_CATEGORIES = {
     "results_announcements": {
@@ -113,13 +123,16 @@ def _importance_score(item: Dict[str, Any], watch_terms: Dict[str, Set[str]]) ->
         ]
     ).lower()
     score = 1.0
-    if item.get("code") in watch_terms.get("codes", set()):
+    watchlist_match = item.get("code") in watch_terms.get("codes", set()) or any(
+        name and name in text for name in watch_terms.get("names", set())
+    )
+    if watchlist_match:
         score += 3.0
-    if any(name and name in text for name in watch_terms.get("names", set())):
-        score += 2.0
-    for token in ("profit warning", "inside information", "suspension", "resumption", "trading halt"):
+    for token in ("inside information", "suspension", "resumption", "trading halt"):
         if token in text:
-            score += 2.0
+            score += 2.5
+    if "profit warning" in text:
+        score += 1.5
     for token in ("final results", "interim results", "quarterly results", "delay in results", "revision"):
         if token in text:
             score += 1.0
@@ -127,11 +140,118 @@ def _importance_score(item: Dict[str, Any], watch_terms: Dict[str, Set[str]]) ->
 
 
 def _grade(score: float) -> str:
-    if score >= 4.0:
+    if score >= 5.0:
         return "A"
-    if score >= 2.5:
+    if score >= 3.5:
         return "B"
     return "C"
+
+
+def _watchlist_match(item: Dict[str, Any], watch_terms: Dict[str, Set[str]]) -> bool:
+    if item.get("code") in watch_terms.get("codes", set()):
+        return True
+    text = " ".join([str(item.get("company", "")), str(item.get("title", ""))]).lower()
+    return any(name and name in text for name in watch_terms.get("names", set()))
+
+
+def _clip_sentence(value: str, limit: int) -> str:
+    text = _clean_text(value)
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 1)].rsplit(" ", 1)[0].rstrip(" ,;:") + "…"
+
+
+def _filing_sentences(text: str) -> List[str]:
+    normalized = _clean_text(text.replace("\x00", " "))
+    if not normalized:
+        return []
+    return [
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?])\s+(?=[A-Z(])", normalized)
+        if len(sentence.strip()) >= 24
+    ]
+
+
+def _extract_filing_details(text: str) -> Dict[str, str]:
+    """Extract source-near facts without inferring an EPS or valuation impact."""
+
+    sentences = _filing_sentences(text)
+    result_sentence = next(
+        (
+            sentence
+            for sentence in sentences
+            if any(token in sentence.lower() for token in ("expected to record", "expects to record", "anticipated to record"))
+            and any(token in sentence.lower() for token in ("profit", "loss", "revenue", "earnings"))
+        ),
+        "",
+    )
+    driver_sentence = next(
+        (
+            sentence
+            for sentence in sentences
+            if any(token in sentence.lower() for token in ("mainly attributable to", "primarily attributable to", "main reasons"))
+        ),
+        "",
+    )
+    next_event_sentence = next(
+        (
+            sentence
+            for sentence in sentences
+            if "expected to be published" in sentence.lower()
+            and any(token in sentence.lower() for token in ("results", "announcement", "report"))
+        ),
+        "",
+    )
+    if result_sentence:
+        compact_result = re.search(
+            r"((?:the\s+)?(?:group|company)\s+(?:is|are)\s+expected\s+to\s+record.+)",
+            result_sentence,
+            flags=re.IGNORECASE,
+        )
+        if compact_result:
+            result_sentence = compact_result.group(1)
+    next_disclosure = ""
+    if next_event_sentence:
+        disclosure_date = re.search(
+            r"expected\s+to\s+be\s+published(?:\s+on)?\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})",
+            next_event_sentence,
+            flags=re.IGNORECASE,
+        )
+        next_disclosure = (
+            f"Next results disclosure expected on {disclosure_date.group(1)} (official filing)."
+            if disclosure_date
+            else _clip_sentence(next_event_sentence, 190)
+        )
+    return {
+        "filing_extract": _clip_sentence(result_sentence, 380),
+        "filing_drivers": _clip_sentence(driver_sentence, 280),
+        "next_disclosure": next_disclosure,
+        "filing_detail_status": "parsed" if result_sentence else "headline_only",
+    }
+
+
+def _enrich_official_filing(item: Dict[str, Any], session: requests.Session) -> Optional[str]:
+    """Attach bounded primary-filing facts for portfolio-relevant announcements."""
+
+    url = str(item.get("url", "") or "").strip()
+    if not url or PdfReader is None:
+        item["filing_detail_status"] = "parser_unavailable" if PdfReader is None else "headline_only"
+        return "pypdf is unavailable" if PdfReader is None else None
+    try:
+        response = session.get(url.replace("http://", "https://", 1), timeout=FILING_TIMEOUT)
+        response.raise_for_status()
+        content = response.content
+        if not content.startswith(b"%PDF"):
+            raise ValueError("official filing response was not a PDF")
+        if len(content) > FILING_MAX_BYTES:
+            raise ValueError(f"official filing exceeded {FILING_MAX_BYTES} bytes")
+        reader = PdfReader(BytesIO(content))
+        text = " ".join((page.extract_text() or "") for page in reader.pages[:FILING_MAX_PAGES])
+        item.update(_extract_filing_details(text))
+        return None
+    except Exception as exc:
+        item["filing_detail_status"] = "headline_only"
+        return f"{item.get('ticker', '')}: {type(exc).__name__}: {exc}"
 
 
 def _parse_predefined(
@@ -176,6 +296,8 @@ def _parse_predefined(
         score = _importance_score(item, watch_terms)
         item["score"] = round(score, 2)
         item["grade"] = _grade(score)
+        item["watchlist_match"] = _watchlist_match(item, watch_terms)
+        item["date_confidence"] = "confirmed"
         rows.append(item)
 
     rows.sort(key=lambda item: (item.get("score", 0), item.get("release_time", "")), reverse=True)
@@ -218,9 +340,12 @@ def _parse_profit_warnings(
             "url": href,
             "source": HKEXNEWS_SOURCE,
         }
-        score = _importance_score(item, watch_terms) + 1.5
+        score = _importance_score(item, watch_terms)
         item["score"] = round(score, 2)
         item["grade"] = _grade(score)
+        item["watchlist_match"] = _watchlist_match(item, watch_terms)
+        item["date_confidence"] = "confirmed_date"
+        item["filing_detail_status"] = "headline_only"
         rows.append(item)
 
     rows.sort(key=lambda item: (item.get("score", 0), item.get("date", "")), reverse=True)
@@ -261,12 +386,14 @@ def fetch_hkex_announcements(
     combined = data["profit_warnings"] + data["results_announcements"] + data["trading_halts"]
     combined.sort(key=lambda item: (item.get("score", 0), item.get("release_time", "")), reverse=True)
     data["top_announcements"] = combined[:limit]
-    data["watchlist_hits"] = [
-        item
-        for item in combined
-        if item.get("code") in watch_terms.get("codes", set())
-        or any(name and name in " ".join([str(item.get("company", "")), str(item.get("title", ""))]).lower() for name in watch_terms.get("names", set()))
-    ][:limit]
+    data["watchlist_hits"] = [item for item in combined if item.get("watchlist_match")][:limit]
+
+    filing_errors: List[str] = []
+    for item in data["watchlist_hits"][:FILING_ENRICHMENT_LIMIT]:
+        if str(item.get("url", "")).lower().endswith(".pdf"):
+            error = _enrich_official_filing(item, session)
+            if error:
+                filing_errors.append(error)
 
     status = "ok" if combined and not errors else "partial" if combined else "error"
     return {
@@ -282,5 +409,9 @@ def fetch_hkex_announcements(
             + [HKEX_PROFIT_WARNING_URL],
             "available_count": len(combined),
             "errors": errors,
+            "filing_enriched_count": sum(
+                1 for item in data["watchlist_hits"] if item.get("filing_detail_status") == "parsed"
+            ),
+            "filing_enrichment_errors": filing_errors,
         },
     }

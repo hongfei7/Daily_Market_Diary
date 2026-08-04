@@ -101,10 +101,14 @@ These are the tables a professional morning report should always keep:
 6. A/H Premium Dispersion
 7. HKEX Short-Selling Watch
 8. Macro and Policy Agenda
-9. HKEX Announcements
-10. Earnings / Results Watch
-11. Rating Changes
-12. Coverage Pool Table
+9. Company Catalysts and Risk Monitor
+10. Coverage Pool Table
+
+The company-event monitor is decision-filtered: portfolio/watchlist hits and
+estimate-, valuation-, or liquidity-changing events are expanded; broad
+low-signal HKEX filings are aggregated and remain traceable in the appendix.
+Unavailable earnings, ratings, or IPO feeds are labeled as coverage boundaries
+rather than reported as confirmed empty calendars.
 
 ## Next chart upgrades
 

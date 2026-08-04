@@ -139,7 +139,7 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 {_render_flows(bundle)}
 {"".join(f"- Geopolitics: {item.get('region', '')} | {item.get('event', '')} | Impact: {item.get('impact', '')}\n" for item in ((bundle.get('risk', {}) or {}).get('geopolitical_risks', []) or [])[:3])}
 
-### 2.5 Key Company and Sector Events
+### 2.5 Company Catalysts and Risk Monitor
 {_render_news_table(bundle)}
 
 {_render_company_events(bundle)}
