@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-08-04](./archive/2026-08-04/README.md)
+- Latest archive folder: [2026-08-05](./archive/2026-08-05/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -32,6 +32,7 @@ Published date payloads are immutable and carry a SHA-256 manifest. Source-healt
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | Event Radar | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-08-05 | Trading Daily | Pulse unavailable | 87.6/100 | [Report](archive/2026-08-05/README.md) | [Dashboard](archive/2026-08-05/charts/dashboard_2026-08-05.png) | [Event Radar](archive/2026-08-05/charts/catalyst_radar_2026-08-05.png) | [One Chart](archive/2026-08-05/charts/daily_one_chart_2026-08-05.png) | N/A | N/A |
 | 2026-08-04 | Trading Daily | Pulse unavailable | 85.8/100 | [Report](archive/2026-08-04/README.md) | [Dashboard](archive/2026-08-04/charts/dashboard_2026-08-04.png) | [Event Radar](archive/2026-08-04/charts/catalyst_radar_2026-08-04.png) | [One Chart](archive/2026-08-04/charts/daily_one_chart_2026-08-04.png) | N/A | N/A |
 | 2026-08-03 | Weekend Event Watch | The Risk-On weekend backdrop - with VIX easing to 15.99 and USD range-bound - supports a constructive Monday open,... | 90.0/100 | [Report](archive/2026-08-03/README.md) | [Dashboard](archive/2026-08-03/charts/dashboard_2026-08-03.png) | N/A | [One Chart](archive/2026-08-03/charts/daily_one_chart_2026-08-03.png) | N/A | N/A |
 | 2026-08-02 | Weekly Review | The week ended with a Risk-On US beta cushion but a hawkish rates impulse that left Hong Kong's SOE/H-share leaders... | 85.3/100 | [Report](archive/2026-08-02/README.md) | [Dashboard](archive/2026-08-02/charts/dashboard_2026-08-02.png) | N/A | [One Chart](archive/2026-08-02/charts/daily_one_chart_2026-08-02.png) | [Trend Pack](archive/2026-08-02/charts/hk_trend_pack_2026-08-02.png) | N/A |
