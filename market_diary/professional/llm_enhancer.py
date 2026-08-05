@@ -706,6 +706,7 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
             "Task: write a Hong Kong / A-share review setup.\n"
             "Focus on style leadership, local flow implications, and cross-market read-through.\n"
             "Use flow_tracker and attribution_v1 when available; if Connect or CCASS data is absent, state that confirmation is incomplete.\n"
+            "The local_leadership field must include the style call, at least two supplied facts, and what the evidence means for the open; never return only a generic label such as 'Hong Kong growth / internet led'.\n"
             "Keep paragraph to 2-4 short sentences. Put the actionable confirmation test in follow_through.\n"
             "Return JSON with keys: paragraph, local_leadership, follow_through.\n"
         ),

@@ -315,11 +315,16 @@ def build_summary_markdown(bundle: Dict[str, Any], report_date: str) -> str:
     score = quality.get("score", "N/A")
     grade = quality.get("grade", "N/A")
     pulse = llm.get("one_line_market_pulse") or overview.get("theme", "")
+    hk_view = bundle.get("hk_desk_view", {}) or {}
+    hk_lens = hk_view.get("lens") or llm.get("hk_local_leadership") or hk_view.get("leadership") or ""
 
     report_url = _resolve_report_url(report_date)
 
-    risk_check = llm.get("risk_check") or "Reassess if rates, CNH, or Hong Kong breadth contradict the base case."
-    confirmation = (bundle.get("today_forward", {}) or {}).get("focus_lines", []) or []
+    risk_check = hk_view.get("invalidation") or llm.get("risk_check") or "Reassess if rates, CNH, or Hong Kong breadth contradict the base case."
+    confirmation = hk_view.get("confirmation") or ""
+    if not confirmation:
+        confirmation_lines = (bundle.get("today_forward", {}) or {}).get("focus_lines", []) or []
+        confirmation = confirmation_lines[0] if confirmation_lines else ""
     report_link = f"[Open full report | 35-50 min]({report_url})" if report_url else "Full report attachment follows."
     footer = ["", report_link]
 
@@ -350,8 +355,10 @@ def build_summary_markdown(bundle: Dict[str, Any], report_date: str) -> str:
         lines.append(" | ".join(date_parts))
 
     lines.append("## Decision frame")
+    if hk_lens:
+        lines.append(f"> **HK lens:** {_compact_text(hk_lens, 300)}")
     if confirmation:
-        lines.append(f"> **Confirm:** {_compact_text(confirmation[0], 110)}")
+        lines.append(f"> **Confirm:** {_compact_text(confirmation, 160)}")
     else:
         lines.append("> **Confirm:** Watch Hong Kong breadth, CNH and local flow for same-day confirmation.")
     lines.append(f"> **Invalidate:** {_compact_text(risk_check, 110)}")

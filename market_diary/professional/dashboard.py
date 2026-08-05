@@ -536,7 +536,8 @@ def _draw_desk_frame(ax, bundle: Dict[str, Any]) -> None:
     risk_dashboard = attribution.get("risk_dashboard", {}) or {}
     score = risk_dashboard.get("score", "N/A")
     bucket = risk_dashboard.get("bucket", "Mixed")
-    leadership = ((bundle.get("hk_desk_view", {}) or {}).get("leadership", "") or "Leadership not available").strip()
+    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
+    leadership = (hk_desk_view.get("lens", "") or hk_desk_view.get("leadership", "") or "Leadership not available").strip()
     quality = (bundle.get("meta", {}) or {}).get("market_quality", {}) or {}
     must_watch = bundle.get("must_watch", []) or []
 
@@ -576,7 +577,7 @@ def _draw_desk_frame(ax, bundle: Dict[str, Any]) -> None:
     ax.text(
         0.04,
         0.365,
-        _safe_text(_wrap_text(leadership, width=44, max_lines=2)),
+        _safe_text(_wrap_text(leadership, width=56, max_lines=3)),
         transform=ax.transAxes,
         fontsize=11.6,
         color=INK,
@@ -637,7 +638,8 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     risk_dashboard = ((bundle.get("attribution", {}) or {}).get("risk_dashboard", {}) or {})
     risk_score = risk_dashboard.get("score", "N/A")
     risk_bucket = risk_dashboard.get("bucket", regime)
-    leadership = ((bundle.get("hk_desk_view", {}) or {}).get("leadership", "") or "Leadership unavailable").strip()
+    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
+    leadership = (hk_desk_view.get("headline", "") or hk_desk_view.get("leadership", "") or "Leadership unavailable").strip()
     quality = (bundle.get("meta", {}) or {}).get("market_quality", {}) or {}
     quality_text = _coverage_header_text(bundle)
     mode_label = str(((bundle.get("day_mode", {}) or {}).get("label", "") or "Trading day"))

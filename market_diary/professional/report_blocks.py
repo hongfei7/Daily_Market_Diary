@@ -15,7 +15,12 @@ from market_diary.professional.report_formatting import (
     _status_label,
     _truncate,
 )
-from market_diary.professional.report_sections import _pick_metrics_by_name, _resolved_hk_leadership, _safe_sentence_clip
+from market_diary.professional.report_sections import (
+    _pick_metrics_by_name,
+    _resolved_hk_leadership,
+    _resolved_hk_lens,
+    _safe_sentence_clip,
+)
 from market_diary.professional.report_text import (
     _compact_bullets,
     _condense_sentence,
@@ -55,27 +60,34 @@ def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str
 def _render_executive_summary(bundle: Dict[str, Any], pulse: str) -> str:
     llm_sections = bundle.get("llm_sections", {}) or {}
     must_watch = bundle.get("must_watch", []) or []
-    leadership = _resolved_hk_leadership(bundle)
+    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
+    lens = _resolved_hk_lens(bundle)
     lines: List[str] = []
 
     pulse_text = _safe_sentence_clip(pulse, 190)
     if pulse_text:
         lines.append(f"- **Market pulse:** {pulse_text}")
 
-    hk_implication = _safe_sentence_clip(llm_sections.get("overnight_hk_implication", ""), 180)
-    if hk_implication:
-        lines.append(f"- **Hong Kong lens:** {leadership}. {hk_implication}")
-    elif leadership:
-        lines.append(f"- **Hong Kong lens:** {leadership}.")
+    if lens:
+        lines.append(f"- **Hong Kong lens:** {_safe_sentence_clip(lens, 430)}")
 
-    confirmation = _safe_sentence_clip(llm_sections.get("hk_follow_through", ""), 175)
+    hk_implication = _safe_sentence_clip(llm_sections.get("overnight_hk_implication", ""), 180)
+    if hk_implication and hk_implication.lower() not in lens.lower():
+        lines.append(f"- **Opening implication:** {hk_implication}")
+
+    confirmation = _safe_sentence_clip(hk_desk_view.get("confirmation", ""), 230)
+    llm_confirmation = _safe_sentence_clip(llm_sections.get("hk_follow_through", ""), 210)
+    if llm_confirmation and len(llm_confirmation) >= 45:
+        confirmation = llm_confirmation
     if not confirmation:
         focus_lines = ((bundle.get("today_forward", {}) or {}).get("focus_lines", []) or [])
         confirmation = _safe_sentence_clip(focus_lines[0] if focus_lines else "", 175)
     if confirmation:
         lines.append(f"- **What would confirm it:** {confirmation}")
 
-    invalidation = _safe_sentence_clip(llm_sections.get("risk_check", ""), 175)
+    invalidation = _safe_sentence_clip(hk_desk_view.get("invalidation", ""), 220)
+    if not invalidation:
+        invalidation = _safe_sentence_clip(llm_sections.get("risk_check", ""), 175)
     if invalidation:
         lines.append(f"- **What could break it:** {invalidation}")
 
@@ -378,8 +390,17 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
     hk_lines, suppressed_hk_lines = _compact_hk_read_lines(_compact_bullets(hk_desk_view.get("lines", []) or [], limit=5, width=140), limit=3)
     lines.append("")
     lines.append("**Hong Kong Read-Through**")
+    headline = str(hk_desk_view.get("headline", "") or "").strip()
+    evidence = str(hk_desk_view.get("evidence", "") or "").strip()
+    implication = str(hk_desk_view.get("implication", "") or "").strip()
     leadership = str(hk_desk_view.get("leadership", "") or "").strip()
-    if leadership:
+    if headline:
+        lines.append(f"**Desk lens.** {headline}.")
+        if evidence:
+            lines.append(f"**Evidence.** {_condense_sentence(evidence, 220)}")
+        if implication:
+            lines.append(f"**Investment read.** {_condense_sentence(implication, 240)}")
+    elif leadership:
         lines.append(f"**Desk lens.** {leadership}.")
     if hk_implication:
         lines.append(f"**Opening implication.** {_condense_sentence(hk_implication, 260)}")
@@ -421,8 +442,17 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
         lines.append("")
 
     leadership = _resolved_hk_leadership(bundle)
+    headline = str(hk_desk_view.get("headline", "") or "").strip()
+    evidence = str(hk_desk_view.get("evidence", "") or "").strip()
+    implication = str(hk_desk_view.get("implication", "") or "").strip()
     lines.append("**Style and Local Leadership**")
-    if leadership:
+    if headline:
+        lines.append(f"**Style call.** {headline}.")
+        if evidence:
+            lines.append(f"- **Evidence:** {_condense_sentence(evidence, 220)}")
+        if implication:
+            lines.append(f"- **Portfolio meaning:** {_condense_sentence(implication, 240)}")
+    elif leadership:
         lines.append(f"**Style leadership.** {leadership}.")
     else:
         lines.append("**Style leadership.** Check HSI, HSCEI, and the 3033.HK ETF proxy first to separate broad-beta, old-economy, and growth leadership.")
@@ -443,11 +473,15 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
         lines.append("Official Stock Connect confirmation is incomplete; use ETF proxies and price leadership only as secondary evidence.")
 
     follow_through = str(llm_sections.get("hk_follow_through", "") or "").strip()
+    deterministic_confirmation = str(hk_desk_view.get("confirmation", "") or "").strip()
+    deterministic_invalidation = str(hk_desk_view.get("invalidation", "") or "").strip()
     if not follow_through:
-        follow_through = "Confirm the opening read through Southbound active names, short-selling concentration, USD/CNH, and USD/HKD funding pressure."
+        follow_through = deterministic_confirmation or "Confirm the opening read through Southbound active names, short-selling concentration, USD/CNH, and USD/HKD funding pressure."
     lines.append("")
     lines.append("**Follow-Through Checklist**")
     lines.append(f"**Follow-through check.** {_condense_sentence(follow_through, 260)}")
+    if deterministic_invalidation:
+        lines.append(f"**Failure condition.** {_condense_sentence(deterministic_invalidation, 260)}")
 
     if not _has_official_stock_connect_flow(bundle):
         proxy_table = _render_hk_etf_proxy_table(bundle)

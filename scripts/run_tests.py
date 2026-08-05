@@ -34,6 +34,7 @@ SYSTEM_TESTS = [
     "tests/test_wecom_receipt.py",
     "tests/test_report_html.py",
     "tests/test_editorial_guards.py",
+    "tests/test_hk_investor_lens.py",
     "tests/test_fact_checker.py",
     "tests/test_provenance.py",
     "tests/test_source_health.py",

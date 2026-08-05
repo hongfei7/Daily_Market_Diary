@@ -363,7 +363,18 @@ def _resolved_hk_leadership(bundle: Dict[str, Any]) -> str:
     return canonical_hk_leadership(hk_desk_view.get("leadership", ""), llm_sections.get("hk_local_leadership", ""))
 
 
+def _resolved_hk_lens(bundle: Dict[str, Any]) -> str:
+    """Prefer the deterministic, evidence-bearing lens over a style label."""
+    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
+    lens = str(hk_desk_view.get("lens", "") or "").strip()
+    if lens:
+        return lens
+    return _resolved_hk_leadership(bundle)
+
+
 def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
+    hk_desk_view = bundle.get("hk_desk_view", {}) or {}
+    leadership_display = str(hk_desk_view.get("headline", "") or "").strip() or _resolved_hk_leadership(bundle)
     rows = bundle.get("hk_quick_checks", []) or []
     rows = _pick_metrics_by_name(
         rows,
@@ -386,7 +397,7 @@ def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
         table_rows.append(
             (
                 item.get("metric", ""),
-                _resolved_hk_leadership(bundle) if item.get("metric") == "Hong Kong leadership" else item.get("value", ""),
+                leadership_display if item.get("metric") == "Hong Kong leadership" else item.get("value", ""),
                 _status_label(str(item.get("status", ""))),
                 _compact_source_as_of(item),
                 _truncate(item.get("note", ""), 220),

@@ -177,7 +177,7 @@ def build_hk_quick_checks(
         ),
         _quick_check_row(
             metric="Hong Kong leadership",
-            value=hk_desk_view.get("leadership", "N/A"),
+            value=hk_desk_view.get("headline") or hk_desk_view.get("leadership", "N/A"),
             status="proxy",
             note="Use HSI / HSCEI / 3033.HK ETF relative moves as the opening style read.",
             source="HSI / HSCEI / 3033.HK ETF relative performance",

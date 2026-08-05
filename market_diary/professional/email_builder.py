@@ -11,6 +11,12 @@ def _safe(value: Any) -> str:
     return html.escape(str(value or ""), quote=True)
 
 
+def _hk_lens(bundle: Dict[str, Any]) -> str:
+    view = bundle.get("hk_desk_view", {}) or {}
+    llm = bundle.get("llm_sections", {}) or {}
+    return str(view.get("lens") or llm.get("hk_local_leadership") or view.get("leadership") or "").strip()
+
+
 def _hk_local_highlights(bundle: Dict[str, Any], limit: int = 4) -> List[Dict[str, str]]:
     rows = []
     for item in (bundle.get("hk_quick_checks", []) or []):
@@ -69,7 +75,9 @@ def build_email_text(bundle: Dict[str, Any]) -> str:
     quality = bundle.get("report_quality", {}) or {}
     release = quality.get("release_recommendation", {}) or {}
     pulse = llm.get("one_line_market_pulse") or overview.get("theme", "")
-    risk_check = llm.get("risk_check") or "Reassess if rates, CNH, or Hong Kong breadth contradict the base case."
+    hk_view = bundle.get("hk_desk_view", {}) or {}
+    hk_lens = _hk_lens(bundle)
+    risk_check = hk_view.get("invalidation") or llm.get("risk_check") or "Reassess if rates, CNH, or Hong Kong breadth contradict the base case."
 
     lines = [
         f"HONG KONG MORNING BRIEF | {meta.get('briefing_date', meta.get('report_date', ''))}",
@@ -77,6 +85,7 @@ def build_email_text(bundle: Dict[str, Any]) -> str:
         f"Global through {meta.get('global_market_date', meta.get('effective_date', ''))} | HK/China through {meta.get('hk_data_date', meta.get('data_through', ''))}",
         "",
         f"BASE CASE: {pulse}",
+        f"HONG KONG LENS: {hk_lens}",
         f"INVALIDATE / REASSESS: {risk_check}",
         f"QUALITY: {quality.get('score', 'N/A')}/100 ({quality.get('grade', 'N/A')}) | {release.get('label', 'N/A')}",
         "",
@@ -115,9 +124,12 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
     market_quality = meta.get("market_quality", {}) or {}
 
     pulse = llm.get("one_line_market_pulse") or overview.get("theme", "")
+    hk_view = bundle.get("hk_desk_view", {}) or {}
+    hk_lens = _hk_lens(bundle)
     deep_read = llm.get("deep_read_setup") or overview.get("theme", "")
     hk_read = llm.get("hk_review_setup") or "Use local breadth, turnover, Southbound activity and CNH to confirm the overseas signal."
-    risk_check = llm.get("risk_check") or "Reassess if rates, CNH, or Hong Kong breadth contradict the base case."
+    risk_check = hk_view.get("invalidation") or llm.get("risk_check") or "Reassess if rates, CNH, or Hong Kong breadth contradict the base case."
+    hk_confirmation = hk_view.get("confirmation") or "Watch Hong Kong breadth, CNH and local flow for same-day confirmation."
     interview_answer = llm.get("interview_answer") or pulse
 
     tape_cells = [
@@ -219,6 +231,8 @@ def build_email_html(bundle: Dict[str, Any], dashboard_cid: Optional[str] = None
       <div class="eyebrow">DECISION FRAME</div><h2>What confirms or breaks the view</h2>
       <table class="frame">
         <tr><th>Base case</th><td>{_safe(pulse)}</td></tr>
+        <tr><th>Hong Kong lens</th><td>{_safe(hk_lens)}</td></tr>
+        <tr><th>HK confirmation</th><td>{_safe(hk_confirmation)}</td></tr>
         <tr><th>Confirmation tests</th><td><ul>{focus_html or '<li>No same-day confirmation test was available.</li>'}</ul></td></tr>
         <tr><th>Invalidate / reassess</th><td>{_safe(risk_check)}</td></tr>
       </table>

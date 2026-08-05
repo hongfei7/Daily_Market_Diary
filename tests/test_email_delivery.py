@@ -115,12 +115,15 @@ def main() -> None:
     assert "Hong Kong Morning Briefing" in subject
     assert "READ THIS FIRST" in text
     assert "QUALITY:" in text
+    assert "HONG KONG LENS:" in text
     assert "DEEP-READ SETUP" in text
     assert "DEEP READ" in html
     assert "cid:research_dashboard" in html
     assert "HONG KONG LOCAL CHECKS" in text
     assert "Hong Kong local checks" in html
     assert "DECISION FRAME" in html
+    assert "Hong Kong lens" in html
+    assert "HK confirmation" in html
     assert "3033.HK" in html
     assert "-2.5bp" in html
     assert 'name="viewport"' in html
@@ -138,6 +141,7 @@ def main() -> None:
     assert len(wecom.encode("utf-8")) <= WECOM_SAFE_MARKDOWN_BYTE_LIMIT
     assert "5-minute scan" in wecom
     assert "## Decision frame" in wecom
+    assert "**HK lens:**" in wecom
     assert "**Invalidate:**" in wecom
     assert "Turnover HK$207.9bn" in wecom
     assert "SS 15.2%" in wecom

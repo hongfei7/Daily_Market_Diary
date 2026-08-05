@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, Iterable, List, Optional
 
 from market_diary.professional.instruments import format_summary_change, summary_change
@@ -198,7 +199,53 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
     }
 
 
-def build_hk_desk_view(summary: Dict[str, Any]) -> Dict[str, Any]:
+def build_hk_desk_view(
+    summary: Dict[str, Any],
+    hk_local: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    return build_hk_investor_lens(summary, hk_local)
+
+
+def _local_metric_value(hk_local: Dict[str, Any], key: str) -> Optional[float]:
+    metric = (hk_local or {}).get(key, {}) or {}
+    value = _parse_float(metric.get("value"))
+    if value is not None:
+        return value
+    display = str(metric.get("display_value", "") or "")
+    match = re.search(r"([+-]?[0-9][0-9,]*(?:\.[0-9]+)?)", display)
+    if not match:
+        return None
+    parsed = _parse_float(match.group(1))
+    if parsed is None:
+        return None
+    if key == "southbound_net_flow":
+        lowered = display.lower()
+        if "-" in display[: match.start()]:
+            parsed = -abs(parsed)
+        if "bn" in lowered:
+            parsed *= 1_000_000_000
+        elif "mn" in lowered:
+            parsed *= 1_000_000
+    return parsed
+
+
+def _compact_hkd_flow(value: Optional[float]) -> str:
+    if value is None:
+        return "N/A"
+    sign = "+" if value > 0 else "" if value == 0 else "-"
+    return f"{sign}HK${abs(value) / 1_000_000_000:.1f}bn"
+
+
+def build_hk_investor_lens(
+    summary: Dict[str, Any],
+    hk_local: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Build a fact-led Hong Kong style read that survives an LLM failure.
+
+    ``leadership`` remains a compact compatibility label for tables and charts.
+    ``lens`` is the decision-useful conclusion: relative performance, quality of
+    confirmation, investment implication, and explicit prove/kill conditions.
+    """
     rows = build_market_snapshot(summary)
     hsi = _get_row(rows, "Hang Seng Index").get("change_pct")
     hscei = _get_row(rows, "HSCEI").get("change_pct")
@@ -206,16 +253,97 @@ def build_hk_desk_view(summary: Dict[str, Any]) -> Dict[str, Any]:
     fxi = _get_row(rows, "China proxy (FXI)").get("change_pct")
     usdcnh = _get_row(rows, "USD/CNH").get("change_pct")
     usdhkd = _get_row(rows, "USD/HKD").get("price")
+    turnover_ratio = _local_metric_value(hk_local or {}, "turnover_vs_20d")
+    short_ratio = _local_metric_value(hk_local or {}, "short_selling_ratio")
+    southbound = _local_metric_value(hk_local or {}, "southbound_net_flow")
 
-    if hstech is not None and hscei is not None:
-        if hstech - hscei > 0.5:
+    style_spread = hstech - hscei if hstech is not None and hscei is not None else None
+    beta_spread = hstech - hsi if hstech is not None and hsi is not None else None
+
+    if style_spread is not None:
+        if style_spread > 0.5:
             leadership = "Hong Kong growth / internet led"
-        elif hscei - hstech > 0.5:
+            style = "growth"
+        elif style_spread < -0.5:
             leadership = "State-owned / old-economy H-shares led"
+            style = "value"
         else:
             leadership = "Leadership was broad and balanced"
+            style = "balanced"
     else:
         leadership = "Leadership could not be determined cleanly"
+        style = "unconfirmed"
+
+    participation_flags: List[str] = []
+    confirmation_flags: List[str] = []
+    if turnover_ratio is not None:
+        if turnover_ratio < 0.9:
+            participation_flags.append(f"turnover was only {turnover_ratio:.2f}x its 20-day average")
+        elif turnover_ratio >= 1.05:
+            confirmation_flags.append(f"turnover reached {turnover_ratio:.2f}x its 20-day average")
+    if short_ratio is not None:
+        if short_ratio >= 16.0:
+            participation_flags.append(f"short selling was elevated at {short_ratio:.1f}%")
+        elif short_ratio <= 12.0:
+            confirmation_flags.append(f"short selling was contained at {short_ratio:.1f}%")
+    if southbound is not None:
+        if southbound > 0:
+            confirmation_flags.append(f"Southbound recorded {_compact_hkd_flow(southbound)} net buying")
+        elif southbound < 0:
+            participation_flags.append(f"Southbound recorded {_compact_hkd_flow(southbound)} net selling")
+    if fxi is not None and hsi is not None:
+        if fxi < hsi - 0.5:
+            participation_flags.append(f"FXI ({_format_signed(fxi)}) lagged HSI ({_format_signed(hsi)})")
+        elif fxi > hsi + 0.5:
+            confirmation_flags.append(f"FXI ({_format_signed(fxi)}) outperformed HSI ({_format_signed(hsi)})")
+    if usdcnh is not None:
+        if usdcnh > 0.2:
+            participation_flags.append(f"CNH weakened ({_format_signed(usdcnh)} in USD/CNH)")
+        elif usdcnh < -0.2:
+            confirmation_flags.append(f"CNH strengthened ({_format_signed(usdcnh)} in USD/CNH)")
+
+    if style == "growth":
+        headline = (
+            "Selective growth leadership"
+            if participation_flags
+            else "Growth leadership with improving confirmation"
+            if confirmation_flags
+            else "Price-led growth leadership; confirmation incomplete"
+        )
+        relative_evidence = (
+            f"3033.HK moved {_format_signed(hstech)} and beat HSCEI by {style_spread:+.2f}pp"
+            + (f" and HSI by {beta_spread:+.2f}pp" if beta_spread is not None else "")
+        )
+        implication = "Favor relative strength in internet/platform names, but do not treat the move as broad China risk-on until participation confirms."
+        confirmation = "Confirm if 3033.HK keeps outperforming HSCEI with at least normal turnover, broader Southbound buying, stable CNH, and easing short pressure."
+        invalidation = "Invalidate if 3033.HK loses its lead to HSCEI, or if weak turnover, rising shorts, and CNH depreciation persist together."
+    elif style == "value":
+        headline = "Old-economy / H-share leadership" if not participation_flags else "Selective old-economy / H-share leadership"
+        relative_evidence = f"HSCEI beat 3033.HK by {abs(style_spread):.2f}pp ({_format_signed(hscei)} versus {_format_signed(hstech)})"
+        implication = "Treat banks, energy, telecoms, and SOE yield as the cleaner relative expression; growth beta still needs proof."
+        confirmation = "Confirm if HSCEI keeps outperforming 3033.HK with healthy turnover and broad Southbound participation."
+        invalidation = "Invalidate if 3033.HK retakes leadership while CNH firms and local participation broadens."
+    elif style == "balanced":
+        headline = "Broad beta, with no decisive style winner"
+        relative_evidence = f"3033.HK and HSCEI were separated by only {abs(style_spread):.2f}pp ({_format_signed(hstech)} versus {_format_signed(hscei)})"
+        implication = "Avoid forcing a growth-versus-value call; let volume, Southbound concentration, and the first-hour relative tape identify leadership."
+        confirmation = "Confirm a broad-beta session only if HSI breadth and turnover improve without a sharp 3033.HK-versus-HSCEI split."
+        invalidation = "Reclassify the tape when either 3033.HK or HSCEI opens a sustained 0.5pp relative lead with flow confirmation."
+    else:
+        headline = "Leadership unconfirmed — coverage is insufficient"
+        relative_evidence = "A comparable 3033.HK-versus-HSCEI move was not available"
+        implication = "Do not infer Hong Kong style from the headline index alone; wait for relative price and local-flow evidence."
+        confirmation = "Confirm only after HSI, HSCEI, 3033.HK, turnover, and Southbound evidence refresh on a comparable date."
+        invalidation = "Any style claim remains invalid while the required relative-performance fields are missing or stale."
+
+    lens = f"{headline}: {relative_evidence}."
+    if participation_flags:
+        lens += f" Conviction is limited because {'; '.join(participation_flags[:3])}."
+        if confirmation_flags:
+            lens += f" Partial support came from {confirmation_flags[0]}."
+    elif confirmation_flags:
+        lens += f" Conviction is improving because {'; '.join(confirmation_flags[:2])}."
+    lens += f" {implication}"
 
     lines = [
         f"Hang Seng {_format_signed(hsi)} / HSCEI {_format_signed(hscei)} / 3033.HK ETF {_format_signed(hstech)}.",
@@ -223,7 +351,18 @@ def build_hk_desk_view(summary: Dict[str, Any]) -> Dict[str, Any]:
         f"USD/HKD last traded around {_fmt_price_for_hk(usdhkd)}, which keeps the Hong Kong funding lens in focus.",
     ]
 
-    return {"leadership": leadership, "lines": lines}
+    return {
+        "leadership": leadership,
+        "headline": headline,
+        "lens": lens,
+        "evidence": relative_evidence,
+        "implication": implication,
+        "confirmation": confirmation,
+        "invalidation": invalidation,
+        "style": style,
+        "style_spread_pp": style_spread,
+        "lines": lines,
+    }
 
 
 def _fmt_price_for_hk(value: Any) -> str:
