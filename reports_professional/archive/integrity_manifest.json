@@ -1,6 +1,6 @@
 {
-  "archive_id": "dded0ef6cd9ba085ff69546e20f271b4e1eb4713ffe6751b6e72876fce6060be",
-  "dates": 91,
+  "archive_id": "40bd52266bbaaafa0e3c78359a415eef4f1c5fa068d2691b8cd3826be0363d50",
+  "dates": 92,
   "entries": [
     {
       "archive_id": "9daf3f7a7bc9f45312e251e074b2a936794ec1b63a6753aebd0aab784772529d",
@@ -2612,6 +2612,52 @@
         }
       ],
       "report_date": "2026-08-08"
+    },
+    {
+      "archive_id": "164f6ce6ff8eee2317bc25cec6be470f78cbf36bd0c2c806b28f8a9adc448948",
+      "files": [
+        {
+          "path": "audit/performance_summary.json",
+          "sha256": "d5c5791bd0f4d374e4eb0c621e66e3091ea04e2d1b55799ab6babec9b13e06a2",
+          "size_bytes": 5958
+        },
+        {
+          "path": "audit/source_health.json",
+          "sha256": "d5cbc98a71985bcdcfbfd5d0cee22ef3bee897b5e78342e90337daaf37cd973e",
+          "size_bytes": 6484
+        },
+        {
+          "path": "charts/catalyst_radar_2026-08-09.png",
+          "sha256": "5b1dc2131a63d8f41be7a627307e43b37c9d716cdbcfefea0933871cd38ea260",
+          "size_bytes": 219632
+        },
+        {
+          "path": "charts/daily_one_chart_2026-08-09.png",
+          "sha256": "6d2c7fd4251525e4125a2d8315a34c014e933617bfeb5e618e266062e72f2695",
+          "size_bytes": 271963
+        },
+        {
+          "path": "charts/dashboard_2026-08-09.png",
+          "sha256": "602e47aa3ebadbe8605148558599ccc913104955a5fd19a3f5d84dc906726ff1",
+          "size_bytes": 249434
+        },
+        {
+          "path": "charts/hk_trend_pack_2026-08-09.png",
+          "sha256": "0bfa0f6221a6aef4fd8b898773cbb577a94c75b03dcf9c34b72d9ade3876b288",
+          "size_bytes": 412561
+        },
+        {
+          "path": "charts/signal_performance_2026-08-09.png",
+          "sha256": "f4d07da500eaf48c61b89769191967129010e95d6a67dd865ddb753713d089fe",
+          "size_bytes": 115593
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "73962a42cde1f165edef7311a4ed4fd589850499c02969412040d13da2f3992e",
+          "size_bytes": 33610
+        }
+      ],
+      "report_date": "2026-08-09"
     }
   ],
   "schema_version": "report-archive-integrity-index-v1",

@@ -1,0 +1,260 @@
+{
+  "coverage": {
+    "degraded": 0,
+    "healthy": 8,
+    "total": 10,
+    "unavailable": 2
+  },
+  "critical_failures": [],
+  "methodology": {
+    "dimensions": [
+      "availability",
+      "completeness",
+      "authority",
+      "confidence",
+      "freshness"
+    ],
+    "note": "Freshness is measured across every active record, not only the freshest item. Authority never overrides stale or unavailable evidence."
+  },
+  "reference_date": "2026-08-09",
+  "schema_version": "source-health-v1",
+  "sources": [
+    {
+      "active_records": 1,
+      "critical": false,
+      "dimensions": {
+        "authority": 70.0,
+        "availability": 60.0,
+        "completeness": 100.0,
+        "confidence": 70.0,
+        "freshness": 100.0
+      },
+      "fresh_ratio": 1.0,
+      "fresh_records": 1,
+      "freshest_age_days": 2,
+      "max_age_days": 4,
+      "min_fresh_ratio": 0.0,
+      "oldest_age_days": 2,
+      "records": 1,
+      "score": 75.5,
+      "source": "ah_premium",
+      "stale_records": 0,
+      "status": "healthy",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 1,
+      "critical": false,
+      "dimensions": {
+        "authority": 80.0,
+        "availability": 100.0,
+        "completeness": 100.0,
+        "confidence": 75.0,
+        "freshness": 100.0
+      },
+      "fresh_ratio": 1.0,
+      "fresh_records": 1,
+      "freshest_age_days": 2,
+      "max_age_days": 7,
+      "min_fresh_ratio": 0.0,
+      "oldest_age_days": 2,
+      "records": 1,
+      "score": 92.2,
+      "source": "china_rates",
+      "stale_records": 0,
+      "status": "healthy",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 1,
+      "critical": true,
+      "dimensions": {
+        "authority": 100.0,
+        "availability": 100.0,
+        "completeness": 100.0,
+        "confidence": 90.0,
+        "freshness": 100.0
+      },
+      "fresh_ratio": 1.0,
+      "fresh_records": 1,
+      "freshest_age_days": 2,
+      "max_age_days": 4,
+      "min_fresh_ratio": 1.0,
+      "oldest_age_days": 2,
+      "records": 1,
+      "score": 98.5,
+      "source": "hk_local",
+      "stale_records": 0,
+      "status": "healthy",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 0,
+      "critical": false,
+      "dimensions": {
+        "authority": 0.0,
+        "availability": 0.0,
+        "completeness": 0.0,
+        "confidence": 0.0,
+        "freshness": 0.0
+      },
+      "fresh_ratio": 0.0,
+      "fresh_records": 0,
+      "freshest_age_days": null,
+      "max_age_days": 14,
+      "min_fresh_ratio": 0.0,
+      "oldest_age_days": null,
+      "records": 1,
+      "score": 0.0,
+      "source": "macro_calendar",
+      "stale_records": 0,
+      "status": "unavailable",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 31,
+      "critical": true,
+      "dimensions": {
+        "authority": 80.0,
+        "availability": 100.0,
+        "completeness": 100.0,
+        "confidence": 80.0,
+        "freshness": 100.0
+      },
+      "fresh_ratio": 1.0,
+      "fresh_records": 31,
+      "freshest_age_days": 2,
+      "max_age_days": 4,
+      "min_fresh_ratio": 0.8,
+      "oldest_age_days": 2,
+      "records": 31,
+      "score": 93.0,
+      "source": "market_data",
+      "stale_records": 0,
+      "status": "healthy",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 2,
+      "critical": false,
+      "dimensions": {
+        "authority": 85.0,
+        "availability": 80.0,
+        "completeness": 100.0,
+        "confidence": 75.0,
+        "freshness": 100.0
+      },
+      "fresh_ratio": 1.0,
+      "fresh_records": 2,
+      "freshest_age_days": 2,
+      "max_age_days": 4,
+      "min_fresh_ratio": 0.0,
+      "oldest_age_days": 2,
+      "records": 2,
+      "score": 86.2,
+      "source": "movers",
+      "stale_records": 0,
+      "status": "healthy",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 0,
+      "critical": false,
+      "dimensions": {
+        "authority": 0.0,
+        "availability": 0.0,
+        "completeness": 0.0,
+        "confidence": 0.0,
+        "freshness": 0.0
+      },
+      "fresh_ratio": 0.0,
+      "fresh_records": 0,
+      "freshest_age_days": null,
+      "max_age_days": 4,
+      "min_fresh_ratio": 0.0,
+      "oldest_age_days": null,
+      "records": 1,
+      "score": 0.0,
+      "source": "risk_feed",
+      "stale_records": 0,
+      "status": "unavailable",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 1,
+      "critical": false,
+      "dimensions": {
+        "authority": 80.0,
+        "availability": 100.0,
+        "completeness": 100.0,
+        "confidence": 65.0,
+        "freshness": 100.0
+      },
+      "fresh_ratio": 1.0,
+      "fresh_records": 1,
+      "freshest_age_days": 0,
+      "max_age_days": 3,
+      "min_fresh_ratio": 0.0,
+      "oldest_age_days": 0,
+      "records": 1,
+      "score": 90.8,
+      "source": "rss_headlines",
+      "stale_records": 0,
+      "status": "healthy",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 2,
+      "critical": false,
+      "dimensions": {
+        "authority": 90.0,
+        "availability": 100.0,
+        "completeness": 100.0,
+        "confidence": 82.5,
+        "freshness": 100.0
+      },
+      "fresh_ratio": 1.0,
+      "fresh_records": 2,
+      "freshest_age_days": 2,
+      "max_age_days": 3,
+      "min_fresh_ratio": 0.0,
+      "oldest_age_days": 2,
+      "records": 2,
+      "score": 95.4,
+      "source": "sector_news",
+      "stale_records": 0,
+      "status": "healthy",
+      "unknown_age_records": 0
+    },
+    {
+      "active_records": 1,
+      "critical": false,
+      "dimensions": {
+        "authority": 100.0,
+        "availability": 100.0,
+        "completeness": 100.0,
+        "confidence": 95.0,
+        "freshness": 100.0
+      },
+      "fresh_ratio": 1.0,
+      "fresh_records": 1,
+      "freshest_age_days": 2,
+      "max_age_days": 4,
+      "min_fresh_ratio": 0.0,
+      "oldest_age_days": 2,
+      "records": 1,
+      "score": 99.2,
+      "source": "stock_connect",
+      "stale_records": 0,
+      "status": "healthy",
+      "unknown_age_records": 0
+    }
+  ],
+  "status": "degraded",
+  "warnings": [
+    "macro_calendar: 0/0 active records meet the 14-day freshness policy; required ratio is 0%.",
+    "macro_calendar: no decision-grade record was available.",
+    "risk_feed: 0/0 active records meet the 4-day freshness policy; required ratio is 0%.",
+    "risk_feed: no decision-grade record was available."
+  ]
+}
