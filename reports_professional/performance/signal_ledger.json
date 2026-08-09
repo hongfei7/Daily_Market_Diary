@@ -4772,7 +4772,7 @@
     "first_observation": "2026-04-16",
     "last_observation": "2026-08-07",
     "observations": 65,
-    "signals": 92
+    "signals": 93
   },
   "methodology": {
     "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",
@@ -5350,7 +5350,7 @@
         "Hang Seng Index": 25668.0293,
         "Hang Seng TECH ETF (3033.HK)": 4.766
       },
-      "report_date": "2026-08-09",
+      "report_date": "2026-08-10",
       "source": "current_bundle"
     }
   ],
@@ -7021,6 +7021,26 @@
       "report_date": "2026-08-09",
       "signal": "Risk-On",
       "signal_id": "hk-beta:2026-08-07:2026-08-09",
+      "source": "current_bundle",
+      "status": "active"
+    },
+    {
+      "benchmark_scope": [
+        "Hang Seng Index",
+        "Hang Seng TECH ETF (3033.HK)"
+      ],
+      "entry_policy": "next_available_close",
+      "evidence": {
+        "market_pulse": "Risk-On backdrop with USD softer, rates were not the dominant driver, and Gold outperformed Oil",
+        "report_quality": 87.0,
+        "risk_score": null,
+        "source_health": "degraded"
+      },
+      "market_as_of": "2026-08-07",
+      "position": 1,
+      "report_date": "2026-08-10",
+      "signal": "Risk-On",
+      "signal_id": "hk-beta:2026-08-07:2026-08-10",
       "source": "current_bundle",
       "status": "active"
     }
