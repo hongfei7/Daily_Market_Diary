@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-08-13](./archive/2026-08-13/README.md)
+- Latest archive folder: [2026-08-14](./archive/2026-08-14/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -32,6 +32,7 @@ Published date payloads are immutable and carry a SHA-256 manifest. Source-healt
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | Event Radar | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-08-14 | Trading Daily | Pulse unavailable | 85.6/100 | [Report](archive/2026-08-14/README.md) | [Dashboard](archive/2026-08-14/charts/dashboard_2026-08-14.png) | [Event Radar](archive/2026-08-14/charts/catalyst_radar_2026-08-14.png) | [One Chart](archive/2026-08-14/charts/daily_one_chart_2026-08-14.png) | N/A | N/A |
 | 2026-08-13 | Trading Daily | Pulse unavailable | 85.6/100 | [Report](archive/2026-08-13/README.md) | [Dashboard](archive/2026-08-13/charts/dashboard_2026-08-13.png) | [Event Radar](archive/2026-08-13/charts/catalyst_radar_2026-08-13.png) | [One Chart](archive/2026-08-13/charts/daily_one_chart_2026-08-13.png) | N/A | N/A |
 | 2026-08-12 | Trading Daily | Pulse unavailable | 88.2/100 | [Report](archive/2026-08-12/README.md) | [Dashboard](archive/2026-08-12/charts/dashboard_2026-08-12.png) | [Event Radar](archive/2026-08-12/charts/catalyst_radar_2026-08-12.png) | [One Chart](archive/2026-08-12/charts/daily_one_chart_2026-08-12.png) | N/A | N/A |
 | 2026-08-11 | Trading Daily | Pulse unavailable | 88.4/100 | [Report](archive/2026-08-11/README.md) | [Dashboard](archive/2026-08-11/charts/dashboard_2026-08-11.png) | [Event Radar](archive/2026-08-11/charts/catalyst_radar_2026-08-11.png) | [One Chart](archive/2026-08-11/charts/daily_one_chart_2026-08-11.png) | N/A | N/A |

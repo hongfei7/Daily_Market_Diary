@@ -1,0 +1,44 @@
+{
+  "archive_id": "20557d6d4403fcf48b20477397e1eab6bd53d6cce9501569aa6735de5db5ada9",
+  "files": [
+    {
+      "path": "audit/performance_summary.json",
+      "sha256": "6dc5840cf50bbba1b12a0bb61b9f7678ec76a6f976e155a58aaaf65eb6b9d6d0",
+      "size_bytes": 5957
+    },
+    {
+      "path": "audit/source_health.json",
+      "sha256": "92f82697d969a6cd4f1157bec14bdc9419f508d5829b49060de71a9b169a4e00",
+      "size_bytes": 6484
+    },
+    {
+      "path": "charts/catalyst_radar_2026-08-14.png",
+      "sha256": "df97bbfee0dce84b7a017209ae182275c79de499d4cb52e26f9519330ee9c03c",
+      "size_bytes": 222014
+    },
+    {
+      "path": "charts/daily_one_chart_2026-08-14.png",
+      "sha256": "28e7d6fdbb8c55aca3468948800c1d8316b376d8179d33bc7314b9938c7d32a1",
+      "size_bytes": 200750
+    },
+    {
+      "path": "charts/dashboard_2026-08-14.png",
+      "sha256": "b41c0cdc0dc7adaccd917576b1f3211b47bfb22c2209e9e5ff6f88f9106892c0",
+      "size_bytes": 242989
+    },
+    {
+      "path": "charts/signal_performance_2026-08-14.png",
+      "sha256": "c134de9b7d2891590bc870798803d5bec4fc21a22e3dd8ae8802d5bb4db562b6",
+      "size_bytes": 115832
+    },
+    {
+      "path": "morning_briefing.md",
+      "sha256": "47c8b4aee85b37417ab001b570e8fb2cedca02ac50bd25ec4c0aa3c81d6e178c",
+      "size_bytes": 27508
+    }
+  ],
+  "immutability": "Published payload files are append-only. A conflicting rerun must use a new report date.",
+  "manifest_scope": "README.md is generated navigation and is intentionally excluded from payload hashes.",
+  "report_date": "2026-08-14",
+  "schema_version": "report-archive-manifest-v1"
+}
