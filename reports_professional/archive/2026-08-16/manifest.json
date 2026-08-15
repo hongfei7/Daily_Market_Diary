@@ -1,0 +1,49 @@
+{
+  "archive_id": "245c8ce8a2d8eb4276bea365e90f5e9c83a861b3b2324d33a989842f049bd518",
+  "files": [
+    {
+      "path": "audit/performance_summary.json",
+      "sha256": "b22f733a5998ef5f4638bee72a7b80f8df7d1a13eb40172a87a3787f77c0fd5e",
+      "size_bytes": 5956
+    },
+    {
+      "path": "audit/source_health.json",
+      "sha256": "086cfcd3d10a3a1d5f29ec0c69eabad9d6baaf1d1b59a172f184cd0c9dc8a28d",
+      "size_bytes": 6484
+    },
+    {
+      "path": "charts/catalyst_radar_2026-08-16.png",
+      "sha256": "b72cfd135c40cda8af9d61c791e7ff9dcf6c0497a433887b11b38bef3eecb285",
+      "size_bytes": 219431
+    },
+    {
+      "path": "charts/daily_one_chart_2026-08-16.png",
+      "sha256": "b703b636ea86dcc421cd30d3ef0d67904f6ff0c80f44499d0ed4154bcb35b8bb",
+      "size_bytes": 203222
+    },
+    {
+      "path": "charts/dashboard_2026-08-16.png",
+      "sha256": "bbc11ed3567d945cadb0ac0065f72abbd904c72744bdbda05c0e4ccbc8940b9c",
+      "size_bytes": 242116
+    },
+    {
+      "path": "charts/hk_trend_pack_2026-08-16.png",
+      "sha256": "f939cc1cf10495f9d11f732dde5879cd983231e465c6a86876aa377a141e7581",
+      "size_bytes": 413066
+    },
+    {
+      "path": "charts/signal_performance_2026-08-16.png",
+      "sha256": "044a21082e59655d25ee83824641f0b4aec7275fcbe15865a79ebc880a0734c2",
+      "size_bytes": 117299
+    },
+    {
+      "path": "morning_briefing.md",
+      "sha256": "37b42e31b376b8cddbd6aca61c2db5269ea357ae30c188a906daf26a82a88ae1",
+      "size_bytes": 30634
+    }
+  ],
+  "immutability": "Published payload files are append-only. A conflicting rerun must use a new report date.",
+  "manifest_scope": "README.md is generated navigation and is intentionally excluded from payload hashes.",
+  "report_date": "2026-08-16",
+  "schema_version": "report-archive-manifest-v1"
+}
