@@ -3,7 +3,7 @@
 This folder is the GitHub-readable archive for the professional morning research workbench.
 
 - Latest report: [Open the stable latest entry](./latest/README.md)
-- Latest archive folder: [2026-08-16](./archive/2026-08-16/README.md)
+- Latest archive folder: [2026-08-17](./archive/2026-08-17/README.md)
 
 Each report date is stored as a self-contained folder:
 
@@ -32,6 +32,7 @@ Published date payloads are immutable and carry a SHA-256 manifest. Source-healt
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | Event Radar | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-08-17 | Weekend Event Watch | Pulse unavailable | 87.8/100 | [Report](archive/2026-08-17/README.md) | [Dashboard](archive/2026-08-17/charts/dashboard_2026-08-17.png) | [Event Radar](archive/2026-08-17/charts/catalyst_radar_2026-08-17.png) | [One Chart](archive/2026-08-17/charts/daily_one_chart_2026-08-17.png) | N/A | N/A |
 | 2026-08-16 | Weekly Review | Pulse unavailable | 84.9/100 | [Report](archive/2026-08-16/README.md) | [Dashboard](archive/2026-08-16/charts/dashboard_2026-08-16.png) | [Event Radar](archive/2026-08-16/charts/catalyst_radar_2026-08-16.png) | [One Chart](archive/2026-08-16/charts/daily_one_chart_2026-08-16.png) | [Trend Pack](archive/2026-08-16/charts/hk_trend_pack_2026-08-16.png) | N/A |
 | 2026-08-15 | Trading Daily | Pulse unavailable | 86.4/100 | [Report](archive/2026-08-15/README.md) | [Dashboard](archive/2026-08-15/charts/dashboard_2026-08-15.png) | [Event Radar](archive/2026-08-15/charts/catalyst_radar_2026-08-15.png) | [One Chart](archive/2026-08-15/charts/daily_one_chart_2026-08-15.png) | N/A | N/A |
 | 2026-08-14 | Trading Daily | Pulse unavailable | 85.6/100 | [Report](archive/2026-08-14/README.md) | [Dashboard](archive/2026-08-14/charts/dashboard_2026-08-14.png) | [Event Radar](archive/2026-08-14/charts/catalyst_radar_2026-08-14.png) | [One Chart](archive/2026-08-14/charts/daily_one_chart_2026-08-14.png) | N/A | N/A |

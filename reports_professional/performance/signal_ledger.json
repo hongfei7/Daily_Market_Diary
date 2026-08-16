@@ -2439,9 +2439,9 @@
         "annualized_return": -0.094288,
         "annualized_volatility": 0.247793,
         "average_daily_return": -0.00027106,
-        "benchmark_return": -0.05807,
+        "benchmark_return": -0.075691,
         "cumulative_return_net": -0.021383,
-        "excess_return": 0.036687,
+        "excess_return": 0.054308,
         "hit_rate_active_sessions": 0.4815,
         "max_drawdown": -0.132983,
         "median_daily_return": 0.0,
@@ -3628,7 +3628,7 @@
               "directional_return_net": 0.0,
               "exit_date": "2026-08-14",
               "hit": null,
-              "underlying_return": 0.12535885
+              "underlying_return": 0.10430622
             },
             "5": {
               "directional_return_net": 0.0,
@@ -3655,7 +3655,7 @@
               "directional_return_net": 0.0,
               "exit_date": "2026-08-14",
               "hit": null,
-              "underlying_return": 0.12535885
+              "underlying_return": 0.10430622
             },
             "5": {
               "directional_return_net": 0.0,
@@ -4039,7 +4039,7 @@
               "directional_return_net": 0.0,
               "exit_date": "2026-08-14",
               "hit": null,
-              "underlying_return": 0.02707424
+              "underlying_return": 0.00786026
             }
           },
           "market_as_of": "2026-07-22",
@@ -4114,7 +4114,7 @@
               "directional_return_net": -0.0,
               "exit_date": "2026-08-14",
               "hit": null,
-              "underlying_return": -0.01342282
+              "underlying_return": -0.03187919
             }
           },
           "market_as_of": "2026-07-29",
@@ -4807,7 +4807,7 @@
           "underlying_return": 0.02670112
         },
         {
-          "benchmark_equity": 0.94193032,
+          "benchmark_equity": 0.92430917,
           "entry_date": "2026-07-30",
           "exit_date": "2026-08-14",
           "position": 0,
@@ -4815,7 +4815,7 @@
           "strategy_equity": 0.97861745,
           "strategy_return_net": -0.001,
           "turnover": 1,
-          "underlying_return": -0.01342282
+          "underlying_return": -0.03187919
         }
       ]
     }
@@ -4852,7 +4852,7 @@
     "first_observation": "2026-04-16",
     "last_observation": "2026-08-14",
     "observations": 65,
-    "signals": 99
+    "signals": 100
   },
   "methodology": {
     "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",
@@ -5428,9 +5428,9 @@
       "as_of": "2026-08-14",
       "prices": {
         "Hang Seng Index": 25116.8496,
-        "Hang Seng TECH ETF (3033.HK)": 4.704
+        "Hang Seng TECH ETF (3033.HK)": 4.616
       },
-      "report_date": "2026-08-16",
+      "report_date": "2026-08-17",
       "source": "current_bundle"
     }
   ],
@@ -7241,6 +7241,26 @@
       "report_date": "2026-08-16",
       "signal": "Neutral",
       "signal_id": "hk-beta:2026-08-14:2026-08-16",
+      "source": "current_bundle",
+      "status": "active"
+    },
+    {
+      "benchmark_scope": [
+        "Hang Seng Index",
+        "Hang Seng TECH ETF (3033.HK)"
+      ],
+      "entry_policy": "next_available_close",
+      "evidence": {
+        "market_pulse": "Risk-Off backdrop with USD softer, higher yields pressured valuations, and Gold outperformed Bitcoin",
+        "report_quality": 87.8,
+        "risk_score": null,
+        "source_health": "degraded"
+      },
+      "market_as_of": "2026-08-14",
+      "position": -1,
+      "report_date": "2026-08-17",
+      "signal": "Risk-Off",
+      "signal_id": "hk-beta:2026-08-14:2026-08-17",
       "source": "current_bundle",
       "status": "active"
     }
