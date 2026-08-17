@@ -1,6 +1,6 @@
 {
-  "archive_id": "77375cb023eb07cb1bad08fcf080d670903a844c4731a753083bd493728e2598",
-  "dates": 100,
+  "archive_id": "37c93632c61550762b6ea0115130032e3e128257abf08002bbc387618e412ab2",
+  "dates": 101,
   "entries": [
     {
       "archive_id": "9daf3f7a7bc9f45312e251e074b2a936794ec1b63a6753aebd0aab784772529d",
@@ -2991,6 +2991,47 @@
         }
       ],
       "report_date": "2026-08-17"
+    },
+    {
+      "archive_id": "9235ca8a33ffc965e65699fc845f3c9c20a3c963e46af39ecbdf1fef81e8883b",
+      "files": [
+        {
+          "path": "audit/performance_summary.json",
+          "sha256": "c49b19ecab5b3934972e70be1c6c57eec30f84ef4be6485702905330c3f0fbcf",
+          "size_bytes": 5958
+        },
+        {
+          "path": "audit/source_health.json",
+          "sha256": "48104df49fe010507539dd14931b287ca8ba7912257f389c1aa065f0cff251fb",
+          "size_bytes": 6484
+        },
+        {
+          "path": "charts/catalyst_radar_2026-08-18.png",
+          "sha256": "2e68df845831d5802951620593fca239f04eaa68180c98448fc04a44a319c220",
+          "size_bytes": 219850
+        },
+        {
+          "path": "charts/daily_one_chart_2026-08-18.png",
+          "sha256": "59a6a9a9a9a38929b663c3a54798516416fd4edadfd23ab0406241e598e8b3f1",
+          "size_bytes": 202837
+        },
+        {
+          "path": "charts/dashboard_2026-08-18.png",
+          "sha256": "95f952832ed8733c0327e3421db53bd6998f7cdda3c9685e9c0cca06734041f8",
+          "size_bytes": 239715
+        },
+        {
+          "path": "charts/signal_performance_2026-08-18.png",
+          "sha256": "9178802ba0ad768981374518c37da66c5dc311d7d59d00539117d980a7a78fb2",
+          "size_bytes": 117173
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "b99d4d0cda8560665d8e4358cae6224133977dbb0515a0d70ce2319b06412722",
+          "size_bytes": 27035
+        }
+      ],
+      "report_date": "2026-08-18"
     }
   ],
   "schema_version": "report-archive-integrity-index-v1",
