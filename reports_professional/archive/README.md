@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | Event Radar | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-08-19 | Trading Daily | Pulse unavailable | 82.6/100 | [Report](2026-08-19/README.md) | [Dashboard](2026-08-19/charts/dashboard_2026-08-19.png) | [Event Radar](2026-08-19/charts/catalyst_radar_2026-08-19.png) | [One Chart](2026-08-19/charts/daily_one_chart_2026-08-19.png) | N/A | N/A |
 | 2026-08-18 | Trading Daily | Pulse unavailable | 81.3/100 | [Report](2026-08-18/README.md) | [Dashboard](2026-08-18/charts/dashboard_2026-08-18.png) | [Event Radar](2026-08-18/charts/catalyst_radar_2026-08-18.png) | [One Chart](2026-08-18/charts/daily_one_chart_2026-08-18.png) | N/A | N/A |
 | 2026-08-17 | Weekend Event Watch | Pulse unavailable | 87.8/100 | [Report](2026-08-17/README.md) | [Dashboard](2026-08-17/charts/dashboard_2026-08-17.png) | [Event Radar](2026-08-17/charts/catalyst_radar_2026-08-17.png) | [One Chart](2026-08-17/charts/daily_one_chart_2026-08-17.png) | N/A | N/A |
 | 2026-08-16 | Weekly Review | Pulse unavailable | 84.9/100 | [Report](2026-08-16/README.md) | [Dashboard](2026-08-16/charts/dashboard_2026-08-16.png) | [Event Radar](2026-08-16/charts/catalyst_radar_2026-08-16.png) | [One Chart](2026-08-16/charts/daily_one_chart_2026-08-16.png) | [Trend Pack](2026-08-16/charts/hk_trend_pack_2026-08-16.png) | N/A |
