@@ -696,6 +696,20 @@ def _structure_report_html(body_html: str) -> tuple[str, List[tuple[str, str]]]:
     return body_html, toc
 
 
+def _deep_read_estimate(md_text: str) -> str:
+    """Estimate the deep-read time from the report's own length.
+
+    The masthead asserted a fixed "25-30 minutes" for the deep read and
+    "10-15 minutes" for the appendix regardless of what was actually written; a
+    measured report ran about half that. Deriving it keeps the promise honest as
+    the report grows or shrinks.
+    """
+    words = len(re.findall(r"\S+", re.sub(r"\|", "", md_text)))
+    # ~200 wpm for dense analytical prose, excluding the optional appendix.
+    minutes = max(1, round(words * 0.75 / 200))
+    return f"about {minutes} minutes"
+
+
 def _extract_header_context(md_text: str, report_date: str) -> Dict[str, str]:
     def _match(pattern: str, default: str = "") -> str:
         found = re.search(pattern, md_text, flags=re.MULTILINE | re.IGNORECASE)
@@ -725,7 +739,13 @@ def _extract_header_context(md_text: str, report_date: str) -> Dict[str, str]:
     }
 
 
-def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir: Optional[Path] = None) -> str:
+def _md_to_html(
+    md_text: str,
+    output_dir: Path,
+    report_date: str,
+    md_source_dir: Optional[Path] = None,
+    inline_images: bool = True,
+) -> str:
     """Convert markdown report to a self-contained HTML document with embedded images."""
     # Convert MD to HTML body
     body_html = mistune.html(md_text)
@@ -754,6 +774,13 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
         if img_path is None:
             print(f"  [WARN] Image not found: {src} (searched: {[str(d) for d in search_dirs]})")
             return match.group(0)
+
+        # The archive copy sits next to charts/, so it can reference them by
+        # relative path. Inlining there would cost about 1MB per day for images
+        # already stored alongside; the delivered copy still inlines so the
+        # attachment renders offline.
+        if not inline_images:
+            return f'<img src="{src}" alt="{alt}" />'
 
         try:
             suffix = img_path.suffix.lower()
@@ -810,8 +837,8 @@ def _md_to_html(md_text: str, output_dir: Path, report_date: str, md_source_dir:
     </div>
     <ol class="reading-path" aria-label="Commute reading path">
       <li><b>01</b><div><span>Decision scan</span><small>5 minutes</small></div></li>
-      <li><b>02</b><div><span>Causal deep read</span><small>25–30 minutes</small></div></li>
-      <li><b>03</b><div><span>Evidence appendix</span><small>Optional 10–15 minutes</small></div></li>
+      <li><b>02</b><div><span>Causal deep read</span><small>{_deep_read_estimate(md_text)}</small></div></li>
+      <li><b>03</b><div><span>Evidence appendix</span><small>Optional</small></div></li>
     </ol>
   </header>
   <div class="report-grid">

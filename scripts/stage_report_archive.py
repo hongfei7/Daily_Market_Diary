@@ -6,9 +6,10 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
-from typing import Iterable, List, Set
+from typing import Iterable, List, Optional, Set
 
 from build_report_gallery import build_report_gallery
 
@@ -90,6 +91,46 @@ def _copy_markdown(src: Path, dst: Path) -> Path:
     lines = src.read_text(encoding="utf-8", errors="replace").splitlines()
     dst.write_text("\n".join(line.rstrip() for line in lines) + "\n", encoding="utf-8")
     return dst
+
+
+def _write_archive_html(report_path: Path, date_dir: Path, report_date: str) -> Optional[Path]:
+    """Archive the styled HTML alongside the markdown.
+
+    The HTML is the deliverable that actually gets read — printed, or opened on
+    a phone — while the markdown is an intermediate format. It was only ever
+    generated in CI and pushed to WeCom, so a delivery failure left nothing
+    readable for that day and no historical copy to go back to.
+
+    Images are referenced rather than inlined: the charts sit in ``charts/``
+    right next to this file, and inlining would add roughly 1MB per day to the
+    repository for images already stored.
+    """
+    try:
+        from send_report_wecom import _md_to_html  # noqa: PLC0415
+    except ImportError:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        try:
+            from send_report_wecom import _md_to_html  # noqa: PLC0415
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"[archive] HTML rendering unavailable, archiving markdown only: {exc}")
+            return None
+
+    try:
+        markdown = report_path.read_text(encoding="utf-8", errors="replace")
+        html = _md_to_html(
+            markdown,
+            date_dir,
+            report_date,
+            md_source_dir=report_path.parent,
+            inline_images=False,
+        )
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"[archive] HTML rendering failed, archiving markdown only: {exc}")
+        return None
+
+    destination = date_dir / "morning_briefing.html"
+    destination.write_text(html, encoding="utf-8")
+    return destination
 
 
 def _copy_raw_files(report_date: str, destination: Path) -> List[Path]:
@@ -287,6 +328,8 @@ def build_date_archive(
         for src in sorted(chart_paths):
             if src.exists() and src.is_file():
                 _copy_file(src, date_dir / "charts" / src.name)
+
+        _write_archive_html(report_path, date_dir, report_date)
 
         for audit_path in _copy_audit_files(report_date, date_dir):
             _ = audit_path
