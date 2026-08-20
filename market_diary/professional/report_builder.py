@@ -48,6 +48,7 @@ def render_professional_report(
     daily_chart_rel_path: str = "",
     trend_pack_rel_path: str = "",
     catalyst_radar_rel_path: str = "",
+    ai_tmt_chart_rel_path: str = "",
 ) -> str:
     layout = build_report_layout(bundle, dashboard_rel_path=dashboard_rel_path)
     meta = layout["meta"]
@@ -74,6 +75,9 @@ def render_professional_report(
     catalyst_radar_block = _render_catalyst_radar(bundle, catalyst_radar_rel_path)
     catalyst_radar_section = f"\n{catalyst_radar_block}\n" if catalyst_radar_block else ""
     daily_chart_block = _render_daily_one_chart(bundle, daily_chart_rel_path)
+    ai_tmt_chart_block = (
+        f"![AI / TMT read-through]({ai_tmt_chart_rel_path})\n\n" if ai_tmt_chart_rel_path else ""
+    )
     trend_pack_block = _render_trend_pack(bundle, trend_pack_rel_path)
     daily_chart_section = f"### 3.3 Daily One Chart\n{daily_chart_block}\n\n" if daily_chart_block else ""
     trend_pack_section = f"### 3.4 Hong Kong Trend Pack\n{trend_pack_block}\n\n" if trend_pack_block else ""
@@ -125,7 +129,7 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 {non_trading_lens if not is_trading_day else ""}{_render_hk_review_block(bundle)}
 
 ### 2.3 AI / TMT Read-Through
-{_render_ai_tmt_chain(bundle)}
+{ai_tmt_chart_block}{_render_ai_tmt_chain(bundle)}
 
 ### 2.4 Flow Tracker and Attribution
 **Cross-Asset Attribution**

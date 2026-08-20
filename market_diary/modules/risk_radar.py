@@ -58,7 +58,12 @@ class RiskRadar:
             {
                 "date": item["date"],
                 "type": item["channel"],
-                "description": f"{item['country']} {item['indicator']}",
+                # The country stays a separate field. Prefixing it into the
+                # description made the same release look like a different event
+                # to the radar's (event, date, entity) dedupe key, so China LPR
+                # and Hong Kong CPI each appeared twice.
+                "description": item["indicator"],
+                "country": item["country"],
                 "importance": item["impact"],
                 "channel_note": item["channel_note"],
                 "timing_confidence": item["timing_confidence"],

@@ -62,12 +62,20 @@ def test_report_renders_full_lens_even_when_llm_returns_generic_label() -> None:
     summary = _render_executive_summary(bundle, "Overnight risk appetite improved.")
     review = _render_hk_review_block(bundle)
 
-    # The lens carries an explicit confidence grade so a reader can tell a
-    # well-evidenced call from one the pipeline could not verify.
-    assert "**Hong Kong lens** (medium confidence): Selective growth leadership:" in summary
-    assert "turnover was only 0.86x" in summary
-    assert "**What would confirm it:** Confirm if 3033.HK" in summary
-    assert "**What could break it:** Invalidate if 3033.HK" in summary
+    # The summary answers four fixed questions, one sentence each, instead of
+    # packing the style call, its evidence, a conviction caveat, a partial-support
+    # clause and the portfolio implication into a single 70-word bullet.
+    for question in (
+        "Did yesterday's call work?",
+        "What changed overnight?",
+        "What it means for AI/TMT",
+        "What to watch today",
+    ):
+        assert f"**{question}**" in summary
+    assert "Selective growth leadership" in summary.lower() or "style, not beta" in summary.lower()
+    # Every answer stays on one line, so no bullet can sprawl again.
+    for line in summary.splitlines():
+        assert line.count(". ") <= 3, f"summary answer is too long: {line}"
     assert "**Style call.** Selective growth leadership." in review
     assert "**Portfolio meaning:**" in review
     assert "**Failure condition.**" in review

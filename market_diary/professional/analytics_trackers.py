@@ -8,6 +8,23 @@ from market_diary.professional.instruments import format_summary_change, summary
 
 def _tracker_interpretation(label: str, change_value: Optional[float], chart_features: Dict[str, Any]) -> str:
     value = change_value or 0.0
+    # The semis complex is the most direct overnight input to Hong Kong tech,
+    # but had no case here, so it fell through to the generic "keep tracking it"
+    # line — the least useful sentence in the report for an AI/TMT desk.
+    if label == "SOXX":
+        if value < -1.0:
+            return "Semis sold off, so SMIC, Hua Hong and 3033.HK are the first HK names to be tested."
+        if value > 1.0:
+            return "Semis rallied, giving HK semis and platform beta a supportive open."
+        return "The semis tape was flat, so it does not set direction for HK tech today."
+    if label == "NVDA":
+        if abs(value) > 1.5:
+            direction = "weakens" if value < 0 else "supports"
+            return f"The AI capex narrative {direction}; expect it to reach HK through sentiment before earnings."
+    if label == "TSMC":
+        if abs(value) > 1.0:
+            direction = "softer" if value < 0 else "firmer"
+            return f"Foundry demand read is {direction}, which transmits to SMIC and Hua Hong most directly."
     if label == "DXY":
         if value > 0.3:
             return "A stronger dollar points to a more defensive or rate-differential driven tape."

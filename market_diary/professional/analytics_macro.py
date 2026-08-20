@@ -59,7 +59,10 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
         direction = profile["beat_direction"] if surprise == "beat" else profile["miss_direction"] if surprise == "miss" else "The print was broadly inline; focus on the second-order market reaction"
         agenda.append(
             {
-                "date": report_date,
+                # Use the event's own date. Pinning every row to the report
+                # date lost the real schedule: an event two days out rendered as
+                # if it were today.
+                "date": item.get("date") or report_date,
                 "time": item.get("time", ""),
                 "country": item.get("country", ""),
                 "event": item.get("indicator", ""),
@@ -81,7 +84,10 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
         profile = _macro_profile(item.get("indicator", ""), config)
         agenda.append(
             {
-                "date": report_date,
+                # Use the event's own date. Pinning every row to the report
+                # date lost the real schedule: an event two days out rendered as
+                # if it were today.
+                "date": item.get("date") or report_date,
                 "time": item.get("time", ""),
                 "country": item.get("country", ""),
                 "event": item.get("indicator", ""),
@@ -102,7 +108,10 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
     for item in cb_events:
         agenda.append(
             {
-                "date": report_date,
+                # Use the event's own date. Pinning every row to the report
+                # date lost the real schedule: an event two days out rendered as
+                # if it were today.
+                "date": item.get("date") or report_date,
                 "time": item.get("time", ""),
                 "country": item.get("bank", ""),
                 "event": f"{item.get('speaker', '')}: {item.get('title', '')}".strip(": "),

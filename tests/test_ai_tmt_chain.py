@@ -92,3 +92,32 @@ def test_missing_overnight_coverage_degrades_honestly():
     chain = build_ai_tmt_chain({"Equities": {}})
     assert chain["status"] == "unavailable"
     assert "unavailable" in chain["headline"]
+
+
+class TestChainChart:
+    """The chart shares its numbers with Section 2.3 rather than recomputing."""
+
+    def _chain(self):
+        return build_ai_tmt_chain(_summary((-2.21, -0.99, -0.32), (-3.76, -11.79, -3.31, -1.02)))
+
+    def test_chart_is_written(self, tmp_path):
+        from market_diary.professional.ai_tmt_chart import generate_ai_tmt_chain_chart
+
+        out = generate_ai_tmt_chain_chart(self._chain(), str(tmp_path / "chain.png"))
+        assert out is not None
+        assert (tmp_path / "chain.png").stat().st_size > 10_000
+
+    def test_unavailable_chain_renders_nothing(self, tmp_path):
+        from market_diary.professional.ai_tmt_chart import generate_ai_tmt_chain_chart
+
+        assert generate_ai_tmt_chain_chart({"status": "unavailable"}, str(tmp_path / "x.png")) is None
+        assert generate_ai_tmt_chain_chart({}, str(tmp_path / "x.png")) is None
+
+    def test_stale_names_are_excluded_from_the_chart(self, tmp_path):
+        from market_diary.professional.ai_tmt_chart import _leg_values
+
+        summary = _summary((-2.21, -0.99, -0.32), (-3.76, -11.79, -3.31, -1.02))
+        summary["Equities"]["SMIC"] = _item(-3.76, age=5)
+        chain = build_ai_tmt_chain(summary)
+        plotted = [row["label"] for row in _leg_values(chain["hk_leg"])]
+        assert "SMIC" not in plotted, "a stale quote must not be plotted"

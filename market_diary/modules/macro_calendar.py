@@ -57,7 +57,11 @@ class MacroCalendar:
     @staticmethod
     def _to_calendar_row(item: Dict) -> Dict:
         return {
-            "time": item["date"],
+            # The schedule carries a date, not an intraday time. Putting the
+            # date in "time" made the radar render "2026-08-20 2026-08-20" and
+            # "2026-08-20 2026-08-21", because it concatenates date and time.
+            "time": "",
+            "date": item["date"],
             "country": item["country"],
             "indicator": item["indicator"],
             # No free forecast/actual source is configured; report the gap

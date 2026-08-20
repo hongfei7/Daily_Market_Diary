@@ -7,6 +7,8 @@ from typing import Any, Dict, Iterable, List, Tuple
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
+from market_diary.professional.analytics_briefing import _dedupe_key
+
 
 INK = "#13202b"
 SLATE = "#5d6973"
@@ -116,10 +118,19 @@ def _append_event_rows(
 
 
 def _dedupe_rows(rows: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Collapse the same event arriving from several feeds.
+
+    The radar aggregates six sources, and the macro calendar and risk feed are
+    now both driven by the same release schedule, so one release could arrive
+    twice under slightly different labels. Keying on the raw event string let
+    "China LPR (1Y / 5Y)" and "CN China LPR (1Y / 5Y)" both through. The entity
+    is excluded from the key for the same reason: one feed carries it, the
+    other does not.
+    """
     result: List[Dict[str, Any]] = []
     seen = set()
     for item in rows:
-        key = (_text(item.get("event")).lower(), _text(item.get("date")), _text(item.get("entity")).lower())
+        key = (_dedupe_key(_text(item.get("event"))), _text(item.get("date")))
         if not key[0] or key in seen:
             continue
         seen.add(key)

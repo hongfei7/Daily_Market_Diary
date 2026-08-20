@@ -19,22 +19,41 @@ from market_diary.professional.relevance import canonical_hk_leadership, is_rele
 from market_diary.professional.instruments import format_summary_change, summary_change
 
 
+# Clause openers. Cutting in front of one of these leaves a complete thought
+# behind, which a mid-clause cut does not.
+_CLAUSE_BOUNDARY_RE = re.compile(
+    r"(?:\.\s|;\s|,\s+(?:so|which|while|but|and then|because)\s)",
+    re.IGNORECASE,
+)
+
+
 def _safe_sentence_clip(text: Any, limit: int = 160) -> str:
+    """Shorten to a whole clause, never to a stub with a period bolted on.
+
+    Cutting at the character limit and stripping trailing function words
+    produced text that parses but no longer says anything — "so the move
+    extends.", "so use it to monitor marginal." Dropping the incomplete trailing
+    clause keeps what survives true and readable.
+    """
     sentence = " ".join(str(text or "").split()).strip()
     if len(sentence) <= limit:
         return sentence
-    phrase = _truncate(sentence, limit, suffix="").strip()
-    phrase = re.sub(r"\b(?:could|can|would|may|might|should|will)(?:\s+\w+){0,2}$", "", phrase, flags=re.IGNORECASE).strip()
-    phrase = re.sub(
-        r"\b(?:after|before|during|into|onto|above|below|around|than|via|through|against|despite)\s+(?:any|the|a|an|this|that|these|those|current|next)?$",
-        "",
-        phrase,
-        flags=re.IGNORECASE,
-    ).strip()
-    phrase = re.sub(r"\b(?:and|or|but|with|without|to|from|for|of|the|a|an|because|whether|if)$", "", phrase, flags=re.IGNORECASE).strip()
-    if phrase and phrase[-1] not in ".!?":
-        phrase = phrase.rstrip(" ,;:-|") + "."
-    return phrase
+
+    # Prefer the last clause boundary that fits.
+    best = 0
+    for match in _CLAUSE_BOUNDARY_RE.finditer(sentence):
+        if match.start() < limit:
+            best = match.start()
+        else:
+            break
+    if best >= 30:
+        phrase = sentence[:best].rstrip(" ,;:-|")
+        return phrase if phrase.endswith((".", "!", "?")) else phrase + "."
+
+    # No usable boundary: cut on a word and mark it rather than implying the
+    # sentence ended there.
+    phrase = _truncate(sentence, limit, suffix="").strip().rstrip(" ,;:-|")
+    return f"{phrase}…" if phrase else ""
 
 
 def _render_top_items(items: List[Dict[str, Any]], limit: int = 6) -> str:

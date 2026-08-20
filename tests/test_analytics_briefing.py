@@ -253,3 +253,42 @@ def test_same_release_from_two_feeds_appears_once() -> None:
 
     # Different events must not collapse.
     assert _dedupe_key("China LPR (1Y / 5Y)") != _dedupe_key("Hong Kong CPI")
+
+
+def test_radar_collapses_the_same_event_from_different_feeds() -> None:
+    """The macro calendar and risk feed share a release schedule.
+
+    The radar aggregates six sources and keyed dedupe on the raw event string,
+    so "China LPR (1Y / 5Y)" and "CN China LPR (1Y / 5Y)" both survived and each
+    release took two of the five queue slots.
+    """
+    from professional.catalyst_radar import _dedupe_rows
+
+    rows = [
+        {"event": "China LPR (1Y / 5Y)", "date": "2026-08-20", "entity": "CN"},
+        {"event": "CN China LPR (1Y / 5Y)", "date": "2026-08-20", "entity": ""},
+        {"event": "Hong Kong CPI", "date": "2026-08-21", "entity": ""},
+        {"event": "HK Hong Kong CPI", "date": "2026-08-21", "entity": "HK"},
+        # A genuinely different date is a different event.
+        {"event": "China LPR (1Y / 5Y)", "date": "2026-09-20", "entity": "CN"},
+    ]
+    out = _dedupe_rows(rows)
+    assert len(out) == 3
+    assert [row["date"] for row in out] == ["2026-08-20", "2026-08-21", "2026-09-20"]
+
+
+def test_macro_rows_carry_the_event_date_not_the_report_date() -> None:
+    """An event two days out rendered as if it were today.
+
+    The agenda pinned every row to the report date and put the event date in
+    "time", so the radar rendered "2026-08-20 2026-08-21".
+    """
+    from modules.macro_calendar import fetch_macro_data
+    from professional.analytics_macro import build_macro_agenda
+    from professional.config import load_professional_config
+
+    agenda = build_macro_agenda("2026-08-20", fetch_macro_data("2026-08-20"), load_professional_config())
+    assert agenda, "expected at least one scheduled release in the window"
+    for row in agenda:
+        assert row["time"] == "", "a date must never be rendered as a time"
+    assert any(row["date"] != "2026-08-20" for row in agenda), "event dates should not all collapse to today"

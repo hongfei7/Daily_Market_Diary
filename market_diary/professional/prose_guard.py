@@ -48,8 +48,25 @@ _INTERNAL_ID_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Lines that are structural rather than prose.
-_SKIP_PREFIXES = ("|", "![", "#", "```", "> Date policy", "_Source:", "<div", "</div", "<p", "<span")
+# Lines that are structural rather than prose. Table rows are handled
+# separately: their cells carry real prose and were being truncated into
+# fragments ("so the move extends.") with nothing checking them.
+_SKIP_PREFIXES = ("![", "#", "```", "> Date policy", "_Source:", "<div", "</div", "<p", "<span")
+
+# A table separator row: |---|---|
+_TABLE_SEPARATOR_RE = re.compile(r"^\|[\s:|-]+\|?$")
+
+# Cells shorter than this are labels, tickers or numbers rather than prose.
+_MIN_CELL_PROSE_LEN = 40
+
+
+def _table_cells(line: str) -> List[str]:
+    """Prose-bearing cells of a markdown table row."""
+    stripped = line.strip()
+    if not stripped.startswith("|") or _TABLE_SEPARATOR_RE.match(stripped):
+        return []
+    cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+    return [cell for cell in cells if len(cell) >= _MIN_CELL_PROSE_LEN]
 
 # Traceability lines in the audit appendix legitimately quote internal field
 # paths; they are diagnostics for the desk, not reader-facing prose.
@@ -94,47 +111,62 @@ def _bracket_findings(text: str, line_no: int) -> List[Dict[str, Any]]:
     return findings
 
 
+def _check_text(text: str, idx: int, *, in_table: bool = False) -> List[Dict[str, Any]]:
+    """Run every prose rule over one piece of text."""
+    findings: List[Dict[str, Any]] = []
+    where = " (table cell)" if in_table else ""
+
+    if _DANGLING_TAIL_RE.search(text) or _STRANDED_PREPOSITION_RE.search(text):
+        findings.append(
+            {
+                "line": idx,
+                "rule": "sentence_fragment",
+                "detail": f"Sentence ends on a function word{where}",
+                "text": text[:160],
+            }
+        )
+    if _SEVERED_LIST_RE.search(text):
+        findings.append(
+            {
+                "line": idx,
+                "rule": "severed_list",
+                "detail": f"Sentence ends mid-enumeration{where}",
+                "text": text[:160],
+            }
+        )
+    match = None if any(marker in text for marker in _DIAGNOSTIC_MARKERS) else _INTERNAL_ID_RE.search(text)
+    if match:
+        findings.append(
+            {
+                "line": idx,
+                "rule": "internal_identifier",
+                "detail": f"Internal identifier '{match.group(0)}' leaked into prose{where}",
+                "text": text[:160],
+            }
+        )
+    findings.extend(_bracket_findings(text, idx))
+    return findings
+
+
 def check_markdown(markdown: str) -> List[Dict[str, Any]]:
     """Return every prose defect found in the rendered report."""
     findings: List[Dict[str, Any]] = []
     previous_prose = ""
 
     for idx, raw_line in enumerate(str(markdown or "").splitlines(), start=1):
+        # Table cells carry prose and are truncated to fit a column, which
+        # produced fragments such as "so the move extends." Skipping every row
+        # meant nothing checked them.
+        for cell in _table_cells(raw_line):
+            findings.extend(_check_text(_strip_markdown(cell), idx, in_table=True))
+
         if not _is_prose_line(raw_line):
             continue
         text = _strip_markdown(raw_line)
         if not text:
             continue
 
-        if _DANGLING_TAIL_RE.search(text) or _STRANDED_PREPOSITION_RE.search(text):
-            findings.append(
-                {
-                    "line": idx,
-                    "rule": "sentence_fragment",
-                    "detail": "Sentence ends on a function word",
-                    "text": text[:160],
-                }
-            )
-        if _SEVERED_LIST_RE.search(text):
-            findings.append(
-                {
-                    "line": idx,
-                    "rule": "severed_list",
-                    "detail": "Sentence ends mid-enumeration",
-                    "text": text[:160],
-                }
-            )
-        match = None if any(marker in text for marker in _DIAGNOSTIC_MARKERS) else _INTERNAL_ID_RE.search(text)
-        if match:
-            findings.append(
-                {
-                    "line": idx,
-                    "rule": "internal_identifier",
-                    "detail": f"Internal identifier '{match.group(0)}' leaked into prose",
-                    "text": text[:160],
-                }
-            )
-        findings.extend(_bracket_findings(text, idx))
+        findings.extend(_check_text(text, idx))
 
         # A verbatim repeat of the previous prose line is duplicated rendering.
         if len(text) > 60 and text == previous_prose:

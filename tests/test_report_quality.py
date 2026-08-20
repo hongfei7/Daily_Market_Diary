@@ -148,8 +148,8 @@ def main() -> None:
 
     report = render_professional_report(good, charts_section="_No charts._")
     assert "Executive Summary" in report
-    assert "**Market pulse:**" in report
-    assert "**Hong Kong lens**" in report
+    assert "**What changed overnight?**" in report
+    assert "**What it means for AI/TMT**" in report
     assert "Today's Core Names" in report
     assert "Personal View Pad" not in report
     assert "Learning watchlist" not in report

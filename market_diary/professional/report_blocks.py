@@ -15,6 +15,7 @@ from market_diary.professional.report_formatting import (
     _status_label,
     _truncate,
 )
+from market_diary.professional.analytics_market import _fresh_change_pct, build_market_snapshot
 from market_diary.professional.report_sections import (
     _pick_metrics_by_name,
     _resolved_hk_leadership,
@@ -88,61 +89,104 @@ def _lens_confidence(hk_desk_view: Dict[str, Any]) -> str:
     return "medium confidence"
 
 
-def _render_executive_summary(bundle: Dict[str, Any], pulse: str) -> str:
-    llm_sections = bundle.get("llm_sections", {}) or {}
-    must_watch = bundle.get("must_watch", []) or []
+def _summary_yesterday(bundle: Dict[str, Any]) -> str:
+    card = bundle.get("call_scorecard", {}) or {}
+    verdict = str(card.get("verdict", "") or "")
+    if not verdict:
+        return "No previously published call is on file yet."
+    headline = _safe_sentence_clip(card.get("headline", ""), 220)
+    return f"**{verdict}** — {headline}" if headline else f"**{verdict}**"
+
+
+def _summary_overnight(bundle: Dict[str, Any]) -> str:
+    """Lead with the semis complex, which drives Hong Kong tech most directly."""
+    chain = bundle.get("ai_tmt_chain", {}) or {}
+    parts: List[str] = []
+
+    legs = [item for item in (chain.get("overnight_leg", []) or []) if item.get("available")]
+    if legs:
+        moves = ", ".join(f"{item['label']} {item['display']}" for item in legs[:3])
+        direction = "lower" if (chain.get("overnight_avg_pct") or 0) < 0 else "higher"
+        parts.append(f"Semis led {direction}: {moves}.")
+
+    rows = build_market_snapshot(bundle.get("market_summary", {}) or {})
+    hsi, _ = _fresh_change_pct(rows, "Hang Seng Index")
+    tech, _ = _fresh_change_pct(rows, "3033.HK ETF")
+    if hsi is not None and tech is not None:
+        joiner = "but" if (hsi >= 0) != (tech >= 0) else "and"
+        parts.append(f"HSI {hsi:+.2f}% {joiner} 3033.HK {tech:+.2f}%.")
+
+    return " ".join(parts) if parts else "Overnight coverage was insufficient to summarise the tape."
+
+
+def _summary_ai_tmt(bundle: Dict[str, Any]) -> str:
     hk_desk_view = bundle.get("hk_desk_view", {}) or {}
-    lens = _resolved_hk_lens(bundle)
-    lines: List[str] = []
+    chain = bundle.get("ai_tmt_chain", {}) or {}
 
-    # Lead with a degradation notice when a core input is stale: the reader
-    # should learn that before reading a conclusion built on partial evidence.
-    stale_inputs = hk_desk_view.get("stale_inputs", []) or []
-    if stale_inputs:
-        lines.append(
-            f"- **Data caveat:** {'; '.join(stale_inputs)}. The Hong Kong style call is downgraded and the "
-            "stale input is excluded from the risk score."
-        )
+    stale = hk_desk_view.get("stale_inputs", []) or []
+    if stale:
+        return f"Style call withheld: {'; '.join(stale)}. The stale input is excluded from the risk score."
 
-    pulse_text = _safe_sentence_clip(pulse, 190)
-    if pulse_text:
-        lines.append(f"- **Market pulse:** {pulse_text}")
+    spread = hk_desk_view.get("style_spread_pp")
+    headline = str(hk_desk_view.get("headline", "") or "")
+    parts: List[str] = []
+    if spread is not None and headline:
+        # Do not lowercase the headline: it contains proper terms such as
+        # "H-share" that must keep their casing.
+        lead = "Style, not beta" if abs(spread) >= 0.5 else "No decisive style winner"
+        parts.append(f"{lead} — {headline}, a {abs(spread):.2f}pp spread.")
+    elif headline:
+        parts.append(f"{headline}.")
 
-    if lens:
-        confidence = _lens_confidence(hk_desk_view)
-        lines.append(f"- **Hong Kong lens** ({confidence}): {_safe_sentence_clip(lens, 430)}")
+    if chain.get("divergence_note"):
+        parts.append(_safe_sentence_clip(chain["divergence_note"], 190))
+    else:
+        implication = _safe_sentence_clip(hk_desk_view.get("implication", ""), 170)
+        if implication:
+            parts.append(implication)
 
-    hk_implication = _safe_sentence_clip(llm_sections.get("overnight_hk_implication", ""), 180)
-    if hk_implication and hk_implication.lower() not in lens.lower():
-        lines.append(f"- **Opening implication:** {hk_implication}")
+    return " ".join(parts) if parts else "The Hong Kong style read could not be formed from available data."
 
-    confirmation = _safe_sentence_clip(hk_desk_view.get("confirmation", ""), 230)
-    llm_confirmation = _safe_sentence_clip(llm_sections.get("hk_follow_through", ""), 210)
-    if llm_confirmation and len(llm_confirmation) >= 45:
-        confirmation = llm_confirmation
-    if not confirmation:
-        focus_lines = ((bundle.get("today_forward", {}) or {}).get("focus_lines", []) or [])
-        confirmation = _safe_sentence_clip(focus_lines[0] if focus_lines else "", 175)
-    if confirmation:
-        lines.append(f"- **What would confirm it:** {confirmation}")
 
-    invalidation = _safe_sentence_clip(hk_desk_view.get("invalidation", ""), 220)
-    if not invalidation:
-        invalidation = _safe_sentence_clip(llm_sections.get("risk_check", ""), 175)
-    if invalidation:
-        lines.append(f"- **What could break it:** {invalidation}")
+def _summary_watch(bundle: Dict[str, Any]) -> str:
+    parts: List[str] = []
 
-    if len(lines) < 3:
-        for item in must_watch:
-            title = _safe_sentence_clip(item.get("title", ""), 90)
-            summary = _safe_sentence_clip(item.get("summary", ""), 130)
-            if title and summary:
-                lines.append(f"- **Priority evidence:** {title} — {summary}")
+    # The nearest high-impact scheduled event, if one falls in the window.
+    for item in (bundle.get("macro_agenda", []) or []):
+        if str(item.get("status", "")).lower() == "upcoming":
+            event = str(item.get("event", "") or "").strip()
+            when = str(item.get("time") or item.get("date") or "").strip()
+            if event:
+                parts.append(f"{event}{f' ({when})' if when else ''}.")
                 break
 
-    if not lines:
-        return "- **Executive summary pending:** rely on the section headlines and key tables below."
-    return "\n".join(lines)
+    chain = bundle.get("ai_tmt_chain", {}) or {}
+    test = _safe_sentence_clip(chain.get("test", ""), 200)
+    if not test:
+        test = _safe_sentence_clip((bundle.get("hk_desk_view", {}) or {}).get("confirmation", ""), 200)
+    if test:
+        parts.append(test)
+
+    return " ".join(parts) if parts else "No scheduled catalyst; trade the overnight tape and local flow."
+
+
+def _render_executive_summary(bundle: Dict[str, Any], pulse: str) -> str:
+    """Answer the same four questions every day, one sentence each.
+
+    The previous format put the style call, its evidence, a conviction caveat, a
+    partial-support clause and the portfolio implication into a single 70-word
+    bullet. Fixed questions in a fixed order can be scanned in seconds and
+    compared across days, which a free-form paragraph cannot.
+    """
+    del pulse  # The overnight line is built from the AI/TMT chain instead.
+
+    questions = [
+        ("Did yesterday's call work?", _summary_yesterday(bundle)),
+        ("What changed overnight?", _summary_overnight(bundle)),
+        ("What it means for AI/TMT", _summary_ai_tmt(bundle)),
+        ("What to watch today", _summary_watch(bundle)),
+    ]
+    return "\n".join(f"- **{label}** {answer}" for label, answer in questions if answer)
 
 
 def _render_news_table(bundle: Dict[str, Any], limit: int | None = None) -> str:

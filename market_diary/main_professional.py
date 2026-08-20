@@ -53,6 +53,7 @@ from market_diary.professional.date_policy import (
 )
 from market_diary.professional.fact_checker import apply_fact_check_fallbacks, run_fact_check
 from market_diary.professional.llm_enhancer import generate_llm_sections
+from market_diary.professional.ai_tmt_chart import generate_ai_tmt_chain_chart
 from market_diary.professional.call_scorecard import build_call_scorecard, recent_record
 from market_diary.professional.md_questions import build_md_questions
 from market_diary.professional.performance import refresh_performance_tracking
@@ -804,6 +805,22 @@ def main() -> None:
         }
         daily_chart_rel_path = bundle["daily_one_chart"]["rel_path"]
 
+    # The AI/TMT chain chart shares its numbers with Section 2.3 rather than
+    # recomputing them, so chart and prose cannot disagree.
+    ai_tmt_chart_rel_path = ""
+    if should_render_daily_chart:
+        try:
+            chart_dir = os.path.join(output_dir, "charts")
+            os.makedirs(chart_dir, exist_ok=True)
+            written = generate_ai_tmt_chain_chart(
+                bundle.get("ai_tmt_chain", {}) or {},
+                os.path.join(chart_dir, f"ai_tmt_chain_{output_label}.png"),
+            )
+            if written:
+                ai_tmt_chart_rel_path = f"charts/{os.path.basename(written)}"
+        except Exception as exc:
+            print(f"[runtime] AI/TMT chain chart failed (non-fatal): {_error_summary(exc)}")
+
     trend_pack_rel_path = ""
     if should_render_trend_pack:
         chart_dir = os.path.join(output_dir, "charts")
@@ -851,6 +868,7 @@ def main() -> None:
         catalyst_radar_rel_path=catalyst_radar_rel_path,
         daily_chart_rel_path=daily_chart_rel_path,
         trend_pack_rel_path=trend_pack_rel_path,
+        ai_tmt_chart_rel_path=ai_tmt_chart_rel_path,
     )
 
     # Prose defects only exist in the rendered text, so the guard runs on the
@@ -874,6 +892,7 @@ def main() -> None:
             catalyst_radar_rel_path=catalyst_radar_rel_path,
             daily_chart_rel_path=daily_chart_rel_path,
             trend_pack_rel_path=trend_pack_rel_path,
+            ai_tmt_chart_rel_path=ai_tmt_chart_rel_path,
         )
     except Exception as exc:
         print(f"[runtime] Prose guard failed (non-fatal): {_error_summary(exc)}")
