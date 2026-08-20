@@ -3,7 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, Iterable, List, Optional
 
-from market_diary.professional.instruments import format_summary_change, summary_change
+from market_diary.professional.instruments import (
+    MAX_FRESH_TRADING_DAYS,
+    format_summary_change,
+    summary_change,
+)
+from market_diary.professional.metric_history import describe, percentile_context
 
 
 def _parse_pct(value: Any) -> Optional[float]:
@@ -49,11 +54,26 @@ def _summary_item(summary: Dict[str, Any], category: str, name: str) -> Dict[str
     return item if isinstance(item, dict) else {}
 
 
+def _freshness_days(item: Dict[str, Any]) -> Optional[int]:
+    value = item.get("Trading Freshness Days", item.get("Freshness Days"))
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _snapshot_row(summary: Dict[str, Any], category: str, name: str, label: str, question: str) -> Dict[str, Any]:
     item = _summary_item(summary, category, name)
     price = _parse_float(item.get("Price"))
     change_value, change_unit = summary_change(item)
+    freshness_days = _freshness_days(item)
+    quality = str(item.get("Quality", "fresh") or "fresh")
+    if freshness_days is not None and freshness_days > MAX_FRESH_TRADING_DAYS:
+        quality = "stale"
     return {
+        "freshness_days": freshness_days,
+        "quality": quality,
+        "is_stale": quality == "stale",
         "label": str(item.get("Display Name") or label),
         "short_label": label,
         "category": category,
@@ -96,6 +116,26 @@ def _get_row(rows: Iterable[Dict[str, Any]], label: str) -> Dict[str, Any]:
         if row.get("label") == label or row.get("short_label") == label:
             return row
     return {}
+
+
+def _fresh_change_pct(rows: Iterable[Dict[str, Any]], label: str) -> tuple[Optional[float], Optional[int]]:
+    """Return ``(change_pct, stale_days)`` for a tracked instrument.
+
+    A stale quote yields ``(None, age_in_trading_days)`` so callers cannot use
+    the value by accident while still being able to explain why it was dropped.
+    A fresh or missing quote yields ``(value, None)``.
+    """
+    row = _get_row(rows, label)
+    if row.get("is_stale"):
+        return None, row.get("freshness_days")
+    return row.get("change_pct"), None
+
+
+def _stale_note(label: str, stale_days: Optional[int]) -> str:
+    if stale_days is None:
+        return f"{label} was unavailable"
+    suffix = "trading day" if stale_days == 1 else "trading days"
+    return f"{label} was stale ({stale_days} {suffix} old)"
 
 
 def build_chart_read(chart_features: Dict[str, Any]) -> Dict[str, List[str]]:
@@ -202,8 +242,10 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
 def build_hk_desk_view(
     summary: Dict[str, Any],
     hk_local: Optional[Dict[str, Any]] = None,
+    metric_history: Optional[Dict[str, Any]] = None,
+    report_date: str = "",
 ) -> Dict[str, Any]:
-    return build_hk_investor_lens(summary, hk_local)
+    return build_hk_investor_lens(summary, hk_local, metric_history, report_date)
 
 
 def _local_metric_value(hk_local: Dict[str, Any], key: str) -> Optional[float]:
@@ -239,6 +281,8 @@ def _compact_hkd_flow(value: Optional[float]) -> str:
 def build_hk_investor_lens(
     summary: Dict[str, Any],
     hk_local: Optional[Dict[str, Any]] = None,
+    metric_history: Optional[Dict[str, Any]] = None,
+    report_date: str = "",
 ) -> Dict[str, Any]:
     """Build a fact-led Hong Kong style read that survives an LLM failure.
 
@@ -247,15 +291,25 @@ def build_hk_investor_lens(
     confirmation, investment implication, and explicit prove/kill conditions.
     """
     rows = build_market_snapshot(summary)
-    hsi = _get_row(rows, "Hang Seng Index").get("change_pct")
-    hscei = _get_row(rows, "HSCEI").get("change_pct")
-    hstech = _get_row(rows, "3033.HK ETF").get("change_pct")
-    fxi = _get_row(rows, "China proxy (FXI)").get("change_pct")
-    usdcnh = _get_row(rows, "USD/CNH").get("change_pct")
+    # The style call compares relative performance, so a stale leg would produce a
+    # spread between two different dates. Drop stale legs and record why.
+    hsi, hsi_stale = _fresh_change_pct(rows, "Hang Seng Index")
+    hscei, hscei_stale = _fresh_change_pct(rows, "HSCEI")
+    hstech, hstech_stale = _fresh_change_pct(rows, "3033.HK ETF")
+    fxi, _ = _fresh_change_pct(rows, "China proxy (FXI)")
+    usdcnh, _ = _fresh_change_pct(rows, "USD/CNH")
     usdhkd = _get_row(rows, "USD/HKD").get("price")
     turnover_ratio = _local_metric_value(hk_local or {}, "turnover_vs_20d")
     short_ratio = _local_metric_value(hk_local or {}, "short_selling_ratio")
     southbound = _local_metric_value(hk_local or {}, "southbound_net_flow")
+
+    stale_inputs: List[str] = []
+    if hstech is None and hstech_stale is not None:
+        stale_inputs.append(_stale_note("3033.HK ETF", hstech_stale))
+    if hscei is None and hscei_stale is not None:
+        stale_inputs.append(_stale_note("HSCEI", hscei_stale))
+    if hsi is None and hsi_stale is not None:
+        stale_inputs.append(_stale_note("Hang Seng Index", hsi_stale))
 
     style_spread = hstech - hscei if hstech is not None and hscei is not None else None
     beta_spread = hstech - hsi if hstech is not None and hsi is not None else None
@@ -282,10 +336,31 @@ def build_hk_investor_lens(
         elif turnover_ratio >= 1.05:
             confirmation_flags.append(f"turnover reached {turnover_ratio:.2f}x its 20-day average")
     if short_ratio is not None:
-        if short_ratio >= 16.0:
-            participation_flags.append(f"short selling was elevated at {short_ratio:.1f}%")
+        # A level alone cannot say "elevated": Hong Kong market short-selling
+        # normally runs in the mid-to-high teens. Prefer the trailing
+        # distribution, and be explicit when there is not enough history for one.
+        short_context = percentile_context(
+            metric_history or {}, "short_selling_ratio", short_ratio, report_date or ""
+        )
+        detail = describe(short_context)
+        if short_context.get("available"):
+            band = short_context.get("band")
+            if band in {"high", "very high"}:
+                participation_flags.append(f"short selling was {band} at {short_ratio:.1f}% ({detail})")
+            elif band in {"low", "very low"}:
+                confirmation_flags.append(f"short selling was {band} at {short_ratio:.1f}% ({detail})")
+        elif short_ratio >= 16.0:
+            participation_flags.append(
+                f"short selling was {short_ratio:.1f}%, above the 16% absolute reference ({detail})"
+                if detail
+                else f"short selling was {short_ratio:.1f}%, above the 16% absolute reference"
+            )
         elif short_ratio <= 12.0:
-            confirmation_flags.append(f"short selling was contained at {short_ratio:.1f}%")
+            confirmation_flags.append(
+                f"short selling was {short_ratio:.1f}%, below the 12% absolute reference ({detail})"
+                if detail
+                else f"short selling was {short_ratio:.1f}%, below the 12% absolute reference"
+            )
     if southbound is not None:
         if southbound > 0:
             confirmation_flags.append(f"Southbound recorded {_compact_hkd_flow(southbound)} net buying")
@@ -330,8 +405,14 @@ def build_hk_investor_lens(
         confirmation = "Confirm a broad-beta session only if HSI breadth and turnover improve without a sharp 3033.HK-versus-HSCEI split."
         invalidation = "Reclassify the tape when either 3033.HK or HSCEI opens a sustained 0.5pp relative lead with flow confirmation."
     else:
-        headline = "Leadership unconfirmed — coverage is insufficient"
-        relative_evidence = "A comparable 3033.HK-versus-HSCEI move was not available"
+        if stale_inputs:
+            headline = "Leadership unconfirmed — a required input is stale"
+            relative_evidence = (
+                f"No same-date 3033.HK-versus-HSCEI comparison was possible because {'; '.join(stale_inputs)}"
+            )
+        else:
+            headline = "Leadership unconfirmed — coverage is insufficient"
+            relative_evidence = "A comparable 3033.HK-versus-HSCEI move was not available"
         implication = "Do not infer Hong Kong style from the headline index alone; wait for relative price and local-flow evidence."
         confirmation = "Confirm only after HSI, HSCEI, 3033.HK, turnover, and Southbound evidence refresh on a comparable date."
         invalidation = "Any style claim remains invalid while the required relative-performance fields are missing or stale."
@@ -345,8 +426,15 @@ def build_hk_investor_lens(
         lens += f" Conviction is improving because {'; '.join(confirmation_flags[:2])}."
     lens += f" {implication}"
 
+    def _with_stale(value: Optional[float], stale_days: Optional[int]) -> str:
+        if value is None and stale_days is not None:
+            suffix = "d" if stale_days != 1 else "d"
+            return f"stale {stale_days}{suffix}"
+        return _format_signed(value)
+
     lines = [
-        f"Hang Seng {_format_signed(hsi)} / HSCEI {_format_signed(hscei)} / 3033.HK ETF {_format_signed(hstech)}.",
+        f"Hang Seng {_with_stale(hsi, hsi_stale)} / HSCEI {_with_stale(hscei, hscei_stale)}"
+        f" / 3033.HK ETF {_with_stale(hstech, hstech_stale)}.",
         f"Offshore China proxy FXI {_format_signed(fxi)} and USD/CNH {_format_signed(usdcnh)} frame cross-border risk appetite.",
         f"USD/HKD last traded around {_fmt_price_for_hk(usdhkd)}, which keeps the Hong Kong funding lens in focus.",
     ]
@@ -361,6 +449,9 @@ def build_hk_investor_lens(
         "invalidation": invalidation,
         "style": style,
         "style_spread_pp": style_spread,
+        "stale_inputs": stale_inputs,
+        "participation_flags": participation_flags,
+        "confirmation_flags": confirmation_flags,
         "lines": lines,
     }
 

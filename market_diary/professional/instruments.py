@@ -12,6 +12,13 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Mapping
 
 
+# A quote is decision-usable only if it is at most this many trading days old.
+# Anything older must not silently drive a style call, a regime label, or a risk
+# score: comparing a fresh leg against a stale one manufactures a spread that
+# never happened on any single date.
+MAX_FRESH_TRADING_DAYS = 1
+
+
 INSTRUMENTS: Dict[tuple[str, str], Dict[str, str]] = {
     ("Equities", "S&P 500"): {
         "instrument_id": "index.us.spx",
@@ -147,7 +154,7 @@ def annotate_summary_item(
 
     freshness = trading_freshness_days(category, result.get("As Of"), target_date)
     quality = str(result.get("Quality", "fresh") or "fresh")
-    if freshness is not None and freshness > 1:
+    if freshness is not None and freshness > MAX_FRESH_TRADING_DAYS:
         quality = "stale"
 
     result.update(

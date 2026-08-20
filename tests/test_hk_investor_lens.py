@@ -31,7 +31,10 @@ def test_hk_lens_explains_style_evidence_and_conviction() -> None:
     assert lens["headline"] == "Selective growth leadership"
     assert "beat HSCEI by +0.60pp" in lens["evidence"]
     assert "turnover was only 0.86x" in lens["lens"]
-    assert "short selling was elevated at 18.0%" in lens["lens"]
+    # Without trailing history the claim must be framed as an absolute
+    # reference rather than asserting the reading is unusual.
+    assert "short selling was 18.0%, above the 16% absolute reference" in lens["lens"]
+    assert "elevated" not in lens["lens"]
     assert "Southbound recorded +HK$2.6bn net buying" in lens["lens"]
     assert "do not treat the move as broad China risk-on" in lens["implication"]
     assert "3033.HK keeps outperforming HSCEI" in lens["confirmation"]
@@ -59,7 +62,9 @@ def test_report_renders_full_lens_even_when_llm_returns_generic_label() -> None:
     summary = _render_executive_summary(bundle, "Overnight risk appetite improved.")
     review = _render_hk_review_block(bundle)
 
-    assert "**Hong Kong lens:** Selective growth leadership:" in summary
+    # The lens carries an explicit confidence grade so a reader can tell a
+    # well-evidenced call from one the pipeline could not verify.
+    assert "**Hong Kong lens** (medium confidence): Selective growth leadership:" in summary
     assert "turnover was only 0.86x" in summary
     assert "**What would confirm it:** Confirm if 3033.HK" in summary
     assert "**What could break it:** Invalidate if 3033.HK" in summary

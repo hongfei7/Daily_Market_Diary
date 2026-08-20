@@ -3,8 +3,6 @@ from __future__ import annotations
 import re
 from typing import List
 
-from market_diary.professional.report_formatting import _truncate
-
 
 def _split_sentences(text: str) -> List[str]:
     normalized = re.sub(r"\s+", " ", str(text or "")).strip()
@@ -62,30 +60,69 @@ def _brief_points(text: str, limit: int = 3, width: int = 190) -> List[str]:
     return [_condense_sentence(sentence, width) for sentence in sentences[:limit] if str(sentence or "").strip()]
 
 
+# Words that cannot legitimately end a sentence. Cutting in front of one of
+# these leaves a fragment such as "flagged as the dominant." or
+# "so the right lean is to keep.", which reads as a broken generator.
+_DANGLING_TAIL_RE = re.compile(
+    r"\b(?:the|a|an|and|or|but|with|without|to|from|for|of|in|on|at|by|as|that|than|rather|while|which|"
+    r"is|was|were|are|be|been|being|has|have|had|its|their|his|her|our|your|this|these|those|"
+    r"into|onto|above|below|around|via|through|against|despite|after|before|during|between|"
+    r"could|can|would|may|might|should|will|shall|must|more|less|most|least|very|dominant|cleanest)$",
+    re.IGNORECASE,
+)
+
+
+# A trailing "…, <word>" means the cut landed inside an enumeration, e.g.
+# "growth, platform" severed from "…, and consumer-internet names".
+_SEVERED_LIST_RE = re.compile(r",\s+[\w/-]+$")
+
+
+def _is_well_formed(phrase: str) -> bool:
+    """Reject clause fragments that would read as an unfinished sentence."""
+    stripped = phrase.rstrip(" ,;:-").strip()
+    if len(stripped) < 25:
+        return False
+    if _DANGLING_TAIL_RE.search(stripped):
+        return False
+    if _SEVERED_LIST_RE.search(stripped):
+        return False
+    # An opened bracket or quote that never closes is a truncation artefact.
+    if stripped.count("(") != stripped.count(")"):
+        return False
+    if stripped.count("[") != stripped.count("]"):
+        return False
+    if stripped.count('"') % 2:
+        return False
+    return True
+
+
 def _condense_sentence(text: str, width: int) -> str:
+    """Shorten a sentence only where a clean clause boundary exists.
+
+    Over-running the width budget is preferable to emitting a fragment: the
+    width is a layout preference, but a broken sentence is a correctness defect
+    that lands in the highest-visibility part of the report.
+    """
     sentence = " ".join(str(text or "").split()).strip()
     if len(sentence) <= width:
         return sentence
 
-    boundary_markers = [", while ", ", which ", ", but ", ", and ", "; ", ": "]
+    # ", and " / ", or " are excluded: they join serial list items far more often
+    # than independent clauses, so cutting there severs an enumeration.
+    boundary_markers = [", while ", ", which ", ", but ", "; ", ": "]
     candidates: List[str] = []
     for marker in boundary_markers:
         pos = sentence.find(marker)
         if 35 <= pos <= width:
-            candidates.append(sentence[:pos])
-    if candidates:
-        phrase = max(candidates, key=len).strip()
-    else:
-        phrase = _truncate(sentence, width, suffix="").strip()
-        phrase = re.sub(r"\b(?:could|can|would|may|might|should|will)(?:\s+\w+){0,2}$", "", phrase, flags=re.IGNORECASE).strip()
-        phrase = re.sub(
-            r"\b(?:after|before|during|into|onto|above|below|around|than|via|through|against|despite)\s+(?:any|the|a|an|this|that|these|those|current|next)?$",
-            "",
-            phrase,
-            flags=re.IGNORECASE,
-        ).strip()
-        phrase = re.sub(r"\b(?:and|or|but|with|without|to|from|for|of|the|a|an)$", "", phrase, flags=re.IGNORECASE).strip()
+            candidate = sentence[:pos].strip()
+            if _is_well_formed(candidate):
+                candidates.append(candidate)
 
+    if not candidates:
+        # No safe cut point: keep the sentence whole rather than mangle it.
+        return sentence
+
+    phrase = max(candidates, key=len).strip()
     if phrase and phrase[-1] not in ".!?":
         phrase = phrase.rstrip(" ,;:-") + "."
     return phrase

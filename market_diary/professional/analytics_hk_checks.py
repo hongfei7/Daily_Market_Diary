@@ -25,15 +25,55 @@ def _summarize_hk_etf_proxy(movers_data: Dict[str, Any]) -> str:
     return "; ".join(hk_flows[:3])
 
 
+# Official Convertibility Undertakings under the Linked Exchange Rate System.
+WEAK_SIDE_CU = 7.8500
+STRONG_SIDE_CU = 7.7500
+# One pip is 0.0001 on USD/HKD.
+PIP = 0.0001
+
+
 def _usdhkd_band_read(price: Any) -> str:
+    """Describe peg pressure by distance to the Convertibility Undertakings.
+
+    A single threshold hid how close spot really was: 7.8431 sits 69 pips from
+    the weak-side CU but was reported as carrying no boundary stress.
+    """
     level = _parse_float(price)
     if level is None:
         return "USD/HKD spot was not refreshed in the current quote set."
-    if level >= 7.845:
-        return "Close to the weak-side Convertibility Undertaking; keep HKMA liquidity operations in focus."
-    if level <= 7.755:
-        return "Close to the strong-side Convertibility Undertaking; watch for liquidity absorption or funding shifts."
-    return "Inside the linked-exchange band without immediate boundary stress."
+
+    weak_pips = (WEAK_SIDE_CU - level) / PIP
+    strong_pips = (level - STRONG_SIDE_CU) / PIP
+
+    if weak_pips <= 0:
+        return (
+            f"At or through the weak-side Convertibility Undertaking ({WEAK_SIDE_CU:.4f}); "
+            "HKMA intervention and HIBOR tightening are live risks."
+        )
+    if strong_pips <= 0:
+        return (
+            f"At or through the strong-side Convertibility Undertaking ({STRONG_SIDE_CU:.4f}); "
+            "expect liquidity injection and softer HIBOR."
+        )
+    if weak_pips <= 30:
+        return (
+            f"{weak_pips:.0f} pips from the weak-side CU ({WEAK_SIDE_CU:.4f}); "
+            "HKMA intervention risk is immediate and HIBOR can tighten sharply."
+        )
+    if weak_pips <= 80:
+        return (
+            f"{weak_pips:.0f} pips from the weak-side CU ({WEAK_SIDE_CU:.4f}); "
+            "monitor HKMA operations and the aggregate balance for a funding squeeze."
+        )
+    if strong_pips <= 80:
+        return (
+            f"{strong_pips:.0f} pips from the strong-side CU ({STRONG_SIDE_CU:.4f}); "
+            "inflow pressure could ease funding conditions."
+        )
+    return (
+        f"Mid-band: {weak_pips:.0f} pips from the weak side and {strong_pips:.0f} pips from the strong side, "
+        "so the peg is not an active constraint."
+    )
 
 
 def _adapter_metric(adapter_data: Dict[str, Any], key: str) -> Dict[str, Any]:

@@ -65,7 +65,11 @@ def test_hk_quick_checks_combine_local_metrics_and_market_proxies() -> None:
     assert row_map["Main Board turnover vs 20D"]["value"] == "1.18x | +18% vs 20D"
     assert row_map["USD/HKD spot vs band"]["status"] == "live_hybrid"
     assert row_map["USD/HKD spot vs band"]["value"] == "7.8460 | band 7.7500 to 7.8500"
-    assert "weak-side Convertibility Undertaking" in row_map["USD/HKD spot vs band"]["note"]
+    # 7.8460 sits 40 pips from the 7.8500 weak-side CU; the note must state the
+    # distance rather than reduce peg pressure to a single threshold.
+    note = row_map["USD/HKD spot vs band"]["note"]
+    assert "40 pips from the weak-side CU" in note
+    assert "7.8500" in note
     assert row_map["Southbound / Northbound net flow"]["status"] == "live_public"
     assert "Southbound Net HK$4.0bn" in row_map["Southbound / Northbound net flow"]["value"]
     assert row_map["AH premium index"]["value"] == "32.40%"

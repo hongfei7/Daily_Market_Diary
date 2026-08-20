@@ -132,11 +132,26 @@ def _iter_texts(value: Any, path: str = "") -> Iterable[Tuple[str, str]]:
             yield from _iter_texts(child, child_path)
 
 
+# Prose states direction with a verb ("fell 1.68%") or a trailing noun
+# ("0.69% decline") rather than a sign. Reading the magnitude without the
+# direction turns correct English into a release-blocking false positive.
+NEGATIVE_VERBS = r"fell|lost|shed|decreased|dropped|slipped|declined|down|sank|slid|retreated|weakened"
+POSITIVE_VERBS = r"rose|gained|added|increased|climbed|advanced|up|jumped|rallied|firmed|strengthened"
+NEUTRAL_VERBS = r"changed|moved"
+
+NEGATIVE_NOUNS = r"decline|declines|drop|drops|fall|loss|losses|selloff|sell-off|slide|pullback|retreat|decrease"
+POSITIVE_NOUNS = r"gain|gains|rise|advance|rally|increase|jump|climb"
+_DIRECTION_NOUNS = f"{NEGATIVE_NOUNS}|{POSITIVE_NOUNS}"
+
+_NEGATIVE_NOUN_RE = re.compile(rf"^\W{{0,3}}(?:\w+\s+){{0,2}}?(?:{NEGATIVE_NOUNS})\b", re.IGNORECASE)
+_POSITIVE_NOUN_RE = re.compile(rf"^\W{{0,3}}(?:\w+\s+){{0,2}}?(?:{POSITIVE_NOUNS})\b", re.IGNORECASE)
+
+
 def _claim_patterns(alias: str) -> List[Tuple[str, re.Pattern[str]]]:
     escaped = re.escape(alias)
     pct_number = r"(?P<value>[+-]?\d+(?:\.\d+)?)\s*%"
     bp_number = r"(?P<value>[+-]?\d+(?:\.\d+)?)\s*(?:bp|bps)"
-    change_verb = r"(?:rose|fell|gained|lost|up|down|added|shed|changed|moved|increased|decreased|climbed|dropped|slipped)"
+    change_verb = rf"(?P<verb>{NEGATIVE_VERBS}|{POSITIVE_VERBS}|{NEUTRAL_VERBS})"
     level_verb = r"(?:at|to|around|near|last|closed at|finished at|ended at|yield at|traded at)"
     return [
         (
@@ -146,6 +161,16 @@ def _claim_patterns(alias: str) -> List[Tuple[str, re.Pattern[str]]]:
         (
             "change_pct",
             re.compile(rf"\b{escaped}\b[^\n.%;]{{0,{CLAIM_GAP}}}?\b{change_verb}\b[^\n.;]{{0,{CLAIM_GAP}}}?{pct_number}", re.IGNORECASE),
+        ),
+        # "the S&P 500's 0.69% decline" — direction carried by a trailing noun,
+        # which the verb patterns above cannot reach across the possessive.
+        (
+            "change_pct",
+            re.compile(
+                rf"\b{escaped}\b[^\n.;%]{{0,{CLAIM_GAP}}}?{pct_number}\s+(?:\w+\s+){{0,2}}?"
+                rf"(?P<noun>{_DIRECTION_NOUNS})\b",
+                re.IGNORECASE,
+            ),
         ),
         (
             "level_pct",
@@ -160,6 +185,45 @@ def _claim_patterns(alias: str) -> List[Tuple[str, re.Pattern[str]]]:
             re.compile(rf"\b{escaped}\b\s*(?:[:|,/·]\s*)?{bp_number}", re.IGNORECASE),
         ),
     ]
+
+
+def _signed_claim(match: re.Match[str], text: str) -> Optional[float]:
+    """Resolve a claimed magnitude into a signed value using prose direction.
+
+    An explicit sign in the text always wins. Otherwise the direction comes from
+    the matched verb, then from a direction noun immediately after the number.
+    """
+    raw = match.group("value")
+    value = _parse_pct(raw)
+    if value is None:
+        return None
+
+    # An explicit sign is authoritative; never second-guess it.
+    if raw.strip().startswith(("+", "-")):
+        return value
+
+    groups = match.groupdict()
+
+    verb = (groups.get("verb") or "").strip().lower()
+    if verb:
+        if re.fullmatch(NEGATIVE_VERBS, verb, re.IGNORECASE):
+            return -abs(value)
+        if re.fullmatch(POSITIVE_VERBS, verb, re.IGNORECASE):
+            return abs(value)
+
+    noun = (groups.get("noun") or "").strip().lower()
+    if noun:
+        if re.fullmatch(NEGATIVE_NOUNS, noun, re.IGNORECASE):
+            return -abs(value)
+        if re.fullmatch(POSITIVE_NOUNS, noun, re.IGNORECASE):
+            return abs(value)
+
+    trailing = text[match.end() : match.end() + 40]
+    if _NEGATIVE_NOUN_RE.match(trailing):
+        return -abs(value)
+    if _POSITIVE_NOUN_RE.match(trailing):
+        return abs(value)
+    return value
 
 
 def _claim_tolerance(kind: str, expected: float) -> float:
@@ -193,9 +257,13 @@ def _claim_mismatches(bundle: Dict[str, Any], texts: List[Tuple[str, str]]) -> T
                     expected = float(fact[kind])
                     tolerance = _claim_tolerance(kind, expected)
                     for match in pattern.finditer(text):
-                        claimed = _parse_pct(match.group("value"))
+                        claimed = _signed_claim(match, text)
                         if claimed is None:
                             continue
+                        # A level is a magnitude, not a direction; prose polarity
+                        # must not flip it (e.g. "the yield fell to 4.70%").
+                        if kind == "level_pct":
+                            claimed = abs(claimed) if expected >= 0 else claimed
                         checked_key = (path, fact["label"], kind, match.start(), match.end())
                         if checked_key in checked_seen:
                             continue

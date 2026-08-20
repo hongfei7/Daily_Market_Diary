@@ -289,18 +289,42 @@ def _ah_premium_metric(report_date: str, ah_premium_data: Optional[Dict[str, Any
         return None
     data = ah_premium_data.get("data", {}) or {}
     meta = ah_premium_data.get("meta", {}) or {}
-    average = data.get("average_premium")
     rows = data.get("rows", []) or []
-    if average is None:
-        return None
+
+    # Prefer the fixed basket: the covered-pair average is taken over whichever
+    # names resolved today, so its day-over-day change is dominated by
+    # composition rather than by the market.
+    basket = data.get("fixed_basket_premium")
+    if basket is not None and data.get("fixed_basket_complete"):
+        headline = float(basket)
+        note = (
+            f"Fixed {data.get('fixed_basket_size')}-name basket, equal-weighted, both legs priced on the "
+            f"same date; comparable across dates. Covered-pair average was "
+            f"{float(data['average_premium']):+.2f}% across {len(rows)} pairs."
+            if data.get("average_premium") is not None
+            else f"Fixed {data.get('fixed_basket_size')}-name basket, equal-weighted; comparable across dates."
+        )
+    else:
+        average = data.get("average_premium")
+        if average is None:
+            return None
+        headline = float(average)
+        missing = data.get("fixed_basket_missing", []) or []
+        note = (
+            f"Equal-weighted average across {len(rows)} A/H pairs that resolved today. "
+            "Composition varies by day, so the level is not comparable with prior reports"
+            + (f" (fixed basket incomplete: missing {', '.join(missing)})" if missing else "")
+            + ". Use dispersion rather than the average alone."
+        )
+
     return build_metric(
         target_date=report_date,
-        value=float(average),
-        display_value=format_percent(float(average), digits=2),
+        value=headline,
+        display_value=format_percent(headline, digits=2),
         source=meta.get("source", "Public AH premium model"),
         as_of=meta.get("effective_date", report_date),
         status="live_public",
-        note=f"Simple average across {len(rows)} A/H pairs; use dispersion rather than the average alone.",
+        note=note,
     )
 
 

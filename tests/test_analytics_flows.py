@@ -79,7 +79,10 @@ def test_flow_tracker_adds_public_connect_and_premium_bullets() -> None:
     ]
     assert any("Stock Connect Southbound" in bullet for bullet in tracker["flow_bullets"])
     assert any("turnover RMB15.0bn" in bullet for bullet in tracker["flow_bullets"])
-    assert any("AH premium: simple covered-pair average +32.40%" in bullet for bullet in tracker["flow_bullets"])
+    # The covered-pair average is taken over whichever names resolved today, so
+    # the bullet must say the level is not comparable with prior reports.
+    assert any("AH premium: covered-pair average +32.40%" in bullet for bullet in tracker["flow_bullets"])
+    assert any("not comparable with prior reports" in bullet for bullet in tracker["flow_bullets"])
     assert tracker["stock_connect"] is stock_connect_data
     assert tracker["ah_premium"] is ah_premium_data
 

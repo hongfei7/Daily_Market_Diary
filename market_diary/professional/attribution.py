@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from market_diary.professional.instruments import summary_change
+from market_diary.professional.instruments import MAX_FRESH_TRADING_DAYS, summary_change
 
 
 def _parse_pct(value: Any) -> Optional[float]:
@@ -44,8 +44,34 @@ def _summary_item(summary: Dict[str, Any], category: str, name: str) -> Dict[str
     return item if isinstance(item, dict) else {}
 
 
+def _is_stale(item: Dict[str, Any]) -> bool:
+    """A quote older than one trading day must not drive scores or drivers."""
+    if str(item.get("Quality", "") or "").strip().lower() == "stale":
+        return True
+    value = item.get("Trading Freshness Days", item.get("Freshness Days"))
+    try:
+        return int(value) > MAX_FRESH_TRADING_DAYS
+    except (TypeError, ValueError):
+        return False
+
+
 def _summary_pct(summary: Dict[str, Any], category: str, name: str) -> Optional[float]:
-    return _parse_pct(_summary_item(summary, category, name).get("Pct Change"))
+    item = _summary_item(summary, category, name)
+    if _is_stale(item):
+        return None
+    return _parse_pct(item.get("Pct Change"))
+
+
+def _stale_labels(summary: Dict[str, Any], tracked: List[tuple]) -> List[str]:
+    """Names whose quotes were dropped from scoring because they were stale."""
+    labels: List[str] = []
+    for category, name, label in tracked:
+        item = _summary_item(summary, category, name)
+        if not _is_stale(item):
+            continue
+        age = item.get("Trading Freshness Days", item.get("Freshness Days"))
+        labels.append(f"{label} (stale {age}d)" if age is not None else f"{label} (stale)")
+    return labels
 
 
 def _metric_value(metrics: Dict[str, Any], key: str) -> Optional[float]:
@@ -255,6 +281,28 @@ def build_attribution(
 
     risk_score = max(0.0, min(100.0, risk_score))
 
+    # Name every quote that was excluded so a low component count is never mistaken
+    # for a genuinely quiet tape.
+    excluded_stale = _stale_labels(
+        summary,
+        [
+            ("Equities", "S&P 500", "S&P 500"),
+            ("Equities", "Nasdaq 100", "Nasdaq 100"),
+            ("Equities", "Hang Seng Index", "Hang Seng Index"),
+            ("Equities", "Hang Seng China Enterprises", "HSCEI"),
+            ("Equities", "Hang Seng TECH ETF", "3033.HK ETF"),
+            ("Equities", "China Large-Cap (FXI)", "FXI"),
+            ("FX", "DXY", "DXY"),
+            ("Vol", "VIX", "VIX"),
+        ],
+    )
+    if excluded_stale:
+        add_component(
+            "Excluded (stale)",
+            0.0,
+            "Not scored: " + "; ".join(excluded_stale),
+        )
+
     flow_summary = "Local flow evidence is not yet strong enough to override the cross-asset setup."
     if short_ratio is not None and turnover_ratio is not None:
         if turnover_ratio >= 1.10 and short_ratio < 18.0:
@@ -272,7 +320,8 @@ def build_attribution(
         "risk_dashboard": {
             "score": round(risk_score, 1),
             "bucket": _risk_bucket(risk_score),
-            "components": components[:8],
+            "components": components[:9],
+            "excluded_stale": excluded_stale,
         },
         "style_snapshot": {
             "hsi": hsi,

@@ -42,6 +42,23 @@ AH_UNIVERSE = [
     {"name": "Everbright Bank", "a": "601818.SS", "h": "6818.HK"},
 ]
 
+# The average across "whatever resolved today" is not comparable day over day:
+# coverage has swung between 17 and 19 names, moving the headline number by more
+# than 10pp on composition alone. This fixed subset is the large, consistently
+# available core, and it is the only series safe to compare across dates.
+FIXED_BASKET = [
+    "ICBC",
+    "China Construction Bank",
+    "Bank of China",
+    "Agricultural Bank of China",
+    "China Life",
+    "PetroChina",
+    "Sinopec",
+    "China Shenhua",
+    "Ping An",
+    "China Merchants Bank",
+]
+
 
 def _parse_date(value: str) -> datetime:
     return datetime.strptime(value, "%Y-%m-%d")
@@ -117,6 +134,12 @@ def _pair_row(item: Dict[str, str], target: datetime, fx: Dict[str, Any]) -> Opt
     if not a_quote or not h_quote or not h_quote.get("price"):
         return None
 
+    # Both legs must price on the same date. ``_last_close`` looks back up to
+    # LOOKBACK_DAYS, so pairing a stale A close with a fresh H close would
+    # manufacture a premium move that never happened.
+    if str(a_quote.get("as_of")) != str(h_quote.get("as_of")):
+        return None
+
     a_price = float(a_quote["price"])
     h_price = float(h_quote["price"])
     premium = _calculate_premium(a_price, h_price, float(fx["value"]))
@@ -165,6 +188,14 @@ def fetch_ah_premium_data(report_date: str, universe: Optional[List[Dict[str, st
 
     rows.sort(key=lambda row: row.get("premium_pct", 0), reverse=True)
     average = sum(row["premium_pct"] for row in rows) / len(rows) if rows else None
+
+    basket_rows = [row for row in rows if row["name"] in FIXED_BASKET]
+    basket_complete = len(basket_rows) == len(FIXED_BASKET)
+    basket_average = (
+        sum(row["premium_pct"] for row in basket_rows) / len(basket_rows) if basket_rows else None
+    )
+    covered_names = sorted(row["name"] for row in rows)
+
     status = "ok" if rows else "error"
     return {
         "status": status,
@@ -173,6 +204,12 @@ def fetch_ah_premium_data(report_date: str, universe: Optional[List[Dict[str, st
             "top_premium": rows[:10],
             "lowest_premium": sorted(rows, key=lambda row: row.get("premium_pct", 0))[:10],
             "average_premium": round(average, 2) if average is not None else None,
+            # Comparable across dates only when the basket is complete.
+            "fixed_basket_premium": round(basket_average, 2) if basket_average is not None else None,
+            "fixed_basket_complete": basket_complete,
+            "fixed_basket_coverage": len(basket_rows),
+            "fixed_basket_size": len(FIXED_BASKET),
+            "fixed_basket_missing": sorted(set(FIXED_BASKET) - {row["name"] for row in basket_rows}),
         },
         "meta": {
             "report_date": report_date,
@@ -182,6 +219,13 @@ def fetch_ah_premium_data(report_date: str, universe: Optional[List[Dict[str, st
             "fx_basis": fx["basis"],
             "coverage": len(rows),
             "universe": len(selected_universe),
+            "covered_names": covered_names,
             "premium_filter": f"{MIN_REASONABLE_PREMIUM_PCT:.0f}% to {MAX_REASONABLE_PREMIUM_PCT:.0f}%",
+            "same_date_legs_required": True,
+            "weighting": "equal_weighted",
+            "comparability_note": (
+                "The covered-pair average is equal-weighted over whichever pairs resolved today, so it is "
+                "not comparable across dates. Use fixed_basket_premium for day-over-day comparison."
+            ),
         },
     }

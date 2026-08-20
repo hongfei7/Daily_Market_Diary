@@ -132,7 +132,20 @@ def _ah_premium_bullet(ah_premium_data: Dict[str, Any]) -> List[str]:
         if leader
         else ""
     )
-    return [f"AH premium: simple covered-pair average {average:+.2f}%{suffix}."]
+
+    basket = data.get("fixed_basket_premium")
+    rows = data.get("rows", []) or []
+    if basket is not None and data.get("fixed_basket_complete"):
+        headline = (
+            f"AH premium: fixed {data.get('fixed_basket_size')}-name basket {basket:+.2f}% "
+            f"(comparable across dates); covered-pair average {average:+.2f}% over {len(rows)} pairs{suffix}."
+        )
+    else:
+        headline = (
+            f"AH premium: covered-pair average {average:+.2f}% over {len(rows)} pairs. "
+            f"Composition varies by day, so this level is not comparable with prior reports{suffix}."
+        )
+    return [headline]
 
 
 def build_flow_tracker(
