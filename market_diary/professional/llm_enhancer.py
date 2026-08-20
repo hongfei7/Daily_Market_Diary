@@ -355,6 +355,37 @@ def _llm_response_looks_truncated(raw: str, finish_reason: str = "") -> bool:
     return False
 
 
+# Ordered most specific first: the first matching class wins.
+_ERROR_CLASS_MARKERS: List[tuple] = [
+    ("auth", ("401", "403", "unauthorized", "forbidden", "invalid api key", "authentication")),
+    ("rate_limit", ("429", "rate limit", "too many requests", "quota")),
+    ("overloaded", ("529", "overloaded", "temporarily unavailable")),
+    ("timeout", ("timeout", "timed out", "deadline exceeded")),
+    ("connection", ("connection reset", "connection aborted", "connection error", "ssl", "dns")),
+    ("http_5xx", ("500", "502", "503", "504", "internal server error", "bad gateway")),
+    ("truncated", ("truncated", "max_tokens", "finish_reason=length")),
+    ("json_parse", ("jsondecodeerror", "expecting value", "invalid json", "could not parse")),
+    ("schema_mismatch", ("keyerror", "missing field", "schema", "validationerror")),
+    ("bad_request", ("400", "invalid request", "unsupported")),
+]
+
+
+def classify_error(message: str) -> str:
+    """Bucket a failure so recurring causes can be counted across runs.
+
+    The run summary previously reported only "4 error(s)", which cannot
+    distinguish a provider outage from a prompt that never parses, so there was
+    no way to tell which fix would help.
+    """
+    lowered = (message or "").lower()
+    if not lowered.strip():
+        return "unknown"
+    for label, markers in _ERROR_CLASS_MARKERS:
+        if any(marker in lowered for marker in markers):
+            return label
+    return "other"
+
+
 def _is_retryable_error(message: str) -> bool:
     lowered = (message or "").lower()
     retry_markers = [
@@ -829,6 +860,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
             "route": last_route,
             "attempts": total_attempts,
             "error": last_error,
+            "error_class": classify_error(last_error),
         }
         if last_raw_excerpt:
             error_meta["raw_excerpt"] = last_raw_excerpt
@@ -922,7 +954,12 @@ def generate_llm_sections(
                 task_outputs[task_name] = _coerce_task_payload(task_name, payload)
                 task_meta["tasks"][task_name] = meta
             except Exception as exc:
-                task_meta["tasks"][task_name] = {"status": "error", "error": f"{type(exc).__name__}: {exc}"}
+                message = f"{type(exc).__name__}: {exc}"
+                task_meta["tasks"][task_name] = {
+                    "status": "error",
+                    "error": message,
+                    "error_class": classify_error(message),
+                }
 
     # Phase 2: overnight review depends on curated news when available.
     if _task_enabled(llm_config, "overnight_review"):
@@ -960,4 +997,57 @@ def generate_llm_sections(
     if any(meta.get("status") == "error" for meta in task_meta["tasks"].values()):
         task_meta["status"] = "partial"
 
+    task_meta["health"] = build_llm_health(task_meta)
+
     return _flatten_sections(task_outputs, task_meta)
+
+
+def build_llm_health(task_meta: Dict[str, Any]) -> Dict[str, Any]:
+    """Summarise task outcomes so failure causes are countable across runs.
+
+    Reporting only an error count made a sustained failure look like noise: the
+    overlay ran at 0-2 of 7 successful tasks for fifteen consecutive days without
+    the cause ever being visible in the archive.
+    """
+    tasks = (task_meta or {}).get("tasks", {}) or {}
+    by_class: Dict[str, int] = {}
+    by_task: Dict[str, str] = {}
+    succeeded = 0
+    failed = 0
+    skipped = 0
+
+    for name, meta in tasks.items():
+        if not isinstance(meta, dict):
+            continue
+        status = str(meta.get("status", "")).lower()
+        if status in {"ok", "cached"}:
+            succeeded += 1
+            continue
+        if status == "skipped":
+            skipped += 1
+            continue
+        if status == "error":
+            failed += 1
+            label = str(meta.get("error_class") or classify_error(str(meta.get("error", ""))))
+            by_class[label] = by_class.get(label, 0) + 1
+            by_task[name] = label
+
+    attempted = succeeded + failed
+    success_rate = round(succeeded / attempted * 100.0, 1) if attempted else 0.0
+    dominant = max(by_class.items(), key=lambda pair: pair[1])[0] if by_class else ""
+
+    return {
+        "schema_version": "llm-health-v1",
+        "tasks_total": len(tasks),
+        "succeeded": succeeded,
+        "failed": failed,
+        "skipped": skipped,
+        "success_rate_pct": success_rate,
+        "failures_by_class": by_class,
+        "failure_class_by_task": by_task,
+        "dominant_failure_class": dominant,
+        "read": (
+            f"{succeeded}/{attempted} tasks succeeded ({success_rate:.0f}%)."
+            + (f" Dominant failure: {dominant} ({by_class.get(dominant, 0)} of {failed})." if dominant else "")
+        ),
+    }

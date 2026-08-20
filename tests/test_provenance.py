@@ -17,18 +17,32 @@ def test_placeholder_adapters_do_not_emit_financial_claims():
     assert movers.fetch_block_trades_cn("2026-08-03") == []
     assert movers.fetch_unusual_options("2026-08-03") == []
 
+    # The macro calendar now emits rule-derived scheduled dates, which are real.
+    # What it must never emit is a fabricated actual, forecast or prior value:
+    # no free source for those is configured.
     macro = fetch_macro_data("2026-08-03")
-    assert macro["status"] == "unavailable"
-    assert macro["calendar"]["released"] == []
-    assert macro["calendar"]["upcoming"] == []
+    assert macro["status"] in {"unavailable", "partial"}
+    for entry in macro["calendar"]["released"] + macro["calendar"]["upcoming"]:
+        assert entry["actual"] == ""
+        assert entry["forecast"] == ""
+        assert entry["previous"] == ""
+        assert entry["indicator"]
+        assert entry["channel"]
+    # Central-bank speaker events still have no verified source.
     assert macro["central_bank_events"] == []
 
+    # The risk feed now derives reference levels and an event schedule. What it
+    # must not do is assert geopolitical or sentiment readings it cannot source.
     risk = fetch_risk_data({"HSI": 25000})
-    assert risk["status"] == "unavailable"
+    assert risk["status"] in {"unavailable", "partial"}
     assert risk["geopolitical_risks"] == []
-    assert risk["upcoming_events"] == []
     assert risk["sentiment_indicators"] == {}
-    assert risk["technical_levels"] == {}
+    assert risk["technical_levels"]["HSI"]["current"] == 25000
+
+    # With no prices and no forward events the feed still reports unavailable
+    # rather than inventing coverage.
+    empty = fetch_risk_data({})
+    assert empty["technical_levels"] == {}
 
 
 def test_provenance_schema_accepts_verified_and_unavailable_sources():

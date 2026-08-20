@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple
 
+from market_diary.professional.instruments import MAX_FRESH_TRADING_DAYS
+
 
 STATUS_SCORE = {
     "ok": 1.0,
@@ -25,6 +27,50 @@ STATUS_SCORE = {
     "unavailable": 0.0,
     "error": 0.0,
 }
+
+
+_GRADE_ORDER = ["A", "B", "C", "D", "E"]
+
+# Core instruments whose staleness invalidates the Hong Kong style call and the
+# composite risk score, so the report must not present itself as high quality.
+_CORE_INSTRUMENTS = [
+    ("Equities", "Hang Seng Index"),
+    ("Equities", "Hang Seng China Enterprises"),
+    ("Equities", "Hang Seng TECH ETF"),
+    ("Equities", "S&P 500"),
+    ("Equities", "Nasdaq 100"),
+]
+
+
+def _prose_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
+    guard = bundle.get("prose_guard", {}) or {}
+    if not guard or guard.get("status") == "error":
+        return 70.0, "Prose guard did not run for this report."
+    return float(guard.get("score", 100.0)), str(guard.get("read", ""))
+
+
+def _stale_core_instruments(bundle: Dict[str, Any]) -> List[str]:
+    summary = bundle.get("market_summary", {}) or {}
+    stale: List[str] = []
+    for category, name in _CORE_INSTRUMENTS:
+        item = (summary.get(category, {}) or {}).get(name, {})
+        if not isinstance(item, dict):
+            continue
+        age = item.get("Trading Freshness Days", item.get("Freshness Days"))
+        try:
+            age_value = int(age)
+        except (TypeError, ValueError):
+            continue
+        if age_value > MAX_FRESH_TRADING_DAYS:
+            stale.append(f"{name} ({age_value}d)")
+    return stale
+
+
+def _cap_grade(grade: str, ceiling: str) -> str:
+    """Return the worse of ``grade`` and ``ceiling``."""
+    if grade not in _GRADE_ORDER or ceiling not in _GRADE_ORDER:
+        return grade
+    return grade if _GRADE_ORDER.index(grade) >= _GRADE_ORDER.index(ceiling) else ceiling
 
 
 def _score_to_grade(score: float) -> str:
@@ -266,7 +312,23 @@ def _llm_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
     ok_count = sum(1 for meta in task_meta.values() if isinstance(meta, dict) and meta.get("status") in {"ok", "cached"})
     error_count = sum(1 for meta in task_meta.values() if isinstance(meta, dict) and meta.get("status") == "error")
     score = sum(scores) / len(scores) * 100.0
-    return score, f"{ok_count}/{len(scores)} narrative overlay tasks succeeded or used validated cache; {error_count} error(s)."
+
+    # Name the dominant failure cause: an error count alone cannot distinguish a
+    # provider outage from a response that never parses.
+    classes: Dict[str, int] = {}
+    for meta in task_meta.values():
+        if isinstance(meta, dict) and meta.get("status") == "error":
+            label = str(meta.get("error_class") or "unknown")
+            classes[label] = classes.get(label, 0) + 1
+    cause = ""
+    if classes:
+        dominant, count = max(classes.items(), key=lambda pair: pair[1])
+        cause = f" Dominant failure cause: {dominant} ({count} of {error_count})."
+
+    return score, (
+        f"{ok_count}/{len(scores)} narrative overlay tasks succeeded or used validated cache; "
+        f"{error_count} error(s).{cause}"
+    )
 
 
 def _fact_check_score(bundle: Dict[str, Any]) -> Tuple[float, str]:
@@ -362,14 +424,20 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
     blocking_guidance = sum(1 for item in runtime_guidance if item.get("level") == "blocking")
     advisory_guidance = sum(1 for item in runtime_guidance if item.get("level") == "advisory")
 
+    prose_score, prose_read = _prose_score(bundle)
+
+    # Narrative overlay carries 0.20 rather than 0.10: at 0.10 a near-total
+    # failure of the analytical layer cost only ~6 points, so reports graded B
+    # while 5 of 7 narrative tasks were failing every day.
     components = [
-        _component("Market data coverage", market_score, 0.20, market_read),
-        _component("Hong Kong local metrics", local_score, 0.20, local_read),
-        _component("Key public adapters", adapter_score, 0.20, adapter_read),
-        _component("Narrative overlay health", llm_score, 0.10, llm_read),
+        _component("Market data coverage", market_score, 0.18, market_read),
+        _component("Hong Kong local metrics", local_score, 0.15, local_read),
+        _component("Key public adapters", adapter_score, 0.12, adapter_read),
+        _component("Narrative overlay health", llm_score, 0.20, llm_read),
         _component("Fact-check guardrail", fact_score, 0.15, fact_read),
         _component("Source provenance", provenance_score, 0.05, provenance_read),
         _component("Source health and freshness", source_health_score, 0.10, source_health_read),
+        _component("Report prose", prose_score, 0.05, prose_read),
     ]
     score = sum(item["weighted_score"] for item in components)
 
@@ -384,9 +452,37 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
 
     quality_status = "manual_review" if release_recommendation.get("action") == "manual_review" else _score_to_status(score)
 
+    # A weighted average can still look respectable while a layer the reader
+    # depends on is broken. These ceilings stop that.
+    grade = _score_to_grade(score)
+    grade_caps: List[str] = []
+    if llm_score < 50.0:
+        grade = _cap_grade(grade, "C")
+        grade_caps.append(f"Narrative overlay health is below 50% ({llm_read})")
+        warnings.append("Narrative overlay is failing on most tasks; the grade is capped until it recovers.")
+    stale_core = _stale_core_instruments(bundle)
+    if stale_core:
+        grade = _cap_grade(grade, "C")
+        grade_caps.append("Stale core instrument(s): " + ", ".join(stale_core))
+        warnings.append(
+            "Core instrument quotes are stale, so the Hong Kong style call and risk score are degraded: "
+            + ", ".join(stale_core)
+        )
+        runtime_guidance.insert(
+            0,
+            _guidance(
+                "advisory",
+                "A core instrument quote is stale; the style call is downgraded and the stale leg is excluded from scoring.",
+            ),
+        )
+    if prose_score < 100.0:
+        grade = _cap_grade(grade, "B")
+        grade_caps.append(prose_read)
+
     return {
         "score": round(score, 1),
-        "grade": _score_to_grade(score),
+        "grade": grade,
+        "grade_caps": grade_caps,
         "status": quality_status,
         "components": components,
         "adapter_status": adapter_rows,

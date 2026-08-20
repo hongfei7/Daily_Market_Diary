@@ -232,7 +232,10 @@ def verify_archive_integrity_index(archive_root: Path = ARCHIVE_ROOT) -> dict:
 def _copy_audit_files(report_date: str, destination: Path) -> List[Path]:
     copied: List[Path] = []
     raw_dir = ARCHIVE_DIR / "raw"
-    for suffix in ("source_health", "performance_summary"):
+    # llm_health and prose_guard are archived so recurring failure causes and
+    # prose defects can be counted across days rather than inspected one run at
+    # a time.
+    for suffix in ("source_health", "performance_summary", "llm_health", "prose_guard"):
         src = raw_dir / f"{report_date}_{suffix}.json"
         if src.exists():
             copied.append(_copy_file(src, destination / "audit" / f"{suffix}.json"))

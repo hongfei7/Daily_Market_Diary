@@ -16,6 +16,36 @@ def _macro_profile(indicator: str, config: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _macro_detail(item: Dict[str, Any], released: bool) -> str:
+    """Describe an event by what is actually known about it.
+
+    Rendering "Forecast None / Prior None" advertised absent fields. When no
+    forecast source is configured, the transmission channel and the timing
+    confidence are the informative parts.
+    """
+    values = []
+    if released and str(item.get("actual", "") or "").strip():
+        values.append(f"Actual {item['actual']}")
+    if str(item.get("forecast", "") or "").strip():
+        values.append(f"Forecast {item['forecast']}")
+    if str(item.get("previous", "") or "").strip():
+        values.append(f"Prior {item['previous']}")
+    if values:
+        return " / ".join(values)
+
+    parts = []
+    if item.get("channel_note"):
+        parts.append(str(item["channel_note"]))
+    if item.get("note"):
+        parts.append(str(item["note"]))
+    timing = str(item.get("timing_confidence", "") or "")
+    if timing and timing != "exact":
+        parts.append(f"scheduled date {timing}")
+    if not parts:
+        return "No forecast or prior values are sourced for this release."
+    return " | ".join(parts)
+
+
 def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dict[str, Any]) -> List[Dict[str, Any]]:
     agenda: List[Dict[str, Any]] = []
     calendar = (macro_data or {}).get("calendar", {}) or {}
@@ -39,7 +69,8 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
                 "direction": direction,
                 "attention": {"high": 5, "medium": 3, "low": 1}.get(item.get("impact", "medium"), 3),
                 "score": 80 + {"high": 15, "medium": 8, "low": 3}.get(item.get("impact", "medium"), 8),
-                "detail": f"Actual {item.get('actual')} / Forecast {item.get('forecast')} / Prior {item.get('previous')}",
+                "detail": _macro_detail(item, released=True),
+                "channel": item.get("channel", ""),
                 "as_of": item.get("as_of", report_date),
                 "source": item.get("source", ""),
                 "source_url": item.get("source_url", item.get("url", "")),
@@ -60,7 +91,8 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
                 "direction": "The result will determine whether the current market theme continues",
                 "attention": {"high": 5, "medium": 3, "low": 1}.get(item.get("impact", "medium"), 3),
                 "score": 70 + {"high": 15, "medium": 8, "low": 3}.get(item.get("impact", "medium"), 8),
-                "detail": f"Forecast {item.get('forecast')} / Prior {item.get('previous')}",
+                "detail": _macro_detail(item, released=False),
+                "channel": item.get("channel", ""),
                 "as_of": item.get("as_of", report_date),
                 "source": item.get("source", ""),
                 "source_url": item.get("source_url", item.get("url", "")),

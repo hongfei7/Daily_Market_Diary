@@ -103,6 +103,7 @@ def build_professional_bundle(
     hk_data_date: Optional[str] = None,
     hk_local_data: Optional[Dict[str, Any]] = None,
     china_rates_data: Optional[Dict[str, Any]] = None,
+    metric_history: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     summary = (market_data or {}).get("summary", {}) or {}
     market_meta = ((market_data or {}).get("meta", {}) or {})
@@ -119,7 +120,7 @@ def build_professional_bundle(
     china_rate_metrics = ((china_rates_data or {}).get("data", {}) or {})
 
     overview = build_market_overview(summary, chart_features)
-    hk_desk_view = build_hk_desk_view(summary, hk_local_metrics)
+    hk_desk_view = build_hk_desk_view(summary, hk_local_metrics, metric_history, local_date)
     day_mode = build_report_mode(report_date, config, briefing_date=morning_date)
     date_semantics = build_date_semantics(
         report_date=report_date,

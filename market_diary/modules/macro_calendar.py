@@ -3,7 +3,10 @@
 from datetime import datetime
 from typing import Dict, List
 
+from market_diary.modules.macro_schedule import scheduled_events, summarize_channels
 from market_diary.modules.provenance import unavailable_record
+
+MACRO_SCHEDULE_SOURCE = "Rule-based CN/HK/US release schedule (scheduled dates, no forecast values)"
 
 
 class MacroCalendar:
@@ -24,12 +27,53 @@ class MacroCalendar:
         }
 
     def _fetch_released_data(self, date: str) -> List[Dict]:
-        """Return no release claims until a verified calendar source is configured."""
-        return []
+        """Releases scheduled just before the report date.
+
+        Actual, forecast and prior are left empty: no free source for them is
+        configured, and inventing them would be worse than omitting them. The
+        schedule alone still tells the desk what has just printed.
+        """
+        return [
+            self._to_calendar_row(item)
+            for item in self._scheduled(date)
+            if item["status"] == "released"
+        ]
 
     def _fetch_upcoming_data(self, date: str) -> List[Dict]:
-        """Return no upcoming claims until a verified calendar source is configured."""
-        return []
+        """Releases scheduled on or after the report date."""
+        return [
+            self._to_calendar_row(item)
+            for item in self._scheduled(date)
+            if item["status"] == "upcoming"
+        ]
+
+    def _scheduled(self, date_value: str) -> List[Dict]:
+        try:
+            reference = datetime.strptime(date_value, "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            return []
+        return scheduled_events(reference)
+
+    @staticmethod
+    def _to_calendar_row(item: Dict) -> Dict:
+        return {
+            "time": item["date"],
+            "country": item["country"],
+            "indicator": item["indicator"],
+            # No free forecast/actual source is configured; report the gap
+            # rather than filling it.
+            "actual": "",
+            "forecast": "",
+            "previous": "",
+            "surprise": "inline",
+            "impact": item["impact"],
+            "channel": item["channel"],
+            "channel_note": item["channel_note"],
+            "timing_confidence": item["timing_confidence"],
+            "note": item["note"],
+            "as_of": item["date"],
+            "source": MACRO_SCHEDULE_SOURCE,
+        }
 
     def fetch_central_bank_events(self, date: str) -> List[Dict]:
         """Return no central-bank claims until a verified calendar source is configured."""
@@ -83,16 +127,52 @@ def fetch_macro_data(date: str) -> Dict:
     calendar_data = calendar.fetch_economic_calendar(date)
     cb_events = calendar.fetch_central_bank_events(date)
 
+    events = calendar_data.get("released", []) + calendar_data.get("upcoming", [])
+    if not events:
+        return {
+            "status": "unavailable",
+            "calendar": calendar_data,
+            "central_bank_events": cb_events,
+            "formatted_text": calendar.format_for_report(calendar_data, cb_events),
+            "provenance": [
+                unavailable_record(
+                    "Macro calendar",
+                    date,
+                    "No scheduled release fell inside the report window.",
+                )
+            ],
+        }
+
     return {
-        "status": "unavailable",
+        # "partial" rather than "ok": scheduled dates are available, actual and
+        # forecast values are not.
+        "status": "partial",
         "calendar": calendar_data,
         "central_bank_events": cb_events,
         "formatted_text": calendar.format_for_report(calendar_data, cb_events),
+        "meta": {
+            "source": MACRO_SCHEDULE_SOURCE,
+            "report_date": date,
+            "event_count": len(events),
+            "channels": summarize_channels(
+                [
+                    {"channel": item.get("channel", "fed_path")}
+                    for item in events
+                    if item.get("channel")
+                ]
+            ),
+            "coverage_note": (
+                "Scheduled dates are rule-derived and reliable; actual, forecast and prior values are "
+                "not sourced, so surprise cannot be computed. Central-bank speaker events remain "
+                "unavailable."
+            ),
+        },
         "provenance": [
-            unavailable_record(
-                "Macro calendar",
-                date,
-                "No verified macro-calendar provider is configured; fabricated fallback events are disabled.",
-            )
+            {
+                "source": "Macro calendar",
+                "as_of": date,
+                "status": "partial_public",
+                "detail": MACRO_SCHEDULE_SOURCE,
+            }
         ],
     }

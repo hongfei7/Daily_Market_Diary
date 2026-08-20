@@ -55,6 +55,11 @@ from market_diary.professional.fact_checker import apply_fact_check_fallbacks, r
 from market_diary.professional.llm_enhancer import generate_llm_sections
 from market_diary.professional.performance import refresh_performance_tracking
 from market_diary.professional.skill_shadow import generate_skill_shadow
+from market_diary.professional.metric_history import load_history as load_metric_history
+from market_diary.professional.metric_history import record_observations as record_metric_observations
+from market_diary.professional.metric_history import save_history as save_metric_history
+from market_diary.professional.prose_guard import check_markdown as check_prose
+from market_diary.professional.prose_guard import summarize as summarize_prose
 from market_diary.professional.report_quality import build_report_quality
 from market_diary.professional.report_builder import render_professional_report
 from market_diary.professional.source_health import build_source_health
@@ -528,6 +533,11 @@ def fetch_all_data(
     return payload
 
 
+def _metric_history_path(output_dir: str) -> str:
+    """Sit beside the signal ledger; both are append-only run histories."""
+    return os.path.join(output_dir, "performance", "metric_history.json")
+
+
 def _save_chart_features(report_date: str, output_dir: str, chart_features: Dict[str, Any]) -> None:
     chart_dir = os.path.join(output_dir, "charts")
     os.makedirs(chart_dir, exist_ok=True)
@@ -582,7 +592,17 @@ def main() -> None:
     output_label = briefing_date
     _save_chart_features(output_label, output_dir, chart_features)
 
+    # Trailing history turns a raw level into a percentile, so the report can say
+    # whether a reading is actually unusual rather than just clearing a constant.
+    metric_history_path = _metric_history_path(output_dir)
+    try:
+        metric_history = load_metric_history(metric_history_path)
+    except Exception as exc:
+        print(f"[runtime] Metric history load failed (non-fatal): {_error_summary(exc)}")
+        metric_history = {"observations": {}}
+
     bundle = build_professional_bundle(
+        metric_history=metric_history,
         report_date=review_date,
         briefing_date=briefing_date,
         global_market_date=global_market_date,
@@ -600,6 +620,18 @@ def main() -> None:
         hk_local_data=payload.get("hk_local", {}) or {},
         china_rates_data=payload.get("china_rates", {}) or {},
     )
+    # Append after the bundle is built so today's value never feeds its own
+    # percentile; the store is append-only, so a rerun cannot reshape history.
+    try:
+        record_metric_observations(
+            metric_history,
+            hk_data_date,
+            (bundle.get("hk_local", {}) or {}),
+        )
+        save_metric_history(metric_history, metric_history_path)
+    except Exception as exc:
+        print(f"[runtime] Metric history update failed (non-fatal): {_error_summary(exc)}")
+
     source_payloads = {
         "market_data": payload.get("market", {}) or {},
         "sector_news": payload.get("sector", {}) or {},
@@ -779,6 +811,12 @@ def main() -> None:
         )
     )
 
+    _save_diagnostic(
+        output_label,
+        output_dir,
+        "llm_health",
+        ((bundle.get("llm_sections", {}) or {}).get("task_meta", {}) or {}).get("health", {}) or {},
+    )
     _save_diagnostic(output_label, output_dir, "source_health", bundle.get("source_health", {}) or {})
     _save_diagnostic(output_label, output_dir, "performance_summary", bundle.get("performance", {}) or {})
     _save_bundle(output_label, output_dir, bundle)
@@ -791,6 +829,31 @@ def main() -> None:
         daily_chart_rel_path=daily_chart_rel_path,
         trend_pack_rel_path=trend_pack_rel_path,
     )
+
+    # Prose defects only exist in the rendered text, so the guard runs on the
+    # exact markdown that ships. Findings feed back into the quality score, which
+    # means the report is rendered a second time to carry its own verdict.
+    try:
+        prose_findings = check_prose(report)
+        bundle["prose_guard"] = summarize_prose(prose_findings)
+        if prose_findings:
+            print(f"[runtime] Prose guard flagged {len(prose_findings)} defect(s) in the rendered report.")
+            for item in prose_findings[:5]:
+                print(f"          L{item['line']} [{item['rule']}] {item['text'][:100]}")
+            bundle["report_quality"] = build_report_quality(bundle)
+            report = render_professional_report(
+                bundle=bundle,
+                charts_section=charts_section,
+                dashboard_rel_path=dashboard_rel_path,
+                catalyst_radar_rel_path=catalyst_radar_rel_path,
+                daily_chart_rel_path=daily_chart_rel_path,
+                trend_pack_rel_path=trend_pack_rel_path,
+            )
+    except Exception as exc:
+        print(f"[runtime] Prose guard failed (non-fatal): {_error_summary(exc)}")
+        bundle["prose_guard"] = {"status": "error", "error": _error_summary(exc)}
+
+    _save_diagnostic(output_label, output_dir, "prose_guard", bundle.get("prose_guard", {}))
 
     output_file = os.path.join(output_dir, f"{output_label}_morning_briefing.md")
     with open(output_file, "w", encoding="utf-8") as handle:
