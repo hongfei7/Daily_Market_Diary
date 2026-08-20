@@ -29,10 +29,24 @@ from market_diary.professional.report_text import (
 )
 
 
+def _macro_source_configured(bundle: Dict[str, Any]) -> bool:
+    """Whether a macro calendar source actually reported for this run."""
+    status = ((bundle.get("source_health_inputs", {}) or {}).get("macro_calendar", {}) or {}).get("status", "")
+    return str(status).lower() not in {"", "unavailable", "error", "disabled"}
+
+
 def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
     rows = (bundle.get("macro_agenda", []) or [])[: limit or _report_setting(bundle, "top_macro_events", 6)]
     if not rows:
-        return "The macro calendar was light for this run."
+        # An empty table means "no source" far more often than "quiet calendar".
+        # Saying the calendar was light implies evidence of absence that the
+        # pipeline does not have.
+        if not _macro_source_configured(bundle):
+            return (
+                "No macro calendar source reported for this run, so this section is empty. "
+                "That is an absence of data, not evidence that the calendar was quiet."
+            )
+        return "The macro calendar source returned no events for this run."
     table_rows = [
         (
             item.get("time", ""),
@@ -57,6 +71,23 @@ def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str
     return _make_table(["Time", "Region", "Event", "Status", "Desk read"], table_rows)
 
 
+def _lens_confidence(hk_desk_view: Dict[str, Any]) -> str:
+    """Grade the style call by the evidence actually behind it.
+
+    A reader cannot otherwise tell a call backed by fresh prices and confirming
+    flow from one the pipeline could not verify at all.
+    """
+    if hk_desk_view.get("stale_inputs") or hk_desk_view.get("style") == "unconfirmed":
+        return "unconfirmed"
+    confirmations = len(hk_desk_view.get("confirmation_flags", []) or [])
+    participation = len(hk_desk_view.get("participation_flags", []) or [])
+    if confirmations >= 2 and participation == 0:
+        return "high confidence"
+    if participation and not confirmations:
+        return "low confidence"
+    return "medium confidence"
+
+
 def _render_executive_summary(bundle: Dict[str, Any], pulse: str) -> str:
     llm_sections = bundle.get("llm_sections", {}) or {}
     must_watch = bundle.get("must_watch", []) or []
@@ -64,12 +95,22 @@ def _render_executive_summary(bundle: Dict[str, Any], pulse: str) -> str:
     lens = _resolved_hk_lens(bundle)
     lines: List[str] = []
 
+    # Lead with a degradation notice when a core input is stale: the reader
+    # should learn that before reading a conclusion built on partial evidence.
+    stale_inputs = hk_desk_view.get("stale_inputs", []) or []
+    if stale_inputs:
+        lines.append(
+            f"- **Data caveat:** {'; '.join(stale_inputs)}. The Hong Kong style call is downgraded and the "
+            "stale input is excluded from the risk score."
+        )
+
     pulse_text = _safe_sentence_clip(pulse, 190)
     if pulse_text:
         lines.append(f"- **Market pulse:** {pulse_text}")
 
     if lens:
-        lines.append(f"- **Hong Kong lens:** {_safe_sentence_clip(lens, 430)}")
+        confidence = _lens_confidence(hk_desk_view)
+        lines.append(f"- **Hong Kong lens** ({confidence}): {_safe_sentence_clip(lens, 430)}")
 
     hk_implication = _safe_sentence_clip(llm_sections.get("overnight_hk_implication", ""), 180)
     if hk_implication and hk_implication.lower() not in lens.lower():
@@ -249,18 +290,27 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
     southbound_active = ((stock_connect.get("southbound", {}) or {}).get("top_active", []) or [])[:5]
     lines.append("**Stock Connect Southbound Active Names**")
     if southbound_active:
+        # The table is ordered by net buy, so a HKEX turnover rank in the first
+        # column read as a broken sequence (7, 2, 3, 9, 10). Number the rows by
+        # the order actually shown and keep the exchange rank in its own column.
         rows = [
             (
-                item.get("rank", ""),
+                position,
                 item.get("ticker", ""),
                 item.get("name", ""),
                 _fmt_millions(item.get("buy_turnover"), "HK$"),
                 _fmt_millions(item.get("sell_turnover"), "HK$"),
                 _fmt_millions(item.get("net_buy"), "HK$") if item.get("net_buy") is not None else "N/A",
+                item.get("rank", "") or "N/A",
             )
-            for item in southbound_active
+            for position, item in enumerate(southbound_active, start=1)
         ]
-        lines.append(_make_table(["Rank", "Ticker", "Name", "Buy", "Sell", "Net buy"], rows))
+        lines.append(
+            _make_table(
+                ["#", "Ticker", "Name", "Buy", "Sell", "Net buy", "HKEX turnover rank"],
+                rows,
+            )
+        )
         lines.append("")
     else:
         status = (tracker.get("stock_connect", {}) or {}).get("status", "unavailable")
@@ -386,32 +436,23 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
         lines.append("**Key Drivers**")
         lines.extend(f"- {item}" for item in drivers)
 
+    # This section covers the overnight overseas tape. The Hong Kong style call
+    # belongs to Section 2.2 and is deliberately not repeated here: rendering the
+    # same hk_desk_view fields in both places produced word-for-word duplicate
+    # paragraphs plus three identical "Cross-market read" bullets every day.
     hk_implication = str(llm_sections.get("overnight_hk_implication", "") or "").strip()
-    hk_lines, suppressed_hk_lines = _compact_hk_read_lines(_compact_bullets(hk_desk_view.get("lines", []) or [], limit=5, width=140), limit=3)
     lines.append("")
     lines.append("**Hong Kong Read-Through**")
-    headline = str(hk_desk_view.get("headline", "") or "").strip()
-    evidence = str(hk_desk_view.get("evidence", "") or "").strip()
-    implication = str(hk_desk_view.get("implication", "") or "").strip()
-    leadership = str(hk_desk_view.get("leadership", "") or "").strip()
-    if headline:
-        lines.append(f"**Desk lens.** {headline}.")
-        if evidence:
-            lines.append(f"**Evidence.** {_condense_sentence(evidence, 220)}")
-        if implication:
-            lines.append(f"**Investment read.** {_condense_sentence(implication, 240)}")
-    elif leadership:
-        lines.append(f"**Desk lens.** {leadership}.")
     if hk_implication:
         lines.append(f"**Opening implication.** {_condense_sentence(hk_implication, 260)}")
-    for item in hk_lines:
-        lines.append(f"- **Cross-market read:** {item}")
-    if suppressed_hk_lines:
+    else:
         lines.append(
-            "- **Coverage note:** Hong Kong quote coverage was limited, so low-signal index / FX lines are suppressed; use Stock Connect and A/H premium as the firmer evidence."
+            "**Opening implication.** Carry the overnight tape into the Hong Kong open using the style and "
+            "flow evidence in Section 2.2 rather than the headline index alone."
         )
-    if not leadership and not hk_implication and not hk_lines:
-        lines.append("Hong Kong read-through remains tentative on the available evidence.")
+    lines.append(
+        "_Hong Kong style leadership, cross-market levels and flow confirmation are set out in Section 2.2._"
+    )
 
     chart_read = (overview.get("chart_read", {}) or {})
     watch_points = _compact_bullets((chart_read.get("fx", []) or []) + (chart_read.get("assets", []) or []), limit=4, width=150)
@@ -767,12 +808,35 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
     ]
     next_rows = next_rows[:4]
 
-    output = ["\n".join(lines), "\n**Same-day macro docket**"]
-    output.append(_make_table(["Time", "Country", "Event", "Status", "Detail"], macro_rows) if macro_rows else "No same-day macro items were scheduled.")
-    output.append("\n**Same-day catalyst list**")
-    output.append(_make_table(["Date", "Time", "Category", "Event", "Importance"], catalyst_rows) if catalyst_rows else "No same-day catalysts were highlighted.")
-    output.append("\n**Next few sessions**")
-    output.append(_make_table(["Date", "Category", "Event", "Impact"], next_rows) if next_rows else "No forward catalyst list was populated.")
+    output = ["\n".join(lines)]
+
+    # Rendering three empty sub-blocks every day made an unimplemented source
+    # look like a genuinely quiet calendar. Collapse to one honest statement
+    # when nothing at all is populated.
+    if not macro_rows and not catalyst_rows and not next_rows:
+        if not _macro_source_configured(bundle):
+            output.append(
+                "\n_No macro calendar or catalyst source reported for this run, so no same-day or forward "
+                "events can be listed. This is missing coverage, not confirmation that the calendar is empty._"
+            )
+        else:
+            output.append(
+                "\n_The configured calendar and catalyst sources returned no same-day or forward events._"
+            )
+        return "\n".join(output)
+
+    output.append("\n**Same-day macro docket**")
+    output.append(
+        _make_table(["Time", "Country", "Event", "Status", "Detail"], macro_rows)
+        if macro_rows
+        else "No same-day macro items were scheduled."
+    )
+    if catalyst_rows:
+        output.append("\n**Same-day catalyst list**")
+        output.append(_make_table(["Date", "Time", "Category", "Event", "Importance"], catalyst_rows))
+    if next_rows:
+        output.append("\n**Next few sessions**")
+        output.append(_make_table(["Date", "Category", "Event", "Impact"], next_rows))
     return "\n".join(output)
 
 

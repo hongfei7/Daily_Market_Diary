@@ -74,23 +74,71 @@ def _fetch_single_watchlist(definition: WatchlistDefinition, news_limit: int) ->
         if snapshot.last_price is None and snapshot.daily_change_pct is None:
             snapshot.note = "Quote detail was not refreshed in the current public data run."
 
-    move = snapshot.daily_change_pct
-    pos = snapshot.range_position_pct
     if snapshot.note:
         return snapshot
-    if move is None:
-        snapshot.note = "Market snapshot detail was not refreshed in the current public data run."
-    elif move >= 2:
-        snapshot.note = "Short-term price strength is clear; fresh catalysts could trigger broader group follow-through."
-    elif move <= -2:
-        snapshot.note = "Short-term pressure is visible; check for a fundamental or regulatory reason."
-    elif pos is not None and pos >= 75:
-        snapshot.note = "The name sits near the top of its recent range, so watch for profit-taking under high expectations."
-    elif pos is not None and pos <= 25:
-        snapshot.note = "The name sits near the bottom of its recent range and is worth monitoring for a catalyst-led reversal."
-    else:
-        snapshot.note = "Positioning is neutral for now, so use it mainly to monitor marginal information changes."
+    snapshot.note = _compose_note(snapshot)
     return snapshot
+
+
+def _compose_note(snapshot: WatchlistSnapshot) -> str:
+    """Build a per-name note from every dimension that resolved.
+
+    The previous if/elif chain branched on the daily move alone, so any two names
+    up more than 2% received a word-for-word identical note and their range
+    position was never mentioned. Composing the available facts keeps distinct
+    names reading distinctly, and keeps the note tied to observable data.
+    """
+    move = snapshot.daily_change_pct
+    pos = snapshot.range_position_pct
+
+    if move is None:
+        return "Market snapshot detail was not refreshed in the current public data run."
+
+    # Assembled as: "<move>, <range position>, so <implication>."
+    parts: List[str] = []
+
+    # 1. What the tape did today, with the magnitude stated rather than implied.
+    if move >= 2:
+        parts.append(f"Up {move:.2f}% on the session")
+    elif move <= -2:
+        parts.append(f"Down {abs(move):.2f}% on the session")
+    elif move > 0:
+        parts.append(f"Marginally higher (+{move:.2f}%)")
+    elif move < 0:
+        parts.append(f"Marginally lower ({move:.2f}%)")
+    else:
+        parts.append("Unchanged on the session")
+
+    # 2. Where that leaves it in its own 60-session range.
+    if pos is not None:
+        if pos >= 75:
+            parts.append(f"in the top quartile of its 60-session range ({pos:.0f}%)")
+        elif pos <= 25:
+            parts.append(f"still in the bottom quartile of its 60-session range ({pos:.0f}%)")
+        else:
+            parts.append(f"mid-range at {pos:.0f}% of its 60-session band")
+
+    # 3. The question the combination actually raises.
+    if move >= 2 and pos is not None and pos <= 25:
+        implication = "treat this as a bounce off a depressed base until it clears the range midpoint"
+    elif move >= 2 and pos is not None and pos >= 75:
+        implication = "the move extends an existing trend and carries profit-taking risk"
+    elif move <= -2 and pos is not None and pos >= 75:
+        implication = "check whether this is profit-taking or the start of a trend break"
+    elif move <= -2 and pos is not None and pos <= 25:
+        implication = "look for a fundamental or regulatory driver before treating it as value"
+    elif move >= 2:
+        implication = "check whether a catalyst can carry the move into the wider group"
+    elif move <= -2:
+        implication = "check for a fundamental or regulatory reason"
+    else:
+        implication = "use it to monitor marginal information changes rather than as a signal"
+
+    note = f"{', '.join(parts)}, so {implication}."
+    if snapshot.recent_news:
+        count = len(snapshot.recent_news)
+        note += f" {count} relevant headline{'s' if count != 1 else ''} attached."
+    return note
 
 
 def build_watchlist_digest(config: Dict[str, Any], report_date: str) -> Dict[str, List[Dict[str, Any]]]:

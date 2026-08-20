@@ -122,7 +122,13 @@ def build_today_forward(
             f"Corporate / event: {today_catalysts[0].get('event', '')} is the cleanest same-day catalyst to prepare for."
         )
     if not focus_lines:
-        focus_lines.append("The calendar is relatively light, so the market may trade more off positioning and overnight headlines.")
+        # Do not infer a light calendar from an empty feed: no calendar source
+        # has reported, so absence of events is absence of coverage.
+        focus_lines.append(
+            "No same-day macro or catalyst items were supplied for this run, so the session has no "
+            "scheduled anchor in this report; trade the overnight tape and positioning, and check an "
+            "external calendar before assuming the day is genuinely quiet."
+        )
 
     return {
         "today_macro": today_macro,

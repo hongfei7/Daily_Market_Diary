@@ -59,7 +59,11 @@ def test_watchlist_digest_uses_ticker_snapshot_and_normalizes_news() -> None:
     assert item["last_price"] == 13.0
     assert item["daily_change_pct"] == 8.33
     assert item["range_label"] == "Top of range"
-    assert "Short-term price strength" in item["note"]
+    # The note is composed from the move, the range position and the headline
+    # count, so two names with a similar move do not share identical copy.
+    assert "Up 8.33% on the session" in item["note"]
+    assert "top quartile of its 60-session range" in item["note"]
+    assert "1 relevant headline attached" in item["note"]
     assert item["recent_news"][0]["title"] == "Nvidia lands new AI order"
     assert item["recent_news"][0]["summary"] == "Demand accelerated"
     assert item["recent_news"][0]["source"] == "Mock News"
