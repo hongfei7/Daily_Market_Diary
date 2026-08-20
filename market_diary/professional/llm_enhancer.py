@@ -370,6 +370,47 @@ _ERROR_CLASS_MARKERS: List[tuple] = [
 ]
 
 
+def _token_usage(response: Any, max_tokens: int) -> Dict[str, Any]:
+    """Capture token usage so budget questions can be measured, not guessed.
+
+    Nothing recorded usage before, so a run of truncation failures gave no way
+    to tell whether the budget was genuinely too small or the request was being
+    routed to a model that spends the budget on reasoning.
+    """
+    usage = getattr(response, "usage", None)
+    if usage is None:
+        return {"max_tokens": max_tokens}
+
+    def _get(name: str) -> Optional[int]:
+        value = getattr(usage, name, None)
+        if value is None and isinstance(usage, dict):
+            value = usage.get(name)
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    completion = _get("completion_tokens")
+    details = getattr(usage, "completion_tokens_details", None)
+    reasoning = None
+    if details is not None:
+        reasoning = getattr(details, "reasoning_tokens", None)
+        if reasoning is None and isinstance(details, dict):
+            reasoning = details.get("reasoning_tokens")
+
+    payload: Dict[str, Any] = {
+        "prompt_tokens": _get("prompt_tokens"),
+        "completion_tokens": completion,
+        "total_tokens": _get("total_tokens"),
+        "max_tokens": max_tokens,
+    }
+    if reasoning is not None:
+        payload["reasoning_tokens"] = reasoning
+    if completion is not None and max_tokens:
+        payload["budget_used_pct"] = round(completion / max_tokens * 100.0, 1)
+    return payload
+
+
 def classify_error(message: str) -> str:
     """Bucket a failure so recurring causes can be counted across runs.
 
@@ -788,6 +829,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
         temperature = float(task_config.get("temperature", 0.2))
         max_tokens = int(task_config.get("max_tokens", 700))
         last_error = ""
+        last_usage: Dict[str, Any] = {}
         last_raw_excerpt = ""
         last_model = ""
         last_provider = ""
@@ -829,6 +871,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                     raw = _extract_response_text(response.choices[0].message.content)
                     last_raw_excerpt = raw[:240].replace("\n", " ").strip()
                     finish_reason = _choice_finish_reason(response)
+                    last_usage = _token_usage(response, max_tokens)
                     if _llm_response_looks_truncated(raw, finish_reason):
                         reason = finish_reason or "trailing ellipsis or unbalanced JSON"
                         raise ValueError(
@@ -861,6 +904,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
             "attempts": total_attempts,
             "error": last_error,
             "error_class": classify_error(last_error),
+            "usage": last_usage,
         }
         if last_raw_excerpt:
             error_meta["raw_excerpt"] = last_raw_excerpt
@@ -1036,6 +1080,22 @@ def build_llm_health(task_meta: Dict[str, Any]) -> Dict[str, Any]:
     success_rate = round(succeeded / attempted * 100.0, 1) if attempted else 0.0
     dominant = max(by_class.items(), key=lambda pair: pair[1])[0] if by_class else ""
 
+    # Budget pressure is now measured rather than inferred: a task that failed
+    # while using nearly all of its allowance is a genuine budget problem, one
+    # that failed using little of it is not.
+    budget: Dict[str, Any] = {}
+    for name, meta in tasks.items():
+        if not isinstance(meta, dict):
+            continue
+        usage = meta.get("usage") or {}
+        if isinstance(usage, dict) and usage.get("budget_used_pct") is not None:
+            budget[name] = {
+                "budget_used_pct": usage.get("budget_used_pct"),
+                "completion_tokens": usage.get("completion_tokens"),
+                "max_tokens": usage.get("max_tokens"),
+                "reasoning_tokens": usage.get("reasoning_tokens"),
+            }
+
     return {
         "schema_version": "llm-health-v1",
         "tasks_total": len(tasks),
@@ -1046,6 +1106,7 @@ def build_llm_health(task_meta: Dict[str, Any]) -> Dict[str, Any]:
         "failures_by_class": by_class,
         "failure_class_by_task": by_task,
         "dominant_failure_class": dominant,
+        "token_budget_by_task": budget,
         "read": (
             f"{succeeded}/{attempted} tasks succeeded ({success_rate:.0f}%)."
             + (f" Dominant failure: {dominant} ({by_class.get(dominant, 0)} of {failed})." if dominant else "")

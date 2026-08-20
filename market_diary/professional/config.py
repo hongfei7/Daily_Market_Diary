@@ -9,7 +9,10 @@ from typing import Any, Dict, Optional
 DEFAULT_LLM_ROUTE_FALLBACK = {
     "deepseek": "deepseek-v4-pro",
     "minimax": "MiniMax-M3",
-    "default": "MiniMax-M3",
+    # The briefing tasks target deepseek-v4-pro. Defaulting to MiniMax-M3 sent
+    # every task that did not name a provider to a reasoning model whose
+    # reasoning tokens consume max_tokens, so they failed as truncated daily.
+    "default": "deepseek-v4-pro",
 }
 
 
@@ -116,12 +119,18 @@ DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
             },
             "overnight_review": {
                 "enabled": True,
+                # Named explicitly: relying on the implicit default is what routed
+                # these four tasks to MiniMax-M3 and broke them.
+                "provider": "deepseek",
                 "route": "default_model",
                 "temperature": 0.1,
                 "max_tokens": 1400,
             },
             "hk_review": {
                 "enabled": True,
+                # Named explicitly: relying on the implicit default is what routed
+                # these four tasks to MiniMax-M3 and broke them.
+                "provider": "deepseek",
                 "route": "default_model",
                 "temperature": 0.1,
                 "max_tokens": 1400,
@@ -142,12 +151,18 @@ DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
             },
             "theme_deep_dive": {
                 "enabled": True,
+                # Named explicitly: relying on the implicit default is what routed
+                # these four tasks to MiniMax-M3 and broke them.
+                "provider": "deepseek",
                 "route": "default_model",
                 "temperature": 0.1,
                 "max_tokens": 1600,
             },
             "final_framing": {
                 "enabled": True,
+                # Named explicitly: relying on the implicit default is what routed
+                # these four tasks to MiniMax-M3 and broke them.
+                "provider": "deepseek",
                 "route": "default_model",
                 "temperature": 0.0,
                 "max_tokens": 1200,

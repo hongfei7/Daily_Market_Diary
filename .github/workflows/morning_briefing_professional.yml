@@ -144,11 +144,11 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
-          LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
+          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY != '' && secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'https://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'https://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M3' }}
+          LLM_PRIMARY_PROVIDER: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek' || 'minimax' }}
         run: |
           python --version
           python - <<'PY'
@@ -171,11 +171,11 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
-          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
-          LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
+          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY != '' && secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'https://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'https://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
+          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M3' }}
+          LLM_PRIMARY_PROVIDER: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek' || 'minimax' }}
         run: |
           echo "Briefing date: $BRIEFING_DATE"
           if [ -n "${{ inputs.date }}" ]; then

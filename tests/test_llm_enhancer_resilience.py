@@ -103,7 +103,14 @@ def test_deepseek_defaults_when_secret_present() -> None:
     assert workers == 4
 
 
-def test_minimax_primary_adds_deepseek_fallback_candidate() -> None:
+def test_deepseek_is_primary_with_minimax_as_fallback() -> None:
+    """Both keys present must still route the narrative tasks to DeepSeek.
+
+    Preferring MiniMax whenever its key existed sent every task without an
+    explicit provider to MiniMax-M3, a reasoning model whose reasoning tokens
+    count against max_tokens; those four tasks failed as truncated every day
+    while the three explicit-DeepSeek tasks worked.
+    """
     env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL", "LLM_PRIMARY_PROVIDER"]
     prior_env = _preserve_env(env_names)
     os.environ["DEEPSEEK_API_KEY"] = "test-deepseek-key"
@@ -121,10 +128,12 @@ def test_minimax_primary_adds_deepseek_fallback_candidate() -> None:
     finally:
         _restore_env(prior_env)
 
-    assert providers == ["minimax", "deepseek"]
+    assert providers == ["deepseek", "minimax"]
+    # "preferred" rather than a bare default: the task now names its provider
+    # explicitly, so it no longer depends on whichever key happens to exist.
     assert candidates == [
-        ("minimax", "MiniMax-M3", "default_model"),
-        ("deepseek", "deepseek-v4-pro", "default_model:fallback"),
+        ("deepseek", "deepseek-v4-pro", "default_model:preferred"),
+        ("minimax", "MiniMax-M3", "default_model:fallback"),
     ]
     assert fast_candidates == [
         ("deepseek", "deepseek-v4-pro", "fast_model:preferred"),

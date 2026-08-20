@@ -176,8 +176,15 @@ def check_workflow_guardrails() -> bool:
         if marker not in morning:
             print(f"FAIL missing LLM provider fallback config: {marker}")
             return False
-    if "OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY }}" not in morning:
-        print("FAIL MiniMax must remain the production primary provider")
+    # The briefing tasks target deepseek-v4-pro. Preferring MiniMax whenever its
+    # key existed routed every task without an explicit provider to MiniMax-M3,
+    # a reasoning model whose reasoning tokens consume max_tokens, so those tasks
+    # failed as truncated every day. MiniMax stays only as a fallback.
+    if "LLM_PRIMARY_PROVIDER: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek' || 'minimax' }}" not in morning:
+        print("FAIL DeepSeek must be the production primary provider")
+        return False
+    if "secrets.MINIMAX_API_KEY != '' && 'minimax'" in morning:
+        print("FAIL workflow must not force MiniMax ahead of DeepSeek")
         return False
     if "continuing with delivery" in morning or "set +e" in morning:
         print("FAIL runtime audit must block automatic delivery")

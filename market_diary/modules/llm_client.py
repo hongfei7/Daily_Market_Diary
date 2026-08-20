@@ -97,11 +97,19 @@ def _resolve_api_key(provider: str = "") -> tuple[str, str]:
 
 
 def get_default_base_url(provider: str = "") -> str:
-    """Return the provider base URL implied by env overrides or key priority."""
+    """Return the provider base URL implied by env overrides or key priority.
+
+    An explicit override is ignored when it clearly belongs to a different
+    provider than the one being called. Otherwise a stale ``LLM_BASE_URL`` would
+    send DeepSeek traffic to MiniMax's endpoint and fail in a way that looks
+    like an auth or model problem rather than a misconfigured URL.
+    """
     selected_provider = provider or get_default_provider()
     explicit_base_url = (os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL") or "").strip()
     if explicit_base_url and selected_provider == get_default_provider():
-        return explicit_base_url
+        other_host = MINIMAX_BASE_URL if selected_provider == "deepseek" else DEEPSEEK_BASE_URL
+        if other_host.split("//", 1)[-1].split("/", 1)[0] not in explicit_base_url:
+            return explicit_base_url
 
     if selected_provider == "deepseek":
         return DEEPSEEK_BASE_URL
@@ -109,21 +117,31 @@ def get_default_base_url(provider: str = "") -> str:
 
 
 def get_default_provider() -> str:
-    """Return the configured primary provider, preferring MiniMax when available."""
+    """Return the configured primary provider, preferring DeepSeek when available.
+
+    The briefing tasks are structured extraction and rewriting against a small
+    JSON schema; they were designed for deepseek-v4-pro. Preferring MiniMax
+    whenever its key happened to exist silently routed every task that did not
+    name a provider to MiniMax-M3, a reasoning model whose reasoning tokens
+    count against ``max_tokens`` — so those tasks ran out of budget before
+    emitting their JSON and failed as truncated, every day.
+
+    MiniMax stays as a fallback for when DeepSeek is unavailable.
+    """
     explicit = (os.getenv("LLM_PRIMARY_PROVIDER") or "").strip().lower()
     if explicit in _PROVIDER_API_KEY_ENVS and _resolve_api_key(explicit)[0]:
         return explicit
-    if _resolve_api_key("minimax")[0]:
-        return "minimax"
     if _resolve_api_key("deepseek")[0]:
         return "deepseek"
-    return "minimax"
+    if _resolve_api_key("minimax")[0]:
+        return "minimax"
+    return "deepseek"
 
 
 def get_available_providers() -> list[str]:
-    """Return configured providers in priority order."""
+    """Return configured providers in priority order: DeepSeek first."""
     providers = []
-    for provider in ("minimax", "deepseek"):
+    for provider in ("deepseek", "minimax"):
         api_key, _ = _resolve_api_key(provider)
         if api_key:
             providers.append(provider)
