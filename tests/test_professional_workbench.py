@@ -353,7 +353,10 @@ def main():
         )
     assert "Morning Research Workbench" in report
     assert "Layer 1 | Scan" in report
-    assert "5-minute decision scan" in report
+    # The route no longer quotes deep-read and appendix durations it cannot
+    # verify; the measured estimate lives in the runtime audit instead.
+    assert "Layer 1 scan (5 min)" in report
+    assert "25-30 minute deep read" not in report
     assert "Layer 3 | Decision Deepening" in report
     assert "Daily One Chart" in report
     assert "Hong Kong Trend Pack" in report

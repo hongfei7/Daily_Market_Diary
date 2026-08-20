@@ -9,6 +9,7 @@ from market_diary.professional.analytics_briefing import (
     build_must_watch,
     build_source_links,
 )
+from market_diary.professional.ai_tmt_chain import build_ai_tmt_chain
 from market_diary.professional.analytics_flows import build_flow_tracker, build_movers_and_flows
 from market_diary.professional.analytics_hk_checks import build_hk_quick_checks
 from market_diary.professional.analytics_macro import build_macro_agenda
@@ -121,6 +122,7 @@ def build_professional_bundle(
 
     overview = build_market_overview(summary, chart_features)
     hk_desk_view = build_hk_desk_view(summary, hk_local_metrics, metric_history, local_date)
+    ai_tmt_chain = build_ai_tmt_chain(summary)
     day_mode = build_report_mode(report_date, config, briefing_date=morning_date)
     date_semantics = build_date_semantics(
         report_date=report_date,
@@ -197,6 +199,7 @@ def build_professional_bundle(
         "overview": overview,
         "day_mode": day_mode,
         "hk_desk_view": hk_desk_view,
+        "ai_tmt_chain": ai_tmt_chain,
         "market_summary": summary,
         "macro_agenda": macro_agenda,
         "sector_digest": sector_digest,

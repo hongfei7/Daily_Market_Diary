@@ -36,6 +36,7 @@ CHANNELS = {
 MONTHLY_RULES: List[Dict[str, Any]] = [
     {
         "indicator": "China LPR (1Y / 5Y)",
+        "source_url": "http://www.pbc.gov.cn/en/3688229/3688335/index.html",
         "country": "CN",
         "day": 20,
         "window": 0,
@@ -45,6 +46,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "China NBS Manufacturing PMI",
+        "source_url": "https://www.stats.gov.cn/english/PressRelease/",
         "country": "CN",
         "day": 31,
         "window": 1,
@@ -54,6 +56,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "China Caixin Manufacturing PMI",
+        "source_url": "https://www.pmi.spglobal.com/Public/Release/PressReleases",
         "country": "CN",
         "day": 1,
         "window": 2,
@@ -63,6 +66,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "China Trade Balance",
+        "source_url": "http://english.customs.gov.cn/statics/report/monthly.html",
         "country": "CN",
         "day": 7,
         "window": 3,
@@ -72,6 +76,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "China CPI / PPI",
+        "source_url": "https://www.stats.gov.cn/english/PressRelease/",
         "country": "CN",
         "day": 9,
         "window": 2,
@@ -81,6 +86,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "China Aggregate Financing / New Loans",
+        "source_url": "http://www.pbc.gov.cn/en/3688247/index.html",
         "country": "CN",
         "day": 12,
         "window": 4,
@@ -90,6 +96,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "China Activity Data (IP / Retail Sales / FAI)",
+        "source_url": "https://www.stats.gov.cn/english/PressRelease/",
         "country": "CN",
         "day": 15,
         "window": 2,
@@ -99,6 +106,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "US CPI",
+        "source_url": "https://www.bls.gov/schedule/news_release/cpi.htm",
         "country": "US",
         "day": 12,
         "window": 3,
@@ -108,6 +116,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "US Non-Farm Payrolls",
+        "source_url": "https://www.bls.gov/schedule/news_release/empsit.htm",
         "country": "US",
         "day": 5,
         "window": 3,
@@ -117,6 +126,7 @@ MONTHLY_RULES: List[Dict[str, Any]] = [
     },
     {
         "indicator": "Hong Kong CPI",
+        "source_url": "https://www.censtatd.gov.hk/en/press_release_list.html",
         "country": "HK",
         "day": 21,
         "window": 3,
@@ -182,6 +192,9 @@ def scheduled_events(
                 {
                     "indicator": rule["indicator"],
                     "country": rule["country"],
+                    # The publisher's release page: a dated event has to be
+                    # traceable to whoever actually publishes it.
+                    "source_url": rule.get("source_url", ""),
                     "date": scheduled.isoformat(),
                     "channel": rule["channel"],
                     "channel_note": CHANNELS[rule["channel"]],

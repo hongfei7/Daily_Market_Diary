@@ -161,7 +161,12 @@ def main() -> None:
     assert "Run summary" in report
     assert "Release recommendation" in report
     assert "Send" in report
-    assert "| Source | Status | Bucket |" in report
+    # Only degraded sources are tabulated; a clean run states that in one line
+    # and the full roster stays in audit/source_health.json. Printing ten rows
+    # of healthy process detail was a quarter of a commute reader's budget.
+    assert "| Source | Status | Bucket |" not in report
+    assert "sources were healthy on this run" in report
+    assert "archived with this report under `audit/`" in report
     assert "Desk-use guidance summary" in report
     assert "Desk-use guidance" in report
     assert "**Advisory:**" in report or "**Blocking:**" in report

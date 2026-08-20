@@ -325,12 +325,12 @@ def build_summary_markdown(bundle: Dict[str, Any], report_date: str) -> str:
     if not confirmation:
         confirmation_lines = (bundle.get("today_forward", {}) or {}).get("focus_lines", []) or []
         confirmation = confirmation_lines[0] if confirmation_lines else ""
-    report_link = f"[Open full report | 35-50 min]({report_url})" if report_url else "Full report attachment follows."
+    report_link = f"[Open full report]({report_url})" if report_url else "Full report attachment follows."
     footer = ["", report_link]
 
     lines = [
         f"# HK Morning Brief | {briefing_date}",
-        "> **5-minute scan** | Full report: 35-50 minutes",
+        "> **5-minute scan** | Full report linked below.",
     ]
 
     if pulse:

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Dict, List
 
 from market_diary.modules.macro_schedule import scheduled_events, summarize_channels
-from market_diary.modules.provenance import unavailable_record
+from market_diary.modules.provenance import provenance_record, unavailable_record
 
 MACRO_SCHEDULE_SOURCE = "Rule-based CN/HK/US release schedule (scheduled dates, no forecast values)"
 
@@ -73,6 +73,7 @@ class MacroCalendar:
             "note": item["note"],
             "as_of": item["date"],
             "source": MACRO_SCHEDULE_SOURCE,
+            "source_url": item.get("source_url", ""),
         }
 
     def fetch_central_bank_events(self, date: str) -> List[Dict]:
@@ -168,11 +169,16 @@ def fetch_macro_data(date: str) -> Dict:
             ),
         },
         "provenance": [
-            {
-                "source": "Macro calendar",
-                "as_of": date,
-                "status": "partial_public",
-                "detail": MACRO_SCHEDULE_SOURCE,
-            }
+            provenance_record(
+                source_name="Macro calendar",
+                source_url="",
+                as_of=date,
+                source_type="derived",
+                status="partial_public",
+                # Scheduled dates are rule-derived and reliable; the absent
+                # forecast and actual values are what hold the confidence down.
+                confidence=0.6,
+                note=MACRO_SCHEDULE_SOURCE,
+            )
         ],
     }

@@ -989,13 +989,16 @@ def _render_performance(bundle: Dict[str, Any]) -> str:
     if not performance or performance.get("status") in {"disabled", "error"}:
         return "Historical signal diagnostics were unavailable for this run."
 
+    # Per-day scoring now lives in Section 1.1, so this stays a compact
+    # aggregate: readiness, the headline table, and the boundary on how far the
+    # result can be pushed.
     data_quality = performance.get("data_quality", {}) or {}
     lines = [
         f"- **Readiness:** {str(performance.get('status', 'unknown')).replace('_', ' ')} | "
-        f"{data_quality.get('observations', 0)} market observations | "
-        f"{data_quality.get('active_signal_dates', 0)} active signal dates",
-        "- **Execution rule:** use only the next available close after publication; 10 bps turnover cost by default. Current-day signals never receive same-day returns.",
-        "- **Interpretation boundary:** results are exploratory until a benchmark reaches 252 sessions and 100 active-signal sessions.",
+        f"{data_quality.get('observations', 0)} observations | "
+        f"{data_quality.get('active_signal_dates', 0)} active signal dates | "
+        "next-close entry, 10bps cost, no same-day returns.",
+        "- **Interpretation boundary:** exploratory until a benchmark reaches 252 sessions and 100 active-signal sessions.",
     ]
     rows = []
     for name, payload in (performance.get("benchmarks", {}) or {}).items():
@@ -1019,19 +1022,16 @@ def _render_performance(bundle: Dict[str, Any]) -> str:
             )
         )
 
+    # Event-horizon diagnostics are research depth rather than commute reading;
+    # the full breakdown is archived in audit/performance_summary.json.
     hsi_events = ((performance.get("benchmarks", {}) or {}).get("Hang Seng Index", {}) or {}).get("event_horizons", {}) or {}
-    if hsi_events:
-        event_rows = [
-            (
-                f"{horizon} sessions",
-                item.get("resolved_signals", 0),
-                _percent(item.get("hit_rate")),
-                _percent(item.get("average_directional_return_net")),
-            )
-            for horizon, item in hsi_events.items()
-        ]
-        lines.append("\n**Hang Seng event-horizon diagnostics**")
-        lines.append(_make_table(["Horizon", "Resolved", "Hit rate", "Average net return"], event_rows))
+    one_session = hsi_events.get("1") or hsi_events.get(1) or {}
+    if one_session:
+        lines.append(
+            f"- **Next-session diagnostic:** {_percent(one_session.get('hit_rate'))} hit rate over "
+            f"{one_session.get('resolved_signals', 0)} resolved signals; 5- and 20-session horizons are in "
+            "`audit/performance_summary.json`."
+        )
 
     rel_path = str(performance.get("rel_path", "") or "")
     if rel_path:
@@ -1107,8 +1107,19 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
         lines.append(
             f"- **Release recommendation:** {release_recommendation.get('label', 'N/A')} | {release_recommendation.get('reason', '')}"
         )
-    if runtime_rows:
-        lines.append(_make_table(["Source", "Status", "Bucket"], [(item.get("name", ""), item.get("status", ""), item.get("bucket", "")) for item in runtime_rows]))
+    # Only unhealthy sources are listed. A full roster of every source and its
+    # bucket ran to ~10 rows of process detail in a report read on a commute;
+    # the complete table is archived in audit/source_health.json.
+    degraded_rows = [item for item in runtime_rows if str(item.get("bucket", "")).lower() not in {"healthy", "ok", ""}]
+    if degraded_rows:
+        lines.append(
+            _make_table(
+                ["Source", "Status", "Bucket"],
+                [(item.get("name", ""), item.get("status", ""), item.get("bucket", "")) for item in degraded_rows],
+            )
+        )
+    elif runtime_rows:
+        lines.append(f"- All {len(runtime_rows)} sources were healthy on this run.")
     if runtime_guidance:
         if runtime_guidance_summary:
             lines.append(f"\n**Desk-use guidance summary:** {runtime_guidance_summary}")
@@ -1118,18 +1129,25 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
             for item in runtime_guidance[:4]
         )
 
+    # Grade ceilings change how much weight to put on the report, so they stay.
+    for cap in (quality.get("grade_caps", []) or [])[:3]:
+        lines.append(f"- **Grade capped:** {cap}")
+
+    # Only components that actually dragged the score are worth a commute
+    # reader's attention; the full weighted breakdown is archived alongside the
+    # report rather than printed in it.
     components = quality.get("components", []) or []
-    if components:
+    weak = [item for item in components if float(item.get("score", 100) or 100) < 70]
+    if weak:
         rows = [
             (
                 item.get("name", ""),
                 item.get("score", ""),
-                item.get("weight", ""),
                 _condense_sentence(str(item.get("read", "")).replace("|", "/"), 120),
             )
-            for item in components
+            for item in weak
         ]
-        lines.append(_make_table(["Component", "Score", "Weight", "Read"], rows))
+        lines.append(_make_table(["Weak component", "Score", "Read"], rows))
 
     warnings = quality.get("warnings", []) or []
     if warnings:
@@ -1164,21 +1182,166 @@ def _render_report_quality(bundle: Dict[str, Any]) -> str:
         if source_warnings:
             lines.extend(f"- Source/text warning: {item.get('message', '')}" for item in source_warnings[:6])
 
-    if provenance_audit:
-        lines.append("\n**Source provenance validation**")
+    # Provenance, per-source freshness and adapter status are pipeline
+    # diagnostics rather than market content. They are written to audit/*.json
+    # on every run, so the report carries only the exceptions.
+    if provenance_audit and str(provenance_audit.get("status", "")).lower() != "ok":
         lines.append(
-            f"- Status: {provenance_audit.get('status', 'unknown')} | "
-            f"records checked: {provenance_audit.get('checked_records', 0)} | "
-            f"unavailable: {provenance_audit.get('unavailable_records', 0)}"
+            f"\n- **Source provenance:** {provenance_audit.get('status', 'unknown')} | "
+            f"{provenance_audit.get('unavailable_records', 0)} unavailable of "
+            f"{provenance_audit.get('checked_records', 0)} records checked."
         )
-        lines.extend(f"- Provenance error: {item}" for item in (provenance_audit.get("errors", []) or [])[:6])
+        lines.extend(f"- Provenance error: {item}" for item in (provenance_audit.get("errors", []) or [])[:3])
 
-    lines.append("\n**Source health and freshness**")
-    lines.append(_render_source_health(bundle))
+    health = bundle.get("source_health", {}) or {}
+    if str(health.get("status", "")).lower() not in {"", "healthy", "ok"}:
+        coverage = health.get("coverage", {}) or {}
+        lines.append(
+            f"- **Source health:** {health.get('status')} | {coverage.get('healthy', 0)} healthy, "
+            f"{coverage.get('degraded', 0)} degraded, {coverage.get('unavailable', 0)} unavailable."
+        )
 
-    adapter_rows = quality.get("adapter_status", []) or []
-    if adapter_rows:
-        lines.append("\n**Adapter status**")
-        lines.append(_make_table(["Adapter", "Status"], [(item.get("name", ""), item.get("status", "")) for item in adapter_rows]))
+    failed_adapters = [
+        item for item in (quality.get("adapter_status", []) or [])
+        if str(item.get("status", "")).lower() not in {"ok", "healthy"}
+    ]
+    if failed_adapters:
+        lines.append(
+            "- **Adapters not OK:** "
+            + ", ".join(f"{item.get('name', '')} ({item.get('status', '')})" for item in failed_adapters)
+        )
+
+    lines.append(
+        "\n_Full component weights, per-source freshness, adapter status and provenance records are archived "
+        "with this report under `audit/` rather than printed here._"
+    )
 
     return "\n".join(lines)
+
+
+def _render_ai_tmt_chain(bundle: Dict[str, Any]) -> str:
+    """Render the overnight-semis to Hong Kong-tech read-through.
+
+    Stated as an explicit chain rather than a score table so the reasoning can
+    be repeated in a morning meeting, not just the numbers.
+    """
+    chain = bundle.get("ai_tmt_chain", {}) or {}
+    if not chain or chain.get("status") == "unavailable":
+        return (
+            "Semiconductor coverage was unavailable for this run, so no AI/TMT read-through is offered. "
+            "This is missing coverage, not evidence that the complex was quiet."
+        )
+
+    lines: List[str] = [
+        f"**Overnight leg.** {chain.get('headline', '')}",
+        f"**Hong Kong expression.** {chain.get('expression', '')}",
+        f"**Observable test.** {chain.get('test', '')}",
+        "",
+    ]
+
+    rows = [
+        (item["label"], item["role"], item["display"], "overnight")
+        for item in (chain.get("overnight_leg", []) or [])
+    ] + [
+        (item["label"], item["role"], item["display"], "Hong Kong")
+        for item in (chain.get("hk_leg", []) or [])
+    ]
+    if rows:
+        lines.append(_make_table(["Name", "Role in the chain", "1D", "Leg"], rows))
+        lines.append("")
+
+    if chain.get("divergence_note"):
+        lines.append(f"**Read with care.** {chain['divergence_note']}")
+    elif chain.get("hk_followed_overnight") is True:
+        lines.append(
+            f"**Coherence.** Hong Kong tech moved with the overnight leg "
+            f"(semis {chain.get('overnight_avg_pct'):+.2f}% versus HK tech {chain.get('hk_avg_pct'):+.2f}%), "
+            "so the global cycle is a sufficient explanation without invoking local flow."
+        )
+
+    if chain.get("single_name_outliers"):
+        lines.append(
+            f"**Single-name outlier.** {', '.join(chain['single_name_outliers'])} moved far outside the rest "
+            "of the Hong Kong leg. Treat as company-specific until checked; do not read it as a cycle signal."
+        )
+
+    if chain.get("stale_inputs"):
+        lines.append(
+            f"**Coverage caveat.** {'; '.join(chain['stale_inputs'])}. "
+            "Those names are excluded from the averages above."
+        )
+
+    return "\n".join(lines)
+
+
+def _render_call_scorecard(bundle: Dict[str, Any]) -> str:
+    """Score the previously published call before presenting a new one.
+
+    A desk's first question in the morning is whether yesterday's read worked.
+    The ledger has always held the answer; it was only ever surfaced as an
+    aggregate hit rate in the appendix.
+    """
+    card = bundle.get("call_scorecard", {}) or {}
+    record = bundle.get("call_record", {}) or {}
+    if not card or card.get("status") == "error":
+        return "The previous call could not be scored for this run."
+
+    verdict = card.get("verdict", "UNRESOLVED")
+    lines: List[str] = [f"**Verdict: {verdict}.** {card.get('headline', '')}"]
+
+    moves = [item for item in (card.get("moves", []) or []) if item.get("move_pct") is not None]
+    if moves:
+        lines.append("")
+        lines.append(
+            _make_table(
+                ["Benchmark", "From", "To", "Realised move"],
+                [
+                    (
+                        item["label"],
+                        item.get("from_date", ""),
+                        item.get("to_date", ""),
+                        f"{item['move_pct']:+.2f}%",
+                    )
+                    for item in moves
+                ],
+            )
+        )
+
+    if record.get("scored"):
+        lines.append("")
+        lines.append(
+            f"**Recent record.** {record['confirmed']} confirmed / {record['broken']} broken over the last "
+            f"{record['scored']} scoreable calls ({record.get('hit_rate_pct')}% hit rate). "
+            "This is a directional close-to-close diagnostic, not a track record."
+        )
+
+    if verdict == "BROKEN":
+        lines.append("")
+        lines.append(
+            "**Carry-forward.** State the miss before restating today's view; a thesis that just failed "
+            "needs new evidence, not a repeat."
+        )
+
+    return "\n".join(lines)
+
+
+def _render_md_questions(bundle: Dict[str, Any]) -> str:
+    """Render the questions a senior is most likely to ask, with answers.
+
+    Deterministic by design: the narrative overlay is too unreliable to carry
+    morning-meeting preparation.
+    """
+    questions = bundle.get("md_questions", []) or []
+    if not questions:
+        return (
+            "No divergence, tail reading or coverage gap stood out today, so there is no obvious "
+            "follow-up question beyond the base case above."
+        )
+
+    lines: List[str] = []
+    for idx, item in enumerate(questions, start=1):
+        lines.append(f"**Q{idx}. {item.get('question', '')}**")
+        lines.append(f"- **Evidence:** {item.get('evidence', '')}")
+        lines.append(f"- **How to answer:** {item.get('answer', '')}")
+        lines.append("")
+    return "\n".join(lines).rstrip()

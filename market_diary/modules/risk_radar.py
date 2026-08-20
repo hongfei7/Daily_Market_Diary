@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import Dict, List, Optional
 
 from market_diary.modules.macro_schedule import scheduled_events
-from market_diary.modules.provenance import unavailable_record
+from market_diary.modules.provenance import provenance_record, unavailable_record
 
 RISK_LEVELS_SOURCE = "Derived reference levels (round-number grid) and rule-based release schedule"
 
@@ -62,6 +62,9 @@ class RiskRadar:
                 "importance": item["impact"],
                 "channel_note": item["channel_note"],
                 "timing_confidence": item["timing_confidence"],
+                # A dated event must stay traceable to its publisher.
+                "source": "Rule-based CN/HK/US release schedule",
+                "source_url": item.get("source_url", ""),
             }
             for item in events
             if item["status"] == "upcoming"
@@ -242,11 +245,16 @@ def fetch_risk_data(current_prices: Dict = None) -> Dict:
             ),
         },
         "provenance": [
-            {
-                "source": "Risk and sentiment event feed",
-                "as_of": as_of,
-                "status": "partial_public",
-                "detail": RISK_LEVELS_SOURCE,
-            }
+            provenance_record(
+                source_name="Risk and sentiment event feed",
+                source_url="",
+                as_of=as_of,
+                source_type="derived",
+                status="partial_public",
+                # Levels and the event schedule are derived; geopolitical risk
+                # and sentiment remain unsourced, hence the low confidence.
+                confidence=0.5,
+                note=RISK_LEVELS_SOURCE,
+            )
         ],
     }

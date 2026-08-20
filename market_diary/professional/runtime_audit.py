@@ -36,8 +36,12 @@ FORBIDDEN_PHRASES = [
 
 NON_ENGLISH_SCRIPT_RE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]+")
 CLIPPED_CELL_RE = re.compile(r"(\.\.\.|…|\[trimmed\])\s*(?:\||$)", re.IGNORECASE)
-REPORT_TARGET_WORDS = (3000, 4500)
-REPORT_HARD_MAX_WORDS = 5200
+# Sized for a 20-30 minute commute read at roughly 200 wpm for dense analytical
+# prose. The previous 3000-4500 band was set when nearly a third of the report
+# was pipeline self-assessment; with that moved to audit/*.json the same budget
+# should now buy market content.
+REPORT_TARGET_WORDS = (4200, 6000)
+REPORT_HARD_MAX_WORDS = 7000
 WECOM_SAFE_MARKDOWN_BYTE_LIMIT = 3800
 
 
@@ -317,7 +321,10 @@ def audit_generated_run(
             "heading_count": heading_count,
             "target_words": list(REPORT_TARGET_WORDS),
             "hard_max_words": REPORT_HARD_MAX_WORDS,
-            "estimated_total_minutes": "35-50 including charts and optional appendix",
+            # Derived from the actual word count rather than asserted. The
+            # fixed "35-50 minutes" claim was roughly double the real length.
+            "estimated_read_minutes": round(word_count / 200.0, 1),
+            "reading_speed_wpm": 200,
         },
         "checked_files": {
             "report": str(report_path),

@@ -53,6 +53,8 @@ from market_diary.professional.date_policy import (
 )
 from market_diary.professional.fact_checker import apply_fact_check_fallbacks, run_fact_check
 from market_diary.professional.llm_enhancer import generate_llm_sections
+from market_diary.professional.call_scorecard import build_call_scorecard, recent_record
+from market_diary.professional.md_questions import build_md_questions
 from market_diary.professional.performance import refresh_performance_tracking
 from market_diary.professional.skill_shadow import generate_skill_shadow
 from market_diary.professional.metric_history import load_history as load_metric_history
@@ -749,6 +751,27 @@ def main() -> None:
     else:
         bundle["performance"] = {"status": "disabled", "methodology": {"look_ahead_guard": True}}
 
+    # Score the previously published call. This runs after the ledger refresh so
+    # it sees the latest closes, and only reads signals dated before today, so
+    # today's own call cannot mark its own homework.
+    try:
+        ledger_path = os.path.join(output_dir, "performance", "signal_ledger.json")
+        with open(ledger_path, "r", encoding="utf-8") as handle:
+            ledger = json.load(handle)
+        bundle["call_scorecard"] = build_call_scorecard(ledger, briefing_date)
+        bundle["call_record"] = recent_record(ledger, briefing_date)
+    except Exception as exc:
+        print(f"[runtime] Call scorecard failed (non-fatal): {_error_summary(exc)}")
+        bundle["call_scorecard"] = {"status": "error", "error": _error_summary(exc)}
+        bundle["call_record"] = {}
+
+    # Built after the scorecard so a broken call can become a question.
+    try:
+        bundle["md_questions"] = build_md_questions(bundle, metric_history)
+    except Exception as exc:
+        print(f"[runtime] Morning-meeting questions failed (non-fatal): {_error_summary(exc)}")
+        bundle["md_questions"] = []
+
     dashboard_rel_path = ""
     if should_render_dashboard:
         chart_dir = os.path.join(output_dir, "charts")
@@ -840,15 +863,18 @@ def main() -> None:
             print(f"[runtime] Prose guard flagged {len(prose_findings)} defect(s) in the rendered report.")
             for item in prose_findings[:5]:
                 print(f"          L{item['line']} [{item['rule']}] {item['text'][:100]}")
-            bundle["report_quality"] = build_report_quality(bundle)
-            report = render_professional_report(
-                bundle=bundle,
-                charts_section=charts_section,
-                dashboard_rel_path=dashboard_rel_path,
-                catalyst_radar_rel_path=catalyst_radar_rel_path,
-                daily_chart_rel_path=daily_chart_rel_path,
-                trend_pack_rel_path=trend_pack_rel_path,
-            )
+        # Always rescore and re-render, not only on findings: a clean run
+        # otherwise shipped carrying "prose guard did not run" and the grade
+        # ceiling that goes with it.
+        bundle["report_quality"] = build_report_quality(bundle)
+        report = render_professional_report(
+            bundle=bundle,
+            charts_section=charts_section,
+            dashboard_rel_path=dashboard_rel_path,
+            catalyst_radar_rel_path=catalyst_radar_rel_path,
+            daily_chart_rel_path=daily_chart_rel_path,
+            trend_pack_rel_path=trend_pack_rel_path,
+        )
     except Exception as exc:
         print(f"[runtime] Prose guard failed (non-fatal): {_error_summary(exc)}")
         bundle["prose_guard"] = {"status": "error", "error": _error_summary(exc)}

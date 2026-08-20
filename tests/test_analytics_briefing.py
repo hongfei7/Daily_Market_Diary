@@ -234,3 +234,22 @@ def test_company_event_monitor_expands_portfolio_filing() -> None:
 if __name__ == "__main__":
     test_briefing_builds_catalysts_links_and_must_watch()
     print("Analytics briefing test passed")
+
+
+def test_same_release_from_two_feeds_appears_once() -> None:
+    """The macro calendar and the risk feed share a release schedule.
+
+    The same event arrived as "China LPR (1Y / 5Y) (Upcoming)" from the macro
+    agenda and "CN China LPR (1Y / 5Y)" from the catalyst feed, so it took two
+    of the four checklist slots.
+    """
+    from professional.analytics_briefing import _dedupe_key
+
+    assert _dedupe_key("China LPR (1Y / 5Y) (Upcoming)") == _dedupe_key("CN China LPR (1Y / 5Y)")
+    assert _dedupe_key("US CPI (Released)") == _dedupe_key("US CPI")
+
+    # A graded news story is analysis, not the calendar entry, and stays distinct.
+    assert _dedupe_key("[A] US CPI") != _dedupe_key("US CPI (Upcoming)")
+
+    # Different events must not collapse.
+    assert _dedupe_key("China LPR (1Y / 5Y)") != _dedupe_key("Hong Kong CPI")

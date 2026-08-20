@@ -81,7 +81,7 @@ def build_email_text(bundle: Dict[str, Any]) -> str:
 
     lines = [
         f"HONG KONG MORNING BRIEF | {meta.get('briefing_date', meta.get('report_date', ''))}",
-        "Commute edition: 5-minute scan, 25-30 minute deep read, optional 10-15 minute appendix.",
+        "Commute edition: scan layer first, deep read next, appendix only if time allows.",
         f"Global through {meta.get('global_market_date', meta.get('effective_date', ''))} | HK/China through {meta.get('hk_data_date', meta.get('data_through', ''))}",
         "",
         f"BASE CASE: {pulse}",

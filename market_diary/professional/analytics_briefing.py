@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -11,6 +12,23 @@ def _clears_main_news_gate(news: Dict[str, Any]) -> bool:
     sector = str(news.get("sector", "") or "").lower()
     score = float(news.get("score", 0) or 0)
     return grade in {"A", "B"} and (sector != "other" or score >= 4.0)
+
+
+def _dedupe_key(title: Any) -> str:
+    """Reduce a checklist title to the event it names.
+
+    Strips a leading country code and a trailing status marker so the same
+    release presented by two feeds collapses to one entry.
+    """
+    text = str(title or "").strip()
+    # A graded news item ("[A] US CPI") is analysis and stays distinct from the
+    # calendar entry for the same release; only the country prefix and the
+    # status marker are normalised away.
+    if re.match(r"^\[[A-Z]\]\s", text):
+        return re.sub(r"\s+", " ", text).strip().lower()
+    text = re.sub(r"^[A-Z]{2}\s+", "", text)
+    text = re.sub(r"\s*\((?:Upcoming|Released|Central bank)\)\s*$", "", text, flags=re.IGNORECASE)
+    return re.sub(r"\s+", " ", text).strip().lower()
 
 
 def build_catalyst_calendar(
@@ -122,7 +140,23 @@ def build_catalyst_calendar(
             filtered.append(item)
 
     filtered.sort(key=lambda item: (sort_key(item)[0], sort_key(item)[1], -float(item.get("score", 0))))
-    return filtered
+
+    # The macro calendar and the risk feed are both driven by the same release
+    # schedule, so the same event arrived twice — once as "Upcoming" and once
+    # under its transmission channel — and showed up twice in the checklist.
+    # Keep the highest-scoring copy of each date/event pair.
+    deduped: List[Dict[str, Any]] = []
+    seen: set = set()
+    for item in filtered:
+        event = str(item.get("event", ""))
+        # Risk-feed entries prefix the country code ("CN China LPR (1Y / 5Y)").
+        normalized = re.sub(r"^[A-Z]{2}\s+", "", event).strip().lower()
+        key = (str(item.get("date", "")), normalized)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
 
 
 def build_source_links(
@@ -223,11 +257,17 @@ def build_must_watch(
         tracker_candidates = [item for item in high_frequency if item.get("category") in active_categories]
 
     for tracker in tracker_candidates[:top_trackers]:
+        # State why the item ranks where it does. Ordering is magnitude weighted
+        # by transmission to Hong Kong, so a large move in a weakly linked asset
+        # can rank below a smaller move in a directly linked one.
+        interpretation = tracker.get("interpretation", "")
+        relevance = tracker.get("relevance", "")
+        summary = f"{interpretation} ({relevance})" if relevance else interpretation
         items.append(
             {
                 "bucket": "High-frequency data",
                 "title": f"{tracker.get('label')} {tracker.get('change_display') or _format_signed(tracker.get('change_pct'))}",
-                "summary": tracker.get("interpretation", ""),
+                "summary": summary,
                 "score": int(float(tracker.get("priority", 0) or 0) * 10) + 40,
             }
         )
@@ -258,9 +298,14 @@ def build_must_watch(
     seen = set()
     for item in items:
         title = item.get("title")
-        if title in seen:
+        # Exact-title matching missed the same event arriving from two buckets:
+        # the macro agenda renders "China LPR (1Y / 5Y) (Upcoming)" while the
+        # catalyst feed renders "CN China LPR (1Y / 5Y)", so it appeared twice
+        # in the checklist. Compare on the event itself.
+        key = _dedupe_key(title)
+        if key in seen:
             continue
-        seen.add(title)
+        seen.add(key)
         deduped.append(item)
         if len(deduped) >= quick_limit:
             break

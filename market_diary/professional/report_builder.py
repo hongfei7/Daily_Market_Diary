@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from market_diary.professional.report_blocks import (
+    _render_ai_tmt_chain,
     _render_attribution,
+    _render_call_scorecard,
     _render_company_events,
     _render_catalyst_radar,
     _render_daily_one_chart,
@@ -15,6 +17,7 @@ from market_diary.professional.report_blocks import (
     _render_macro_table,
     _render_macro_takeaway,
     _render_macro_watchpoints,
+    _render_md_questions,
     _render_news_table,
     _render_overseas_review_block,
     _render_performance,
@@ -77,7 +80,7 @@ def render_professional_report(
 
     report = f"""# Morning Research Workbench | {briefing_date}
 
-> **Commute reading route:** `5-minute decision scan` → `25-30 minute deep read` → `10-15 minute optional appendix`
+> **Commute reading route:** `Layer 1 scan (5 min)` → `Layer 2 deep read` → `Layer 3 and appendix if time allows`
 >
 > Mode: `{day_mode.get('label', 'Trading day')}` | {day_mode.get('note', '')}
 
@@ -90,6 +93,9 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 ## Visual Dashboard
 
 {dashboard_md}{catalyst_radar_section}## {layer_one_title}
+
+### 1.1 Yesterday's Call
+{_render_call_scorecard(bundle)}
 
 ### 1.2 Global Asset Price Dashboard
 {_render_global_asset_dashboard(bundle)}
@@ -118,7 +124,10 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 ### 2.2 {hk_review_title}
 {non_trading_lens if not is_trading_day else ""}{_render_hk_review_block(bundle)}
 
-### 2.3 Flow Tracker and Attribution
+### 2.3 AI / TMT Read-Through
+{_render_ai_tmt_chain(bundle)}
+
+### 2.4 Flow Tracker and Attribution
 **Cross-Asset Attribution**
 
 {_render_attribution(bundle)}
@@ -127,7 +136,7 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 
 {_render_flow_tracker(bundle)}
 
-### 2.4 Macro and Policy Tracking
+### 2.5 Macro and Policy Tracking
 {_render_macro_takeaway(macro_takeaway)}
 
 {_render_macro_watchpoints(llm_sections)}
@@ -139,12 +148,15 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 {_render_flows(bundle)}
 {"".join(f"- Geopolitics: {item.get('region', '')} | {item.get('event', '')} | Impact: {item.get('impact', '')}\n" for item in ((bundle.get('risk', {}) or {}).get('geopolitical_risks', []) or [])[:3])}
 
-### 2.5 Company Catalysts and Risk Monitor
+### 2.6 Company Catalysts and Risk Monitor
 {_render_news_table(bundle)}
 
 {_render_company_events(bundle)}
 
-### 2.6 Today's Core Names
+### 2.7 Questions to Expect This Morning
+{_render_md_questions(bundle)}
+
+### 2.8 Today's Core Names
 {_render_watchlists(bundle, item_limit=2, story_limit=1, bucket_order=["Core coverage", "Priority follow-up"])}
 
 ## Layer 3 | Decision Deepening (10-15 min)

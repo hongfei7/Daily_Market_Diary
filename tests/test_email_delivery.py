@@ -146,7 +146,10 @@ def main() -> None:
     assert "Turnover HK$207.9bn" in wecom
     assert "SS 15.2%" in wecom
     assert "reports_professional/archive/2026-04-13/morning_briefing.md" in wecom
-    assert "Open full report | 35-50 min" in wecom
+    # The "35-50 min" claim was roughly double the report's real length, so the
+    # link no longer asserts a duration it cannot verify.
+    assert "Open full report" in wecom
+    assert "35-50" not in wecom
 
     print("Email delivery test passed")
 

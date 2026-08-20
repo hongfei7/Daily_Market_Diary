@@ -6,7 +6,7 @@ from pathlib import Path
 
 from _bootstrap import ROOT  # noqa: F401
 
-from professional.runtime_audit import audit_generated_run
+from professional.runtime_audit import REPORT_HARD_MAX_WORDS, audit_generated_run
 
 
 REPORT_BODY = """# Morning Research Workbench | 2026-04-14
@@ -124,7 +124,9 @@ def main() -> None:
         assert commute_length_audit["status"] == "ok"
 
         (root / "2026-04-14_morning_briefing.md").write_text(
-            REPORT_BODY + "\n" + ("evidence " * 5300),
+            # Derived from the limit so raising the budget does not silently disable
+            # this guard, as a hardcoded 5300 did when the max moved to 7000.
+            REPORT_BODY + "\n" + ("evidence " * (REPORT_HARD_MAX_WORDS + 200)),
             encoding="utf-8",
         )
         overlong_audit = audit_generated_run(
