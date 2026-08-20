@@ -271,9 +271,13 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
     china_10y_metric = _bundle_metric(bundle, "china_rates", "china_10y")
     spread_metric = _bundle_metric(bundle, "china_rates", "cn_us_10y_spread")
 
+    # Kept deliberately tight for the five-minute scan. SOXX earns a place
+    # because the overnight semis tape leads Hong Kong tech more directly than
+    # broad US beta; the rest of the AI/TMT chain has its own block in Layer 2.
     main_labels = {
         "S&P 500",
         "Nasdaq 100",
+        "Semiconductors (SOXX)",
         "Hang Seng Index",
         "Hang Seng TECH ETF (3033.HK)",
         "US 10Y",

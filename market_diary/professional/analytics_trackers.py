@@ -41,7 +41,59 @@ def _tracker_interpretation(label: str, change_value: Optional[float], chart_fea
     return "Keep tracking it to confirm whether the core daily narrative is holding."
 
 
-def build_high_frequency_trackers(summary: Dict[str, Any], chart_features: Dict[str, Any]) -> List[Dict[str, Any]]:
+# How strongly a move in each instrument transmits to Hong Kong equities, for a
+# desk covering AI / TMT. Ranking on raw magnitude alone put Bitcoin +7.48% and
+# Gold +4.92% at the top of the morning checklist on 2026-08-20, ahead of
+# everything that actually bears on Hong Kong tech.
+HK_TRANSMISSION_WEIGHTS: Dict[str, float] = {
+    # Direct read-through to the Hong Kong tech complex.
+    "Nasdaq 100": 1.0,
+    "SOXX": 1.0,
+    "TSMC": 1.0,
+    "NVDA": 1.0,
+    "3033.HK ETF": 1.0,
+    "USD/CNH": 1.0,
+    # Broad beta and the rates channel through the peg.
+    "S&P 500": 0.7,
+    "US 10Y": 0.7,
+    # Macro colour: real but second-order for a TMT desk.
+    "DXY": 0.4,
+    "Copper": 0.4,
+    "WTI crude": 0.4,
+    "VIX": 0.6,
+    # Weakly connected to Hong Kong tech; kept for cross-asset context only.
+    "Gold": 0.15,
+    "Bitcoin": 0.15,
+}
+DEFAULT_TRANSMISSION_WEIGHT = 0.5
+
+
+def transmission_weight(label: str, overrides: Optional[Dict[str, Any]] = None) -> float:
+    """Weight a move by how strongly it reaches Hong Kong equities."""
+    if overrides:
+        try:
+            return float(overrides[label])
+        except (KeyError, TypeError, ValueError):
+            pass
+    return HK_TRANSMISSION_WEIGHTS.get(label, DEFAULT_TRANSMISSION_WEIGHT)
+
+
+def _relevance_note(label: str, weight: float) -> str:
+    """Say why an item earned its place, so the ranking is auditable."""
+    if weight >= 1.0:
+        return "direct read-through to HK tech"
+    if weight >= 0.7:
+        return "broad beta / rates channel"
+    if weight >= 0.4:
+        return "second-order macro context"
+    return "weak HK linkage; context only"
+
+
+def build_high_frequency_trackers(
+    summary: Dict[str, Any],
+    chart_features: Dict[str, Any],
+    weight_overrides: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
     tracked = [
         ("Rates", "10Y Treasury", "US 10Y"),
         ("FX", "DXY", "DXY"),
@@ -51,6 +103,9 @@ def build_high_frequency_trackers(summary: Dict[str, Any], chart_features: Dict[
         ("Commodities", "Copper", "Copper"),
         ("Crypto", "Bitcoin", "Bitcoin"),
         ("Vol", "VIX", "VIX"),
+        ("Equities", "Semiconductors (SOXX)", "SOXX"),
+        ("Equities", "TSMC ADR", "TSMC"),
+        ("Equities", "NVIDIA", "NVDA"),
     ]
     rows: List[Dict[str, Any]] = []
     for category, name, label in tracked:
@@ -58,6 +113,8 @@ def build_high_frequency_trackers(summary: Dict[str, Any], chart_features: Dict[
         if not item:
             continue
         change_value, change_unit = summary_change(item)
+        magnitude = abs(change_value or 0.0) / (10.0 if change_unit == "bp" else 1.0)
+        weight = transmission_weight(label, weight_overrides)
         rows.append(
             {
                 "label": label,
@@ -69,7 +126,10 @@ def build_high_frequency_trackers(summary: Dict[str, Any], chart_features: Dict[
                 "change_display": format_summary_change(item),
                 "change_pct": change_value if change_unit == "pct" else None,
                 "interpretation": _tracker_interpretation(label, change_value, chart_features),
-                "priority": abs(change_value or 0.0) / (10.0 if change_unit == "bp" else 1.0),
+                "priority": magnitude * weight,
+                "raw_magnitude": magnitude,
+                "hk_weight": weight,
+                "relevance": _relevance_note(label, weight),
             }
         )
     rows.sort(key=lambda row: row.get("priority", 0), reverse=True)

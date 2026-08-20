@@ -98,6 +98,14 @@ def build_market_snapshot(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
         ("Equities", "Hang Seng China Enterprises", "HSCEI", "China SOE / H-share tone"),
         ("Equities", "Hang Seng TECH ETF", "3033.HK ETF", "Hong Kong growth / internet proxy"),
         ("Equities", "China Large-Cap (FXI)", "China proxy (FXI)", "China sentiment"),
+        # AI / TMT read-through chain: overnight semis lead the Hong Kong tech
+        # complex more directly than broad US beta does.
+        ("Equities", "Semiconductors (SOXX)", "SOXX", "AI / semis cycle"),
+        ("Equities", "TSMC ADR", "TSMC", "Foundry demand and AI capacity"),
+        ("Equities", "NVIDIA", "NVDA", "AI capex narrative"),
+        ("Equities", "SMIC", "SMIC", "HK semis expression"),
+        ("Equities", "Hua Hong Semiconductor", "Hua Hong", "Mature-node cycle"),
+        ("Equities", "Sunny Optical", "Sunny Optical", "Hardware / optics supply chain"),
         ("Rates", "10Y Treasury", "US 10Y", "Rates path"),
         ("FX", "DXY", "DXY", "Global liquidity"),
         ("FX", "USD/CNH", "USD/CNH", "China FX sentiment"),

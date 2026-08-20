@@ -55,6 +55,50 @@ INSTRUMENTS: Dict[tuple[str, str], Dict[str, str]] = {
         "price_unit": "HKD_per_share",
         "change_unit": "pct",
     },
+    # AI / semiconductor complex: the overnight leg (SOXX, TSM, NVDA) and the
+    # Hong Kong names that read through from it.
+    ("Equities", "Semiconductors (SOXX)"): {
+        "instrument_id": "etf.us.soxx",
+        "display_name": "Semiconductors (SOXX)",
+        "security_type": "etf",
+        "price_unit": "USD_per_share",
+        "change_unit": "pct",
+    },
+    ("Equities", "TSMC ADR"): {
+        "instrument_id": "equity.us.tsm",
+        "display_name": "TSMC ADR (TSM)",
+        "security_type": "adr",
+        "price_unit": "USD_per_share",
+        "change_unit": "pct",
+    },
+    ("Equities", "NVIDIA"): {
+        "instrument_id": "equity.us.nvda",
+        "display_name": "NVIDIA (NVDA)",
+        "security_type": "equity",
+        "price_unit": "USD_per_share",
+        "change_unit": "pct",
+    },
+    ("Equities", "SMIC"): {
+        "instrument_id": "equity.hk.0981",
+        "display_name": "SMIC (0981.HK)",
+        "security_type": "equity",
+        "price_unit": "HKD_per_share",
+        "change_unit": "pct",
+    },
+    ("Equities", "Hua Hong Semiconductor"): {
+        "instrument_id": "equity.hk.1347",
+        "display_name": "Hua Hong Semiconductor (1347.HK)",
+        "security_type": "equity",
+        "price_unit": "HKD_per_share",
+        "change_unit": "pct",
+    },
+    ("Equities", "Sunny Optical"): {
+        "instrument_id": "equity.hk.2382",
+        "display_name": "Sunny Optical (2382.HK)",
+        "security_type": "equity",
+        "price_unit": "HKD_per_share",
+        "change_unit": "pct",
+    },
     ("Rates", "13W T-Bill"): {
         "instrument_id": "yield.us.13w",
         "display_name": "US 13W T-Bill Yield",

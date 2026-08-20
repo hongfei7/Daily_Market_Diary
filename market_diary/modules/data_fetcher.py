@@ -58,6 +58,15 @@ TICKERS = {
         "Nikkei 225": "^N225",
         "Shanghai Composite": "000001.SS",
         "China Large-Cap (FXI)": "FXI",
+        # AI / semiconductor complex. The overnight semis tape is the most
+        # direct external driver of Hong Kong tech, and it was absent entirely.
+        # SOXX (ETF) rather than ^SOX: the index is unreliable on the free feed.
+        "Semiconductors (SOXX)": "SOXX",
+        "TSMC ADR": "TSM",
+        "NVIDIA": "NVDA",
+        "SMIC": "0981.HK",
+        "Hua Hong Semiconductor": "1347.HK",
+        "Sunny Optical": "2382.HK",
     },
     "Vol": {
         "VIX": "^VIX",
@@ -101,6 +110,12 @@ PLOT_ALIASES = {
     ("Equities", "Nikkei 225"): "NIKKEI225",
     ("Equities", "Shanghai Composite"): "SHCOMP",
     ("Equities", "China Large-Cap (FXI)"): "FXI",
+    ("Equities", "Semiconductors (SOXX)"): "SOXX",
+    ("Equities", "TSMC ADR"): "TSM",
+    ("Equities", "NVIDIA"): "NVDA",
+    ("Equities", "SMIC"): "SMIC_0981",
+    ("Equities", "Hua Hong Semiconductor"): "HUAHONG_1347",
+    ("Equities", "Sunny Optical"): "SUNNY_2382",
     ("Vol", "VIX"): "VIX",
     ("Vol", "MOVE"): "MOVE",
     ("Credit", "IG (LQD)"): "LQD",
