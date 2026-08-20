@@ -46,9 +46,23 @@ def _wrap_text(value: Any, width: int, max_lines: int) -> str:
     lines = textwrap.wrap(text, width=width, break_long_words=False, break_on_hyphens=False)
     if len(lines) > max_lines and lines:
         clipped = lines[:max_lines]
-        clipped[-1] = textwrap.shorten(clipped[-1], width=max(12, width - 2), placeholder="...")
+        # textwrap.shorten only appends the placeholder when the text exceeds
+        # the width; a wrapped line never does, so the mark was never emitted
+        # and captions ended mid-sentence with no sign of being cut.
+        clipped[-1] = _mark_clipped(clipped[-1], width)
         return "\n".join(clipped)
     return "\n".join(lines)
+
+
+def _mark_clipped(line: str, width: int) -> str:
+    """Append an explicit clip mark, trimming words only if needed to fit."""
+    text = line.rstrip(" ,;:-")
+    if len(text) + 1 <= width:
+        return f"{text}…"
+    words = text.split()
+    while words and len(" ".join(words)) + 1 > width:
+        words.pop()
+    return f"{' '.join(words).rstrip(' ,;:-')}…" if words else "…"
 
 
 def _summary_pct(bundle: Dict[str, Any], category: str, name: str) -> float | None:
@@ -210,8 +224,8 @@ def _choose_story(bundle: Dict[str, Any]) -> Dict[str, Any]:
                 ("Top pressure", f"{_ticker_label(top_name)} {(_parse_float(top_name.get('short_ratio_pct')) or 0):.1f}%"),
             ],
             "watch_points": [
-                "If ETF-heavy pressure dominates, the move is more about macro hedging than company-specific stress.",
-                "If watchlist names dominate, the desk should prepare for stock-specific follow-up questions.",
+                "ETF-heavy pressure points to macro hedging, not company stress.",
+                "Watchlist names dominating means expect stock-specific questions.",
             ],
         }
 

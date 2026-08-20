@@ -50,8 +50,23 @@ def _wrap_text(value: Any, width: int, max_lines: int = 2) -> str:
         return ""
     clipped = lines[:max_lines]
     if len(lines) > max_lines and clipped:
-        clipped[-1] = textwrap.shorten(clipped[-1], width=max(10, width - 2), placeholder=CHART_CLIP_MARK)
+        # textwrap.shorten only appends the placeholder when the text exceeds
+        # the width, but a wrapped line is already under it by construction, so
+        # the mark never appeared and captions lost their tail silently
+        # ("...unavailable fields stay out of the"). Append it directly.
+        clipped[-1] = _mark_clipped(clipped[-1], width)
     return "\n".join(clipped)
+
+
+def _mark_clipped(line: str, width: int) -> str:
+    """Append the clip mark, trimming words only if needed to stay in width."""
+    text = line.rstrip(" ,;:-")
+    if len(text) + len(CHART_CLIP_MARK) <= width:
+        return f"{text}{CHART_CLIP_MARK}"
+    words = text.split()
+    while words and len(" ".join(words)) + len(CHART_CLIP_MARK) > width:
+        words.pop()
+    return f"{' '.join(words).rstrip(' ,;:-')}{CHART_CLIP_MARK}" if words else CHART_CLIP_MARK
 
 
 def _wrap_segments(value: Any, primary_width: int = 18, secondary_width: int = 24, max_lines: int = 2) -> str:
@@ -136,16 +151,21 @@ def _panel_title(ax, title: str, subtitle: str = "") -> None:
 
 def _top_snapshot_rows(bundle: Dict[str, Any]) -> List[Dict[str, Any]]:
     rows = (bundle.get("overview", {}) or {}).get("snapshot_rows", []) or []
+    # Ordered by how directly each line bears on a Hong Kong AI/TMT desk. SOXX
+    # sits with the US indices because the overnight semis tape leads the Hong
+    # Kong tech complex more directly than broad beta does. Gold and Bitcoin are
+    # cross-asset context and rank last.
     priority_order = [
         "S&P 500",
         "Nasdaq 100",
+        "SOXX",
         "Hang Seng Index",
         "3033.HK ETF",
+        "SMIC",
         "China proxy (FXI)",
         "DXY",
-        "WTI crude",
-        "Gold",
         "VIX",
+        "Gold",
     ]
     table = {}
     for row in rows:
@@ -185,11 +205,24 @@ def _dashboard_label(label: Any) -> str:
         "Hang Seng TECH ETF (3033.HK)": "3033 ETF",
         "3033.HK ETF": "3033 ETF",
         "China proxy (FXI)": "FXI",
+        # The registry display name reached the axis unmapped and was shortened
+        # to "China…", which named nothing.
+        "China Large-Cap (FXI)": "FXI",
         "US 10Y": "US 10Y",
         "DXY": "DXY",
         "WTI crude": "WTI",
         "Gold": "Gold",
         "VIX": "VIX",
+        "Semiconductors (SOXX)": "SOXX",
+        "SOXX": "SOXX",
+        "TSMC ADR (TSM)": "TSMC",
+        "TSMC": "TSMC",
+        "NVIDIA (NVDA)": "NVDA",
+        "NVDA": "NVDA",
+        "SMIC (0981.HK)": "SMIC",
+        "SMIC": "SMIC",
+        "Hua Hong Semiconductor (1347.HK)": "Hua Hong",
+        "Sunny Optical (2382.HK)": "Sunny Opt",
     }
     return mapping.get(str(label or ""), textwrap.shorten(str(label or "N/A"), width=12, placeholder=CHART_CLIP_MARK))
 
@@ -251,7 +284,7 @@ def _hk_metric_cards(bundle: Dict[str, Any]) -> List[Dict[str, str]]:
 def _draw_metric_cards(ax, cards: List[Dict[str, str]]) -> None:
     ax.axis("off")
     _panel(ax)
-    _panel_title(ax, "Hong Kong confirmation", "Local evidence only; unavailable fields stay out of the signal")
+    _panel_title(ax, "Hong Kong confirmation", "Local evidence only; unavailable fields are excluded")
 
     tile_w = 0.435
     tile_h = 0.16

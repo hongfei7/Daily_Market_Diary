@@ -111,7 +111,11 @@ def parse_archived_report(path: Path) -> Tuple[Dict[str, Any] | None, Dict[str, 
     text = path.read_text(encoding="utf-8", errors="replace")
     heading = re.search(r"^# Morning Research Workbench \| (\d{4}-\d{2}-\d{2})", text, re.MULTILINE)
     report_date = _parse_date(heading.group(1) if heading else path.parent.name)
-    effective = re.search(r"Market effective date:\s*`([^`]+)`", text)
+    # The header was reworded on 2026-08-01 from "Market effective date: `X`" to
+    # "Market effective `X`". Only the old spelling was matched, so every report
+    # from that date on yielded no observation and no signal, silently freezing
+    # the performance ledger on pre-August data. Accept both.
+    effective = re.search(r"Market effective(?:\s+date)?:?\s*`([^`]+)`", text)
     market_as_of = _parse_date(effective.group(1) if effective else "")
     risk = re.search(r"Composite risk score:\*\*\s*`?([0-9.]+)/100`?\s*\|\s*\*\*Regime:\*\*\s*`?([^`\n]+?)`?\s*$", text, re.MULTILINE)
     if not risk:
