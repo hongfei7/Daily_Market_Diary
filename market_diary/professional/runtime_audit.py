@@ -8,24 +8,52 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 
+# Section titles, never section numbers. Numbers are positional: inserting a
+# section renumbers everything after it, and a contract written against
+# "### 2.3 Flow Tracker and Attribution" then reports the section as missing
+# even though it is present as 2.4. Titles are stable, so the contract is
+# written against those and the number is matched loosely.
 REQUIRED_REPORT_SECTION_GROUPS = [
     ("Visual dashboard", ("## Visual Dashboard",)),
     ("Catalyst event radar", ("![Catalyst & Event Radar]",)),
-    ("Global asset dashboard", ("### 1.2 Global Asset Price Dashboard",)),
+    ("Global asset dashboard", ("Global Asset Price Dashboard",)),
     (
         "Hong Kong quick check",
         (
-            "### 1.3 Hong Kong Key Data Quick Check",
-            "### 1.3 Hong Kong Weekly Tape Quick Check",
-            "### 1.3 Hong Kong Last Cash-Tape Quick Check (Reference)",
+            # Legitimate variants that switch with the trading-day mode.
+            "Hong Kong Key Data Quick Check",
+            "Hong Kong Weekly Tape Quick Check",
+            "Hong Kong Last Cash-Tape Quick Check (Reference)",
         ),
     ),
-    ("Flow tracker", ("### 2.3 Flow Tracker and Attribution",)),
+    ("Flow tracker", ("Flow Tracker and Attribution",)),
     ("Stock Connect active names", ("**Stock Connect Southbound Active Names**",)),
     ("A/H premium dispersion", ("**AH Premium Dispersion**",)),
-    ("Daily one chart", ("### 3.3 Daily One Chart",)),
-    ("Report quality", ("### Report Quality and Validation",)),
+    ("Daily one chart", ("Daily One Chart",)),
+    ("Report quality", ("Report Quality and Validation",)),
 ]
+
+# Headings become entries in the generated table of contents
+# (_structure_report_html) and are hidden by the print stylesheet, so more of
+# them improves navigation on the phone without costing anything on paper. The
+# cap only guards against genuine fragmentation.
+MAX_REPORT_HEADINGS = 34
+
+
+def _section_present(report_text: str, marker: str) -> bool:
+    """Whether a required section marker appears in the report.
+
+    Markers carrying their own markup (``## Visual Dashboard``, ``**Stock
+    Connect...**``, ``![Catalyst...]``) are matched literally. A bare title is
+    matched as a heading with any numbering, so inserting a section and shifting
+    ``2.3`` to ``2.4`` cannot report a present section as missing — while a
+    passing mention of the title in prose still does not satisfy the contract.
+    """
+    if marker.startswith(("#", "*", "!", "[")):
+        return marker in report_text
+    pattern = rf"^#{{2,4}}\s+(?:[\d.]+\s+)?{re.escape(marker)}\s*$"
+    return re.search(pattern, report_text, re.MULTILINE) is not None
+
 
 FORBIDDEN_PHRASES = [
     "Pending adapter",
@@ -191,11 +219,14 @@ def audit_generated_run(
         warnings.append(
             f"Report is {word_count} words; verify that the deep-read layer is sufficient for a one-hour commute."
         )
-    if heading_count > 28:
-        warnings.append(f"Report has {heading_count} headings; reduce navigation fragmentation below 28 where practical.")
+    if heading_count > MAX_REPORT_HEADINGS:
+        warnings.append(
+            f"Report has {heading_count} headings; reduce navigation fragmentation below "
+            f"{MAX_REPORT_HEADINGS} where practical."
+        )
 
     for label, markers in REQUIRED_REPORT_SECTION_GROUPS:
-        if not any(marker in report_text for marker in markers):
+        if not any(_section_present(report_text, marker) for marker in markers):
             errors.append(f"Missing required report section group: {label} ({' OR '.join(markers)})")
 
     for phrase in FORBIDDEN_PHRASES:
