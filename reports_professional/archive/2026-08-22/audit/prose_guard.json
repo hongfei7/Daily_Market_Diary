@@ -1,0 +1,17 @@
+{
+  "by_rule": {
+    "sentence_fragment": 1
+  },
+  "findings": [
+    {
+      "detail": "Sentence ends on a function word",
+      "line": 149,
+      "rule": "sentence_fragment",
+      "text": "Coverage caveat. 3033.HK ETF was stale (2 trading days old). Those names are excluded from the averages above."
+    }
+  ],
+  "read": "1 prose defect(s) detected: 1 sentence_fragment.",
+  "score": 80.0,
+  "status": "warning",
+  "total": 1
+}
