@@ -141,6 +141,18 @@ def build_professional_bundle(
     hk_quick_checks = build_hk_quick_checks(summary, movers_data, hk_desk_view, hk_local_metrics)
     company_events = build_company_event_digest(sector_data, sector_digest)
     attribution = build_attribution(summary, hk_local_metrics, movers_digest, overview)
+
+    # One regime label, not two. The overview derives its own vote-count regime
+    # while the composite score derives a weighted one, and both were printed:
+    # the theme could read "Risk-On" while the Decision Board directly below
+    # read "Mixed". The composite score wins because it is weighted, carries its
+    # evidence components, and now includes the semiconductor term.
+    composite_bucket = ((attribution.get("risk_dashboard", {}) or {}).get("bucket") or "").strip()
+    if composite_bucket:
+        overview["risk_regime"] = composite_bucket
+        tail = overview.get("theme_tail")
+        if tail:
+            overview["theme"] = f"{composite_bucket} backdrop with {tail}"
     flow_tracker = build_flow_tracker(hk_quick_checks, movers_digest, attribution, stock_connect_data, ah_premium_data)
     theme_deep_dive = build_theme_deep_dive(morning_date, config, sector_digest, watchlists, high_frequency, catalysts)
     today_forward = build_today_forward(morning_date, macro_agenda, catalysts, day_mode=day_mode)

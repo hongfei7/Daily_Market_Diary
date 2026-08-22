@@ -419,7 +419,7 @@ def _flow_focus(bundle: Dict[str, Any]) -> Tuple[str, str, List[Tuple[str, float
             rows.append((label, net, _name_note(item, max_width=18)))
         return (
             "Flow concentration",
-            "Top Southbound active names by net buy / sell",
+            "Top Southbound names · narrow flow is not confirmation",
             rows,
             "Net buy / sell (HKD mn)",
         )
@@ -488,7 +488,15 @@ def _draw_flow_focus(ax, bundle: Dict[str, Any]) -> None:
     max_abs = max(max((abs(value) for value in values), default=1.0), 1.0)
     ax.barh(labels, values, color=colors, height=0.55)
     ax.axvline(0, color="#98a2b3", linewidth=1.0)
-    ax.set_xlim(min(0.0, min(values or [0])) - max_abs * 0.12, max(0.0, max(values or [0])) + max_abs * 0.20)
+    # Pad only the side that actually has bars. Adding 20% headroom to the
+    # positive side on an all-negative day left roughly a sixth of the panel
+    # empty, and value labels sit beyond the bar tip, so the padding belongs on
+    # whichever side the bars point.
+    low = min(values or [0.0])
+    high = max(values or [0.0])
+    left = min(0.0, low) - (max_abs * 0.22 if low < 0 else max_abs * 0.02)
+    right = max(0.0, high) + (max_abs * 0.22 if high > 0 else max_abs * 0.02)
+    ax.set_xlim(left, right)
     ax.set_ylim(-1.15, len(labels) + 1.60)
     ax.tick_params(axis="x", labelsize=8.8, colors=SLATE)
     ax.tick_params(axis="y", labelsize=10.0, colors=INK, pad=7)
@@ -506,15 +514,10 @@ def _draw_flow_focus(ax, bundle: Dict[str, Any]) -> None:
             fontweight="bold",
             clip_on=False,
         )
-    ax.text(
-        0.99,
-        0.05,
-        "Read concentration before the headline aggregate; a narrow flow is not broad confirmation.",
-        transform=ax.transAxes,
-        fontsize=8.7,
-        color=SLATE,
-        ha="right",
-    )
+    # This guidance used to sit inside the axes at y=0.05, where it ran straight
+    # through the longest bar. Moving it below the axes only traded one overlap
+    # for another with the figure caption, so it now lives in the panel subtitle
+    # where it needs no space of its own.
 
 
 def _watchlist_rows(bundle: Dict[str, Any]) -> List[Tuple[str, str, str, str]]:
@@ -722,7 +725,14 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     if not rows:
         _draw_evidence_coverage(ax_regime, bundle)
     else:
-        _panel_title(ax_regime, "Global regime", "Comparable 1D returns; colors reflect HK decision impact")
+        # The old subtitle asserted that colour carried meaning without saying
+        # what it meant, so a reader could not tell that a falling dollar is
+        # blue because it helps Hong Kong, not because it rose.
+        _panel_title(
+            ax_regime,
+            "Global regime",
+            "1D returns · blue helps Hong Kong, orange hurts",
+        )
         raw_labels = [row.get("label", "") for row in rows]
         labels = [_dashboard_label(label) for label in raw_labels]
         values = [float(row.get("change_pct", 0) or 0) for row in rows]

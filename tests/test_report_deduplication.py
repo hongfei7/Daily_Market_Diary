@@ -66,7 +66,21 @@ def test_style_call_appears_once_outside_the_summary():
     report = _report()
     assert "**Desk lens.**" not in report
     assert "**Investment read.**" not in report
-    assert "set out in Section 2.2" in report
+    assert "set out in the Hong Kong review below" in report
+
+
+def test_cross_references_use_section_names_not_numbers():
+    """Numbers shift when a section is inserted; names do not.
+
+    Adding "2.3 AI / TMT Read-Through" pushed Flow Tracker to 2.4 and left three
+    body references pointing at the wrong section — the same coupling that broke
+    the release audit.
+    """
+    import re
+
+    report = _report()
+    stale = re.findall(r"(?<!### )Section \d\.\d", report)
+    assert not stale, f"cross-references must name the section, not its number: {stale}"
 
 
 def test_no_prose_line_repeats_verbatim():

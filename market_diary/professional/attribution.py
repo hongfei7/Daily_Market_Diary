@@ -140,6 +140,7 @@ def build_attribution(
     hscei = _summary_pct(summary, "Equities", "Hang Seng China Enterprises")
     hstech = _summary_pct(summary, "Equities", "Hang Seng TECH ETF")
     fxi = _summary_pct(summary, "Equities", "China Large-Cap (FXI)")
+    soxx = _summary_pct(summary, "Equities", "Semiconductors (SOXX)")
     dxy = _summary_pct(summary, "FX", "DXY")
     usdcnh = _summary_pct(summary, "FX", "USD/CNH")
     us10y, us10y_unit = summary_change(_summary_item(summary, "Rates", "10Y Treasury"))
@@ -258,6 +259,14 @@ def build_attribution(
         delta = max(min(hstech * 5, 10), -10)
         risk_score += delta
         add_component("HK growth ETF proxy", delta, f"3033.HK ETF {hstech:+.2f}%")
+    # The semiconductor complex is the most direct overnight driver of Hong Kong
+    # tech, and the score had no term for it: on 2026-08-19 it read "Risk-on
+    # 72.2" while SOXX fell 2.21% and SMIC 3.76%, contradicting the chart printed
+    # directly beneath it. Sized between US beta and the China proxy.
+    if soxx is not None:
+        delta = max(min(soxx * 5, 9), -9)
+        risk_score += delta
+        add_component("Semis complex", delta, f"SOXX {soxx:+.2f}%")
     if fxi is not None:
         delta = max(min(fxi * 5, 8), -8)
         risk_score += delta

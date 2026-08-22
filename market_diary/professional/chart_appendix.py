@@ -91,17 +91,9 @@ def render_chart_appendix(
             lines.append(f"- Cross-asset: {bullet}")
         lines.append("")
 
-    components = risk.get("components", []) or []
-    if components:
-        lines.append("### Risk Dashboard Components")
-        rows = [
-            (
-                item.get("label", ""),
-                f"{item.get('delta', 0):+}",
-                str(item.get("evidence", "") or "")[:84],
-            )
-            for item in components[:6]
-        ]
-        lines.append(_make_table(["Component", "Score impact", "Evidence"], rows))
+    # The component table used to be repeated here in full while Section 1.4
+    # showed only the first four rows, so the complete breakdown lived in the
+    # appendix and the visible one did not add up. Section 1.4 now carries every
+    # component and this copy is redundant.
 
     return "\n".join(line for line in lines if line is not None).strip()

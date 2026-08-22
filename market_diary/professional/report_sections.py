@@ -111,6 +111,24 @@ def _cross_asset_move(bundle: Dict[str, Any], category: str, name: str) -> float
     return _summary_pct(bundle, category, name)
 
 
+def _attributed_driver(candidates: Sequence[tuple]) -> str:
+    """Pick the first candidate driver whose move clears its threshold.
+
+    Each candidate is ``(value, threshold, phrase)``. A negative threshold means
+    the driver counts when the value falls below it. Returning "" is meaningful:
+    it says no field in the report explains the move, which the caller reports
+    honestly rather than papering over.
+    """
+    for value, threshold, phrase in candidates:
+        if value is None:
+            continue
+        if threshold < 0 and value <= threshold:
+            return phrase
+        if threshold > 0 and value >= threshold:
+            return phrase
+    return ""
+
+
 def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple[str, str]:
     direction = _signal_direction(move)
     spx = _cross_asset_move(bundle, "Equities", "S&P 500")
@@ -121,17 +139,53 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
     dxy = _cross_asset_move(bundle, "FX", "DXY")
     cnh = _cross_asset_move(bundle, "FX", "USD/CNH")
     copper = _cross_asset_move(bundle, "Commodities", "Copper")
+    fxi_move = _cross_asset_move(bundle, "Equities", "China Large-Cap (FXI)")
+    soxx = _cross_asset_move(bundle, "Equities", "Semiconductors (SOXX)")
     vix = _cross_asset_move(bundle, "Vol", "VIX")
 
+    # Each row should say *why* the move happened, citing another field already
+    # in the report, rather than translating the sign back into English. When no
+    # driver can be identified from the available fields, say so instead of
+    # inventing one.
     if name == "S&P 500":
-        interpretation = (
-            "US beta improved, raising the global risk floor for Hong Kong."
-            if direction > 0
-            else "US beta weakened, reducing the external risk cushion for Hong Kong."
-            if direction < 0
-            else "US beta was flat and offers little directional lead for Hong Kong."
+        driver = _attributed_driver(
+            [
+                (vix, -2.0, "as volatility drained out of the tape"),
+                (us10y, -4.0, "helped by lower US yields"),
+                (dxy, -0.4, "with a softer dollar easing financial conditions"),
+            ]
         )
-        check = "Confirm with Nasdaq breadth and a same-direction VIX move; invalidate if offshore-China proxies diverge."
+        if direction == 0:
+            interpretation = "US beta was flat and offers little directional lead for Hong Kong."
+        else:
+            moved = "rose" if direction > 0 else "fell"
+            interpretation = (
+                f"Broad US risk {moved} {driver}, which sets the external floor Hong Kong opens against."
+                if driver
+                else f"Broad US risk {moved} without a clear driver in today's fields; treat it as beta, not a signal."
+            )
+        check = "Watch whether Nasdaq and offshore-China proxies move the same way."
+    elif name == "Semiconductors (SOXX)":
+        relative = None if soxx is None or nasdaq is None else soxx - nasdaq
+        if relative is not None and relative < -0.5:
+            interpretation = (
+                f"Semis underperformed the Nasdaq by {abs(relative):.2f}pp, so this is a cycle move "
+                "rather than broad growth weakness."
+            )
+        elif relative is not None and relative > 0.5:
+            interpretation = (
+                f"Semis led the Nasdaq by {relative:.2f}pp, putting the AI capex trade back in front."
+            )
+        else:
+            interpretation = "Semis moved with the Nasdaq, so the tape is broad rather than cycle-specific."
+        check = "SMIC and Hua Hong at the open show whether it transmits to Hong Kong."
+    elif name == "SMIC":
+        relative = None if soxx is None else (_signal_direction(move) or 0)
+        interpretation = (
+            "The local expression of the overnight semis move; compare it with SOXX to separate "
+            "the global cycle from single-name news."
+        )
+        check = "A move far larger than SOXX points to company-specific news, not the cycle."
     elif name == "Nasdaq 100":
         relative = None if nasdaq is None or spx is None else nasdaq - spx
         if relative is not None and relative > 0.15:
@@ -140,16 +194,32 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             interpretation = "Growth lagged broad beta, warning that headline risk-on may not transmit cleanly to the 3033.HK ETF proxy."
         else:
             interpretation = "Growth tracked broad beta, so the move looks market-wide rather than duration-led."
-        check = "Confirm through the 3033.HK ETF versus HSI leadership; higher US yields would weaken the read."
+        check = "3033.HK versus HSI leadership carries the read; rising yields would undo it."
     elif name == "Hang Seng Index":
-        interpretation = (
-            "Hong Kong broad beta strengthened, but local flow must confirm whether the move is investable."
-            if direction > 0
-            else "Hong Kong broad beta weakened and needs offshore or policy support to stabilize."
-            if direction < 0
-            else "The headline index was flat; style leadership and flow matter more than index direction."
-        )
-        check = "Confirm with Southbound participation and breadth; invalidate if USD/CNH weakens while turnover fades."
+        # An index move is better explained by what carried it than by its sign.
+        spread = None if hstech is None or hsi is None else hstech - hsi
+        if direction == 0:
+            interpretation = "The headline index was flat; style leadership and flow matter more than direction."
+        elif spread is not None and abs(spread) >= 0.5:
+            carried = "old-economy and H-share names" if spread < 0 else "growth and platform names"
+            interpretation = (
+                f"The index was carried by {carried}, not by broad participation: "
+                f"3033.HK differs by {abs(spread):.2f}pp."
+            )
+        else:
+            driver = _attributed_driver(
+                [
+                    (fxi_move, 1.0, "tracking offshore China risk appetite"),
+                    (cnh, -0.2, "helped by a firmer offshore renminbi"),
+                ]
+            )
+            moved = "rose" if direction > 0 else "fell"
+            interpretation = (
+                f"Broad beta {moved} {driver}, with growth and value moving together."
+                if driver
+                else f"Broad beta {moved} with no single driver visible in today's fields."
+            )
+        check = "Southbound participation decides whether this is investable or just a print."
     elif name == "Hang Seng TECH ETF":
         relative = None if hstech is None or hsi is None else hstech - hsi
         if relative is not None and relative > 0.1:
@@ -158,7 +228,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             interpretation = "Hong Kong growth lagged, so broad-index strength is not yet a duration signal."
         else:
             interpretation = "Growth and broad beta moved together; there is no decisive style rotation yet."
-        check = "Confirm with stable CNH, Southbound buying and lower yields; invalidate on growth underperformance with rising yields."
+        check = "Needs a stable CNH and Southbound buying to become a duration signal."
     elif name == "10Y Treasury":
         interpretation = (
             "The yield proxy rose, tightening the discount-rate backdrop for long-duration Hong Kong growth."
@@ -167,7 +237,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "The yield proxy was stable and did not materially change the valuation backdrop."
         )
-        check = "Confirm through Nasdaq and 3033.HK ETF relative performance; invalidate if growth leads despite the opposing rate move."
+        check = "Read it through 3033.HK relative performance, not the index level."
     elif name == "China 10Y":
         interpretation = (
             "Higher local yields may indicate firmer growth or tighter financial conditions; price action alone cannot distinguish them."
@@ -185,7 +255,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "The relative yield gap was broadly unchanged."
         )
-        check = "Confirm through USD/CNH and foreign-risk proxies; invalidate if FX remains stable despite further spread pressure."
+        check = "USD/CNH is the tell; stable FX despite spread pressure weakens the read."
     elif name == "DXY":
         interpretation = (
             "A firmer dollar tightens the external-liquidity backdrop and can pressure offshore-China risk appetite."
@@ -194,7 +264,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "The dollar was range-bound and adds little directional information."
         )
-        check = "Confirm with USD/CNH moving in the same risk direction; divergence reduces conviction."
+        check = "Only meaningful if USD/CNH moves the same way; divergence cancels it."
     elif name == "USD/CNH":
         interpretation = (
             "A higher USD/CNH means a weaker offshore renminbi, a headwind for offshore-China sentiment."
@@ -203,7 +273,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "CNH was stable, removing an immediate FX impulse but not confirming equity direction."
         )
-        check = "Confirm with FXI, the 3033.HK ETF proxy and Southbound flow; invalidate if equities move opposite to FX with strong local participation."
+        check = "FXI and Southbound flow decide whether this reaches Hong Kong equities."
     elif name == "USD/HKD":
         interpretation = (
             "A move toward the weak-side convertibility boundary keeps Hong Kong funding sensitivity in focus."
@@ -212,7 +282,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "The spot rate was stable; boundary distance matters more than the daily move."
         )
-        check = "Confirm with HIBOR and Aggregate Balance; spot alone is not a liquidity conclusion."
+        check = "HIBOR and the Aggregate Balance, not spot, carry the liquidity conclusion."
     elif name == "Brent Crude":
         interpretation = (
             "Higher oil raises the inflation and margin-cost question; whether it is growth-positive depends on copper and cyclicals."
@@ -239,7 +309,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "Copper was flat and provides no strong growth confirmation."
         )
-        check = "Confirm through China equities and activity data; invalidate if cyclicals and credit indicators disagree."
+        check = "China equities and activity data settle it; cyclicals disagreeing is the warning."
     elif name == "VIX":
         interpretation = (
             "Higher implied volatility raises the tail-risk premium and weakens risk-on conviction."
@@ -248,7 +318,7 @@ def _asset_interpretation(bundle: Dict[str, Any], name: str, move: Any) -> tuple
             if direction < 0
             else "Volatility was stable and does not change the tail-risk assessment."
         )
-        check = "Confirm with equity breadth and credit-sensitive assets; invalidate if lower VIX accompanies narrow or falling equities."
+        check = "Falling volatility on narrowing breadth is a warning, not support."
     else:
         interpretation = "The move is a monitoring input, not a conclusion on its own."
         check = "Require confirmation from related prices, local flow and dated fundamental evidence."
@@ -272,6 +342,11 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         ("Equities", "Nasdaq 100", "Nasdaq 100", "Growth and duration leadership"),
         ("Equities", "Hang Seng Index", "Hang Seng Index", "Hong Kong broad beta"),
         ("Equities", "Hang Seng TECH ETF", "Hang Seng TECH ETF (3033.HK)", "Listed proxy for Hong Kong growth / platform leadership"),
+        # The overnight semis tape leads Hong Kong tech more directly than broad
+        # US beta. SOXX was added to main_labels earlier but never to this list,
+        # so the allowlist entry was dead and it never reached the scan table.
+        ("Equities", "Semiconductors (SOXX)", "Semiconductors (SOXX)", "Overnight AI / semis cycle"),
+        ("Equities", "SMIC", "SMIC (0981.HK)", "Local expression of the semis cycle"),
         ("Equities", "CSI 300", "CSI 300", "Mainland large-cap tone"),
         ("Rates", "10Y Treasury", "US 10Y", "Global discount-rate anchor"),
         ("Rates", "China 10Y", "China 10Y", "China local rates anchor"),
@@ -297,6 +372,7 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         "S&P 500",
         "Nasdaq 100",
         "Semiconductors (SOXX)",
+        "SMIC (0981.HK)",
         "Hang Seng Index",
         "Hang Seng TECH ETF (3033.HK)",
         "US 10Y",
@@ -414,7 +490,7 @@ def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
     hidden_count = sum(1 for item in rows if str(item.get("status", "")).lower() == "unavailable")
     rows = [item for item in rows if str(item.get("status", "")).lower() != "unavailable"]
     if not rows:
-        return "Hong Kong local checks did not refresh enough main-table evidence for this run; use Section 2.3 for any available public-flow detail."
+        return "Hong Kong local checks did not refresh enough main-table evidence for this run; see the Flow Tracker for any available public-flow detail."
     table_rows = []
     for item in rows:
         table_rows.append(
@@ -434,6 +510,11 @@ def _render_hk_quick_checks(bundle: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+# The date the composite score gained its semiconductor term. Stated in the
+# report so a step change in the level is not read as a market move.
+RISK_SCORE_SEMIS_FROM = "2026-08-22"
+
+
 def _render_risk_dashboard(bundle: Dict[str, Any]) -> str:
     risk = ((bundle.get("attribution", {}) or {}).get("risk_dashboard", {}) or {})
     if not risk:
@@ -444,16 +525,25 @@ def _render_risk_dashboard(bundle: Dict[str, Any]) -> str:
         f"**Composite risk score:** `{risk.get('score', 'N/A')}/100` | **Regime:** `{risk.get('bucket', 'Mixed')}`",
     ]
     if components:
+        # Every component, not the first four. Showing a subset of the terms that
+        # produced the score meant the reader could not reconcile it: the four
+        # printed rows did not add up to 72.2 because Volatility and HK turnover
+        # were hidden here and only shown again in the appendix.
         rows = [
             (
                 item.get("label", ""),
                 f"{item.get('delta', 0):+}",
                 _truncate(item.get("evidence", ""), 80, suffix=""),
             )
-            for item in components[:4]
+            for item in components
         ]
         lines.append("")
         lines.append(_make_table(["Component", "Score impact", "Evidence"], rows))
+        lines.append("")
+        lines.append(
+            f"_Base 50 plus the component deltas above. Semis complex entered the score on "
+            f"{RISK_SCORE_SEMIS_FROM}; earlier scores in the ledger exclude it._"
+        )
     return "\n".join(lines)
 
 

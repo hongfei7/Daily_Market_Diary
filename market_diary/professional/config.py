@@ -170,6 +170,21 @@ DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
         },
     },
     "macro_indicator_map": {
+        # Country-qualified entries are matched before the bare indicator name.
+        # The Hong Kong dollar is pegged, so local CPI transmits through funding
+        # and retail rather than through US rates and the dollar.
+        "HK CPI": {
+            "impact": "Local funding conditions, retail purchasing power, and HKD real rates",
+            "industries": ["Property", "Retail", "Banks"],
+            "beat_direction": "Hotter local inflation squeezes real incomes with policy rates set by the peg",
+            "miss_direction": "Softer local inflation eases the cost-of-living drag on domestic demand",
+        },
+        "CN CPI": {
+            "impact": "China demand strength, PPI pass-through, and policy-easing odds",
+            "industries": ["Consumer", "Materials", "Property"],
+            "beat_direction": "Firmer prices argue that demand is stabilising",
+            "miss_direction": "Persistent disinflation raises the odds of further policy support",
+        },
         "CPI": {
             "impact": "Rates expectations, the dollar, and growth-equity valuation",
             "industries": ["Technology", "Internet", "Brokers"],

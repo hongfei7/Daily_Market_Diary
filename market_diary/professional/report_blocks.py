@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import re
 from typing import Any, Dict, List
 
 from market_diary.professional.report_formatting import (
@@ -72,6 +73,21 @@ def _render_macro_table(bundle: Dict[str, Any], limit: int | None = None) -> str
     return _make_table(["Time", "Region", "Event", "Status", "Desk read"], table_rows)
 
 
+def _restates_evidence(line: str, evidence: str) -> bool:
+    """Whether a cross-market line only repeats figures already in Evidence.
+
+    The style call cites HSCEI and 3033.HK, then the first cross-market bullet
+    listed the same two levels again. Repeating a number does not add a fact.
+    """
+    if not evidence:
+        return False
+    figures = set(re.findall(r"[-+]?\d+\.\d+%", line))
+    if not figures:
+        return False
+    already = set(re.findall(r"[-+]?\d+\.\d+%", evidence))
+    return bool(figures) and figures.issubset(already)
+
+
 def _lens_confidence(hk_desk_view: Dict[str, Any]) -> str:
     """Grade the style call by the evidence actually behind it.
 
@@ -94,8 +110,11 @@ def _summary_yesterday(bundle: Dict[str, Any]) -> str:
     verdict = str(card.get("verdict", "") or "")
     if not verdict:
         return "No previously published call is on file yet."
+    # Plain text, not bold. The HTML template styles every <strong> inside a
+    # summary bullet as an uppercase block label, so a second bold here rendered
+    # the verdict on its own shouting line and orphaned the dash after it.
     headline = _safe_sentence_clip(card.get("headline", ""), 220)
-    return f"**{verdict}** — {headline}" if headline else f"**{verdict}**"
+    return f"{verdict} — {headline}" if headline else verdict
 
 
 def _summary_overnight(bundle: Dict[str, Any]) -> str:
@@ -293,7 +312,7 @@ def _render_flows(bundle: Dict[str, Any]) -> str:
         if not any(keyword.lower() in str(item).lower() for keyword in flow_tracker_keywords)
     ]
     if not filtered:
-        return "- Detailed local flow evidence is covered in Section 2.3; keep this section focused on options, hedging, and macro-positioning risk."
+        return "- Detailed local flow evidence is covered under Flow Tracker and Attribution; keep this section focused on options, hedging, and macro-positioning risk."
     return "\n".join(f"- {item}" for item in filtered[:5])
 
 
@@ -492,10 +511,10 @@ def _render_overseas_review_block(bundle: Dict[str, Any]) -> str:
     else:
         lines.append(
             "**Opening implication.** Carry the overnight tape into the Hong Kong open using the style and "
-            "flow evidence in Section 2.2 rather than the headline index alone."
+            "flow evidence in the Hong Kong review rather than the headline index alone."
         )
     lines.append(
-        "_Hong Kong style leadership, cross-market levels and flow confirmation are set out in Section 2.2._"
+        "_Hong Kong style leadership and flow confirmation are set out in the Hong Kong review below._"
     )
 
     chart_read = (overview.get("chart_read", {}) or {})
@@ -542,9 +561,13 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     else:
         lines.append("**Style leadership.** Check HSI, HSCEI, and the 3033.HK ETF proxy first to separate broad-beta, old-economy, and growth leadership.")
 
+    # One label, one line. Three consecutive bullets all called "Cross-market
+    # read" repeated the label without distinguishing the facts, and the first of
+    # them restated the index levels already given in Evidence directly above.
     hk_lines, suppressed_hk_lines = _compact_hk_read_lines(hk_desk_view.get("lines", []) or [], limit=3)
-    for line in hk_lines:
-        lines.append(f"- **Cross-market read:** {line}")
+    hk_lines = [line for line in hk_lines if not _restates_evidence(line, evidence)]
+    if hk_lines:
+        lines.append(f"- **Cross-market read:** {' '.join(hk_lines)}")
     if suppressed_hk_lines:
         lines.append(
             "- **Coverage note:** Low-signal index / FX lines were suppressed because quote coverage was incomplete; flow confirmation below carries more weight for this run."
@@ -553,7 +576,7 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     lines.append("")
     lines.append("**Flow Confirmation**")
     if _has_official_stock_connect_flow(bundle):
-        lines.append("Official Stock Connect evidence is available; use Section 2.3 to confirm whether local money supports the price action.")
+        lines.append("Official Stock Connect evidence is available; the Flow Tracker confirms whether local money supports the price action.")
     else:
         lines.append("Official Stock Connect confirmation is incomplete; use ETF proxies and price leadership only as secondary evidence.")
 

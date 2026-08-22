@@ -3,10 +3,32 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 
-def _macro_profile(indicator: str, config: Dict[str, Any]) -> Dict[str, Any]:
+def _macro_profile(indicator: str, config: Dict[str, Any], country: str = "") -> Dict[str, Any]:
+    """Resolve an indicator's transmission profile, country first.
+
+    Plain substring matching gave Hong Kong CPI the generic (US) CPI profile, so
+    a local print was described as moving "rates expectations, the dollar, and
+    growth-equity valuation". The Hong Kong dollar is pegged: local CPI does not
+    drive US yields. A country-qualified key is tried before the bare one.
+    """
     indicator_upper = indicator.upper()
-    for key, profile in (config.get("macro_indicator_map") or {}).items():
-        if key.upper() in indicator_upper:
+    mapping = config.get("macro_indicator_map") or {}
+
+    country_code = str(country or "").strip().upper()
+    if country_code:
+        for key, profile in mapping.items():
+            key_upper = key.upper()
+            if not key_upper.startswith(f"{country_code} "):
+                continue
+            if key_upper.split(" ", 1)[1] in indicator_upper:
+                return profile
+
+    for key, profile in mapping.items():
+        key_upper = key.upper()
+        # Country-qualified keys must not match on their indicator alone.
+        if " " in key_upper and key_upper.split(" ", 1)[0] in {"US", "CN", "HK"}:
+            continue
+        if key_upper in indicator_upper:
             return profile
     return {
         "impact": "Watch whether it changes the day's core market narrative",
@@ -54,7 +76,7 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
     cb_events = (macro_data or {}).get("central_bank_events", []) or []
 
     for item in released:
-        profile = _macro_profile(item.get("indicator", ""), config)
+        profile = _macro_profile(item.get("indicator", ""), config, item.get("country", ""))
         surprise = item.get("surprise", "inline")
         direction = profile["beat_direction"] if surprise == "beat" else profile["miss_direction"] if surprise == "miss" else "The print was broadly inline; focus on the second-order market reaction"
         agenda.append(
@@ -81,7 +103,7 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
         )
 
     for item in upcoming:
-        profile = _macro_profile(item.get("indicator", ""), config)
+        profile = _macro_profile(item.get("indicator", ""), config, item.get("country", ""))
         agenda.append(
             {
                 # Use the event's own date. Pinning every row to the report

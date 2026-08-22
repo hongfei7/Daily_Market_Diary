@@ -243,11 +243,26 @@ def _extract_fx_features(timeseries_list: List[pd.DataFrame], tz: str) -> Dict:
 # Gold / Oil / Bitcoin extraction
 # ---------------------------------------------------------------------------
 
+# The divergence pool. It used to hold only Gold, Oil and Bitcoin, so "the
+# biggest cross-asset divergence" was always a comparison between those three —
+# and that string drives the report theme, the first checklist item and the
+# dashboard subtitle. For a Hong Kong desk none of them is a primary read, which
+# is how "Bitcoin outperformed Oil" ended up leading the briefing.
 _ASSET_KEYWORDS = {
+    "Nasdaq 100": ["NDX", "NASDAQ"],
+    "Hang Seng": ["HSI"],
+    "HSCEI": ["HSCEI"],
+    "3033.HK": ["HSTECH_ETF_3033", "HSTECH"],
+    "FXI": ["FXI"],
     "Gold": ["GOLD", "XAU"],
     "Oil": ["CRUDE", "WTI", "BRENT", "OIL", "CL1", "CL=F"],
     "Bitcoin": ["BTC", "BITCOIN"],
 }
+
+# Only these carry enough transmission to Hong Kong equities to be worth naming
+# as the day's divergence. Gold, Oil and Bitcoin stay in the pool for context but
+# cannot become the headline comparison on their own.
+_DIVERGENCE_CANDIDATES = {"Nasdaq 100", "Hang Seng", "HSCEI", "3033.HK", "FXI"}
 
 
 def _extract_asset_features(timeseries_list: List[pd.DataFrame], tz: str) -> Dict:
@@ -284,12 +299,21 @@ def _extract_asset_features(timeseries_list: List[pd.DataFrame], tz: str) -> Dic
         ts_5m = ts_pct.resample("5min").last().ffill()
         asset_series_5m[asset_name] = ts_5m
 
-    # Divergence
+    # Divergence, restricted to instruments that actually transmit to Hong Kong.
+    # The arithmetic stays honest — these are the real best and worst of the
+    # candidate set — but the headline can no longer be a gold-versus-crypto
+    # comparison that tells a Hong Kong desk nothing.
     available_nets = {
         name: stats["net_pp"]
         for name, stats in asset_stats.items()
-        if stats.get("available")
+        if stats.get("available") and name in _DIVERGENCE_CANDIDATES
     }
+    if not available_nets:
+        # Nothing relevant priced; fall back to whatever is available rather
+        # than reporting no divergence at all.
+        available_nets = {
+            name: stats["net_pp"] for name, stats in asset_stats.items() if stats.get("available")
+        }
     divergence: Dict = {}
     if available_nets:
         best = max(available_nets, key=available_nets.get)
@@ -447,10 +471,13 @@ def features_to_prompt_block(features: Dict) -> str:
     lines.append("#### Chart 2 — Gold vs Oil vs Bitcoin")
 
     assets: Dict = features.get("assets", {})
-    for asset_name in ["Gold", "Oil", "Bitcoin"]:
+    # Hong Kong-relevant instruments first; the commodity and crypto context
+    # follows rather than leading.
+    for asset_name in ["Nasdaq 100", "Hang Seng", "3033.HK", "FXI", "Gold", "Oil", "Bitcoin"]:
         stats = assets.get(asset_name, {})
         if not stats.get("available"):
-            lines.append(f"- **{asset_name}**: [data unavailable]")
+            # Absent members are simply skipped: a list of "[data unavailable]"
+            # lines is noise, and coverage is reported by the source-health block.
             continue
         sym = stats.get("symbol", asset_name)
         net = stats["net_pp"]

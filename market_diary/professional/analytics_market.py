@@ -221,7 +221,13 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
     rate_bias = "lower yields supported duration" if (us10y_bp or 0) < -5.0 else "higher yields pressured valuations" if (us10y_bp or 0) > 5.0 else "rates were not the dominant driver"
     asset_div = chart_features.get("divergence", {}) or {}
     divergence_text = f"{asset_div.get('best_asset')} outperformed {asset_div.get('worst_asset')}" if asset_div else "cross-asset divergence stayed modest"
-    theme = f"{risk_regime} backdrop with {usd_bias}, {rate_bias}, and {divergence_text}"
+    # Kept separately so the regime word can be reconciled against the composite
+    # score without rebuilding the sentence by string surgery. Two independent
+    # regime engines used to run — a vote count here and a weighted score in
+    # attribution — and the report printed both, so the theme could say "Risk-On"
+    # while the Decision Board said "Mixed".
+    theme_tail = f"{usd_bias}, {rate_bias}, and {divergence_text}"
+    theme = f"{risk_regime} backdrop with {theme_tail}"
 
     notes = [
         f"Risk appetite snapshot: S&P 500 {_format_signed(spx)} / Nasdaq 100 {_format_signed(ndx)} / Hang Seng {_format_signed(hsi)} / 3033.HK ETF {_format_signed(hstech)} / FXI {_format_signed(fxi)}.",
@@ -239,6 +245,7 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
 
     return {
         "theme": theme,
+        "theme_tail": theme_tail,
         "risk_regime": risk_regime,
         "snapshot_rows": rows,
         "notes": notes,
