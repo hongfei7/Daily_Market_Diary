@@ -132,3 +132,45 @@ class TestTokenUsageIsRecorded:
             }
         )
         assert health["token_budget_by_task"]["overnight_review"]["budget_used_pct"] == 100.0
+
+
+class TestTruncationBudget:
+    """Measured, not assumed.
+
+    After routing was fixed, company_commentary — which had always named
+    DeepSeek — still failed with reasoning_tokens 1399 of max_tokens 1400. The
+    usage instrumentation showed reasoning consuming the whole allowance before
+    any JSON was emitted, so the budgets were genuinely too small and the earlier
+    decision to leave them alone was wrong.
+    """
+
+    def test_budgets_leave_room_for_reasoning_plus_output(self):
+        tasks = load_professional_config()["llm"]["tasks"]
+        # Reasoning alone was measured at ~1400 tokens; the JSON needs several
+        # hundred more on top of it.
+        too_small = {name: t["max_tokens"] for name, t in tasks.items() if t["max_tokens"] < 2500}
+        assert not too_small, f"these budgets cannot fit reasoning plus output: {too_small}"
+
+    def test_retry_escalates_rather_than_repeating_the_same_budget(self):
+        from market_diary.professional.llm_enhancer import (
+            MAX_TOKENS_CEILING,
+            TRUNCATION_RETRY_MULTIPLIER,
+        )
+
+        assert TRUNCATION_RETRY_MULTIPLIER > 1.0
+        # A retry at the same budget would truncate identically.
+        assert int(1400 * TRUNCATION_RETRY_MULTIPLIER) > 1400
+        assert MAX_TOKENS_CEILING > max(
+            t["max_tokens"] for t in load_professional_config()["llm"]["tasks"].values()
+        )
+
+    def test_ceiling_bounds_the_escalation(self):
+        from market_diary.professional.llm_enhancer import (
+            MAX_TOKENS_CEILING,
+            TRUNCATION_RETRY_MULTIPLIER,
+        )
+
+        budget = 4000
+        for _ in range(10):
+            budget = min(int(budget * TRUNCATION_RETRY_MULTIPLIER), MAX_TOKENS_CEILING)
+        assert budget == MAX_TOKENS_CEILING

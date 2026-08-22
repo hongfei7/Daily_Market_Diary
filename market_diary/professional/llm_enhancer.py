@@ -98,6 +98,11 @@ TASK_FEW_SHOTS: Dict[str, str] = {
 TaskRunner = Callable[[str, Dict[str, Any], str], Tuple[Dict[str, Any], Dict[str, Any]]]
 LLM_CACHE_VERSION = "v2"
 
+# A truncated response means the budget ran out, so the retry needs more of
+# it. The ceiling keeps a runaway prompt from becoming an expensive loop.
+TRUNCATION_RETRY_MULTIPLIER = 1.6
+MAX_TOKENS_CEILING = 8000
+
 
 def _api_key_present() -> bool:
     return api_key_available()
@@ -852,6 +857,11 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                         "attempts": 0,
                     }
 
+            # Retrying a truncated response at the same budget just truncates
+            # again, so the allowance is raised for the retry instead. Measured
+            # usage shows reasoning can consume the entire budget before any JSON
+            # is emitted.
+            attempt_tokens = max_tokens
             for attempt in range(1, retries + 1):
                 total_attempts += 1
                 try:
@@ -865,17 +875,20 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                                 {"role": "user", "content": prompt},
                             ],
                             temperature=temperature,
-                            max_tokens=max_tokens,
+                            max_tokens=attempt_tokens,
                             extra_body=get_completion_extra_body(provider, model),
                         )
                     raw = _extract_response_text(response.choices[0].message.content)
                     last_raw_excerpt = raw[:240].replace("\n", " ").strip()
                     finish_reason = _choice_finish_reason(response)
-                    last_usage = _token_usage(response, max_tokens)
+                    last_usage = _token_usage(response, attempt_tokens)
                     if _llm_response_looks_truncated(raw, finish_reason):
                         reason = finish_reason or "trailing ellipsis or unbalanced JSON"
+                        # Give the next attempt more room rather than repeating
+                        # a request that already ran out of it.
+                        attempt_tokens = min(int(attempt_tokens * TRUNCATION_RETRY_MULTIPLIER), MAX_TOKENS_CEILING)
                         raise ValueError(
-                            f"LLM response appears truncated ({reason}); increase max_tokens or reduce prompt context."
+                            f"LLM response appears truncated ({reason}); retrying with a larger budget."
                         )
                     parsed = _extract_json_object(raw)
                     coerced = _coerce_task_payload(task_name, parsed)
