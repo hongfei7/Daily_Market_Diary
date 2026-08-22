@@ -3,14 +3,14 @@
     "Hang Seng Index": {
       "event_horizons": {
         "1": {
-          "average_directional_return_net": 0.000532,
-          "hit_rate": 0.5366,
-          "resolved_signals": 41
+          "average_directional_return_net": 0.000396,
+          "hit_rate": 0.525,
+          "resolved_signals": 40
         },
         "20": {
-          "average_directional_return_net": -0.009852,
-          "hit_rate": 0.4333,
-          "resolved_signals": 30
+          "average_directional_return_net": -0.008527,
+          "hit_rate": 0.4483,
+          "resolved_signals": 29
         },
         "5": {
           "average_directional_return_net": -0.002538,
@@ -19,37 +19,37 @@
         }
       },
       "metrics": {
-        "active_exposure_ratio": 0.5,
-        "active_sessions": 34,
-        "annualized_return": 0.029929,
-        "annualized_volatility": 0.155992,
-        "average_daily_return": 0.00016533,
-        "benchmark_return": -0.026361,
-        "cumulative_return_net": 0.007989,
-        "excess_return": 0.03435,
-        "hit_rate_active_sessions": 0.5,
+        "active_exposure_ratio": 0.4925,
+        "active_sessions": 33,
+        "annualized_return": 0.00378,
+        "annualized_volatility": 0.156587,
+        "average_daily_return": 6.364e-05,
+        "benchmark_return": -0.034068,
+        "cumulative_return_net": 0.001004,
+        "excess_return": 0.035071,
+        "hit_rate_active_sessions": 0.4848,
         "max_drawdown": -0.079127,
         "median_daily_return": 0.0,
         "sample_gate": {
           "minimum_active_sessions": 100,
           "minimum_sessions": 252
         },
-        "sessions": 68,
-        "sharpe_zero_rf": 0.267,
+        "sessions": 67,
+        "sharpe_zero_rf": 0.102,
         "status": "exploratory"
       }
     },
     "Hang Seng TECH ETF (3033.HK)": {
       "event_horizons": {
         "1": {
-          "average_directional_return_net": 0.000542,
-          "hit_rate": 0.5122,
-          "resolved_signals": 41
+          "average_directional_return_net": 0.000885,
+          "hit_rate": 0.525,
+          "resolved_signals": 40
         },
         "20": {
-          "average_directional_return_net": -0.010318,
-          "hit_rate": 0.4667,
-          "resolved_signals": 30
+          "average_directional_return_net": -0.010103,
+          "hit_rate": 0.4828,
+          "resolved_signals": 29
         },
         "5": {
           "average_directional_return_net": -0.004998,
@@ -58,29 +58,30 @@
         }
       },
       "metrics": {
-        "active_exposure_ratio": 0.5075,
-        "active_sessions": 34,
-        "annualized_return": -0.04923,
-        "annualized_volatility": 0.22889,
-        "average_daily_return": -9.632e-05,
-        "benchmark_return": -0.078895,
-        "cumulative_return_net": -0.013332,
-        "excess_return": 0.065562,
-        "hit_rate_active_sessions": 0.5,
+        "active_exposure_ratio": 0.5,
+        "active_sessions": 33,
+        "annualized_return": -0.004454,
+        "annualized_volatility": 0.229388,
+        "average_daily_return": 8.673e-05,
+        "benchmark_return": -0.068482,
+        "cumulative_return_net": -0.001169,
+        "excess_return": 0.067314,
+        "hit_rate_active_sessions": 0.5152,
         "max_drawdown": -0.132983,
         "median_daily_return": 0.0,
         "sample_gate": {
           "minimum_active_sessions": 100,
           "minimum_sessions": 252
         },
-        "sessions": 67,
-        "sharpe_zero_rf": -0.106,
+        "sessions": 66,
+        "sharpe_zero_rf": 0.095,
         "status": "exploratory"
       }
     }
   },
+  "chart_path": "signal_performance_2026-08-21.png",
   "data_quality": {
-    "active_signal_dates": 85,
+    "active_signal_dates": 84,
     "conflicts": [
       "2026-05-29 Hang Seng Index: 25006.16 versus 25182.39; excluded conflicted observation",
       "2026-05-29 Hang Seng TECH ETF (3033.HK): 4.782 versus 4.784; excluded conflicted observation",
@@ -113,10 +114,11 @@
       "2026-06-21: excluded non-session weekend effective date"
     ],
     "first_observation": "2026-04-16",
-    "last_observation": "2026-08-21",
-    "observations": 79,
-    "signals": 105
+    "last_observation": "2026-08-20",
+    "observations": 78,
+    "signals": 104
   },
+  "ledger_path": "performance/signal_ledger.json",
   "methodology": {
     "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",
     "horizons_sessions": [
@@ -135,6 +137,8 @@
     "signal": "Published deterministic risk regime mapped to long (+1), neutral (0), or short (-1).",
     "transaction_cost_bps": 10.0
   },
+  "rel_path": "charts/signal_performance_2026-08-21.png",
   "schema_version": "signal-performance-v1",
-  "status": "exploratory_with_caveats"
+  "status": "exploratory_with_caveats",
+  "summary_path": "performance/performance_summary.json"
 }

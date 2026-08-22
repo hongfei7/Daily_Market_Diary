@@ -1,0 +1,38 @@
+{
+  "by_rule": {
+    "duplicate_line": 1,
+    "internal_identifier": 1,
+    "sentence_fragment": 1,
+    "severed_list": 1
+  },
+  "findings": [
+    {
+      "detail": "Internal identifier 'Attribution_v1' leaked into prose",
+      "line": 134,
+      "rule": "internal_identifier",
+      "text": "Verification point. Attribution_v1 flags short-selling pressure at 18.00% of turnover as the dominant local drag, and Stock Connect Southbound posted a net -HK$"
+    },
+    {
+      "detail": "Sentence ends on a function word",
+      "line": 170,
+      "rule": "sentence_fragment",
+      "text": "Coverage caveat. 3033.HK ETF was stale (2 trading days old). Those names are excluded from the averages above."
+    },
+    {
+      "detail": "Sentence ends mid-enumeration",
+      "line": 231,
+      "rule": "severed_list",
+      "text": "Hong Kong CPI on 2026-08-21 and any repricing of rate-sensitive sectors: technology, internet, brokers."
+    },
+    {
+      "detail": "Line repeats the previous prose line verbatim",
+      "line": 249,
+      "rule": "duplicate_line",
+      "text": "| B | China Internet | Stocks making the biggest moves premarket | Assess whether the story can propagate through the China Internet value | Monitor |"
+    }
+  ],
+  "read": "4 prose defect(s) detected: 1 duplicate_line, 1 internal_identifier, 1 sentence_fragment, 1 severed_list.",
+  "score": 20.0,
+  "status": "warning",
+  "total": 4
+}

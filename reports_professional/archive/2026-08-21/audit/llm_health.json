@@ -1,0 +1,31 @@
+{
+  "dominant_failure_class": "truncated",
+  "failed": 2,
+  "failure_class_by_task": {
+    "company_commentary": "truncated",
+    "final_framing": "truncated"
+  },
+  "failures_by_class": {
+    "truncated": 2
+  },
+  "read": "3/5 tasks succeeded (60%). Dominant failure: truncated (2 of 2).",
+  "schema_version": "llm-health-v1",
+  "skipped": 0,
+  "succeeded": 3,
+  "success_rate_pct": 60.0,
+  "tasks_total": 7,
+  "token_budget_by_task": {
+    "company_commentary": {
+      "budget_used_pct": 100.0,
+      "completion_tokens": 1400,
+      "max_tokens": 1400,
+      "reasoning_tokens": 1399
+    },
+    "final_framing": {
+      "budget_used_pct": 100.0,
+      "completion_tokens": 1200,
+      "max_tokens": 1200,
+      "reasoning_tokens": 1168
+    }
+  }
+}
