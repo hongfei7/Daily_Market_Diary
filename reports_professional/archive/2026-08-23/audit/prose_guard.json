@@ -1,0 +1,30 @@
+{
+  "by_rule": {
+    "internal_identifier": 1,
+    "severed_list": 2
+  },
+  "findings": [
+    {
+      "detail": "Internal identifier 'Attribution_v1' leaked into prose",
+      "line": 99,
+      "rule": "internal_identifier",
+      "text": "Main driver. Attribution_v1 frames the move as broad risk appetite with USD range-bound and rates not the dominant driver, while 3033.HK outperformed FXI."
+    },
+    {
+      "detail": "Sentence ends mid-enumeration",
+      "line": 291,
+      "rule": "severed_list",
+      "text": "0700.HK | Fact: no company-specific news attached; last session +1.24%, mid-range. Investor read: no direct fundamental signal this week"
+    },
+    {
+      "detail": "Sentence ends mid-enumeration",
+      "line": 294,
+      "rule": "severed_list",
+      "text": "3033.HK | Fact: market theme notes 3033.HK outperformed FXI; last session +1.39%, mid-range. Investor read"
+    }
+  ],
+  "read": "3 prose defect(s) detected: 1 internal_identifier, 2 severed_list.",
+  "score": 40.0,
+  "status": "warning",
+  "total": 3
+}
