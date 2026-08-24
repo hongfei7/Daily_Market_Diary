@@ -152,6 +152,11 @@ def _audit_english_only(report_text: str) -> List[str]:
 def _audit_clipped_text(report_text: str) -> List[str]:
     errors: List[str] = []
     for line_number, line in enumerate(report_text.splitlines(), start=1):
+        # Table rows are truncated *intentionally* by _truncate / _safe_sentence_clip
+        # (they append " [trimmed]" / "…"), so those markers are not defects there.
+        # Only prose (non-table) lines are checked for genuine mid-thought clipping.
+        if line.strip().startswith("|"):
+            continue
         if CLIPPED_CELL_RE.search(line.rstrip()):
             errors.append(f"Report appears to contain clipped text near line {line_number}: `{line[:120]}`")
             if len(errors) >= 5:
