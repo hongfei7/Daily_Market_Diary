@@ -584,6 +584,25 @@ def _non_trading_focus_context(bundle: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _week_ahead_context(bundle: Dict[str, Any]) -> Dict[str, Any]:
+    """Monday week-ahead lens: calendar, forecast, and watch list for the week."""
+    week = bundle.get("week_ahead", {}) or {}
+    if not week:
+        return {}
+    return {
+        "week_start": week.get("week_start", ""),
+        "week_end": week.get("week_end", ""),
+        "summary": week.get("summary", ""),
+        "key_events": [
+            {"date": it.get("date", ""), "event": it.get("event", ""), "impact": it.get("impact", "")}
+            for it in (week.get("week_events", []) or [])[:5]
+        ],
+        "calendar": (week.get("week_calendar", []) or [])[:5],
+        "forecast": week.get("forecast", {}) or {},
+        "watch_items": (week.get("watch_items", []) or [])[:5],
+    }
+
+
 def _day_mode_context(bundle: Dict[str, Any]) -> Dict[str, Any]:
     day_mode = bundle.get("day_mode", {}) or {}
     return {
@@ -639,6 +658,7 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
                 "graded_news": _news_candidates(bundle, limit=8),
                 "raw_news_headlines": (bundle.get("raw_news_headlines", []) or [])[:10],
                 "must_watch": (bundle.get("must_watch", []) or [])[:5],
+                "week_ahead": _week_ahead_context(bundle),
             }
         )
         return base
@@ -685,6 +705,7 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
                 "day_mode_note": _day_mode_context(bundle).get("note", ""),
                 "weekly_review": _weekly_review_context(bundle),
                 "non_trading_focus": _non_trading_focus_context(bundle),
+                "week_ahead": _week_ahead_context(bundle),
             }
         )
         return base
@@ -729,6 +750,7 @@ def _build_task_context(task_name: str, bundle: Dict[str, Any], prior: Dict[str,
                 "flow_tracker": bundle.get("flow_tracker", {}) or {},
                 "weekly_review": _weekly_review_context(bundle),
                 "non_trading_focus": _non_trading_focus_context(bundle),
+                "week_ahead": _week_ahead_context(bundle),
                 "must_watch": (bundle.get("must_watch", []) or [])[:6],
             }
         )
@@ -747,6 +769,13 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
                 "Use weekly_review.trend_summary and desk_questions when supplied. "
                 "Do not frame Saturday as a fresh cash-market session or refer to today's Hong Kong open. "
                 "Separate weekly evidence, bounded interpretation, and next-week preparation.\n"
+            )
+        elif day_mode.get("mode") == "week_ahead":
+            non_trading_instruction = (
+                "Week-ahead rule: this is a Monday week-ahead brief, not a replay of Friday's session. "
+                "Use week_ahead.key_events, week_ahead.calendar, and week_ahead.watch_items to lay out the week's "
+                "calendar, base/risk case, and what to watch. Frame Friday's close as the baseline, not a fresh move. "
+                "Do not re-review Friday's session in detail.\n"
             )
         else:
             non_trading_instruction = (

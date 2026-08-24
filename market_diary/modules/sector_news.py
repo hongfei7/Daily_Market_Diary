@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import re
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -205,9 +206,74 @@ class SectorNewsAggregator:
 
         return score
 
-    def fetch_earnings_calendar(self, date: str) -> List[Dict]:
-        """Return no earnings claims until a dated, attributable source is configured."""
-        return []
+    def fetch_earnings_calendar(self, date: str, watchlists: Optional[Dict[str, Any]] = None) -> List[Dict]:
+        """Best-effort earnings calendar from Yahoo Finance ticker calendars.
+
+        For each configured watchlist ticker, read the next earnings date from
+        ``yf.Ticker(...).calendar`` and keep only dates on or after ``date``.
+        This is a public, unattributed-when-empty source: HK-listed tickers often
+        return no calendar, so the list degrades to empty rather than fabricating
+        a date. A dedicated, licensed earnings feed would be more complete.
+        """
+        if not watchlists:
+            return []
+        try:
+            import yfinance as yf
+        except Exception:
+            return []
+
+        try:
+            target = datetime.strptime(date, "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            return []
+
+        rows: List[Dict] = []
+        seen_tickers = set()
+        # Cap the number of yfinance lookups so this best-effort fetch never
+        # pushes the sector-news step past its timeout.
+        max_tickers = 8
+        for bucket_items in (watchlists or {}).values():
+            for item in (bucket_items or []):
+                if not isinstance(item, dict):
+                    continue
+                if len(seen_tickers) >= max_tickers:
+                    break
+                ticker = str(item.get("ticker", "") or "").strip()
+                if not ticker or ticker in seen_tickers:
+                    continue
+                seen_tickers.add(ticker)
+                try:
+                    calendar = yf.Ticker(ticker).calendar
+                    raw_dates = calendar.get("Earnings Date", []) if isinstance(calendar, dict) else []
+                    if isinstance(raw_dates, (str, int, float)) or hasattr(raw_dates, "date"):
+                        raw_dates = [raw_dates]
+                    future = []
+                    for d in raw_dates:
+                        try:
+                            parsed = d.date() if hasattr(d, "date") else datetime.strptime(str(d)[:10], "%Y-%m-%d").date()
+                        except (TypeError, ValueError):
+                            continue
+                        if parsed >= target:
+                            future.append(parsed)
+                    if not future:
+                        continue
+                    rows.append(
+                        {
+                            "date": min(future).isoformat(),
+                            "company": str(item.get("name", "") or ticker),
+                            "ticker": ticker,
+                            "time": "",
+                            "eps_estimate": None,
+                            "revenue_estimate": None,
+                            "as_of": date,
+                            "source": "Yahoo Finance ticker calendar",
+                            "source_url": f"https://finance.yahoo.com/quote/{ticker}",
+                        }
+                    )
+                except Exception:
+                    # A flaky ticker must not take down the whole calendar.
+                    continue
+        return rows
 
     def fetch_analyst_changes(self, date: str) -> List[Dict]:
         """Return no rating claims until a dated, attributable source is configured."""
@@ -275,7 +341,7 @@ def fetch_sector_data(date: str, config: Optional[Dict[str, Any]] = None, cache_
 
     aggregator = SectorNewsAggregator()
     sector_news = aggregator.fetch_sector_news(max_per_sector=3)
-    earnings = aggregator.fetch_earnings_calendar(date)
+    earnings = aggregator.fetch_earnings_calendar(date, watchlists=watchlists)
     analyst_changes = aggregator.fetch_analyst_changes(date)
     hkex_announcements = fetch_hkex_announcements(
         report_date=date,
@@ -328,7 +394,7 @@ def fetch_sector_data(date: str, config: Optional[Dict[str, Any]] = None, cache_
         "sector_news": sector_news,
         "earnings_calendar": earnings,
         "analyst_changes": analyst_changes,
-        "earnings_calendar_status": "unavailable",
+        "earnings_calendar_status": "ok" if earnings else "unavailable",
         "analyst_changes_status": "unavailable",
         "hkex_announcements": hkex_announcements,
         "formatted_text": aggregator.format_for_report(sector_news, earnings, analyst_changes),

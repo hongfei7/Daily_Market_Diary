@@ -150,7 +150,14 @@ def build_catalyst_radar_rows(bundle: Dict[str, Any]) -> Dict[str, Any]:
     _append_event_rows(rows, bundle.get("catalysts", []) or [], category="Catalyst")
     _append_event_rows(rows, today_forward.get("today_catalysts", []) or [], category="Catalyst", default_date=briefing_date)
     _append_event_rows(rows, today_forward.get("next_catalysts", []) or [], category="Catalyst")
-    _append_event_rows(rows, bundle.get("macro_agenda", []) or [], category="Macro", default_date=briefing_date)
+    # Only forward-looking macro: a Monday radar must not lead with "Released"
+    # (past) prints, which would be backward-looking rather than week-ahead.
+    upcoming_macro = [
+        item
+        for item in (bundle.get("macro_agenda", []) or [])
+        if str(item.get("status", "")).lower() in {"upcoming", "central bank"}
+    ]
+    _append_event_rows(rows, upcoming_macro, category="Macro", default_date=briefing_date)
     _append_event_rows(rows, today_forward.get("today_macro", []) or [], category="Macro", default_date=briefing_date)
     _append_event_rows(rows, risk.get("upcoming_events", []) or [], category="Risk event")
 
