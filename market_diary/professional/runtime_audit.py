@@ -34,6 +34,14 @@ REQUIRED_REPORT_SECTION_GROUPS = [
     ("Report quality", ("Report Quality and Validation",)),
 ]
 
+# Sections that are intentionally omitted from the Monday week-ahead report,
+# which replaces the detailed "replay Friday" read with the week-ahead lens.
+WEEK_AHEAD_EXCLUDED_GROUPS = {
+    "Flow tracker",
+    "Stock Connect active names",
+    "A/H premium dispersion",
+}
+
 # Headings become entries in the generated table of contents
 # (_structure_report_html) and are hidden by the print stylesheet, so more of
 # them improves navigation on the phone without costing anything on paper. The
@@ -226,7 +234,13 @@ def audit_generated_run(
             f"{MAX_REPORT_HEADINGS} where practical."
         )
 
+    # The Monday week-ahead report drops the full "replay the last session"
+    # deep-read sections (they would duplicate Friday's tape), so those groups
+    # are only required on non-week-ahead reports.
+    report_mode = str((bundle.get("day_mode", {}) or {}).get("mode", "") or "")
     for label, markers in REQUIRED_REPORT_SECTION_GROUPS:
+        if report_mode == "week_ahead" and label in WEEK_AHEAD_EXCLUDED_GROUPS:
+            continue
         if not any(_section_present(report_text, marker) for marker in markers):
             errors.append(f"Missing required report section group: {label} ({' OR '.join(markers)})")
 

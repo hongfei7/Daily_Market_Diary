@@ -61,6 +61,7 @@ def render_professional_report(
     pulse = layout["pulse"]
     macro_takeaway = layout["macro_takeaway"]
     is_trading_day = layout["is_trading_day"]
+    is_week_ahead = layout["is_week_ahead"]
     layer_one_title = layout["layer_one_title"]
     checklist_title = layout["checklist_title"]
     today_ahead_title = layout["today_ahead_title"]
@@ -71,7 +72,6 @@ def render_professional_report(
     core_names_title = layout["core_names_title"]
     non_trading_lens = layout["non_trading_lens"]
     briefing_date = layout["briefing_date"]
-    review_date = layout["review_date"]
     global_date = layout["global_date"]
     hk_date = layout["hk_date"]
     cn_date = layout["cn_date"]
@@ -83,8 +83,57 @@ def render_professional_report(
         f"![AI / TMT read-through]({ai_tmt_chart_rel_path})\n\n" if ai_tmt_chart_rel_path else ""
     )
     trend_pack_block = _render_trend_pack(bundle, trend_pack_rel_path)
-    daily_chart_section = f"### 3.3 Daily One Chart\n{daily_chart_block}\n\n" if daily_chart_block else ""
-    trend_pack_section = f"### 3.4 Hong Kong Trend Pack\n{trend_pack_block}\n\n" if trend_pack_block else ""
+
+    # --- Mode-aware section assembly -------------------------------------------------
+    # Monday is a week-ahead report, not a replay of Friday's session. The full
+    # "review the last close" deep-read sections (overnight review, HK review,
+    # AI/TMT chain, flow tracker, rotating theme) are dropped and replaced by the
+    # week-ahead lens; Friday's close survives only as the compact baseline
+    # tables in Layer 1. This keeps the commute read high-signal and non-redundant.
+
+    week_ahead_block = _render_week_ahead(bundle)
+    week_ahead_section = (
+        f"## This Week at a Glance\n\n{week_ahead_block}\n\n"
+        if is_week_ahead and week_ahead_block
+        else ""
+    )
+
+    if is_week_ahead:
+        layer2_title = "Layer 2 | Deep Read (10-15 min)"
+        overseas_section = ""
+        hk_review_section = ""
+        ai_tmt_section = ""
+        flow_section = ""
+        theme_section = ""
+        macro_head, company_head, questions_head, names_head = "2.1", "2.2", "2.3", "2.4"
+        today_head = "3.1"
+        chart_head = "3.2"
+        trend_head = "3.3"
+    else:
+        layer2_title = "Layer 2 | Deep Read (20-30 min)"
+        overseas_section = (
+            f"### 2.1 {overseas_title}\n{non_trading_lens}{_render_overseas_review_block(bundle)}\n\n"
+            f"{_render_non_trading_focus(bundle)}\n\n{_render_weekly_review(bundle)}\n\n"
+            f"{_render_selected_news(bundle)}\n\n"
+        )
+        hk_review_section = f"### 2.2 {hk_review_title}\n{_render_hk_review_block(bundle)}\n\n"
+        ai_tmt_section = f"### 2.3 AI / TMT Read-Through\n{ai_tmt_chart_block}{_render_ai_tmt_chain(bundle)}\n\n"
+        flow_section = (
+            f"### 2.4 Flow Tracker and Attribution\n**Cross-Asset Attribution**\n\n"
+            f"{_render_attribution(bundle)}\n\n**Local Flow Tracker**\n\n{_render_flow_tracker(bundle)}\n\n"
+        )
+        theme_section = f"### 3.1 Rotating Theme Deep Dive\n{_render_theme_deep_dive(bundle)}\n\n"
+        macro_head, company_head, questions_head, names_head = "2.5", "2.6", "2.7", "2.8"
+        today_head = "3.2"
+        chart_head = "3.3"
+        trend_head = "3.4"
+
+    daily_chart_section = (
+        f"### {chart_head} Daily One Chart\n{daily_chart_block}\n\n" if daily_chart_block else ""
+    )
+    trend_pack_section = (
+        f"### {trend_head} Hong Kong Trend Pack\n{trend_pack_block}\n\n" if trend_pack_block else ""
+    )
 
     report = f"""# Morning Research Workbench | {briefing_date}
 
@@ -98,7 +147,7 @@ _Data through: US/global `{global_date}` | HK `{hk_date}` | A-share `{cn_date}` 
 
 {_render_executive_summary(bundle, pulse)}
 
-## Visual Dashboard
+{week_ahead_section}## Visual Dashboard
 
 {dashboard_md}{catalyst_radar_section}## {layer_one_title}
 
@@ -118,35 +167,9 @@ _Data through: US/global `{global_date}` | HK `{hk_date}` | A-share `{cn_date}` 
 
 {_render_top_items(bundle.get('must_watch', []) or [], limit=4)}
 
-## Layer 2 | Deep Read (20-30 min)
+## {layer2_title}
 
-### 2.1 {overseas_title}
-{non_trading_lens}{_render_overseas_review_block(bundle)}
-
-{_render_non_trading_focus(bundle)}
-
-{_render_weekly_review(bundle)}
-
-{_render_week_ahead(bundle)}
-
-{_render_selected_news(bundle)}
-
-### 2.2 {hk_review_title}
-{_render_hk_review_block(bundle)}
-
-### 2.3 AI / TMT Read-Through
-{ai_tmt_chart_block}{_render_ai_tmt_chain(bundle)}
-
-### 2.4 Flow Tracker and Attribution
-**Cross-Asset Attribution**
-
-{_render_attribution(bundle)}
-
-**Local Flow Tracker**
-
-{_render_flow_tracker(bundle)}
-
-### 2.5 Macro and Policy Tracking
+{overseas_section}{hk_review_section}{ai_tmt_section}{flow_section}### {macro_head} Macro and Policy Tracking
 {_render_macro_takeaway(macro_takeaway)}
 
 {_render_macro_watchpoints(llm_sections)}
@@ -158,23 +181,20 @@ _Data through: US/global `{global_date}` | HK `{hk_date}` | A-share `{cn_date}` 
 {_render_flows(bundle)}
 {"".join(f"- Geopolitics: {item.get('region', '')} | {item.get('event', '')} | Impact: {item.get('impact', '')}\n" for item in ((bundle.get('risk', {}) or {}).get('geopolitical_risks', []) or [])[:3])}
 
-### 2.6 Company Catalysts and Risk Monitor
+### {company_head} Company Catalysts and Risk Monitor
 {_render_news_table(bundle)}
 
 {_render_company_events(bundle)}
 
-### 2.7 Questions to Expect This Morning
+### {questions_head} Questions to Expect This Morning
 {_render_md_questions(bundle)}
 
-### 2.8 {core_names_title}
+### {names_head} {core_names_title}
 {_render_watchlists(bundle, item_limit=2, story_limit=1, bucket_order=["Core coverage", "Priority follow-up"])}
 
 ## Layer 3 | Decision Deepening (10-15 min)
 
-### 3.1 Rotating Theme Deep Dive
-{_render_theme_deep_dive(bundle)}
-
-### 3.2 {today_ahead_title}
+{theme_section}### {today_head} {today_ahead_title}
 {_render_today_forward(bundle)}
 
 {daily_chart_section}{trend_pack_section}## Optional Appendix | Traceability and Performance (10-15 min)

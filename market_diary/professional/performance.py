@@ -111,12 +111,15 @@ def parse_archived_report(path: Path) -> Tuple[Dict[str, Any] | None, Dict[str, 
     text = path.read_text(encoding="utf-8", errors="replace")
     heading = re.search(r"^# Morning Research Workbench \| (\d{4}-\d{2}-\d{2})", text, re.MULTILINE)
     report_date = _parse_date(heading.group(1) if heading else path.parent.name)
-    # The header was reworded on 2026-08-01 from "Market effective date: `X`" to
-    # "Market effective `X`". Only the old spelling was matched, so every report
-    # from that date on yielded no observation and no signal, silently freezing
-    # the performance ledger on pre-August data. Accept both.
+    # Two header eras:
+    #   - new (2026-08-24+): "Data through: US/global `X` | HK `Y` | A-share `Z`"
+    #     -> the HK data date is the correct as-of for the HSI / 3033 prices.
+    #   - old: "Market effective date: `X`" / "Market effective `X`" (the global
+    #     effective date, kept for backward compatibility).
+    hk_match = re.search(r"HK\s+`([^`]+)`", text)
     effective = re.search(r"Market effective(?:\s+date)?:?\s*`([^`]+)`", text)
-    market_as_of = _parse_date(effective.group(1) if effective else "")
+    as_of_candidate = hk_match.group(1) if hk_match else (effective.group(1) if effective else "")
+    market_as_of = _parse_date(as_of_candidate)
     risk = re.search(r"Composite risk score:\*\*\s*`?([0-9.]+)/100`?\s*\|\s*\*\*Regime:\*\*\s*`?([^`\n]+?)`?\s*$", text, re.MULTILINE)
     if not risk:
         risk = re.search(r"Composite risk score:.*?([0-9.]+)/100.*?Regime:.*?`?([A-Za-z -]+)`?", text)

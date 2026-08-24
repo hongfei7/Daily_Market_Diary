@@ -1,0 +1,8 @@
+{
+  "observations": {
+    "southbound_net_flow": {
+      "2026-08-21": -7629640000.000014
+    }
+  },
+  "schema_version": "metric-history-v1"
+}
