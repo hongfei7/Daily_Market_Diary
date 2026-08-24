@@ -91,7 +91,12 @@ jobs:
           for run in payload.get("workflow_runs", []):
               if int(run.get("id", 0) or 0) == current_run or run.get("conclusion") != "success":
                   continue
-              started = datetime.fromisoformat(str(run.get("run_started_at", "")).replace("Z", "+00:00"))
+              try:
+                  started = datetime.fromisoformat(str(run.get("run_started_at", "") or "").replace("Z", "+00:00"))
+              except ValueError:
+                  # An unparseable start time must not fail the gate step (which
+                  # would skip the release_alert and delivery under bash -e).
+                  continue
               if started >= cutoff:
                   recent = True
                   break

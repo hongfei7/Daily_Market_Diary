@@ -50,6 +50,7 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
     is_trading_day = bool(day_mode.get("is_trading_day", True))
     report_mode = day_mode.get("mode", "trading_daily")
     is_weekly_review = report_mode == "weekly_review"
+    is_week_ahead = report_mode == "week_ahead"
     dashboard_md = f"![Research Dashboard]({dashboard_rel_path})\n" if dashboard_rel_path else ""
     market_quality_line = _render_market_data_quality(meta)
     date_policy_line = _render_date_policy(bundle)
@@ -74,6 +75,17 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
         mode_lens = (
             "> Weekly review mode: synthesize the completed Hong Kong week, retain the main cross-asset and policy lessons, "
             "and convert them into next-week preparation rather than treating Saturday as a fresh cash-market session.\n\n"
+        )
+    elif is_week_ahead:
+        layer_one_title = "Layer 1 | Reset (5 min)"
+        checklist_title = "This Week Checklist"
+        today_ahead_title = "This Week Calendar and Trading Setup"
+        overseas_title = "Weekend Digest and Global Baseline"
+        hk_quick_title = "Hong Kong Baseline Quick Check (Friday Close)"
+        hk_review_title = "Hong Kong / A-share Last Close Baseline"
+        mode_lens = (
+            "> Week-ahead mode: use Friday's close as the baseline, lay out the week's calendar, "
+            "and name the key things to watch rather than replaying stale cash-market tape.\n\n"
         )
     elif is_trading_day:
         layer_one_title = "Layer 1 | Scan (5 min)"
@@ -110,6 +122,16 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
         "is_trading_day": is_trading_day,
         "report_mode": report_mode,
         "is_weekly_review": is_weekly_review,
+        "is_week_ahead": is_week_ahead,
+        "call_title": (
+            "Last Week's Call" if is_weekly_review
+            else "Last Session's Call" if is_week_ahead
+            else "Yesterday's Call"
+        ),
+        "core_names_title": (
+            "Core Names This Week" if (is_weekly_review or is_week_ahead)
+            else "Today's Core Names"
+        ),
         "layer_one_title": layer_one_title,
         "checklist_title": checklist_title,
         "today_ahead_title": today_ahead_title,
@@ -122,4 +144,5 @@ def build_report_layout(bundle: Dict[str, Any], dashboard_rel_path: str = "") ->
         "data_through": meta.get("data_through", meta.get("report_date", "")),
         "global_date": meta.get("global_market_date", meta.get("effective_date", meta.get("data_through", meta.get("report_date", "")))),
         "hk_date": meta.get("hk_data_date", meta.get("data_through", meta.get("report_date", ""))),
+        "cn_date": meta.get("cn_data_date", meta.get("hk_data_date", meta.get("data_through", meta.get("report_date", "")))),
     }

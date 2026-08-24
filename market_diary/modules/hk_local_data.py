@@ -17,6 +17,7 @@ from market_diary.modules.local_metrics import (
     format_hkd_billions,
     format_percent,
     format_ratio,
+    format_rmb_billions,
     parse_target_date,
     summarize_error_records,
     unavailable_metric,
@@ -148,14 +149,21 @@ def _fetch_hkma_record(target: date, errors: Optional[List[Dict[str, str]]] = No
         return None
 
     records = ((payload.get("result", {}) or {}).get("records", []) or [])
+    # Pick the latest record at or before the target instead of the first one:
+    # the HKMA API does not document a guaranteed ordering, and returning the
+    # first match could publish months-stale HIBOR / Aggregate Balance as
+    # "live_local".
+    best: Optional[Dict[str, Any]] = None
+    best_date: Optional[date] = None
     for record in records:
         try:
             end_of_date = parse_target_date(str(record.get("end_of_date", "")))
         except ValueError:
             continue
-        if end_of_date <= target:
-            return record
-    return None
+        if end_of_date <= target and (best_date is None or end_of_date > best_date):
+            best = record
+            best_date = end_of_date
+    return best
 
 
 def _fetch_short_sell_snapshot(
@@ -263,13 +271,18 @@ def _stock_connect_metric(
     payload = data.get(key, {}) or {}
     net_buy = payload.get("net_buy")
     total_turnover = payload.get("total_turnover")
+    # Southbound trades HK-listed shares (HKD); Northbound trades A-shares (RMB).
+    formatter = format_rmb_billions if key == "northbound" else format_hkd_billions
     if net_buy is not None:
-        display_value = f"Net {format_hkd_billions(float(net_buy) * 1_000_000.0)} | turnover {format_hkd_billions(float(total_turnover or 0) * 1_000_000.0)}"
+        display_value = f"Net {formatter(float(net_buy) * 1_000_000.0)} | turnover {formatter(float(total_turnover or 0) * 1_000_000.0)}"
         value = float(net_buy) * 1_000_000.0
         note = f"{label} net buy is calculated from HKEX disclosed buy and sell turnover."
     elif total_turnover is not None:
-        display_value = f"Turnover {format_hkd_billions(float(total_turnover) * 1_000_000.0)} | net not reported"
-        value = float(total_turnover) * 1_000_000.0
+        # Turnover is NOT net flow: never store it as the metric value, or the
+        # investor lens would report "net buying" from a figure that is
+        # explicitly "net not reported".
+        display_value = f"Turnover {formatter(float(total_turnover) * 1_000_000.0)} | net not reported"
+        value = None
         note = f"{label} total turnover is available; net-buy is not disclosed in this public daily file."
     else:
         return None

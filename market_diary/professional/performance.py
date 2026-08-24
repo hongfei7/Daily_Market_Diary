@@ -200,10 +200,14 @@ def _merge_observations(observations: Iterable[Mapping[str, Any]]) -> Tuple[List
             if conflict_key in conflicted_keys:
                 continue
             if name in existing and not math.isclose(existing[name], value, rel_tol=1e-6, abs_tol=1e-6):
+                # Keep the first-seen (immutable archive) observation, drop the
+                # later re-derived value. Popping the name here used to leave the
+                # surviving observation with an empty price map, which silently
+                # wiped every Friday session (the weekend run re-derived the same
+                # close with a slightly different value).
                 conflicts.append(
-                    f"{as_of} {name}: {existing[name]} versus {value}; excluded conflicted observation"
+                    f"{as_of} {name}: {existing[name]} versus {value}; kept archived observation"
                 )
-                existing.pop(name, None)
                 conflicted_keys.add(conflict_key)
                 continue
             existing.setdefault(name, value)
@@ -211,18 +215,25 @@ def _merge_observations(observations: Iterable[Mapping[str, Any]]) -> Tuple[List
 
 
 def _merge_signals(signals: Iterable[Mapping[str, Any]]) -> List[Dict[str, Any]]:
-    by_id: Dict[str, Dict[str, Any]] = {}
+    # One published call per completed session. Weekend re-runs re-derive the
+    # same Friday close and used to publish a new signal_id (different
+    # report_date) each time, so _active_signals then "flipped" the regime and
+    # recent_record double-counted one move. Keep the earliest publication per
+    # market_as_of: the first call after the close is the one that matters.
+    by_session: Dict[str, Dict[str, Any]] = {}
     for raw in signals:
         signal_id = str(raw.get("signal_id", "") or "")
         report_date = _parse_date(raw.get("report_date"))
         market_as_of = _parse_date(raw.get("market_as_of"))
         if not signal_id or not report_date or not market_as_of:
             continue
-        if signal_id not in by_id:
-            by_id[signal_id] = dict(raw)
-            by_id[signal_id]["report_date"] = report_date
-            by_id[signal_id]["market_as_of"] = market_as_of
-    return sorted(by_id.values(), key=lambda item: (item["market_as_of"], item["report_date"], item["signal_id"]))
+        item = dict(raw)
+        item["report_date"] = report_date
+        item["market_as_of"] = market_as_of
+        existing = by_session.get(market_as_of)
+        if existing is None or report_date < _parse_date(existing.get("report_date")):
+            by_session[market_as_of] = item
+    return sorted(by_session.values(), key=lambda item: (item["market_as_of"], item["report_date"], item["signal_id"]))
 
 
 def _active_signals(signals: Sequence[Mapping[str, Any]]) -> List[Dict[str, Any]]:

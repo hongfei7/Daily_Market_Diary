@@ -170,14 +170,28 @@ def _summary_ai_tmt(bundle: Dict[str, Any]) -> str:
 def _summary_watch(bundle: Dict[str, Any]) -> str:
     parts: List[str] = []
 
-    # The nearest high-impact scheduled event, if one falls in the window.
-    for item in (bundle.get("macro_agenda", []) or []):
-        if str(item.get("status", "")).lower() == "upcoming":
+    # "What to watch today" must be a same-day event, not the nearest upcoming
+    # one: on a Friday a Monday print is not what to watch *today*.
+    briefing_date = str((bundle.get("meta", {}) or {}).get("briefing_date", "") or "")
+    agenda = bundle.get("macro_agenda", []) or []
+    today_items = [
+        item for item in agenda
+        if str(item.get("date", "") or "") == briefing_date and str(item.get("status", "")).lower() == "upcoming"
+    ]
+    if today_items:
+        item = today_items[0]
+        event = str(item.get("event", "") or "").strip()
+        when = str(item.get("time") or "").strip()
+        if event:
+            parts.append(f"{event}{f' ({when})' if when else ''}.")
+    else:
+        upcoming = [item for item in agenda if str(item.get("status", "")).lower() == "upcoming"]
+        if upcoming:
+            item = upcoming[0]
             event = str(item.get("event", "") or "").strip()
-            when = str(item.get("time") or item.get("date") or "").strip()
+            on_date = str(item.get("date", "") or "").strip()
             if event:
-                parts.append(f"{event}{f' ({when})' if when else ''}.")
-                break
+                parts.append(f"Next scheduled catalyst: {event}{f' on {on_date}' if on_date else ''}.")
 
     chain = bundle.get("ai_tmt_chain", {}) or {}
     test = _safe_sentence_clip(chain.get("test", ""), 200)
@@ -427,7 +441,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
         )
         lines.append(f"- **Short-value leaders:** {leaders}.")
 
-    if not southbound_active:
+    if not _has_official_stock_connect_flow(bundle):
         proxy_table = _render_hk_etf_proxy_table(bundle)
         if "No Hong Kong or offshore-China ETF proxy data" not in proxy_table:
             lines.append("**ETF Proxy Read**")
@@ -591,12 +605,8 @@ def _render_hk_review_block(bundle: Dict[str, Any]) -> str:
     if deterministic_invalidation:
         lines.append(f"**Failure condition.** {_condense_sentence(deterministic_invalidation, 260)}")
 
-    if not _has_official_stock_connect_flow(bundle):
-        proxy_table = _render_hk_etf_proxy_table(bundle)
-        if "No Hong Kong or offshore-China ETF proxy data" not in proxy_table:
-            lines.append("")
-            lines.append("**ETF proxy read, only if official local-flow data are incomplete:**")
-            lines.append(proxy_table)
+    # The ETF proxy fallback lives in the Flow Tracker (2.4); rendering it here
+    # too produced the same table twice on every low-flow day.
 
     return "\n".join(lines)
 

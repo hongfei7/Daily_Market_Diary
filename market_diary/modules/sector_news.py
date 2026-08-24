@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -22,6 +23,20 @@ NEWS_REQUEST_TIMEOUT = (
     float(os.environ.get("DMD_NEWS_READ_TIMEOUT_SECONDS", "6")),
 )
 NEWS_USER_AGENT = "DailyMarketDiary/1.0"
+
+
+def _keyword_match(text: str, keywords: List[str]) -> bool:
+    """Word-boundary keyword match.
+
+    Substring matching made short keywords like "ai" match "said" and "ev"
+    match "never". Lookarounds confine a keyword to a whole token (or a
+    multi-word phrase like "electric vehicle") without splitting on hyphens.
+    """
+    for keyword in keywords:
+        pattern = rf"(?<![a-z0-9]){re.escape(keyword)}(?![a-z0-9])"
+        if re.search(pattern, text):
+            return True
+    return False
 
 
 def _cache_path(cache_dir: str, cache_key: str) -> str:
@@ -143,7 +158,7 @@ class SectorNewsAggregator:
 
             matched = False
             for sector, keywords in self.SECTORS.items():
-                if any(keyword in text for keyword in keywords):
+                if _keyword_match(text, keywords):
                     categorized[sector].append(news)
                     matched = True
                     break

@@ -164,6 +164,12 @@ def format_hkd_billions(value_hkd: Optional[float], digits: int = 1) -> str:
     return f"HK${value_hkd / 1_000_000_000:.{digits}f}bn"
 
 
+def format_rmb_billions(value_rmb: Optional[float], digits: int = 1) -> str:
+    if value_rmb is None:
+        return "N/A"
+    return f"RMB{value_rmb / 1_000_000_000:.{digits}f}bn"
+
+
 def format_bp(value_pct_point: Optional[float], digits: int = 1) -> str:
     if value_pct_point is None:
         return "N/A"

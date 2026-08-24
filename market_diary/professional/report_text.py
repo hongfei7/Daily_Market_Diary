@@ -194,7 +194,10 @@ def _clean_report_spacing(text: str) -> str:
     cleaned = text
     for source, target in replacements.items():
         cleaned = cleaned.replace(source, target)
-    cleaned = re.sub(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]+", "", cleaned)
+    # Do NOT strip CJK/Kana/Hangul: a HK/China product can legitimately carry
+    # Chinese company names and filing titles, and silently deleting them mangled
+    # facts (e.g. "小米集团 (1810.HK)" -> " (1810.HK)"). The runtime audit flags
+    # non-English script as a warning instead of destroying it.
     cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
 
     spaced_lines: List[str] = []

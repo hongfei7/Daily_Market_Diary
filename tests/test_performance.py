@@ -72,7 +72,7 @@ def test_event_entry_cannot_precede_publication_date() -> None:
     assert ledger["benchmarks"]["Hang Seng Index"]["outcomes"][0]["entry_date"] == "2026-08-05"
 
 
-def test_conflicting_prices_are_excluded_not_selected() -> None:
+def test_conflicting_prices_keep_archived_observation() -> None:
     ledger = build_performance_ledger(
         observations=[
             {"as_of": "2026-08-03", "prices": {"Hang Seng Index": 100.0}},
@@ -83,8 +83,9 @@ def test_conflicting_prices_are_excluded_not_selected() -> None:
         benchmarks=("Hang Seng Index",),
     )
     first = next(item for item in ledger["observations"] if item["as_of"] == "2026-08-03")
-    assert "Hang Seng Index" not in first["prices"]
-    assert "excluded conflicted observation" in ledger["data_quality"]["conflicts"][0]
+    # The first-seen (archived) price survives; the conflicting later value is dropped.
+    assert first["prices"]["Hang Seng Index"] == 100.0
+    assert "kept archived observation" in ledger["data_quality"]["conflicts"][0]
     assert ledger["status"] == "exploratory_with_caveats"
 
 
@@ -92,5 +93,5 @@ if __name__ == "__main__":
     test_backtest_uses_next_available_close_and_costs()
     test_manual_review_signal_is_recorded_but_not_traded()
     test_event_entry_cannot_precede_publication_date()
-    test_conflicting_prices_are_excluded_not_selected()
+    test_conflicting_prices_keep_archived_observation()
     print("Performance tests passed")

@@ -242,6 +242,7 @@ def main():
 
     bundle = build_professional_bundle(
         report_date="2026-04-13",
+        briefing_date="2026-04-14",  # Tuesday: keeps this a trading-day report
         config=config,
         market_data=fixture["market_data"],
         chart_features=fixture["chart_features"],

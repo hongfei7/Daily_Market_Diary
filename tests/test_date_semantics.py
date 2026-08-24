@@ -7,8 +7,19 @@ from _bootstrap import ROOT  # noqa: F401
 from main_professional import _previous_calendar_day
 from professional.analytics import build_professional_bundle
 from professional.config import load_professional_config
-from professional.date_policy import build_day_mode, build_report_mode, previous_calendar_day, resolve_report_dates
+from professional.date_policy import (
+    build_day_mode,
+    build_report_mode,
+    is_hk_trading_day,
+    previous_calendar_day,
+    previous_hk_trading_day,
+    resolve_report_dates,
+)
 from professional.report_builder import render_professional_report
+
+
+def _empty_args() -> dict:
+    return {"date": "", "review_date": "", "global_date": "", "hk_date": ""}
 
 
 def test_report_omits_absent_visual_sections_until_assets_exist() -> None:
@@ -16,10 +27,10 @@ def test_report_omits_absent_visual_sections_until_assets_exist() -> None:
     bundle = build_professional_bundle(
         report_date="2026-04-18",
         briefing_date="2026-04-19",
-        global_market_date="2026-04-18",
+        global_market_date="2026-04-17",
         hk_data_date="2026-04-17",
         config=config,
-        market_data={"summary": {}, "meta": {"requested_date": "2026-04-18", "effective_date": "2026-04-17"}},
+        market_data={"summary": {}, "meta": {"requested_date": "2026-04-17", "effective_date": "2026-04-17"}},
         chart_features={},
         macro_data={"calendar": {"released": [], "upcoming": []}, "central_bank_events": []},
         sector_data={},
@@ -48,111 +59,79 @@ def test_report_omits_absent_visual_sections_until_assets_exist() -> None:
     assert "### 3.4 Hong Kong Trend Pack" in report_with_visuals
 
 
-def main() -> None:
-    config = load_professional_config()
-
+def test_calendar_day_helpers() -> None:
     assert previous_calendar_day("2026-04-20") == "2026-04-19"
     assert _previous_calendar_day("2026-04-20") == "2026-04-19"
     assert _previous_calendar_day("2026-04-18") == "2026-04-17"
 
-    empty_args = {
-        "date": "",
-        "review_date": "",
-        "global_date": "",
-        "hk_date": "",
-    }
-    monday_dates = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-20", **empty_args), config)
-    saturday_dates = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-18", **empty_args), config)
-    tuesday_dates = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-21", **empty_args), config)
-    thursday_dates = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-16", **empty_args), config)
-    friday_dates = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-17", **empty_args), config)
-    sunday_dates = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-19", **empty_args), config)
 
-    assert monday_dates["review_date"] == "2026-04-19"
-    assert monday_dates["global_market_date"] == "2026-04-19"
-    assert monday_dates["hk_data_date"] == "2026-04-17"
-    assert saturday_dates["review_date"] == "2026-04-17"
-    assert saturday_dates["hk_data_date"] == "2026-04-17"
-    assert tuesday_dates["review_date"] == "2026-04-20"
-    assert tuesday_dates["hk_data_date"] == "2026-04-20"
-    assert thursday_dates["review_date"] == "2026-04-15"
-    assert thursday_dates["hk_data_date"] == "2026-04-15"
-    assert friday_dates["review_date"] == "2026-04-16"
-    assert friday_dates["hk_data_date"] == "2026-04-16"
-    assert sunday_dates["review_date"] == "2026-04-18"
-    assert sunday_dates["hk_data_date"] == "2026-04-17"
+def test_resolve_report_dates_weekday_semantics() -> None:
+    config = load_professional_config()
 
-    monday_morning_review = build_day_mode("2026-04-19", config)
-    saturday_morning_review = build_day_mode("2026-04-17", config)
-    sunday_morning_review = build_report_mode("2026-04-18", config, briefing_date="2026-04-19")
+    monday = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-20", **_empty_args()), config)
+    assert monday["review_date"] == "2026-04-19"          # Sunday (narrative day)
+    assert monday["global_market_date"] == "2026-04-17"   # Friday (last global session, not Sunday)
+    assert monday["hk_data_date"] == "2026-04-17"         # Friday (last HK session)
 
-    assert monday_morning_review["mode"] == "non_trading_event_watch"
-    assert monday_morning_review["is_trading_day"] is False
-    assert saturday_morning_review["mode"] == "trading_daily"
-    assert saturday_morning_review["is_trading_day"] is True
-    assert sunday_morning_review["mode"] == "weekly_review"
-    assert sunday_morning_review["period_start"] == "2026-04-13"
-    assert sunday_morning_review["period_end"] == "2026-04-17"
+    sunday = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-19", **_empty_args()), config)
+    assert sunday["review_date"] == "2026-04-18"
+    assert sunday["global_market_date"] == "2026-04-17"
+    assert sunday["hk_data_date"] == "2026-04-17"
 
-    holiday_config = {**config, "calendar": {**(config.get("calendar", {}) or {}), "closed_dates": ["2026-04-15"]}}
-    holiday_mode = build_report_mode("2026-04-15", holiday_config, briefing_date="2026-04-16")
-    assert holiday_mode["mode"] == "holiday_reopen_playbook"
-    assert holiday_mode["next_hk_trading_day"] == "2026-04-16"
+    tuesday = resolve_report_dates(SimpleNamespace(briefing_date="2026-04-21", **_empty_args()), config)
+    assert tuesday["review_date"] == "2026-04-20"
+    assert tuesday["global_market_date"] == "2026-04-20"
+    assert tuesday["hk_data_date"] == "2026-04-20"
 
+
+def test_report_mode_keyed_on_briefing_day() -> None:
+    config = load_professional_config()
+
+    sunday = build_report_mode("2026-04-19", config)
+    assert sunday["mode"] == "weekly_review"
+    assert sunday["is_trading_day"] is False
+    assert sunday["period_start"] == "2026-04-13"
+    assert sunday["period_end"] == "2026-04-17"
+
+    monday = build_report_mode("2026-08-24", config)
+    assert monday["mode"] == "week_ahead"
+    assert monday["week_start"] == "2026-08-24"
+    assert monday["week_end"] == "2026-08-28"
+    assert monday["last_hk_trading_day"] == "2026-08-21"
+
+    thursday = build_report_mode("2026-04-16", config)
+    assert thursday["mode"] == "trading_daily"
+    assert thursday["is_trading_day"] is True
+
+    saturday = build_report_mode("2026-04-18", config)
+    assert saturday["mode"] == "trading_daily"
+    assert saturday["last_hk_trading_day"] == "2026-04-17"
+
+
+def test_holiday_modes() -> None:
+    config = load_professional_config()
+    # Easter Monday 2026-04-06 is a weekday HK market holiday.
+    assert is_hk_trading_day("2026-04-06", config) is False
+    assert previous_hk_trading_day("2026-04-07", config) == "2026-04-02"
+
+    easter_monday = build_report_mode("2026-04-06", config)
+    assert easter_monday["mode"] == "holiday_event_watch"
+    assert easter_monday["last_hk_trading_day"] == "2026-04-02"
+
+    reopen = build_report_mode("2026-04-07", config)
+    assert reopen["mode"] == "holiday_reopen_playbook"
+    assert reopen["last_hk_trading_day"] == "2026-04-02"
+
+
+def test_monday_week_ahead_bundle_and_report() -> None:
+    config = load_professional_config()
     bundle = build_professional_bundle(
-        report_date="2026-04-19",
-        briefing_date="2026-04-20",
-        global_market_date="2026-04-19",
-        hk_data_date="2026-04-17",
+        report_date="2026-08-23",
+        briefing_date="2026-08-24",
+        global_market_date="2026-08-21",
+        hk_data_date="2026-08-21",
         config=config,
-        market_data={"summary": {}, "meta": {"requested_date": "2026-04-19", "effective_date": "2026-04-17"}},
-        chart_features={},
-        macro_data={
-            "calendar": {
-                "released": [],
-                "upcoming": [
-                    {
-                        "time": "20:30",
-                        "country": "US",
-                        "indicator": "Retail Sales MoM",
-                        "forecast": "0.2%",
-                        "previous": "0.1%",
-                        "impact": "high",
-                    }
-                ],
-            },
-            "central_bank_events": [],
-        },
-        sector_data={},
-        movers_data={},
-        risk_data={},
-        news_headlines=[],
-    )
-    assert bundle["meta"]["briefing_date"] == "2026-04-20"
-    assert bundle["meta"]["review_date"] == "2026-04-19"
-    assert bundle["meta"]["effective_date"] == "2026-04-17"
-    assert bundle["date_semantics"]["hk_data_date"] == "2026-04-17"
-    assert bundle["date_semantics"]["hk_cash_role"] == "last completed HK/China cash-market reference tape"
-    assert bundle["day_mode"]["mode"] == "non_trading_event_watch"
-
-    report = render_professional_report(bundle, charts_section="")
-    assert "Date policy" in report
-    assert "Still-Moving Global Financial Actions" in report
-    assert "Non-Trading Focus Map" in report
-    assert "Weekend / Holiday Event Docket" in report
-    assert "Hong Kong Last Cash-Tape Quick Check (Reference)" in report
-    assert "Last Available Hong Kong / A-share Tape (Reference Only)" in report
-    assert "last-available reference" in report
-    assert "### 3.3 Daily One Chart" not in report
-    assert "### 3.4 Hong Kong Trend Pack" not in report
-
-    weekly_bundle = build_professional_bundle(
-        report_date="2026-04-18",
-        briefing_date="2026-04-19",
-        global_market_date="2026-04-18",
-        hk_data_date="2026-04-17",
-        config=config,
-        market_data={"summary": {}, "meta": {"requested_date": "2026-04-18", "effective_date": "2026-04-17"}},
+        market_data={"summary": {}, "meta": {"requested_date": "2026-08-21", "effective_date": "2026-08-21"}},
         chart_features={},
         macro_data={"calendar": {"released": [], "upcoming": []}, "central_bank_events": []},
         sector_data={},
@@ -160,38 +139,48 @@ def main() -> None:
         risk_data={},
         news_headlines=[],
     )
-    weekly_report = render_professional_report(weekly_bundle, charts_section="")
-    assert weekly_bundle["day_mode"]["mode"] == "weekly_review"
-    assert weekly_bundle["weekly_review"]["window"]["start"] == "2026-04-13"
-    assert "Weekly Review Map" in weekly_report
-    assert "Next Week Checklist" in weekly_report
-    assert "Weekly Cross-Asset Review" in weekly_report
-    assert "Next-week desk questions" in weekly_report
-    assert "Non-Trading Focus Map" not in weekly_report
-    assert "### 3.4 Hong Kong Trend Pack" not in weekly_report
+    assert bundle["day_mode"]["mode"] == "week_ahead"
+    assert bundle["week_ahead"]["week_start"] == "2026-08-24"
+    report = render_professional_report(bundle, charts_section="")
+    assert "Week Ahead" in report
+    assert "Week Ahead Map" in report
+    assert "This Week's Calendar" in report
+    assert "Base Case / Risk Case" in report
+    assert "What to Watch This Week" in report
 
-    weekly_bundle["weekly_review"]["trend_summary"] = {
-        "status": "ok",
-        "window": {"start": "2026-04-13", "end": "2026-04-17"},
-        "rows": [
-            {
-                "signal": "Southbound flow",
-                "weekly_change": "+4.0bn over 5 sessions",
-                "latest": "+1.4bn on 2026-04-17",
-                "read": "Southbound flow stayed net positive into the weekly close.",
-            }
-        ],
-    }
-    weekly_bundle["trend_pack"] = {
-        "title": "Hong Kong Trend Pack",
-        "rel_path": "charts/test_hk_trend_pack.png",
-        "caption": "Trend read. Weekly lens.",
-    }
-    weekly_report_with_trends = render_professional_report(weekly_bundle, charts_section="")
-    assert "Five-session trend evidence" in weekly_report_with_trends
-    assert "Southbound flow" in weekly_report_with_trends
-    assert "### 3.4 Hong Kong Trend Pack" in weekly_report_with_trends
 
+def test_sunday_weekly_review_bundle_and_report() -> None:
+    config = load_professional_config()
+    bundle = build_professional_bundle(
+        report_date="2026-04-18",
+        briefing_date="2026-04-19",
+        global_market_date="2026-04-17",
+        hk_data_date="2026-04-17",
+        config=config,
+        market_data={"summary": {}, "meta": {"requested_date": "2026-04-17", "effective_date": "2026-04-17"}},
+        chart_features={},
+        macro_data={"calendar": {"released": [], "upcoming": []}, "central_bank_events": []},
+        sector_data={},
+        movers_data={},
+        risk_data={},
+        news_headlines=[],
+    )
+    assert bundle["day_mode"]["mode"] == "weekly_review"
+    assert bundle["weekly_review"]["window"]["start"] == "2026-04-13"
+    report = render_professional_report(bundle, charts_section="")
+    assert "Weekly Review" in report
+    assert "Weekly Review Map" in report
+    assert "Next Week Checklist" in report
+
+
+def main() -> None:
+    test_calendar_day_helpers()
+    test_report_omits_absent_visual_sections_until_assets_exist()
+    test_resolve_report_dates_weekday_semantics()
+    test_report_mode_keyed_on_briefing_day()
+    test_holiday_modes()
+    test_monday_week_ahead_bundle_and_report()
+    test_sunday_weekly_review_bundle_and_report()
     print("Date semantics test passed")
 
 

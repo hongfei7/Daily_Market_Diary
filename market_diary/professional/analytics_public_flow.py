@@ -77,7 +77,7 @@ def enrich_hk_local_with_public_flow(
             elif total_turnover is not None:
                 turnover_hkd = float(total_turnover) * 1_000_000.0
                 metrics["southbound_net_flow"] = _public_metric(
-                    value=turnover_hkd,
+                    value=None,
                     display_value=f"Turnover {_format_hkd_billions(turnover_hkd)} | net not reported",
                     source=source,
                     as_of=as_of,

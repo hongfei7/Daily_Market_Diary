@@ -22,6 +22,7 @@ from market_diary.professional.analytics_narrative import (
     build_reflection_prompts,
     build_theme_deep_dive,
     build_today_forward,
+    build_week_ahead,
     build_weekly_review,
 )
 from market_diary.professional.analytics_public_flow import enrich_hk_local_with_public_flow
@@ -102,6 +103,7 @@ def build_professional_bundle(
     briefing_date: Optional[str] = None,
     global_market_date: Optional[str] = None,
     hk_data_date: Optional[str] = None,
+    cn_data_date: Optional[str] = None,
     hk_local_data: Optional[Dict[str, Any]] = None,
     china_rates_data: Optional[Dict[str, Any]] = None,
     metric_history: Optional[Dict[str, Any]] = None,
@@ -123,7 +125,7 @@ def build_professional_bundle(
     overview = build_market_overview(summary, chart_features)
     hk_desk_view = build_hk_desk_view(summary, hk_local_metrics, metric_history, local_date)
     ai_tmt_chain = build_ai_tmt_chain(summary)
-    day_mode = build_report_mode(report_date, config, briefing_date=morning_date)
+    day_mode = build_report_mode(morning_date, config)
     date_semantics = build_date_semantics(
         report_date=report_date,
         briefing_date=morning_date,
@@ -131,6 +133,7 @@ def build_professional_bundle(
         hk_data_date=local_date,
         market_meta=market_meta,
         day_mode=day_mode,
+        cn_data_date=cn_data_date or "",
     )
     macro_agenda = build_macro_agenda(morning_date, macro_data, config)
     sector_digest = build_sector_news_digest(sector_data, config)
@@ -179,6 +182,20 @@ def build_professional_bundle(
         flow_tracker=flow_tracker,
         attribution=attribution,
     )
+    week_ahead = build_week_ahead(
+        day_mode=day_mode,
+        date_semantics=date_semantics,
+        overview=overview,
+        summary=summary,
+        hk_desk_view=hk_desk_view,
+        macro_agenda=macro_agenda,
+        sector_digest=sector_digest,
+        high_frequency=high_frequency,
+        catalysts=catalysts,
+        risk_data=risk_data,
+        flow_tracker=flow_tracker,
+        attribution=attribution,
+    )
     reflection_prompts = build_reflection_prompts(config, overview, hk_desk_view)
     source_links = build_source_links(sector_digest, watchlists, report_config, company_events=company_events)
     must_watch = build_must_watch(
@@ -200,6 +217,7 @@ def build_professional_bundle(
             "data_through": local_date,
             "global_market_date": global_date,
             "hk_data_date": local_date,
+            "cn_data_date": cn_data_date or "",
             "requested_date": market_meta.get("requested_date", global_date),
             "effective_date": market_meta.get("effective_date", global_date),
             "summary_date": market_meta.get("summary_date", market_meta.get("effective_date", global_date)),
@@ -233,6 +251,7 @@ def build_professional_bundle(
         "today_forward": today_forward,
         "non_trading_focus": non_trading_focus,
         "weekly_review": weekly_review,
+        "week_ahead": week_ahead,
         "reflection_prompts": reflection_prompts,
         "source_links": source_links,
         "must_watch": must_watch,

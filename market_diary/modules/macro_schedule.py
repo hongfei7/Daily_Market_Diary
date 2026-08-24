@@ -170,13 +170,15 @@ def _month_range(anchor: date, back: int, forward: int) -> List[tuple]:
 
 def scheduled_events(
     reference: date,
-    days_back: int = 1,
+    days_back: int = 4,
     days_forward: int = 5,
 ) -> List[Dict[str, Any]]:
     """Return releases scheduled inside the window around ``reference``.
 
     ``days_back`` covers what should already have printed (for the overnight
-    review) and ``days_forward`` covers what is coming.
+    review) and ``days_forward`` covers what is coming. The default is 4 calendar
+    days so a Monday briefing still carries Friday's releases (the previous
+    session's prints were dropped when the window was 1 day).
     """
     start = reference - timedelta(days=days_back)
     end = reference + timedelta(days=days_forward)

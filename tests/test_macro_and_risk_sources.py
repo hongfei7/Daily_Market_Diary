@@ -44,8 +44,11 @@ class TestMacroSchedule:
     def test_month_end_rules_clamp_to_real_dates(self):
         """A day-31 rule must not produce 31 February."""
         events = scheduled_events(date(2026, 2, 27), days_back=0, days_forward=3)
+        assert events, "month-end rules should produce at least one event in the window"
         for item in events:
-            date.fromisoformat(item["date"])  # raises if invalid
+            parsed = date.fromisoformat(item["date"])  # raises if invalid
+            assert parsed <= date(2026, 2, 28) or parsed >= date(2026, 3, 1)
+            assert not (parsed.month == 2 and parsed.day >= 29)
 
     def test_events_are_split_into_released_and_upcoming(self):
         events = scheduled_events(date(2026, 11, 2), days_back=2, days_forward=5)

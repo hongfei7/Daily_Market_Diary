@@ -4,6 +4,12 @@ from datetime import date, datetime, timedelta
 from typing import Any, Dict
 from zoneinfo import ZoneInfo
 
+from market_diary.professional.market_holidays import (
+    load_cn_holidays,
+    load_hk_holidays,
+    load_us_holidays,
+)
+
 
 def today_in_timezone(tz_name: str) -> str:
     try:
@@ -36,7 +42,12 @@ def _closed_weekdays(config: Dict[str, Any]) -> set[int]:
 
 def _closed_dates(config: Dict[str, Any]) -> set[str]:
     calendar = _calendar_config(config)
-    return set(str(item) for item in (calendar.get("closed_dates", []) or []))
+    dates = set(str(item) for item in (calendar.get("closed_dates", []) or []))
+    # Merge the static HKEX weekday-holiday table unless the config opts out.
+    if calendar.get("use_hk_holidays", True):
+        holiday_dates, _ = load_hk_holidays()
+        dates |= holiday_dates
+    return dates
 
 
 def _parse_date(value: str) -> date:
@@ -77,6 +88,43 @@ def next_hk_trading_day_after(value: str, config: Dict[str, Any]) -> str:
     return value
 
 
+def _us_closed_dates(year: int) -> set[str]:
+    return load_us_holidays(year)
+
+
+def _cn_closed_dates(year: int) -> set[str]:
+    dates, _ = load_cn_holidays(year)
+    return dates
+
+
+def is_us_trading_day(value: str) -> bool:
+    day = _parse_date(value)
+    return day.weekday() < 5 and value not in _us_closed_dates(day.year)
+
+
+def is_cn_trading_day(value: str) -> bool:
+    day = _parse_date(value)
+    return day.weekday() < 5 and value not in _cn_closed_dates(day.year)
+
+
+def previous_us_trading_day(briefing_date: str) -> str:
+    current = _parse_date(briefing_date) - timedelta(days=1)
+    for _ in range(14):
+        if is_us_trading_day(current.isoformat()):
+            return current.isoformat()
+        current -= timedelta(days=1)
+    return previous_weekday(briefing_date)
+
+
+def previous_cn_trading_day(briefing_date: str) -> str:
+    current = _parse_date(briefing_date) - timedelta(days=1)
+    for _ in range(14):
+        if is_cn_trading_day(current.isoformat()):
+            return current.isoformat()
+        current -= timedelta(days=1)
+    return previous_weekday(briefing_date)
+
+
 def weekly_review_window(report_date: str, config: Dict[str, Any]) -> Dict[str, str]:
     period_end = previous_hk_trading_day_on_or_before(report_date, config)
     end_day = _parse_date(period_end)
@@ -104,27 +152,86 @@ def resolve_report_dates(args: Any, config: Dict[str, Any]) -> Dict[str, str]:
     briefing_date = getattr(args, "briefing_date", "") or today_in_timezone(timezone)
     compatibility_date = getattr(args, "date", "") or ""
     review_date = getattr(args, "review_date", "") or compatibility_date or previous_calendar_day(briefing_date)
-    global_market_date = getattr(args, "global_date", "") or compatibility_date or review_date
+    # Each market resolves to its own last completed session:
+    #   - global (US/Europe/FX/commodities) -> previous US trading day
+    #   - Hong Kong / China local -> previous HK trading day
+    #   - A-share (CSI 300 / Shanghai / ChiNext) -> previous China trading day
+    # A US holiday (e.g. Thanksgiving) or a China holiday must not resolve to a
+    # non-trading day. The data adapter still backs off to the actual last
+    # session as a safety net.
+    global_market_date = getattr(args, "global_date", "") or compatibility_date or previous_us_trading_day(briefing_date)
     hk_data_date = getattr(args, "hk_date", "") or compatibility_date or previous_hk_trading_day(briefing_date, config)
+    cn_data_date = getattr(args, "cn_date", "") or compatibility_date or previous_cn_trading_day(briefing_date)
     return {
         "briefing_date": briefing_date,
         "review_date": review_date,
         "global_market_date": global_market_date,
         "hk_data_date": hk_data_date,
+        "cn_data_date": cn_data_date,
     }
 
 
-def build_report_mode(report_date: str, config: Dict[str, Any], briefing_date: str = "") -> Dict[str, Any]:
-    day = _parse_date(report_date)
-    next_trading_day = next_hk_trading_day_after(report_date, config)
-    last_trading_day = previous_hk_trading_day_on_or_before(report_date, config)
+def build_report_mode(briefing_date: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Derive the report mode from the briefing day (today), not the reviewed day.
+
+    A 05:17 HKT morning briefing's job is set by what *today* is:
+      - Sunday      -> weekly review of the just-completed Mon-Fri week
+      - Monday      -> week-ahead calendar, forecast, and watch list
+      - Tue-Fri     -> trading-day review of the previous session
+      - Saturday    -> trading-day review of Friday's completed session
+      - weekday holiday -> holiday event watch / reopen playbook
+    """
+    day = _parse_date(briefing_date)
+    last_trading_day = previous_hk_trading_day_on_or_before(
+        (day - timedelta(days=1)).isoformat(), config
+    )
+    next_trading_day = next_hk_trading_day_after(briefing_date, config)
     base = {
-        "review_date": report_date,
+        "briefing_date": briefing_date,
+        "review_date": previous_calendar_day(briefing_date),
         "last_hk_trading_day": last_trading_day,
         "next_hk_trading_day": next_trading_day,
     }
 
-    if is_hk_trading_day(report_date, config):
+    if day.weekday() == 6:  # Sunday -> weekly review
+        window = weekly_review_window(briefing_date, config)
+        return {
+            **base,
+            **window,
+            "mode": "weekly_review",
+            "legacy_mode": "non_trading_day",
+            "label": "Weekly Review",
+            "is_trading_day": False,
+            "report_horizon": "weekly",
+            "note": "Synthesize the completed Hong Kong week into next-week preparation rather than treating Sunday as a fresh session.",
+        }
+
+    if day.weekday() == 0 and is_hk_trading_day(briefing_date, config):  # Monday trading day -> week ahead
+        week_end = day + timedelta(days=4)
+        return {
+            **base,
+            "mode": "week_ahead",
+            "legacy_mode": "non_trading_day",
+            "label": "Week Ahead",
+            "is_trading_day": False,
+            "report_horizon": "week_ahead",
+            "week_start": briefing_date,
+            "week_end": week_end.isoformat(),
+            "note": "Use Friday's close as the baseline, lay out the week's calendar, and name the key things to watch.",
+        }
+
+    if is_hk_trading_day(briefing_date, config):  # Tue-Fri trading day
+        yesterday = (day - timedelta(days=1)).isoformat()
+        if not is_hk_trading_day(yesterday, config):
+            return {
+                **base,
+                "mode": "holiday_reopen_playbook",
+                "legacy_mode": "non_trading_day",
+                "label": "Holiday Reopen Playbook",
+                "is_trading_day": True,
+                "report_horizon": "daily",
+                "note": "Focus on what changed during the market closure and how to prepare for today's Hong Kong open.",
+            }
         return {
             **base,
             "mode": "trading_daily",
@@ -135,52 +242,31 @@ def build_report_mode(report_date: str, config: Dict[str, Any], briefing_date: s
             "note": "Keep the report execution-oriented: what mattered in the completed session, what can move Hong Kong leadership, and what needs fast follow-up.",
         }
 
-    if day.weekday() == 5:
-        window = weekly_review_window(report_date, config)
+    if day.weekday() == 5:  # Saturday -> review Friday's completed session
         return {
             **base,
-            **window,
-            "mode": "weekly_review",
-            "legacy_mode": "non_trading_day",
-            "label": "Weekly Review",
-            "is_trading_day": False,
-            "report_horizon": "weekly",
-            "note": "Use Saturday's non-trading review date to synthesize the completed Hong Kong week and prepare next week's work plan.",
+            "mode": "trading_daily",
+            "legacy_mode": "trading_day",
+            "label": "Trading Daily",
+            "is_trading_day": True,
+            "report_horizon": "daily",
+            "note": "Review Friday's completed session; treat Saturday as a non-trading prep day.",
         }
 
-    if day.weekday() == 6:
-        return {
-            **base,
-            "mode": "non_trading_event_watch",
-            "legacy_mode": "non_trading_day",
-            "label": "Weekend Event Watch",
-            "is_trading_day": False,
-            "report_horizon": "weekend",
-            "note": "Track weekend policy, geopolitics, still-moving assets, and Monday open preparation rather than replaying stale cash-market tape.",
-        }
-
-    if briefing_date and next_trading_day == briefing_date:
-        mode = "holiday_reopen_playbook"
-        label = "Holiday Reopen Playbook"
-        note = "Focus on what changed during the market closure and how to prepare for the next Hong Kong open."
-    else:
-        mode = "holiday_event_watch"
-        label = "Holiday Event Watch"
-        note = "Monitor policy, geopolitics, still-moving global assets, and company actions while Hong Kong cash markets are closed."
-
+    # Weekday holiday (market closed today, reopen later)
     return {
         **base,
-        "mode": mode,
+        "mode": "holiday_event_watch",
         "legacy_mode": "non_trading_day",
-        "label": label,
+        "label": "Holiday Event Watch",
         "is_trading_day": False,
         "report_horizon": "holiday",
-        "note": note,
+        "note": "Monitor policy, geopolitics, still-moving global assets, and company actions while Hong Kong cash markets are closed.",
     }
 
 
-def build_day_mode(report_date: str, config: Dict[str, Any]) -> Dict[str, Any]:
-    return build_report_mode(report_date, config)
+def build_day_mode(briefing_date: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    return build_report_mode(briefing_date, config)
 
 
 def build_date_semantics(
@@ -190,6 +276,7 @@ def build_date_semantics(
     hk_data_date: str,
     market_meta: Dict[str, Any],
     day_mode: Dict[str, Any],
+    cn_data_date: str = "",
 ) -> Dict[str, Any]:
     is_trading_day = bool((day_mode or {}).get("is_trading_day", True))
     global_effective = (market_meta or {}).get("effective_date", global_market_date)
@@ -206,9 +293,11 @@ def build_date_semantics(
     )
     lines = [
         f"Review date {report_date} is treated as `{(day_mode or {}).get('label', 'Trading Daily')}`.",
-        f"Global request date is {global_market_date}; adapter effective date is {global_effective} and summary date is {summary_date}.",
-        f"HK/China local data date is {hk_data_date}; role: {hk_cash_role}.",
+        f"Global (US/Europe) data date is {global_market_date}; adapter effective date is {global_effective} and summary date is {summary_date}.",
+        f"Hong Kong local data date is {hk_data_date}; role: {hk_cash_role}.",
     ]
+    if cn_data_date:
+        lines.append(f"A-share / mainland data date is {cn_data_date}.")
     if (day_mode or {}).get("mode") == "weekly_review":
         lines.append(
             f"Weekly review window is {(day_mode or {}).get('period_start', '')} to {(day_mode or {}).get('period_end', '')}."
@@ -229,6 +318,7 @@ def build_date_semantics(
         "global_role": global_role,
         "hk_data_date": hk_data_date,
         "hk_cash_role": hk_cash_role,
+        "cn_data_date": cn_data_date,
         "is_trading_day": is_trading_day,
         "lines": lines,
     }

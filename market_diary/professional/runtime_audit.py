@@ -23,6 +23,7 @@ REQUIRED_REPORT_SECTION_GROUPS = [
             # Legitimate variants that switch with the trading-day mode.
             "Hong Kong Key Data Quick Check",
             "Hong Kong Weekly Tape Quick Check",
+            "Hong Kong Baseline Quick Check (Friday Close)",
             "Hong Kong Last Cash-Tape Quick Check (Reference)",
         ),
     ),
@@ -235,6 +236,9 @@ def audit_generated_run(
 
     errors.extend(_audit_tables(report_text))
     errors.extend(_audit_table_spacing(report_text))
+    # Non-English script now survives rendering (it is no longer silently
+    # stripped), so this gate fires and blocks release instead of destroying
+    # legitimate Chinese company names and filing titles.
     errors.extend(_audit_english_only(report_text))
     errors.extend(_audit_clipped_text(report_text))
 

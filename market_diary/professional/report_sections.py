@@ -411,7 +411,15 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         interpretation_value = pct
         if category == "Rates" and name == "10Y Treasury":
             interpretation_value, _ = summary_change(item)
-        interpretation, confirmation = _asset_interpretation(bundle, name, interpretation_value if interpretation_value not in (None, "") else move_value)
+        resolved_move = interpretation_value if interpretation_value not in (None, "") else move_value
+        move_missing = resolved_move is None or str(resolved_move).strip().lower() in {"", "n/a", "n/a%"}
+        if move_missing:
+            # A missing change is not a flat session: do not fabricate a
+            # "was flat / stable" state claim from absent direction data.
+            interpretation = "Directional data unavailable for this run; treat the level as reference, not a signal."
+            confirmation = "Require a fresh change value before drawing a direction."
+        else:
+            interpretation, confirmation = _asset_interpretation(bundle, name, resolved_move)
         table_rows.append(
             (
                 label,
@@ -684,5 +692,60 @@ def _render_weekly_review(bundle: Dict[str, Any]) -> str:
         ]
         lines.append("\n**Next-week playbook**")
         lines.append(_make_table(["Date", "Catalyst", "Desk read"], rows))
+
+    return "\n".join(lines)
+
+
+def _render_week_ahead(bundle: Dict[str, Any]) -> str:
+    week = bundle.get("week_ahead", {}) or {}
+    if not week:
+        return ""
+
+    lines: List[str] = ["**Week Ahead Map**", f"- {week.get('summary', '')}"]
+
+    calendar = week.get("week_calendar", []) or []
+    if calendar:
+        rows = []
+        for day in calendar:
+            events = day.get("items", []) or []
+            if events:
+                text = "; ".join(
+                    (f"{it.get('event', '')} ({it.get('time', '')})" if it.get("time") else it.get("event", ""))
+                    for it in events
+                )
+            else:
+                text = "No dated catalyst"
+            rows.append((f"{day.get('date', '')} {day.get('day', '')}", _truncate(text, 110, suffix="")))
+        lines.append("\n**This Week's Calendar**")
+        lines.append(_make_table(["Day", "Dated catalysts"], rows))
+
+    forecast = week.get("forecast", {}) or {}
+    if forecast:
+        lines.append("\n**Base Case / Risk Case**")
+        lines.append(f"- **Base case:** {_truncate(forecast.get('base_case', ''), 210, suffix='')}")
+        lines.append(f"- **Risk case:** {_truncate(forecast.get('risk_case', ''), 210, suffix='')}")
+
+    watch = week.get("watch_items", []) or []
+    if watch:
+        lines.append("\n**What to Watch This Week**")
+        lines.extend(f"- {_truncate(item, 150, suffix='')}" for item in watch)
+
+    digest = week.get("weekend_digest", []) or []
+    if digest:
+        rows = [
+            (
+                item.get("channel", ""),
+                _truncate(item.get("signal", ""), 74, suffix=""),
+                _truncate(item.get("why", ""), 92, suffix=""),
+            )
+            for item in digest
+        ]
+        lines.append("\n**Weekend Digest**")
+        lines.append(_make_table(["Channel", "Signal", "Why"], rows))
+
+    questions = week.get("desk_questions", []) or []
+    if questions:
+        lines.append("\n**Monday Morning Questions**")
+        lines.extend(f"- {_truncate(q, 140, suffix='')}" for q in questions)
 
     return "\n".join(lines)

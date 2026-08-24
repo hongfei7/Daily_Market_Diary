@@ -5,7 +5,7 @@
 The 07:30 Hong Kong delivery path must not depend on an interactive plugin, a Claude subscription, browser access, or a new third-party skill repository. Daily production remains:
 
 1. deterministic source collection and analytics;
-2. MiniMax-M3 synthesis with DeepSeek fallback;
+2. DeepSeek (deepseek-v4-pro) synthesis with MiniMax-M3 fallback;
 3. deterministic fact fallback, provenance and source-health checks;
 4. commute-policy release audit;
 5. WeCom summary and self-contained HTML delivery with machine-readable receipts.

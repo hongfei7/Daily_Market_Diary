@@ -341,7 +341,7 @@ def _normalize_intraday_df(hist: pd.DataFrame, name: str, category: str, ticker:
 def _get_effective_intraday_date(
     requested_date: str,
     interval: str,
-    max_lookback_days: int = 4,
+    max_lookback_days: int = 10,
     prefer_weekend_active_assets: bool = False,
 ) -> Tuple[str, List[pd.DataFrame]]:
     base = _parse_date(requested_date)
@@ -569,7 +569,11 @@ def _calc_summary_for_symbol(
 def fetch_market_data(
     report_date: Optional[str] = None,
     intraday_interval: str = DEFAULT_INTRADAY_INTERVAL,
-    intraday_fallback_days: int = 4,
+    # 10 calendar days covers a Lunar New Year / Golden Week closure (a Mon-Wed
+    # closure plus both weekends puts the prior session ~5-9 days back). The old
+    # 4-day window returned a holiday date with crypto-only data instead of the
+    # last completed session.
+    intraday_fallback_days: int = 10,
     prefer_weekend_active_assets: bool = False,
 ) -> Dict[str, Any]:
     """Fetch summary market data and intraday chart series."""

@@ -36,6 +36,7 @@ from market_diary.professional.report_sections import (
     _render_risk_dashboard,
     _render_selected_news,
     _render_top_items,
+    _render_week_ahead,
     _render_weekly_review,
 )
 from market_diary.professional.report_text import _clean_report_spacing
@@ -66,11 +67,14 @@ def render_professional_report(
     overseas_title = layout["overseas_title"]
     hk_quick_title = layout["hk_quick_title"]
     hk_review_title = layout["hk_review_title"]
+    call_title = layout["call_title"]
+    core_names_title = layout["core_names_title"]
     non_trading_lens = layout["non_trading_lens"]
     briefing_date = layout["briefing_date"]
     review_date = layout["review_date"]
     global_date = layout["global_date"]
     hk_date = layout["hk_date"]
+    cn_date = layout["cn_date"]
     internal_notes = _render_internal_notes(bundle)
     catalyst_radar_block = _render_catalyst_radar(bundle, catalyst_radar_rel_path)
     catalyst_radar_section = f"\n{catalyst_radar_block}\n" if catalyst_radar_block else ""
@@ -88,7 +92,7 @@ def render_professional_report(
 >
 > Mode: `{day_mode.get('label', 'Trading day')}` | {day_mode.get('note', '')}
 
-_Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective `{meta.get('effective_date', '')}` | Generated `{meta.get('generated_at', '')}`_
+_Data through: US/global `{global_date}` | HK `{hk_date}` | A-share `{cn_date}` | Generated `{meta.get('generated_at', '')}`_
 
 ## Executive Summary
 
@@ -98,7 +102,7 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 
 {dashboard_md}{catalyst_radar_section}## {layer_one_title}
 
-### 1.1 Yesterday's Call
+### 1.1 {call_title}
 {_render_call_scorecard(bundle)}
 
 ### 1.2 Global Asset Price Dashboard
@@ -123,10 +127,12 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 
 {_render_weekly_review(bundle)}
 
+{_render_week_ahead(bundle)}
+
 {_render_selected_news(bundle)}
 
 ### 2.2 {hk_review_title}
-{non_trading_lens if not is_trading_day else ""}{_render_hk_review_block(bundle)}
+{_render_hk_review_block(bundle)}
 
 ### 2.3 AI / TMT Read-Through
 {ai_tmt_chart_block}{_render_ai_tmt_chain(bundle)}
@@ -160,7 +166,7 @@ _Data through: global `{global_date}` | HK/China `{hk_date}` | Market effective 
 ### 2.7 Questions to Expect This Morning
 {_render_md_questions(bundle)}
 
-### 2.8 Today's Core Names
+### 2.8 {core_names_title}
 {_render_watchlists(bundle, item_limit=2, story_limit=1, bucket_order=["Core coverage", "Priority follow-up"])}
 
 ## Layer 3 | Decision Deepening (10-15 min)

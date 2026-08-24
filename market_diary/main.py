@@ -1,3 +1,11 @@
+"""Legacy single-pass "Market Diary" entry point (deprecated).
+
+Production uses ``market_diary.main_professional`` (the ``market-diary-professional``
+console script). This module is retained only for backward compatibility of the
+``market-diary`` console script; it has no date-mode semantics, prose guard,
+fact-checker, or quality gate.
+"""
+
 import argparse
 import json
 import os

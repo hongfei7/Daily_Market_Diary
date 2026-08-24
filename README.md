@@ -41,12 +41,12 @@ The core report structure does not depend on an LLM. If the LLM layer is disable
 
 ## LLM Provider Setup
 
-MiniMax-M3 is the primary synthesis provider. DeepSeek handles lower-cost news selection, macro extraction, and company-note structuring when available, remains the fallback for synthesis, and runs the weekly financial-skill shadow pass. Claude is not called.
+DeepSeek (`deepseek-v4-pro`) is the primary synthesis provider. MiniMax-M3 remains the fallback for synthesis when DeepSeek is unavailable, and runs the weekly financial-skill shadow pass. Claude is not called. (The briefing tasks name DeepSeek explicitly because defaulting to a reasoning model's reasoning tokens exhausted `max_tokens` and truncated the output.)
 
 For GitHub Actions, configure these repository secrets:
 
-- `MINIMAX_API_KEY` for the primary provider
-- `DEEPSEEK_API_KEY` for fallback and skill shadow runs
+- `DEEPSEEK_API_KEY` for the primary provider and skill shadow runs
+- `MINIMAX_API_KEY` for the fallback provider
 - `WECOM_WEBHOOK_URL` for the required primary delivery channel
 - SMTP secrets if the secondary email copy is enabled
 
@@ -60,10 +60,10 @@ DeepSeek: DEEPSEEK_API_KEY, https://api.deepseek.com, deepseek-v4-pro
 For local development:
 
 ```bash
-export MINIMAX_API_KEY="your_minimax_key"
-export LLM_BASE_URL="https://api.minimaxi.com/v1"
-export LLM_MODEL="MiniMax-M3"
-export LLM_PRIMARY_PROVIDER="minimax"
+export DEEPSEEK_API_KEY="your_deepseek_key"
+export LLM_BASE_URL="https://api.deepseek.com"
+export LLM_MODEL="deepseek-v4-pro"
+export LLM_PRIMARY_PROVIDER="deepseek"
 ```
 
 To enable DeepSeek fallback and the provider-agnostic skill shadow run:

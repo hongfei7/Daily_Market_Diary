@@ -268,6 +268,14 @@ def _local_metric_value(hk_local: Dict[str, Any], key: str) -> Optional[float]:
     value = _parse_float(metric.get("value"))
     if value is not None:
         return value
+    # A turnover-only fallback must never be read back as net flow: "net not
+    # reported" means there is no directional number to quote, however tempting
+    # the magnitude in the display string looks.
+    if key in {"southbound_net_flow", "northbound_net_flow"}:
+        if "net not reported" in str(metric.get("display_value", "") or "").lower():
+            return None
+        if str(metric.get("status", "") or "").lower() == "partial_public":
+            return None
     display = str(metric.get("display_value", "") or "")
     match = re.search(r"([+-]?[0-9][0-9,]*(?:\.[0-9]+)?)", display)
     if not match:

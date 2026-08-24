@@ -48,9 +48,11 @@ DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
             "scan_minutes": 5,
             "deep_read_minutes": 30,
             "appendix_minutes": 15,
-            "target_words_min": 3000,
-            "target_words_max": 4500,
-            "hard_max_words": 5200,
+            # Keep in sync with runtime_audit.REPORT_TARGET_WORDS /
+            # REPORT_HARD_MAX_WORDS: the audit enforces these, not this block.
+            "target_words_min": 4200,
+            "target_words_max": 6000,
+            "hard_max_words": 7000,
             "delivery_target_local": "07:30",
         },
     },

@@ -169,7 +169,7 @@ def main() -> None:
     test_effective_max_workers_caps_minimax_parallelism()
     test_effective_max_workers_caps_minimax_fallback_route()
     test_deepseek_defaults_when_secret_present()
-    test_minimax_primary_adds_deepseek_fallback_candidate()
+    test_deepseek_is_primary_with_minimax_as_fallback()
     test_cache_path_changes_when_prompt_changes()
     test_llm_response_truncation_guard()
     print("LLM enhancer resilience test passed")

@@ -450,7 +450,7 @@ def fetch_all_data(
     runtime_cache_dir = os.path.normpath(runtime_cache_dir)
 
     print("[1/7] Market data")
-    day_mode = build_day_mode(review_date, config)
+    day_mode = build_day_mode(briefing_date, config)
     payload["market"] = _run_external_step(
         "market-data",
         lambda: fetch_market_data(
@@ -575,6 +575,7 @@ def main() -> None:
     review_date = resolved_dates["review_date"]
     global_market_date = resolved_dates["global_market_date"]
     hk_data_date = resolved_dates["hk_data_date"]
+    cn_data_date = resolved_dates.get("cn_data_date", hk_data_date)
     output_dir = args.output_dir or config.get("system", {}).get("output_dir", "reports_professional")
     os.makedirs(output_dir, exist_ok=True)
     _configure_market_data_cache(output_dir)
@@ -610,6 +611,7 @@ def main() -> None:
         briefing_date=briefing_date,
         global_market_date=global_market_date,
         hk_data_date=hk_data_date,
+        cn_data_date=cn_data_date,
         config=config,
         market_data=payload.get("market", {}) or {},
         chart_features=chart_features,
@@ -859,7 +861,6 @@ def main() -> None:
     )
     _save_diagnostic(output_label, output_dir, "source_health", bundle.get("source_health", {}) or {})
     _save_diagnostic(output_label, output_dir, "performance_summary", bundle.get("performance", {}) or {})
-    _save_bundle(output_label, output_dir, bundle)
 
     report = render_professional_report(
         bundle=bundle,
@@ -899,6 +900,10 @@ def main() -> None:
         bundle["prose_guard"] = {"status": "error", "error": _error_summary(exc)}
 
     _save_diagnostic(output_label, output_dir, "prose_guard", bundle.get("prose_guard", {}))
+    # Persist the bundle only after the prose-guard rescore so the archived
+    # report_quality matches the shipped markdown (the audit and downstream
+    # email/WeCom builders read this bundle).
+    _save_bundle(output_label, output_dir, bundle)
 
     output_file = os.path.join(output_dir, f"{output_label}_morning_briefing.md")
     with open(output_file, "w", encoding="utf-8") as handle:
