@@ -703,21 +703,47 @@ def _render_week_ahead(bundle: Dict[str, Any]) -> str:
 
     lines: List[str] = ["**Week Ahead Map**", f"- {week.get('summary', '')}"]
 
+    # T1: ranked key events for the week (highest score first).
+    events = week.get("week_events", []) or []
+    if events:
+        rows = [
+            (
+                item.get("date", ""),
+                _truncate(item.get("category", "Catalyst"), 20, suffix=""),
+                _truncate(item.get("event", ""), 60, suffix=""),
+                _truncate(item.get("impact", ""), 72, suffix=""),
+            )
+            for item in events
+        ]
+        lines.append("\n**This Week's Key Events**")
+        lines.append(_make_table(["Date", "Type", "Event", "Why it matters"], rows))
+    else:
+        lines.append("\n**This Week's Key Events**")
+        lines.append("_No dated catalyst is scheduled this week; the rule-based macro calendar is sparse and no earnings/policy feed is configured._")
+
+    # T2: Mon-Fri strip with three-market open/closed status.
     calendar = week.get("week_calendar", []) or []
     if calendar:
         rows = []
         for day in calendar:
-            events = day.get("items", []) or []
-            if events:
+            markets = []
+            for label, open_flag in (("HK", day.get("hk_open")), ("US", day.get("us_open")), ("CN", day.get("cn_open"))):
+                if open_flag is None:
+                    continue
+                markets.append(f"{label}{'✓' if open_flag else '✗'}")
+            market_text = " ".join(markets)
+            day_events = day.get("events", []) or []
+            if day_events:
                 text = "; ".join(
                     (f"{it.get('event', '')} ({it.get('time', '')})" if it.get("time") else it.get("event", ""))
-                    for it in events
+                    for it in day_events
                 )
             else:
-                text = "No dated catalyst"
-            rows.append((f"{day.get('date', '')} {day.get('day', '')}", _truncate(text, 110, suffix="")))
+                text = "—"
+            rows.append((f"{day.get('date', '')} {day.get('day', '')}", market_text, _truncate(text, 96, suffix="")))
         lines.append("\n**This Week's Calendar**")
-        lines.append(_make_table(["Day", "Dated catalysts"], rows))
+        lines.append("_Market open per day: HK ✓/✗, US ✓/✗, CN ✓/✗._")
+        lines.append(_make_table(["Day", "Markets open", "Dated catalysts"], rows))
 
     forecast = week.get("forecast", {}) or {}
     if forecast:
@@ -725,10 +751,19 @@ def _render_week_ahead(bundle: Dict[str, Any]) -> str:
         lines.append(f"- **Base case:** {_truncate(forecast.get('base_case', ''), 210, suffix='')}")
         lines.append(f"- **Risk case:** {_truncate(forecast.get('risk_case', ''), 210, suffix='')}")
 
+    # T4: watch list with per-row invalidation.
     watch = week.get("watch_items", []) or []
     if watch:
+        rows = [
+            (
+                _truncate(item.get("what", ""), 40, suffix=""),
+                _truncate(item.get("why", ""), 80, suffix=""),
+                _truncate(item.get("invalidate", ""), 80, suffix=""),
+            )
+            for item in watch
+        ]
         lines.append("\n**What to Watch This Week**")
-        lines.extend(f"- {_truncate(item, 150, suffix='')}" for item in watch)
+        lines.append(_make_table(["Watch", "Why", "Invalidation"], rows))
 
     digest = week.get("weekend_digest", []) or []
     if digest:

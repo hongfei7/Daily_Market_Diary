@@ -79,6 +79,8 @@ CLIPPED_CELL_RE = re.compile(r"(\.\.\.|…|\[trimmed\])\s*(?:\||$)", re.IGNORECA
 # should now buy market content.
 REPORT_TARGET_WORDS = (4200, 6000)
 REPORT_HARD_MAX_WORDS = 7000
+# The Monday week-ahead report is shorter by design (no Friday replay).
+WEEK_AHEAD_TARGET_LOW = 2000
 WECOM_SAFE_MARKDOWN_BYTE_LIMIT = 3800
 
 
@@ -221,6 +223,10 @@ def audit_generated_run(
     bundle = _load_json(bundle_path) if bundle_path.exists() else {}
     word_count = len(re.findall(r"\b[\w'-]+\b", re.sub(r"https?://\S+", "", report_text)))
     heading_count = sum(1 for line in report_text.splitlines() if re.match(r"^#{1,6}\s+", line))
+    # The Monday week-ahead report is deliberately shorter (it drops the full
+    # replay of Friday's session), so its low-word floor is lower.
+    report_mode = str((bundle.get("day_mode", {}) or {}).get("mode", "") or "")
+    target_low = WEEK_AHEAD_TARGET_LOW if report_mode == "week_ahead" else REPORT_TARGET_WORDS[0]
     if word_count > REPORT_HARD_MAX_WORDS:
         errors.append(
             f"Report is too long for the commute edition: {word_count} words exceeds the {REPORT_HARD_MAX_WORDS}-word hard limit."
@@ -229,7 +235,7 @@ def audit_generated_run(
         warnings.append(
             f"Report is {word_count} words; the commute-edition target is {REPORT_TARGET_WORDS[0]}-{REPORT_TARGET_WORDS[1]}."
         )
-    elif report_text and word_count < REPORT_TARGET_WORDS[0]:
+    elif report_text and word_count < target_low:
         warnings.append(
             f"Report is {word_count} words; verify that the deep-read layer is sufficient for a one-hour commute."
         )

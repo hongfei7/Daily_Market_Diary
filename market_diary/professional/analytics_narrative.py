@@ -4,6 +4,11 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from market_diary.professional.analytics_market import _format_signed, _get_row, build_market_snapshot
+from market_diary.professional.date_policy import (
+    is_cn_trading_day,
+    is_hk_trading_day,
+    is_us_trading_day,
+)
 
 
 def _theme_rotation_entry(report_date: str, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -373,14 +378,18 @@ def build_week_ahead(
     risk_data: Dict[str, Any],
     flow_tracker: Dict[str, Any],
     attribution: Dict[str, Any],
+    config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Build the Monday 'week ahead' block: calendar, forecast, watch list.
+    """Build the Monday 'week ahead' block.
 
-    ``summary``/``hk_desk_view``/``macro_agenda``/``flow_tracker``/``attribution``
-    are accepted for signature parity with the other mode builders even when not
-    all of them are consumed here.
+    The week calendar is deliberately sparse-but-honest: the only dated sources
+    that actually populate are the rule-based macro schedule and any dated
+    watchlist catalysts (there is no configured earnings or policy feed). We lead
+    with a ranked "key events" list rather than a 4-column grid that would be
+    mostly empty, and we annotate each day with the three markets' open/closed
+    status so a global desk sees e.g. "Mon: HK open, US holiday".
     """
-    del summary, hk_desk_view, macro_agenda, flow_tracker, attribution
+    del summary, macro_agenda, flow_tracker, attribution, risk_data
     if (day_mode or {}).get("mode") != "week_ahead":
         return {}
 
@@ -388,12 +397,18 @@ def build_week_ahead(
     week_end = str((day_mode or {}).get("week_end", "") or "")
     last_close = str((day_mode or {}).get("last_hk_trading_day", "") or "")
 
-    # Week calendar: Mon-Fri, each day's dated catalysts already in `catalysts`.
+    # T1: ranked key events for the week (highest score first, not earliest date).
+    week_events = [
+        item
+        for item in (catalysts or [])
+        if week_start <= str(item.get("date", "") or "") <= week_end
+    ]
+    week_events.sort(key=lambda it: -float(it.get("score", 0) or 0))
+
+    # T2: Mon-Fri strip with per-day three-market open/closed status.
     by_date: Dict[str, List[Dict[str, Any]]] = {}
-    for item in (catalysts or []):
-        date_value = str(item.get("date", "") or "")
-        if date_value and week_start <= date_value <= week_end:
-            by_date.setdefault(date_value, []).append(item)
+    for item in week_events:
+        by_date.setdefault(str(item.get("date", "")), []).append(item)
 
     week_calendar: List[Dict[str, Any]] = []
     if week_start and week_end:
@@ -402,14 +417,17 @@ def build_week_ahead(
         cursor = start
         while cursor <= end:
             iso = cursor.isoformat()
-            events = sorted(by_date.get(iso, []), key=lambda it: -float(it.get("score", 0) or 0))
+            cfg = config or {}
             week_calendar.append(
                 {
                     "date": iso,
                     "day": cursor.strftime("%a"),
-                    "items": [
-                        {"event": it.get("event", ""), "impact": it.get("impact", ""), "time": it.get("time", "")}
-                        for it in events[:4]
+                    "hk_open": is_hk_trading_day(iso, cfg),
+                    "us_open": is_us_trading_day(iso),
+                    "cn_open": is_cn_trading_day(iso),
+                    "events": [
+                        {"event": it.get("event", ""), "time": it.get("time", "")}
+                        for it in by_date.get(iso, [])[:3]
                     ],
                 }
             )
@@ -432,26 +450,43 @@ def build_week_ahead(
         if item.get("category") in {"FX", "Commodities", "Crypto", "Rates", "Vol"} and item.get("price") is not None
     ][:4]
 
-    watch_items: List[str] = []
+    # T4: watch list with per-row invalidation. The style row reuses the desk
+    # view's real invalidation sentence; the other rows are deterministic.
+    style_invalidation = str((hk_desk_view or {}).get("invalidation", "") or "").strip()
+    watch_items: List[Dict[str, str]] = []
     if last_close:
-        watch_items.append(f"Open versus Friday's close ({last_close}): whether the gap holds or fades is the first signal of the week.")
-    watch_items.append("Southbound flow: confirm the index move with local money rather than offshore beta.")
-    watch_items.append("HSI vs 3033.HK ETF leadership: growth-led or value-led decides the week's style.")
-    watch_items.append("USD/CNH and USD/HKD: FX stability is the precondition for a clean risk-on extension.")
-    watch_items.append("Turnover vs 20-day: thin participation makes any index move easier to fade.")
-    first_catalyst = catalysts[0] if catalysts else None
-    if first_catalyst:
         watch_items.append(
-            f"First dated catalyst: {first_catalyst.get('date', '')} | {first_catalyst.get('event', '')} — the cleanest early test of the base case."
+            {
+                "what": f"Open vs Friday's close ({last_close})",
+                "why": "Whether the opening gap holds or fades is the first signal of the week.",
+                "invalidate": "The gap fades within the first session.",
+            }
+        )
+    watch_items.append(
+        {"what": "Southbound flow", "why": "Confirm the index move with local money, not offshore beta.", "invalidate": "Southbound stays net-sell while HSI rallies."}
+    )
+    watch_items.append(
+        {"what": "HSI vs 3033.HK ETF leadership", "why": "Growth-led or value-led decides the week's style.", "invalidate": style_invalidation or "Style flips against the base case."}
+    )
+    watch_items.append(
+        {"what": "USD/CNH and USD/HKD", "why": "FX stability is the precondition for a clean risk-on extension.", "invalidate": "CNH breaks its recent range or USD/HKD tests the weak side."}
+    )
+    watch_items.append(
+        {"what": "Turnover vs 20-day", "why": "Thin participation makes any index move easier to fade.", "invalidate": "The index move happens on turnover below 0.9x the 20-day average."}
+    )
+    if week_events:
+        first = week_events[0]
+        watch_items.append(
+            {
+                "what": f"First catalyst: {first.get('event', '')}",
+                "why": first.get("impact", ""),
+                "invalidate": "The catalyst resolves against the base case.",
+            }
         )
 
     weekend_digest: List[Dict[str, str]] = []
     for item in ((sector_digest or {}).get("graded_news", []) or [])[:3]:
-        weekend_digest.append({"channel": "Weekend news", "signal": item.get("title", ""), "why": item.get("why", "")})
-    for item in ((risk_data or {}).get("geopolitical_risks", []) or [])[:2]:
-        weekend_digest.append(
-            {"channel": "Geopolitics", "signal": f"{item.get('region', '')}: {item.get('event', '')}", "why": item.get("impact", "Watch risk-premium transmission into oil, gold, FX, and China proxies.")}
-        )
+        weekend_digest.append({"channel": "News", "signal": item.get("title", ""), "why": item.get("why", "")})
     for item in still_moving:
         weekend_digest.append(
             {"channel": item.get("category", "Still-moving"), "signal": f"{item.get('label', '')} {item.get('change_display') or _format_signed(item.get('change_pct'))}", "why": item.get("interpretation", "")}
@@ -465,12 +500,13 @@ def build_week_ahead(
             f"Week ahead ({week_start} to {week_end}) opens against a `{overview.get('risk_regime', 'Neutral')}` backdrop, "
             f"using Friday's close ({last_close}) as the baseline."
         ),
+        "week_events": week_events[:6],
         "week_calendar": week_calendar,
         "forecast": {
             "base_case": base_case,
             "risk_case": risk_case,
         },
-        "watch_items": watch_items[:8],
+        "watch_items": watch_items[:6],
         "weekend_digest": weekend_digest[:8],
         "desk_questions": [
             "Which single dated catalyst this week is most likely to change the base case?",

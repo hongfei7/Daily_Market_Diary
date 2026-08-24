@@ -195,6 +195,7 @@ def build_professional_bundle(
         risk_data=risk_data,
         flow_tracker=flow_tracker,
         attribution=attribution,
+        config=config,
     )
     reflection_prompts = build_reflection_prompts(config, overview, hk_desk_view)
     source_links = build_source_links(sector_digest, watchlists, report_config, company_events=company_events)
