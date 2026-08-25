@@ -144,7 +144,10 @@ def _scoped_html(source: Path, destination: Path, scope: str) -> None:
 def _render_with_browser(html_path: Path, pdf_path: Path, report_date: str, scope: str) -> str:
     browser = find_browser()
     port = _free_port()
-    with tempfile.TemporaryDirectory(prefix="dmd-pdf-") as temp_dir:
+    # Chrome can briefly keep a profile file open after the browser process has
+    # exited.  A successful PDF must not be reclassified as a rendering failure
+    # solely because that disposable profile loses a cleanup race on CI.
+    with tempfile.TemporaryDirectory(prefix="dmd-pdf-", ignore_cleanup_errors=True) as temp_dir:
         temp_root = Path(temp_dir)
         scoped_html = temp_root / f"report-{scope}.html"
         _scoped_html(html_path, scoped_html, scope)
@@ -218,12 +221,23 @@ def _render_with_browser(html_path: Path, pdf_path: Path, report_date: str, scop
             pdf_path.write_bytes(base64.b64decode(result["data"]))
         finally:
             if client is not None:
-                client.close()
-            process.terminate()
+                try:
+                    # Ask the browser (and its profile-writing child processes)
+                    # to shut down cleanly before closing the DevTools socket.
+                    client.call("Browser.close")
+                except Exception:
+                    pass
+                try:
+                    client.close()
+                except Exception:
+                    pass
+            if process.poll() is None:
+                process.terminate()
             try:
                 process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 process.kill()
+                process.wait(timeout=5)
         return _browser_version(browser)
 
 
