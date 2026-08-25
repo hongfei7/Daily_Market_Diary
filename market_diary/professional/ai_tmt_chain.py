@@ -1,4 +1,4 @@
-"""AI / TMT read-through: overnight semis into the Hong Kong tech complex.
+"""AI / TMT hand-off: overnight semis into the next Hong Kong session.
 
 For a desk covering AI and TMT the overnight semiconductor tape is the most
 direct external input to Hong Kong tech, ahead of broad US beta. None of it was
@@ -6,8 +6,8 @@ tracked: the instrument registry held no SOXX, TSMC, NVDA, SMIC, Hua Hong or
 Sunny Optical, so the report could describe Hong Kong growth as lagging without
 ever showing what happened to the complex that drives it.
 
-This module states the chain explicitly — overnight leg, the Hong Kong names it
-reads into, and the observable test at the open — so the reasoning can be
+This module states the hand-off explicitly — overnight leg, the prior Hong Kong
+inheritance state, and the observable test at the open — so the reasoning can be
 repeated in a morning meeting rather than only the numbers.
 """
 
@@ -124,29 +124,14 @@ def build_ai_tmt_chain(summary: Dict[str, Any]) -> Dict[str, Any]:
                 "flow is overriding the global cycle."
             )
 
-    # Whether Hong Kong actually followed the overnight leg on the prior session.
-    # Matching direction is not the same as being explained by it: if Hong Kong
-    # moved several times harder, something local or company-specific is doing
-    # the work and attributing it to the global cycle would be wrong.
-    followed: Optional[bool] = None
-    divergence_note = ""
-    amplification: Optional[float] = None
-    if overnight_avg is not None and hk_avg is not None:
-        followed = (overnight_avg >= 0) == (hk_avg >= 0)
-        if abs(overnight_avg) > 0.01:
-            amplification = abs(hk_avg) / abs(overnight_avg)
-        if not followed:
-            divergence_note = (
-                f"Hong Kong tech diverged from the overnight leg: semis {_format_signed(overnight_avg)} "
-                f"versus HK tech {_format_signed(hk_avg)}. Treat the decoupling as the question of the day."
-            )
-        elif amplification is not None and amplification >= AMPLIFICATION_THRESHOLD:
-            divergence_note = (
-                f"Hong Kong tech moved in the same direction but {amplification:.1f}x harder "
-                f"(semis {_format_signed(overnight_avg)} versus HK tech {_format_signed(hk_avg)}). "
-                "The overnight cycle does not explain a move that size on its own; check for "
-                "single-name news, placements or index events before attributing it to the global tape."
-            )
+    # The Hong Kong rows are the *prior* cash session and therefore predate the
+    # US overnight leg.  They are an inheritance state, not evidence that Hong
+    # Kong followed, diverged from, or was explained by the later US move.
+    temporal_note = (
+        "The Hong Kong rows are the prior cash-session close and predate the US overnight leg. "
+        "Use them as the inherited local setup only; validate transmission on today's Hong Kong "
+        "open, first hour and close."
+    )
 
     # An individual name far outside the rest of its leg is idiosyncratic, not a
     # cycle read, and must not be presented as evidence for the chain.
@@ -166,9 +151,11 @@ def build_ai_tmt_chain(summary: Dict[str, Any]) -> Dict[str, Any]:
         "hk_leg": hk,
         "overnight_avg_pct": round(overnight_avg, 2) if overnight_avg is not None else None,
         "hk_avg_pct": round(hk_avg, 2) if hk_avg is not None else None,
-        "hk_followed_overnight": followed,
-        "amplification": round(amplification, 2) if amplification is not None else None,
-        "divergence_note": divergence_note,
+        "hk_followed_overnight": None,
+        "amplification": None,
+        "divergence_note": "",
+        "temporal_note": temporal_note,
+        "comparison_posture": "pending_next_hk_session",
         "single_name_outliers": outliers,
         "stale_inputs": stale_inputs,
     }

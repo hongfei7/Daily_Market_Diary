@@ -2,7 +2,7 @@
 
 Seven tasks, four of which named no provider. ``get_default_provider`` preferred
 MiniMax whenever its key existed, and the route fallback defaulted to
-MiniMax-M3 — a reasoning model whose reasoning tokens count against
+an implicit MiniMax reasoning model whose reasoning tokens count against
 ``max_tokens``. Those four tasks spent their budget before emitting JSON and
 failed as truncated every day, while the three that named DeepSeek worked. CI
 reported exactly that split: 1 succeeded, 4 truncated, 2 skipped.
@@ -41,16 +41,15 @@ def clean_env(monkeypatch):
     return monkeypatch
 
 
-def test_both_keys_present_resolves_to_deepseek(clean_env):
+def test_both_keys_present_resolves_to_minimax_m3(clean_env):
     clean_env.setenv("DEEPSEEK_API_KEY", "d")
     clean_env.setenv("MINIMAX_API_KEY", "m")
-    assert get_default_provider() == "deepseek"
-    assert get_default_model() == "deepseek-v4-pro"
-    assert get_available_providers() == ["deepseek", "minimax"]
+    assert get_default_provider() == "minimax"
+    assert get_default_model() == "MiniMax-M3"
+    assert get_available_providers() == ["minimax", "deepseek"]
 
 
-def test_minimax_remains_the_fallback(clean_env):
-    """MiniMax is not removed, only demoted."""
+def test_minimax_m3_is_used_when_it_is_the_only_configured_provider(clean_env):
     clean_env.setenv("MINIMAX_API_KEY", "m")
     assert get_default_provider() == "minimax"
     assert get_default_model() == "MiniMax-M3"
@@ -64,7 +63,8 @@ def test_explicit_primary_provider_is_still_honoured(clean_env):
 
 
 def test_route_fallback_defaults_to_deepseek():
-    assert DEFAULT_LLM_ROUTE_FALLBACK["default"] == "deepseek-v4-pro"
+    assert DEFAULT_LLM_ROUTE_FALLBACK["default"] == "MiniMax-M3"
+    assert DEFAULT_LLM_ROUTE_FALLBACK["deepseek"] == "deepseek-v4-pro"
 
 
 def test_every_task_names_its_provider():
@@ -72,7 +72,7 @@ def test_every_task_names_its_provider():
     tasks = load_professional_config()["llm"]["tasks"]
     missing = [name for name, task in tasks.items() if not task.get("provider")]
     assert not missing, f"these tasks would fall back to whichever key exists: {missing}"
-    assert {task["provider"] for task in tasks.values()} == {"deepseek"}
+    assert {task["provider"] for task in tasks.values()} == {"minimax"}
 
 
 def test_stale_base_url_for_another_provider_is_ignored(clean_env):
@@ -87,6 +87,25 @@ def test_neutral_custom_base_url_is_respected(clean_env):
     clean_env.setenv("DEEPSEEK_API_KEY", "d")
     clean_env.setenv("LLM_BASE_URL", "https://proxy.internal/v1")
     assert get_default_base_url("deepseek") == "https://proxy.internal/v1"
+
+
+def test_client_timeout_is_bounded_and_sdk_retries_are_disabled(clean_env):
+    from market_diary.modules import llm_client
+
+    captured = {}
+
+    def fake_openai(**kwargs):
+        captured.update(kwargs)
+        return object()
+
+    clean_env.setenv("MINIMAX_API_KEY", "m")
+    clean_env.setenv("LLM_REQUEST_TIMEOUT_SECONDS", "37")
+    clean_env.setattr(llm_client, "OpenAI", fake_openai)
+    llm_client.get_client("minimax")
+
+    assert captured["base_url"] == "https://api.minimaxi.com/v1"
+    assert captured["timeout"] == 37.0
+    assert captured["max_retries"] == 0
 
 
 class TestTokenUsageIsRecorded:

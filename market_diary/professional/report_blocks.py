@@ -224,12 +224,30 @@ def _render_executive_summary(bundle: Dict[str, Any], pulse: str) -> str:
 
 def _render_news_table(bundle: Dict[str, Any], limit: int | None = None) -> str:
     raw_rows = (bundle.get("sector_digest", {}) or {}).get("graded_news", []) or []
-    rows = [
+    candidates = [
         item
         for item in raw_rows
         if item.get("grade") in {"A", "B"}
         and (str(item.get("sector", "")).lower() != "other" or float(item.get("score", 0) or 0) >= 4.0)
-    ][: limit or _report_setting(bundle, "top_news_items", 8)]
+    ]
+    rows = []
+    seen = set()
+    for item in candidates:
+        raw_title = str(item.get("title") or item.get("headline") or "").strip()
+        # Syndicated listicles often share a generic headline before the colon
+        # and differ only in a long roster of names.  The rendered table clips
+        # that roster, so keeping both produces visibly identical rows.
+        display_identity = raw_title.split(":", 1)[0] if ":" in raw_title else raw_title
+        identity = (
+            str(item.get("sector", "") or "").strip().casefold(),
+            display_identity.casefold(),
+        )
+        if identity in seen:
+            continue
+        seen.add(identity)
+        rows.append(item)
+        if len(rows) >= (limit or _report_setting(bundle, "top_news_items", 8)):
+            break
     if not rows:
         return "No high-conviction sector story cleared the main-report relevance gate for this run."
     table_rows = [
@@ -406,7 +424,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
                 f"{item.get('premium_pct', 0):+.2f}%",
                 item.get("as_of", ""),
             )
-            for item in ah_rows[:5]
+            for item in ah_rows[:3]
         ]
         lines.append(_make_table(["Name", "A ticker", "H ticker", "Premium", "As of"], rows))
         lines.append("")
@@ -429,7 +447,7 @@ def _render_flow_tracker(bundle: Dict[str, Any]) -> str:
                 _fmt_hkd_bn(item.get("short_turnover_hkd")),
                 _fmt_hkd_bn(item.get("total_turnover_hkd")),
             )
-            for item in short_rows[:5]
+            for item in short_rows[:3]
         ]
         lines.append(_make_table(["Ticker", "Name", "Short ratio", "Short turnover", "Total turnover"], rows))
         lines.append("")
@@ -683,10 +701,16 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
         sections.append("")
 
     company_notes = llm_sections.get("company_notes", []) or []
-    if company_notes:
+    complete_notes = []
+    for item in company_notes:
+        commentary = " ".join(str(item.get("commentary", "") or "").split())
+        ticker = str(item.get("ticker", "") or "").strip()
+        if ticker and len(commentary.split()) >= 5 and not commentary.rstrip(":|- ").endswith("Investor read"):
+            complete_notes.append({**item, "commentary": commentary})
+    if complete_notes:
         sections.append("**LLM Quick Takes**")
-        for item in company_notes[:6]:
-            sections.append(f"- **{item.get('ticker', '')}** | {_truncate(item.get('commentary', ''), 170, suffix='')}")
+        for item in complete_notes[:4]:
+            sections.append(f"- **{item.get('ticker', '')}** | {_truncate(item.get('commentary', ''), 190, suffix='…')}")
         sections.append("")
 
     summary = company_events.get("event_summary", {}) or {}
@@ -702,15 +726,29 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
             cards.append(dict(item))
 
     for item in company_events.get("earnings", []) or []:
+        priority = str(item.get("priority", "Monitor") or "Monitor")
+        if priority == "Archive":
+            continue
+        comparison = str(item.get("comparison", "") or "Estimate comparison unavailable")
+        estimate_ready = comparison != "Estimate comparison unavailable"
+        timing = " · ".join(part for part in (str(item.get("date", "") or ""), str(item.get("time", "") or "")) if part)
         cards.append(
             {
                 **item,
-                "priority": "High",
+                "priority": priority,
                 "event_type": "Earnings",
-                "what_changed": item.get("comparison", "Expectation frame pending"),
-                "investor_read": "Potential estimate reset: compare actual KPIs and guidance with the stated expectation bar.",
-                "next_check": "Prepare the KPI and valuation bridge before the release window.",
-                "release_time": item.get("time", ""),
+                "what_changed": comparison,
+                "investor_read": (
+                    "Potential estimate reset: compare actual KPIs and guidance with the stated expectation bar."
+                    if estimate_ready
+                    else "Calendar monitor only; no consensus comparison is available, so this is not yet an earnings view."
+                ),
+                "next_check": (
+                    "Prepare the KPI and valuation bridge before the release window."
+                    if priority in {"High", "Prepare"}
+                    else "Confirm timing and obtain a consensus/KPI frame before promoting this event."
+                ),
+                "release_time": timing,
                 "url": item.get("source_url", ""),
             }
         )
@@ -732,9 +770,9 @@ def _render_company_events(bundle: Dict[str, Any]) -> str:
             }
         )
 
-    priority_rank = {"Portfolio": 0, "High": 1, "Review": 2, "Monitor": 3}
+    priority_rank = {"Portfolio": 0, "High": 1, "Prepare": 2, "Review": 3, "Monitor": 4}
     cards.sort(key=lambda item: (priority_rank.get(str(item.get("priority", "Monitor")), 4), str(item.get("release_time", ""))), reverse=False)
-    cards = cards[:4]
+    cards = cards[:3]
 
     if watchlist_hits:
         verdict = f"Portfolio attention required: {watchlist_hits} official filing{'s' if watchlist_hits != 1 else ''} matched the active coverage list."
@@ -918,6 +956,174 @@ def _render_today_forward(bundle: Dict[str, Any]) -> str:
     return "\n".join(output)
 
 
+def _render_session_playbook(bundle: Dict[str, Any]) -> str:
+    """Turn the research into observable open/close decision tests.
+
+    This block is deterministic and clock-disciplined: opening checks only use
+    prices and FX that can be observed during the first hour, while official
+    turnover, Southbound and short-selling confirmation stays at the close.
+    """
+    desk = bundle.get("hk_desk_view", {}) or {}
+    attribution = bundle.get("attribution", {}) or {}
+    risk_dashboard = attribution.get("risk_dashboard", {}) or {}
+    hk_local = bundle.get("hk_local", {}) or {}
+    risk = bundle.get("risk", {}) or {}
+    summary = bundle.get("market_summary", {}) or {}
+
+    def _number(value: Any) -> float | None:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _display_local(key: str) -> str:
+        item = hk_local.get(key, {}) or {}
+        return str(item.get("display_value") or item.get("value") or "Unavailable")
+
+    def _market_item(category: str, name: str) -> Dict[str, Any]:
+        item = (summary.get(category, {}) or {}).get(name, {}) or {}
+        return item if isinstance(item, dict) else {}
+
+    spread = _number(desk.get("style_spread_pp"))
+    style_ready = bool(desk.get("style_comparison_ready")) and spread is not None
+    spread_text = f"{spread:+.2f}pp at the prior close" if style_ready else "Same-session style spread unavailable"
+    confidence = _lens_confidence(desk)
+    headline = str(desk.get("headline") or desk.get("leadership") or "Hong Kong style call unconfirmed")
+    implication = str(desk.get("implication") or "Keep the posture conditional until local participation confirms.")
+    confirmation = str(desk.get("confirmation") or "Require price leadership and local participation to agree.")
+    invalidation = str(desk.get("invalidation") or "Reclassify the view if leadership and participation reverse together.")
+    risk_score = risk_dashboard.get("score", "N/A")
+    risk_bucket = risk_dashboard.get("bucket", "Unclassified")
+
+    if style_ready:
+        scenario_rows = [
+            (
+                "Selective growth confirms",
+                "3033.HK keeps a >0.5pp first-hour lead over HSCEI; SMIC and Hua Hong stop lagging broad beta; CNH is stable.",
+                "The prior style split has live price confirmation, but is not yet broad China risk-on.",
+                "Prioritize internet/platform relative strength; verify participation again at the close.",
+            ),
+            (
+                "Broad beta takes over",
+                "HSI and HSCEI rise together, breadth improves and the 3033.HK lead narrows without turning negative.",
+                "Leadership is broadening from a style trade into market beta.",
+                "Expand the research set from growth leaders to financials, SOEs and index-heavy names.",
+            ),
+            (
+                "Risk-off continuation",
+                "3033.HK loses its lead, semis underperform HSCEI and CNH depreciation accelerates.",
+                "The prior divergence was a temporary pocket of strength rather than a durable hand-off.",
+                "Treat rebounds as unconfirmed; focus on balance-sheet, catalyst and crowding risk.",
+            ),
+        ]
+        style_pass_condition = "3033.HK retains >0.5pp relative lead"
+    else:
+        scenario_rows = [
+            (
+                "Selective growth confirms",
+                "First refresh 3033.HK and HSCEI on the same session and basis; then require a >0.5pp first-hour 3033.HK lead, stable CNH and firmer semis.",
+                "The style thesis becomes measurable only after the comparison is aligned.",
+                "Keep internet/platform leadership on watch; do not upgrade it from the stale comparison alone.",
+            ),
+            (
+                "Broad beta confirms",
+                "HSI and HSCEI rise together with improving breadth and normal first-hour turnover.",
+                "A broad market move is observable even while the style spread remains unavailable.",
+                "Research financials, SOEs and index-heavy names alongside growth leaders.",
+            ),
+            (
+                "Risk-off continuation",
+                "HSI and HSCEI weaken, semis lag and CNH depreciation accelerates.",
+                "Local risk appetite is deteriorating without a reliable style offset.",
+                "Treat rebounds as unconfirmed; focus on balance-sheet, catalyst and crowding risk.",
+            ),
+        ]
+        style_pass_condition = "Refresh both legs on one session/basis; only then test for a >0.5pp lead"
+
+    lines = [
+        f"**Starting posture.** {headline} ({confidence}); composite risk `{risk_score}/100` ({risk_bucket}). {implication}",
+        "",
+        "**Scenario map**",
+        "",
+        _make_table(
+            ["Scenario", "Observable trigger", "Interpretation", "Research response"],
+            scenario_rows,
+        ),
+        "",
+        "**Clocked validation scorecard**",
+        "",
+    ]
+
+    levels = risk.get("technical_levels", {}) or {}
+    hsi_level = levels.get("HSI", {}) or {}
+    hsi_reference = "Unavailable"
+    if hsi_level:
+        current = _number(hsi_level.get("current"))
+        support = _number(hsi_level.get("nearest_support"))
+        resistance = _number(hsi_level.get("nearest_resistance"))
+        if current is not None and support is not None and resistance is not None:
+            hsi_reference = f"{current:,.0f} vs {support:,.0f} / {resistance:,.0f} reference grid"
+    usdcnh = _market_item("FX", "USD/CNH")
+    usdcnh_text = (
+        f"{usdcnh.get('Price', 'N/A')} | {usdcnh.get('Change Display', usdcnh.get('Pct Change', 'N/A'))}"
+        if usdcnh
+        else "Unavailable"
+    )
+    semis = []
+    for name in ("SMIC", "Hua Hong Semiconductor"):
+        item = _market_item("Equities", name)
+        if item:
+            semis.append(f"{name} {item.get('Change Display', item.get('Pct Change', 'N/A'))}")
+
+    lines.append(
+        _make_table(
+            ["Window", "Check", "Prior evidence", "Pass condition", "What it decides"],
+            [
+                ("09:30-10:30", "3033.HK vs HSCEI", spread_text, style_pass_condition, "Whether growth leadership survives the open"),
+                ("09:30-10:30", "Semiconductor hand-off", "; ".join(semis) or "Unavailable", "Stabilise after the open; at least one stops underperforming HSCEI", "Whether overnight semis pressure is contained locally"),
+                ("09:30-10:30", "HSI price zone", hsi_reference, "Hold above the lower grid or reclaim the upper grid with breadth", "Whether broad beta is stabilising; grid is derived, not technical analysis"),
+                ("09:30-10:30", "USD/CNH", usdcnh_text, "No acceleration in CNH depreciation", "Whether FX permits a clean Hong Kong risk extension"),
+                ("At close", "Turnover", _display_local("turnover_vs_20d"), "At least 1.0x the 20-session average", "Whether the move had normal participation"),
+                ("At close", "Southbound", _display_local("southbound_net_flow"), "Net buying remains positive and broadens beyond one or two names", "Whether mainland money confirms the price move"),
+                (
+                    "At close",
+                    "Short pressure",
+                    _display_local("short_selling_ratio"),
+                    f"Falls versus the prior verified reading ({_display_local('short_selling_ratio')})"
+                    if _display_local("short_selling_ratio") != "Unavailable"
+                    else "Obtain a verified close and compare it with the previous verified session",
+                    "Whether rebound conviction improved",
+                ),
+            ],
+        )
+    )
+    lines.extend(
+        [
+            "",
+            f"**Upgrade rule.** {confirmation}",
+            f"**Kill switch.** {invalidation}",
+            "**Clock discipline.** At 07:30, same-day Southbound, turnover and short-selling outcomes are not known. "
+            "Use the first-hour price/FX checks provisionally and make the final classification only after the close.",
+        ]
+    )
+
+    today = bundle.get("today_forward", {}) or {}
+    same_day = (today.get("today_macro", []) or []) + (today.get("today_catalysts", []) or [])
+    if same_day:
+        names = ", ".join(str(item.get("event", "")) for item in same_day[:2] if item.get("event"))
+        if names:
+            lines.append(f"**Event clock.** Same-day decision items: {names}.")
+    else:
+        future = [item for item in (today.get("next_catalysts", []) or []) if item.get("date") and item.get("event")]
+        if future:
+            nearest = future[0]
+            lines.append(
+                f"**Event clock.** No same-day decision-grade item is populated; the nearest reported/estimated item is "
+                f"{nearest.get('event')} on {nearest.get('date')}. Verify the issuer or official calendar before relying on the date."
+            )
+    return "\n".join(lines)
+
+
 def _render_macro_takeaway(text: str) -> str:
     points = _render_labeled_paragraphs(
         text,
@@ -1071,6 +1277,7 @@ def _render_performance(bundle: Dict[str, Any]) -> str:
     # aggregate: readiness, the headline table, and the boundary on how far the
     # result can be pushed.
     data_quality = performance.get("data_quality", {}) or {}
+    exploratory = str(performance.get("status", "") or "").startswith("exploratory")
     lines = [
         f"- **Readiness:** {str(performance.get('status', 'unknown')).replace('_', ' ')} | "
         f"{data_quality.get('observations', 0)} observations | "
@@ -1078,6 +1285,20 @@ def _render_performance(bundle: Dict[str, Any]) -> str:
         "next-close entry, 10bps cost, no same-day returns.",
         "- **Interpretation boundary:** exploratory until a benchmark reaches 252 sessions and 100 active-signal sessions.",
     ]
+    if exploratory:
+        conflicts = data_quality.get("conflicts", []) or []
+        exclusions = data_quality.get("excluded_non_session_observations", []) or []
+        if conflicts or exclusions:
+            lines.append(
+                f"- **Data-quality caveat:** {len(conflicts)} conflicting price revision(s) and "
+                f"{len(exclusions)} non-session observation(s) remain in the research ledger."
+            )
+        lines.append(
+            "- **Daily-use boundary:** cumulative return, Sharpe and the performance chart stay out of the "
+            "daily commute edition until the sample and trading-calendar gates pass; use Yesterday's Call instead."
+        )
+        return "\n".join(lines)
+
     rows = []
     for name, payload in (performance.get("benchmarks", {}) or {}).items():
         metrics = payload.get("metrics", {}) or {}
@@ -1328,14 +1549,8 @@ def _render_ai_tmt_chain(bundle: Dict[str, Any]) -> str:
         lines.append(_make_table(["Name", "Role in the chain", "1D", "Leg"], rows))
         lines.append("")
 
-    if chain.get("divergence_note"):
-        lines.append(f"**Read with care.** {chain['divergence_note']}")
-    elif chain.get("hk_followed_overnight") is True:
-        lines.append(
-            f"**Coherence.** Hong Kong tech moved with the overnight leg "
-            f"(semis {chain.get('overnight_avg_pct'):+.2f}% versus HK tech {chain.get('hk_avg_pct'):+.2f}%), "
-            "so the global cycle is a sufficient explanation without invoking local flow."
-        )
+    if chain.get("temporal_note"):
+        lines.append(f"**Clock discipline.** {chain['temporal_note']}")
 
     if chain.get("single_name_outliers"):
         lines.append(

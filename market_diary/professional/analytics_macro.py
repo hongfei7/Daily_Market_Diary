@@ -77,8 +77,15 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
 
     for item in released:
         profile = _macro_profile(item.get("indicator", ""), config, item.get("country", ""))
-        surprise = item.get("surprise", "inline")
-        direction = profile["beat_direction"] if surprise == "beat" else profile["miss_direction"] if surprise == "miss" else "The print was broadly inline; focus on the second-order market reaction"
+        surprise = str(item.get("surprise", "") or "")
+        verified_release = bool(str(item.get("actual", "") or "").strip())
+        direction = (
+            profile["beat_direction"]
+            if surprise == "beat"
+            else profile["miss_direction"]
+            if surprise == "miss"
+            else "Verify the official release and market reaction before drawing a macro conclusion"
+        )
         agenda.append(
             {
                 # Use the event's own date. Pinning every row to the report
@@ -88,7 +95,7 @@ def build_macro_agenda(report_date: str, macro_data: Dict[str, Any], config: Dic
                 "time": item.get("time", ""),
                 "country": item.get("country", ""),
                 "event": item.get("indicator", ""),
-                "status": "Released",
+                "status": "Released" if verified_release else "Past expected window (unverified)",
                 "impact": profile["impact"],
                 "affected_industries": profile["industries"],
                 "direction": direction,

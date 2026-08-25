@@ -42,7 +42,9 @@ def test_risk_off_overnight_leg_sets_the_hk_expression():
     assert chain["verdict"] == "risk-off"
     assert "SMIC" in chain["expression"]
     assert chain["overnight_avg_pct"] < 0
-    assert chain["hk_followed_overnight"] is True
+    assert chain["hk_followed_overnight"] is None
+    assert chain["comparison_posture"] == "pending_next_hk_session"
+    assert "predate the US overnight leg" in chain["temporal_note"]
 
 
 def test_flat_overnight_leg_does_not_set_direction():
@@ -51,18 +53,18 @@ def test_flat_overnight_leg_does_not_set_direction():
     assert "does not set the direction" in chain["headline"]
 
 
-def test_opposite_direction_is_flagged_as_divergence():
+def test_prior_hk_direction_is_not_compared_with_later_overnight_leg():
     chain = build_ai_tmt_chain(_summary((-3.1, -2.4, -1.8), (1.5, 1.4, 1.6, 1.5)))
-    assert chain["hk_followed_overnight"] is False
-    assert "diverged" in chain["divergence_note"]
+    assert chain["hk_followed_overnight"] is None
+    assert chain["divergence_note"] == ""
+    assert "validate transmission" in chain["temporal_note"]
 
 
-def test_same_direction_but_amplified_is_not_called_coherent():
-    """The 2026-08-19 case: same sign, 4x the magnitude."""
+def test_large_prior_hk_move_is_not_attributed_to_later_us_move():
     chain = build_ai_tmt_chain(_summary((-1.2, -1.0, -0.3), (-3.8, -11.8, -3.3, -1.0)))
-    assert chain["hk_followed_overnight"] is True
-    assert chain["amplification"] >= 2.0
-    assert "does not explain a move that size" in chain["divergence_note"]
+    assert chain["hk_followed_overnight"] is None
+    assert chain["amplification"] is None
+    assert chain["comparison_posture"] == "pending_next_hk_session"
 
 
 def test_single_name_outlier_is_called_company_specific():
@@ -70,10 +72,10 @@ def test_single_name_outlier_is_called_company_specific():
     assert any("Hua Hong" in name for name in chain["single_name_outliers"])
 
 
-def test_proportional_move_is_reported_as_coherent():
+def test_proportional_prior_move_still_waits_for_next_hk_session():
     chain = build_ai_tmt_chain(_summary((-2.0, -2.2, -1.8), (-2.1, -2.3, -1.9, -2.0)))
-    assert chain["hk_followed_overnight"] is True
-    assert chain["amplification"] < 2.0
+    assert chain["hk_followed_overnight"] is None
+    assert chain["amplification"] is None
     assert chain["divergence_note"] == ""
     assert chain["single_name_outliers"] == []
 

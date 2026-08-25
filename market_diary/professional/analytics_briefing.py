@@ -66,13 +66,18 @@ def build_catalyst_calendar(
         earnings_date = str(item.get("date") or "").strip()
         if not earnings_date:
             continue
+        estimates = []
+        if item.get("eps_estimate") not in (None, ""):
+            estimates.append(f"EPS est. {item['eps_estimate']}")
+        if item.get("revenue_estimate") not in (None, ""):
+            estimates.append(f"Revenue est. {item['revenue_estimate']}")
         catalysts.append(
             {
                 "date": earnings_date,
                 "time": item.get("time", ""),
                 "event": f"{item.get('company', item.get('ticker', ''))} earnings",
                 "category": "Earnings",
-                "impact": f"EPS est. {item.get('eps_estimate')} / revenue est. {item.get('revenue_estimate')}",
+                "impact": " | ".join(estimates) or "Estimate comparison unavailable",
                 "importance": 4,
                 "score": 72,
                 "as_of": item.get("as_of", earnings_date),
@@ -360,16 +365,46 @@ def _announcement_next_check(item: Dict[str, Any]) -> str:
     return "Open the primary filing and identify the next dated confirmation point."
 
 
-def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[str, Any]) -> Dict[str, Any]:
+def _earnings_priority(event_date: Any, report_date: str) -> Tuple[str, Optional[int]]:
+    try:
+        event_day = datetime.strptime(str(event_date), "%Y-%m-%d").date()
+        report_day = datetime.strptime(report_date, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return "Monitor", None
+    days = (event_day - report_day).days
+    if days < 0:
+        return "Review", days
+    if days <= 2:
+        return "High", days
+    if days <= 7:
+        return "Prepare", days
+    if days <= 30:
+        return "Monitor", days
+    return "Archive", days
+
+
+def build_company_event_digest(
+    sector_data: Dict[str, Any],
+    sector_digest: Dict[str, Any],
+    report_date: str = "",
+) -> Dict[str, Any]:
     earnings_rows: List[Dict[str, Any]] = []
     for item in (sector_data or {}).get("earnings_calendar", []) or []:
+        priority, days_to_event = _earnings_priority(item.get("date", ""), report_date) if report_date else ("Monitor", None)
+        estimates = []
+        if item.get("eps_estimate") not in (None, ""):
+            estimates.append(f"EPS est. {item['eps_estimate']}")
+        if item.get("revenue_estimate") not in (None, ""):
+            estimates.append(f"Revenue est. {item['revenue_estimate']}")
         earnings_rows.append(
             {
                 "ticker": item.get("ticker", ""),
                 "company": item.get("company", ""),
                 "date": item.get("date", ""),
                 "time": item.get("time", ""),
-                "comparison": f"EPS est. {item.get('eps_estimate', 'N/A')} | revenue est. {item.get('revenue_estimate', 'N/A')}",
+                "comparison": " | ".join(estimates) or "Estimate comparison unavailable",
+                "priority": priority,
+                "days_to_event": days_to_event,
                 "as_of": item.get("as_of", item.get("date", "")),
                 "date_confidence": item.get("date_confidence", ""),
                 "source": item.get("source", ""),
@@ -416,6 +451,7 @@ def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[
     hkex_meta = dict(hkex_payload.get("meta", {}) or {})
     hkex_meta["status"] = str(hkex_payload.get("status", "unavailable") or "unavailable")
     actionable_count = sum(1 for item in announcement_rows if item.get("priority") in {"Portfolio", "High", "Review"})
+    actionable_count += sum(1 for item in earnings_rows if item.get("priority") in {"High", "Prepare"})
     ratings = (sector_digest or {}).get("sell_side", []) or []
     earnings_status = _event_feed_status((sector_data or {}).get("earnings_calendar_status"), earnings_rows)
     ratings_status = _event_feed_status((sector_data or {}).get("analyst_changes_status"), ratings)
@@ -432,7 +468,7 @@ def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[
         "event_summary": {
             "official_filings": int(hkex_meta.get("available_count", len(hkex_announcements.get("top_announcements", []) or [])) or 0),
             "watchlist_hits": len(watchlist_announcements),
-            "actionable_events": actionable_count + len(earnings_rows) + len(ratings),
+            "actionable_events": actionable_count + len(ratings),
             "type_counts": type_counts,
         },
         "ipo_status": "not_covered",

@@ -150,7 +150,7 @@ def main() -> None:
     assert "Executive Summary" in report
     assert "**What changed overnight?**" in report
     assert "**What it means for AI/TMT**" in report
-    assert "Today's Core Names" in report
+    assert "Core coverage requiring follow-up" in report
     assert "Personal View Pad" not in report
     assert "Learning watchlist" not in report
     assert "Report Quality and Validation" in report
@@ -180,7 +180,7 @@ def main() -> None:
     assert "**Opening implication.**" in report
     assert "**Style and Local Leadership**" in report
     assert "**Flow Confirmation**" in report
-    assert "No rotating theme was set for this run" in report
+    assert "Conditional Theme Deep Dive" not in report
     assert "..." not in report
     assert "[trimmed]" not in report
     assert "Proxy fallback" not in report

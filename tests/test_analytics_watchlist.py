@@ -22,9 +22,14 @@ class _FakeTicker:
     def __init__(self, ticker: str) -> None:
         self.ticker = ticker
 
-    def history(self, period: str) -> pd.DataFrame:
-        assert period == "6mo"
-        return pd.DataFrame({"Close": [10.0, 11.0, 12.0, 13.0]})
+    def history(self, *, start: str, end: str, interval: str) -> pd.DataFrame:
+        assert start == "2025-10-05"
+        assert end == "2026-04-14"
+        assert interval == "1d"
+        return pd.DataFrame(
+            {"Close": [10.0, 11.0, 12.0, 13.0]},
+            index=pd.to_datetime(["2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13"]),
+        )
 
 
 def test_watchlist_digest_uses_ticker_snapshot_and_normalizes_news() -> None:

@@ -41,12 +41,12 @@ The core report structure does not depend on an LLM. If the LLM layer is disable
 
 ## LLM Provider Setup
 
-DeepSeek (`deepseek-v4-pro`) is the primary synthesis provider. MiniMax-M3 remains the fallback for synthesis when DeepSeek is unavailable, and runs the weekly financial-skill shadow pass. Claude is not called. (The briefing tasks name DeepSeek explicitly because defaulting to a reasoning model's reasoning tokens exhausted `max_tokens` and truncated the output.)
+`MiniMax-M3` (non-thinking mode for bounded JSON tasks) is the primary synthesis provider. DeepSeek `deepseek-v4-pro` is the independent fallback and continues to run the weekly financial-skill shadow pass. Claude is not called. MiniMax requests are serialized and separate reasoning from final content to protect the 07:30 delivery SLA.
 
 For GitHub Actions, configure these repository secrets:
 
-- `DEEPSEEK_API_KEY` for the primary provider and skill shadow runs
-- `MINIMAX_API_KEY` for the fallback provider
+- `MINIMAX_API_KEY` for the primary MiniMax-M3 narrative provider
+- `DEEPSEEK_API_KEY` for fallback synthesis and weekly skill shadow runs
 - `WECOM_WEBHOOK_URL` for the required primary delivery channel
 - SMTP secrets if the secondary email copy is enabled
 
@@ -56,6 +56,8 @@ The scheduled workflow maps them to:
 MiniMax:  MINIMAX_API_KEY, https://api.minimaxi.com/v1, MiniMax-M3
 DeepSeek: DEEPSEEK_API_KEY, https://api.deepseek.com, deepseek-v4-pro
 ```
+
+`LLM_REQUEST_TIMEOUT_SECONDS` optionally overrides the bounded per-request timeout (default 45 seconds); SDK retries are disabled because the application owns observable retries and MiniMax-to-DeepSeek failover.
 
 For local development:
 

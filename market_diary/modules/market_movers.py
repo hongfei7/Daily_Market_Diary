@@ -1,6 +1,7 @@
 """Market movers, ETF flow proxies, and options activity adapters."""
 
 import os
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 import yfinance as yf
@@ -49,10 +50,24 @@ class MarketMoversAnalyzer:
     def fetch_etf_flows(self, date: str) -> List[Dict]:
         """Approximate ETF flow pressure using volume and daily price change."""
         flows: List[Dict] = []
+        target_day = datetime.strptime(date, "%Y-%m-%d").date()
+        start_day = target_day - timedelta(days=14)
+        # Yahoo's ``end`` is exclusive.  Using an explicit window makes manual
+        # reruns and historical backfills reproducible and prevents a later
+        # intraday row from leaking into a prior-session briefing.
+        end_day = target_day + timedelta(days=1)
 
         for ticker, name in self.MAJOR_ETFS.items():
             try:
-                hist = yf.Ticker(ticker).history(period="5d", timeout=YFINANCE_TIMEOUT)
+                hist = yf.Ticker(ticker).history(
+                    start=start_day.isoformat(),
+                    end=end_day.isoformat(),
+                    interval="1d",
+                    timeout=YFINANCE_TIMEOUT,
+                )
+                if not hist.empty:
+                    valid = [index.date() <= target_day for index in hist.index]
+                    hist = hist.loc[valid]
                 if hist.empty or len(hist) < 2:
                     continue
 

@@ -164,11 +164,11 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY != '' && secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'https://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'https://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M3' }}
-          LLM_PRIMARY_PROVIDER: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek' || 'minimax' }}
+          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY != '' && secrets.MINIMAX_API_KEY || secrets.DEEPSEEK_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
+          LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
           python --version
           python - <<'PY'
@@ -191,11 +191,11 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY != '' && secrets.DEEPSEEK_API_KEY || secrets.MINIMAX_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'https://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_BASE_URL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'https://api.deepseek.com' || 'https://api.minimaxi.com/v1' }}
-          LLM_MODEL: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek-v4-pro' || 'MiniMax-M3' }}
-          LLM_PRIMARY_PROVIDER: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek' || 'minimax' }}
+          OPENAI_API_KEY: ${{ secrets.MINIMAX_API_KEY != '' && secrets.MINIMAX_API_KEY || secrets.DEEPSEEK_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_BASE_URL: ${{ secrets.MINIMAX_API_KEY != '' && 'https://api.minimaxi.com/v1' || 'https://api.deepseek.com' }}
+          LLM_MODEL: ${{ secrets.MINIMAX_API_KEY != '' && 'MiniMax-M3' || 'deepseek-v4-pro' }}
+          LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}
         run: |
           echo "Briefing date: $BRIEFING_DATE"
           if [ -n "${{ inputs.date }}" ]; then
@@ -256,6 +256,17 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Render validated A4 PDF companion
+        id: pdf
+        continue-on-error: true
+        if: ${{ steps.gate.outputs.should_run == 'true' && steps.audit.outcome == 'success' }}
+        run: |
+          python scripts/render_report_pdf.py \
+            --report-date "$BRIEFING_DATE" \
+            --output-dir reports_professional \
+            --scope core \
+            --min-text-chars 260
+
       - name: Notify WeCom when the report is unavailable
         id: release_alert
         continue-on-error: true
@@ -303,7 +314,10 @@ jobs:
         if: ${{ steps.gate.outputs.should_run == 'true' && steps.audit.outcome == 'success' && (github.event_name == 'schedule' || inputs.deliver) }}
         env:
           WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
-          DMD_REPORT_LINK_ENABLED: ${{ steps.gate.outputs.archive_needed != 'true' || steps.archive.outcome == 'success' }}
+          # A recovery run can regenerate content while an older immutable
+          # archive already exists. Link only when this run published the exact
+          # report, otherwise the attachment remains the canonical payload.
+          DMD_REPORT_LINK_ENABLED: ${{ steps.gate.outputs.archive_needed == 'true' && steps.archive.outcome == 'success' }}
         run: |
           if [ -z "$WECOM_WEBHOOK_URL" ]; then
             echo "::error::WECOM_WEBHOOK_URL is missing; primary WeCom delivery failed."
@@ -341,13 +355,38 @@ jobs:
           for attempt in 1 2; do
             if python scripts/send_report_wecom.py \
               --report-date "$BRIEFING_DATE" \
-              --output-dir reports_professional \
-              --mode file \
+              --attachment "reports_professional/${BRIEFING_DATE}_morning_briefing.html" \
               --receipt-file "$RECEIPT"; then
-              python -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p["status"] == "ok" and p["kind"] == "file" and p["response"]["errcode"] == 0' "$RECEIPT"
+              python -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p["status"] == "ok" and p["kind"] == "html" and p["response"]["errcode"] == 0 and p.get("payload_sha256")' "$RECEIPT"
               exit 0
             fi
             echo "WeCom file attempt $attempt failed."
+            if [ "$attempt" -lt 2 ]; then sleep $((attempt * 5)); fi
+          done
+          exit 1
+
+      - name: Send print-ready PDF companion to WeCom
+        id: wecom_pdf
+        continue-on-error: true
+        if: ${{ steps.gate.outputs.should_run == 'true' && steps.audit.outcome == 'success' && steps.pdf.outcome == 'success' && (github.event_name == 'schedule' || inputs.deliver) }}
+        env:
+          WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WECOM_WEBHOOK_URL" ]; then
+            echo "::warning::WECOM_WEBHOOK_URL is missing; PDF companion was not delivered."
+            exit 1
+          fi
+          RECEIPT="reports_professional/wecom_${BRIEFING_DATE}_pdf_receipt.json"
+          PDF="reports_professional/${BRIEFING_DATE}_morning_briefing_core.pdf"
+          for attempt in 1 2; do
+            if python scripts/send_report_wecom.py \
+              --report-date "$BRIEFING_DATE" \
+              --attachment "$PDF" \
+              --receipt-file "$RECEIPT"; then
+              python -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p["status"] == "ok" and p["kind"] == "pdf" and p["response"]["errcode"] == 0 and p.get("payload_sha256")' "$RECEIPT"
+              exit 0
+            fi
+            echo "PDF companion attempt $attempt failed."
             if [ "$attempt" -lt 2 ]; then sleep $((attempt * 5)); fi
           done
           exit 1
@@ -406,6 +445,11 @@ jobs:
               echo "::error::Full report attachment was not delivered to WeCom."
               FAILED=1
             fi
+            if [ "${{ steps.pdf.outcome }}" != "success" ]; then
+              echo "::warning::The print-ready PDF did not pass rendering validation; summary and audited HTML delivery remain valid."
+            elif [ "${{ steps.wecom_pdf.outcome }}" != "success" ]; then
+              echo "::warning::The PDF companion was not delivered; summary and audited HTML delivery remain valid."
+            fi
             if [ "${{ steps.email.outcome }}" != "success" ]; then
               echo "::warning::Secondary email copy was unavailable."
             fi
@@ -420,6 +464,8 @@ jobs:
           path: |
             reports_professional/*.md
             reports_professional/*.html
+            reports_professional/*.pdf
+            reports_professional/*_core.json
             reports_professional/charts/*.png
             reports_professional/charts/*.json
             reports_professional/performance/*

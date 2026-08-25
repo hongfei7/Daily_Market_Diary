@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Tuple
 
 import yfinance as yf
@@ -22,11 +23,23 @@ def _extract_news_url(content: Dict[str, Any]) -> str:
     return ""
 
 
-def _fetch_single_watchlist(definition: WatchlistDefinition, news_limit: int) -> WatchlistSnapshot:
+def _fetch_single_watchlist(
+    definition: WatchlistDefinition,
+    news_limit: int,
+    report_date: str,
+) -> WatchlistSnapshot:
     snapshot = WatchlistSnapshot(definition=definition)
     try:
         ticker = yf.Ticker(definition.ticker)
-        hist = ticker.history(period="6mo")
+        target_day = datetime.strptime(report_date, "%Y-%m-%d").date()
+        hist = ticker.history(
+            start=(target_day - timedelta(days=190)).isoformat(),
+            end=(target_day + timedelta(days=1)).isoformat(),
+            interval="1d",
+        )
+        if not hist.empty:
+            valid = [index.date() <= target_day for index in hist.index]
+            hist = hist.loc[valid]
         if not hist.empty:
             close = hist["Close"].dropna()
             if len(close) >= 2:
@@ -142,8 +155,6 @@ def _compose_note(snapshot: WatchlistSnapshot) -> str:
 
 
 def build_watchlist_digest(config: Dict[str, Any], report_date: str) -> Dict[str, List[Dict[str, Any]]]:
-    del report_date
-
     report_config = config.get("report", {}) or {}
     news_limit = int(report_config.get("watchlist_news_limit", 2))
     max_workers = int(report_config.get("watchlist_workers", 4))
@@ -178,7 +189,7 @@ def build_watchlist_digest(config: Dict[str, Any], report_date: str) -> Dict[str
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_map = {
-            executor.submit(_fetch_single_watchlist, definition, news_limit): label
+            executor.submit(_fetch_single_watchlist, definition, news_limit, report_date): label
             for label, definition in tasks
         }
         for future in as_completed(future_map):

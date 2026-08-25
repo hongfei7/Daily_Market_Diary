@@ -16,6 +16,7 @@ from market_diary.modules.llm_client import (
     get_available_providers,
     get_client,
     get_completion_extra_body,
+    get_completion_temperature,
     get_default_model,
     get_default_provider,
 )
@@ -911,7 +912,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                                 {"role": "system", "content": LLM_SYSTEM_PROMPT},
                                 {"role": "user", "content": prompt},
                             ],
-                            temperature=temperature,
+                            temperature=get_completion_temperature(provider, temperature, model),
                             max_tokens=attempt_tokens,
                             extra_body=get_completion_extra_body(provider, model),
                         )

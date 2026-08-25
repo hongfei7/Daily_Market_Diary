@@ -1,6 +1,7 @@
 import os
 import sys
 import tempfile
+from copy import deepcopy
 
 from _bootstrap import ROOT  # noqa: F401
 
@@ -393,12 +394,16 @@ def main():
     # verify; the measured estimate lives in the runtime audit instead.
     assert "Layer 1 scan (5 min)" in report
     assert "25-30 minute deep read" not in report
-    assert "Layer 3 | Decision Deepening" in report
+    assert "Layer 3 | Session Playbook" in report
+    assert "Base Case and Scenario Map" in report
+    assert "Clocked validation scorecard" in report
+    assert "Clock discipline" in report
+    assert "3033.HK retains >0.5pp relative lead" in report
     assert "Daily One Chart" in report
     assert "Hong Kong Trend Pack" in report
     assert "Decision Board" in report
-    assert "Flow Tracker and Attribution" in report
-    assert "Company Catalysts and Risk Monitor" in report
+    assert "Hong Kong Local Tape and Flow" in report
+    assert "Company Micro Research and Catalysts" in report
     assert "event-monitor-summary" in report
     assert "Stock Connect Southbound Active Names" in report
     assert "AH Premium Dispersion" in report
@@ -424,6 +429,16 @@ def main():
     assert "Aggregate Balance helps frame whether linked-rate liquidity conditions are tight or comfortable." not in report
     assert "funding conditions and equity-duration pressure." in report
     assert "conditions are tight or\n" not in report
+
+    unaligned_bundle = deepcopy(bundle)
+    unaligned_bundle["hk_desk_view"]["style_comparison_ready"] = False
+    unaligned_bundle["hk_desk_view"]["style_spread_pp"] = None
+    unaligned_bundle["hk_local"]["short_selling_ratio"]["display_value"] = "18.2%"
+    unaligned_report = render_professional_report(unaligned_bundle, charts_section="")
+    assert "Same-session style spread unavailable" in unaligned_report
+    assert "Refresh both legs on one session/basis" in unaligned_report
+    assert "Falls versus the prior verified reading (18.2%)" in unaligned_report
+    assert "21.0%" not in unaligned_report
 
     print("Professional workbench test passed")
 

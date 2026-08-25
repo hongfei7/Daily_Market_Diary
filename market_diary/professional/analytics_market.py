@@ -71,6 +71,9 @@ def _snapshot_row(summary: Dict[str, Any], category: str, name: str, label: str,
     if freshness_days is not None and freshness_days > MAX_FRESH_TRADING_DAYS:
         quality = "stale"
     return {
+        "instrument_id": str(item.get("Instrument ID", "") or ""),
+        "effective_date": str(item.get("As Of", "") or "").split(" ", 1)[0],
+        "basis": str(item.get("Basis", "") or ""),
         "freshness_days": freshness_days,
         "quality": quality,
         "is_stale": quality == "stale",
@@ -340,8 +343,37 @@ def build_hk_investor_lens(
     if hsi is None and hsi_stale is not None:
         stale_inputs.append(_stale_note("Hang Seng Index", hsi_stale))
 
-    style_spread = hstech - hscei if hstech is not None and hscei is not None else None
-    beta_spread = hstech - hsi if hstech is not None and hsi is not None else None
+    hsi_row = _get_row(rows, "Hang Seng Index")
+    hscei_row = _get_row(rows, "HSCEI")
+    hstech_row = _get_row(rows, "3033.HK ETF")
+
+    def _aligned(left: Dict[str, Any], right: Dict[str, Any]) -> tuple[bool, str]:
+        left_date = str(left.get("effective_date") or "")
+        right_date = str(right.get("effective_date") or "")
+        left_basis = str(left.get("basis") or "")
+        right_basis = str(right.get("basis") or "")
+        # Compatibility fixtures predate explicit metadata.  Production rows
+        # always carry both fields; when either side supplies metadata, require
+        # the complete key and exact equality.
+        if not any((left_date, right_date, left_basis, right_basis)):
+            return True, ""
+        if not left_date or not right_date:
+            return False, "missing effective date"
+        if left_date != right_date:
+            return False, f"effective dates differ ({left_date} vs {right_date})"
+        if left_basis != "daily_close" or right_basis != "daily_close":
+            return False, f"basis is not daily_close ({left_basis or 'missing'} vs {right_basis or 'missing'})"
+        return True, ""
+
+    style_aligned, style_issue = _aligned(hstech_row, hscei_row)
+    beta_aligned, beta_issue = _aligned(hstech_row, hsi_row)
+    if not style_aligned:
+        stale_inputs.append(f"3033.HK ETF / HSCEI comparison blocked: {style_issue}")
+    if not beta_aligned and beta_issue != style_issue:
+        stale_inputs.append(f"3033.HK ETF / HSI comparison blocked: {beta_issue}")
+
+    style_spread = hstech - hscei if hstech is not None and hscei is not None and style_aligned else None
+    beta_spread = hstech - hsi if hstech is not None and hsi is not None and beta_aligned else None
 
     if style_spread is not None:
         if style_spread > 0.5:
@@ -485,6 +517,18 @@ def build_hk_investor_lens(
         "confirmation": confirmation,
         "invalidation": invalidation,
         "style": style,
+        "style_comparison_ready": style_aligned and style_spread is not None,
+        "style_comparison_issue": style_issue,
+        "style_input_dates": {
+            "hsi": hsi_row.get("effective_date", ""),
+            "hscei": hscei_row.get("effective_date", ""),
+            "hstech_proxy": hstech_row.get("effective_date", ""),
+        },
+        "style_input_basis": {
+            "hsi": hsi_row.get("basis", ""),
+            "hscei": hscei_row.get("basis", ""),
+            "hstech_proxy": hstech_row.get("basis", ""),
+        },
         "style_spread_pp": style_spread,
         "stale_inputs": stale_inputs,
         "participation_flags": participation_flags,

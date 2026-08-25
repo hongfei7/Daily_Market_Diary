@@ -406,7 +406,7 @@ def _extract_price_series(frame: pd.DataFrame) -> pd.Series:
     return pd.to_numeric(frame[numeric_cols[0]], errors="coerce").dropna()
 
 
-def _normalize_timestamp(value: Any) -> Optional[pd.Timestamp]:
+def _normalize_timestamp(value: Any, *, preserve_local_date: bool = False) -> Optional[pd.Timestamp]:
     try:
         timestamp = pd.Timestamp(value)
     except Exception:
@@ -416,7 +416,11 @@ def _normalize_timestamp(value: Any) -> Optional[pd.Timestamp]:
         return None
 
     if timestamp.tzinfo is not None:
-        timestamp = timestamp.tz_convert(None)
+        # Daily bars are labelled by the exchange-local session date.  A Hong
+        # Kong midnight converted to naive UTC becomes the previous calendar
+        # day, which corrupts freshness and cross-market alignment.  Intraday
+        # observations may still be normalized to UTC-naive timestamps.
+        timestamp = timestamp.tz_localize(None) if preserve_local_date else timestamp.tz_convert(None)
     return timestamp
 
 
@@ -455,7 +459,7 @@ def _build_daily_summary(frame: pd.DataFrame, target_date: str, source: str) -> 
 
     price = float(closes.iloc[-1])
     reference = float(closes.iloc[-2]) if len(closes) >= 2 else price
-    as_of = _normalize_timestamp(closes.index[-1])
+    as_of = _normalize_timestamp(closes.index[-1], preserve_local_date=True)
     return _build_summary_payload(
         price=price,
         reference=reference,

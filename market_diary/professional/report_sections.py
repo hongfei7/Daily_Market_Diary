@@ -372,12 +372,9 @@ def _render_global_asset_dashboard(bundle: Dict[str, Any]) -> str:
         "S&P 500",
         "Nasdaq 100",
         "Semiconductors (SOXX)",
-        "SMIC (0981.HK)",
         "Hang Seng Index",
         "Hang Seng TECH ETF (3033.HK)",
         "US 10Y",
-        "China 10Y",
-        "DXY",
         "USD/CNH",
         "VIX",
     }

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import html as html_lib
 import json
 import os
@@ -60,6 +61,11 @@ def _parse_args() -> argparse.Namespace:
         "--receipt-file",
         default="",
         help="Optional JSON receipt path written only after WeCom confirms successful delivery.",
+    )
+    parser.add_argument(
+        "--attachment",
+        default="",
+        help="Upload an already-rendered, validated file instead of rendering the HTML attachment.",
     )
     return parser.parse_args()
 
@@ -131,10 +137,12 @@ def _write_delivery_receipt(
     report_date: str,
     kind: str,
     response: Dict[str, Any],
+    file_path: Optional[Path] = None,
 ) -> None:
     if path is None:
         return
-    payload = {
+    payload: Dict[str, Any] = {
+        "schema_version": "delivery-receipt-v2",
         "status": "ok",
         "channel": "wecom",
         "kind": kind,
@@ -145,6 +153,18 @@ def _write_delivery_receipt(
             "errmsg": response.get("errmsg", ""),
         },
     }
+    if file_path is not None and file_path.exists():
+        digest = hashlib.sha256(file_path.read_bytes()).hexdigest()
+        delivery_seed = f"{report_date}|wecom|{kind}|{digest}".encode("utf-8")
+        payload.update(
+            {
+                "filename": file_path.name,
+                "size_bytes": file_path.stat().st_size,
+                "payload_sha256": digest,
+                "delivery_id": hashlib.sha256(delivery_seed).hexdigest(),
+                "run_id": (os.getenv("GITHUB_RUN_ID") or "").strip(),
+            }
+        )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -498,7 +518,7 @@ HTML_CSS = """\
   .section-executive-summary > ul > li strong { display: block; margin-bottom: 7px; color: var(--ink); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
   .section-visual-dashboard { padding: 24px 26px 2px; background: var(--warm); }
   .section-visual-dashboard h2 { border-top-color: var(--blue); }
-  .section-optional-appendix-traceability-and-performance,
+  [class*="section-optional-appendix-traceability-and-performance"],
   .section-traceable-appendix,
   .section-supplementary-visual-appendix { padding: 28px 30px; background: var(--soft); }
   .table-shell { width: 100%; margin: 18px 0 26px; overflow-x: auto; border-top: 2px solid var(--ink); -webkit-overflow-scrolling: touch; }
@@ -527,12 +547,14 @@ HTML_CSS = """\
   .event-card.priority-portfolio { border-left-color: #8d2e24; }
   .event-card.priority-high { border-left-color: var(--adverse); }
   .event-card.priority-review { border-left-color: var(--blue); }
+  .event-card.priority-prepare { border-left-color: var(--blue); }
   .event-card-meta { display: flex; flex-wrap: wrap; gap: 7px 13px; align-items: center; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
   .event-card-meta time { margin-left: auto; font-variant-numeric: tabular-nums; }
   .event-priority { padding: 2px 7px; border: 1px solid currentColor; color: var(--navy); }
   .priority-portfolio .event-priority { color: #8d2e24; }
   .priority-high .event-priority { color: var(--adverse); }
   .priority-review .event-priority { color: var(--blue); }
+  .priority-prepare .event-priority { color: var(--blue); }
   .event-card h5 { margin: 10px 0 7px; font-size: 16px; line-height: 1.25; }
   .event-fact { margin: 0; color: #252b2f; font-size: 13px; font-weight: 600; line-height: 1.48; }
   .event-drivers { margin: 8px 0 0; color: #4f585e; font-size: 11px; line-height: 1.5; }
@@ -593,12 +615,18 @@ HTML_CSS = """\
     .section-executive-summary > ul { display: block; }
     .section-executive-summary > ul > li { margin-bottom: 20px; }
     .section-visual-dashboard,
-    .section-optional-appendix-traceability-and-performance,
+    [class*="section-optional-appendix-traceability-and-performance"],
     .section-traceable-appendix,
     .section-supplementary-visual-appendix { margin-left: -18px; margin-right: -18px; padding: 24px 18px 2px; }
     table { min-width: 660px; font-size: 12px; }
-    .section-visual-dashboard .figure-shell img { width: 900px; max-width: none; }
-    .section-supplementary-visual-appendix .figure-shell img { width: 720px; max-width: none; }
+    /* Portrait decision visuals should fit the phone.  Only genuinely wide
+       analytical charts use a swipeable canvas; the previous rule did the
+       reverse and forced the dashboard itself to 900px. */
+    .figure-shell img { width: 100%; max-width: 100%; }
+    .figure-ai-tmt-read-through img,
+    .figure-daily-one-chart img,
+    .figure-signal-performance img,
+    .figure-hong-kong-trend-pack img { width: 760px; max-width: none; }
     th, td { padding: 9px 8px; }
     .event-monitor-summary { display: block; padding: 17px 16px; }
     .event-summary-copy h4 { font-size: 15px; }
@@ -619,21 +647,116 @@ HTML_CSS = """\
     .report-masthead h1 { font-size: 32px; }
     .report-deck { font-size: 18px; }
     .section-visual-dashboard,
-    .section-optional-appendix-traceability-and-performance,
+    [class*="section-optional-appendix-traceability-and-performance"],
     .section-traceable-appendix,
     .section-supplementary-visual-appendix { margin-left: -14px; margin-right: -14px; padding-left: 14px; padding-right: 14px; }
   }
   @media print {
+    @page { size: A4 portrait; margin: 17mm 15mm 18mm; }
+    :root {
+      --ink: #111820; --navy: #18364a; --blue: #176b92;
+      --muted: #505960; --line: #bfc4c7; --paper: #ffffff;
+      --warm: #ffffff; --soft: #ffffff;
+    }
     html { background: #fff; }
-    body { max-width: none; padding: 0; font-size: 10.5pt; }
+    body {
+      max-width: none; padding: 0; margin: 0; font-size: 9.6pt;
+      line-height: 1.46; color: #111820; print-color-adjust: exact;
+      -webkit-print-color-adjust: exact; orphans: 3; widows: 3;
+    }
+    body.print-core [class*="section-optional-appendix-traceability-and-performance"],
+    body.print-core .section-supplementary-visual-appendix { display: none; }
+    .report-shell { border-top-width: 4pt; }
+    .report-masthead { padding: 7mm 0 5mm; }
+    .masthead-line { padding-bottom: 4mm; }
+    .masthead-grid { grid-template-columns: minmax(0, 1fr) 48mm; gap: 10mm; padding-top: 5mm; }
+    .report-masthead h1 { font-size: 28pt; }
+    .report-deck { margin-top: 3mm; font-size: 12.5pt; line-height: 1.32; }
+    .issue-facts { padding-left: 5mm; }
+    .reading-path { display: none; }
+    .report-grid { display: block; padding-top: 7mm; }
     .report-toc, .mobile-toc { display: none; }
-    .report-grid { display: block; }
     .report-content { max-width: none; }
-    .table-shell { overflow: visible; break-inside: avoid; }
-    table { min-width: 0; }
-    h2, h3, img { break-after: avoid; }
-    .figure-shell { overflow: visible; break-inside: avoid; }
-    .report-section { break-inside: auto; }
+    .report-section { margin-bottom: 10mm; break-inside: auto; }
+    .section-visual-dashboard,
+    [class*="section-optional-appendix-traceability-and-performance"],
+    .section-traceable-appendix,
+    .section-supplementary-visual-appendix { padding: 0; background: #fff; }
+    .section-visual-dashboard,
+    [class*="section-optional-appendix-traceability-and-performance"],
+    .section-traceable-appendix,
+    .section-supplementary-visual-appendix { margin-left: 0; margin-right: 0; }
+    .section-visual-dashboard,
+    .section-layer-1-scan-5-min,
+    .section-layer-1-weekly-scan-5-min,
+    .section-layer-1-reset-5-min,
+    .section-layer-2-deep-read,
+    .section-layer-2-core-research-20-30-min,
+    [class*="section-optional-appendix-traceability-and-performance"] { break-before: page; }
+    h1 { font-size: 23pt; }
+    h2 { font-size: 18pt; margin: 0 0 6mm; padding-top: 3mm; border-top-width: 3pt; }
+    h3 { font-size: 13pt; margin: 8mm 0 3mm; padding-left: 3mm; }
+    h4 { font-size: 10.5pt; margin: 5mm 0 2mm; }
+    h2, h3, h4 { break-after: avoid-page; }
+    p, li { orphans: 3; widows: 3; }
+    blockquote, .event-card, .event-monitor-summary { break-inside: avoid-page; }
+    .section-executive-summary > ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5mm 8mm; }
+    .section-layer-1-scan-5-min > ol:last-child,
+    .section-layer-1-weekly-scan-5-min > ol:last-child,
+    .section-layer-1-reset-5-min > ol:last-child {
+      columns: 2; column-gap: 8mm; column-rule: 0.3pt solid var(--line);
+    }
+    .section-layer-1-scan-5-min > ol:last-child > li,
+    .section-layer-1-weekly-scan-5-min > ol:last-child > li,
+    .section-layer-1-reset-5-min > ol:last-child > li { break-inside: avoid-page; padding-right: 3mm; }
+    .section-layer-1-scan-5-min h3,
+    .section-layer-1-weekly-scan-5-min h3,
+    .section-layer-1-reset-5-min h3 { margin: 4mm 0 2mm; }
+    .section-layer-1-scan-5-min .table-shell,
+    .section-layer-1-weekly-scan-5-min .table-shell,
+    .section-layer-1-reset-5-min .table-shell { margin: 2mm 0 4mm; }
+    .section-layer-1-scan-5-min table,
+    .section-layer-1-weekly-scan-5-min table,
+    .section-layer-1-reset-5-min table { font-size: 7.6pt; line-height: 1.25; }
+    .section-layer-1-scan-5-min th, .section-layer-1-scan-5-min td,
+    .section-layer-1-weekly-scan-5-min th, .section-layer-1-weekly-scan-5-min td,
+    .section-layer-1-reset-5-min th, .section-layer-1-reset-5-min td { padding: 1.5mm 1.6mm; }
+    .table-shell { overflow: visible; break-inside: auto; margin: 4mm 0 6mm; }
+    table { min-width: 0; font-size: 7.8pt; line-height: 1.32; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    tr { break-inside: avoid-page; }
+    th, td { padding: 2.1mm 1.8mm; }
+    tbody tr:hover td { background: transparent; }
+    .figure-shell { overflow: visible; break-inside: avoid-page; margin: 4mm 0 6mm; }
+    .figure-shell img { width: 100%; max-width: 180mm; max-height: 242mm; object-fit: contain; margin: 0 auto; }
+    .section-visual-dashboard h2 { margin-bottom: 3mm; }
+    .section-visual-dashboard .figure-shell { break-before: auto; break-after: auto; margin: 0 0 5mm; }
+    .section-visual-dashboard .figure-research-dashboard { break-after: page; }
+    .section-visual-dashboard p:has(+ .figure-catalyst-event-radar) {
+      break-before: page; break-after: avoid-page; margin: 0 0 3mm;
+      font-size: 13pt; color: var(--ink);
+    }
+    .section-visual-dashboard .figure-catalyst-event-radar { break-after: avoid-page; }
+    .section-visual-dashboard .figure-catalyst-event-radar + p { break-before: avoid-page; margin-top: 3mm; }
+    .figure-ai-tmt-read-through img,
+    .figure-daily-one-chart img,
+    .figure-signal-performance img,
+    .figure-hong-kong-trend-pack img { width: 100%; max-width: 180mm; }
+    .figure-ai-tmt-read-through,
+    .figure-daily-one-chart,
+    .figure-signal-performance,
+    .figure-hong-kong-trend-pack { break-after: avoid-page; }
+    .figure-ai-tmt-read-through + p,
+    .figure-daily-one-chart + p,
+    .figure-signal-performance + p,
+    .figure-hong-kong-trend-pack + p { break-before: avoid-page; break-after: avoid-page; }
+    .figure-ai-tmt-read-through + p + p,
+    .figure-daily-one-chart + p + p,
+    .figure-signal-performance + p + p,
+    .figure-hong-kong-trend-pack + p + p { break-before: avoid-page; }
+    .report-footer { display: none; }
+    a { color: #111820; text-decoration: none; }
   }
 </style>"""
 
@@ -662,10 +785,23 @@ def _structure_report_html(body_html: str) -> tuple[str, List[tuple[str, str]]]:
         flags=re.DOTALL,
     )
     body_html = re.sub(r"<table>(.*?)</table>", r'<div class="table-shell"><table>\1</table></div>', body_html, flags=re.DOTALL)
+    def _figure(match: re.Match) -> str:
+        tag = match.group(0)
+        alt_match = re.search(r'alt="([^"]*)"', tag)
+        alt = alt_match.group(1) if alt_match else "figure"
+        slug = re.sub(r"[^a-z0-9]+", "-", html_lib.unescape(alt).lower()).strip("-") or "figure"
+        return f'<div class="figure-shell figure-{slug}">{tag}</div>'
+
+    body_html = re.sub(r'<img\s+src="[^"]+"\s+alt="[^"]*"[^>]*/?>', _figure, body_html)
+    # Mistune wraps a standalone Markdown image in <p>.  Replacing the image
+    # with a block-level figure would otherwise leave invalid <p><div> markup;
+    # browsers repair that tree differently and Chrome print can strand the
+    # heading, figure, and caption on three separate pages.
     body_html = re.sub(
-        r'(<img\s+src="[^"]+"\s+alt="[^"]*"[^>]*/?>)',
-        r'<div class="figure-shell">\1</div>',
+        r'<p>\s*(<div class="figure-shell [^"]+">.*?</div>)\s*</p>',
+        r'\1',
         body_html,
+        flags=re.DOTALL,
     )
 
     def _movement_cell(match: re.Match) -> str:
@@ -835,7 +971,7 @@ def _md_to_html(
 <title>{title}</title>
 {HTML_CSS}
 </head>
-<body>
+<body class="report-screen">
 <div class="report-shell">
   <header class="report-masthead">
     <div class="masthead-line">
@@ -903,7 +1039,8 @@ def send_file(
     md_text = md_path.read_text(encoding="utf-8")
     html = _md_to_html(md_text, output_dir, report_date, md_source_dir=md_path.parent)
 
-    # Write HTML to a temp file for upload
+    # This is the canonical rendered artifact, not a disposable upload file.
+    # Keeping it makes a manual send auditable and supports later recovery.
     html_filename = f"{report_date}_morning_briefing.html"
     tmp_path = output_dir / html_filename
     tmp_path.write_text(html, encoding="utf-8")
@@ -913,20 +1050,38 @@ def send_file(
         print(f"=== File size: {tmp_path.stat().st_size:,} bytes ===")
         return html
 
-    try:
-        print(f"Uploading {html_filename} ({tmp_path.stat().st_size:,} bytes)...")
-        media_id = _wecom_upload(webhook_url, tmp_path, media_type="file")
-        print(f"Uploaded. media_id={media_id}")
+    print(f"Uploading {html_filename} ({tmp_path.stat().st_size:,} bytes)...")
+    media_id = _wecom_upload(webhook_url, tmp_path, media_type="file")
+    print(f"Uploaded. media_id={media_id}")
 
-        result = _wecom_post(webhook_url, {"msgtype": "file", "file": {"media_id": media_id}})
-        _write_delivery_receipt(receipt_path, report_date, "file", result)
-        print("WeCom file message sent.")
-    finally:
-        # Clean up temp file (keep it on dry_run for inspection)
-        if tmp_path.exists():
-            tmp_path.unlink()
+    result = _wecom_post(webhook_url, {"msgtype": "file", "file": {"media_id": media_id}})
+    _write_delivery_receipt(receipt_path, report_date, "html", result, tmp_path)
+    print("WeCom file message sent; rendered HTML retained for audit and recovery.")
 
     return html
+
+
+def send_attachment(
+    webhook_url: str,
+    attachment: Path,
+    report_date: str,
+    *,
+    dry_run: bool = False,
+    receipt_path: Optional[Path] = None,
+) -> None:
+    """Send an already-rendered file without rebuilding the audited artifact."""
+    if not attachment.exists() or not attachment.is_file():
+        raise FileNotFoundError(f"Attachment not found: {attachment}")
+    if attachment.stat().st_size > WECOM_FILE_SIZE_LIMIT:
+        raise ValueError(f"Attachment exceeds WeCom limit: {attachment.stat().st_size:,} bytes")
+    kind = attachment.suffix.lower().lstrip(".") or "file"
+    if dry_run:
+        print(f"=== Validated attachment: {attachment} ({attachment.stat().st_size:,} bytes) ===")
+        return
+    media_id = _wecom_upload(webhook_url, attachment, media_type="file")
+    result = _wecom_post(webhook_url, {"msgtype": "file", "file": {"media_id": media_id}})
+    _write_delivery_receipt(receipt_path, report_date, kind, result, attachment)
+    print(f"WeCom {kind} attachment sent: {attachment.name}")
 
 
 # ---------------------------------------------------------------------------
@@ -943,6 +1098,18 @@ def main() -> int:
     if not webhook_url and not args.dry_run:
         print("WECOM_WEBHOOK_URL is not set; primary WeCom delivery cannot proceed.", file=sys.stderr)
         return 1
+
+    if args.attachment:
+        candidate = Path(args.attachment)
+        attachment = candidate.resolve() if candidate.is_absolute() else (ROOT / candidate).resolve()
+        send_attachment(
+            webhook_url,
+            attachment,
+            args.report_date,
+            dry_run=args.dry_run,
+            receipt_path=receipt_path,
+        )
+        return 0
 
     # Only load bundle for modes that need it (not file-only mode)
     bundle = None

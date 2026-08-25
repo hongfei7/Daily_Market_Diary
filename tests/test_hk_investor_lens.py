@@ -93,6 +93,20 @@ def test_hk_lens_does_not_invent_style_when_relative_data_is_missing() -> None:
     assert "Do not infer Hong Kong style" in lens["implication"]
 
 
+def test_hk_lens_blocks_cross_date_style_spread() -> None:
+    summary = _market_summary()
+    summary["Equities"]["Hang Seng Index"].update({"As Of": "2026-08-24", "Basis": "daily_close"})
+    summary["Equities"]["Hang Seng China Enterprises"].update({"As Of": "2026-08-24", "Basis": "daily_close"})
+    summary["Equities"]["Hang Seng TECH ETF"].update({"As Of": "2026-08-21", "Basis": "daily_close"})
+
+    lens = build_hk_desk_view(summary, {})
+
+    assert lens["style"] == "unconfirmed"
+    assert lens["style_comparison_ready"] is False
+    assert "effective dates differ" in lens["style_comparison_issue"]
+    assert lens["style_spread_pp"] is None
+
+
 if __name__ == "__main__":
     test_hk_lens_explains_style_evidence_and_conviction()
     test_report_renders_full_lens_even_when_llm_returns_generic_label()

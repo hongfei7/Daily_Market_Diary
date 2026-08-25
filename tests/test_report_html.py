@@ -70,7 +70,11 @@ def test_header_reads_current_metadata_and_wraps_figures() -> None:
         html = _md_to_html(markdown, Path(tmpdir), "2026-08-25", inline_images=False)
     assert "FXI reversed the prior Hong Kong cash direction." in html
     assert "2026-08-24" in html
-    assert '<div class="figure-shell"><img' in html
+    assert '<div class="figure-shell figure-decision-dashboard"><img' in html
+    assert '<p><div class="figure-shell' not in html
+    assert "break-after: page" in html
+    assert ".reading-path { display: none; }" in html
+    assert "margin-left: 0; margin-right: 0;" in html
 
 
 def test_archive_link_is_suppressed_when_publication_failed(monkeypatch) -> None:

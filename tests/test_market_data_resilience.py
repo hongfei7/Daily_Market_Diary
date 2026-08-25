@@ -69,6 +69,17 @@ def test_intraday_cache_fallback() -> None:
         data_fetcher._request_history = original_history
 
 
+def test_daily_bar_preserves_exchange_local_session_date() -> None:
+    frame = pd.DataFrame(
+        {"Close": [100.0, 101.0]},
+        index=pd.DatetimeIndex(["2026-08-21 00:00:00+08:00", "2026-08-24 00:00:00+08:00"]),
+    )
+    summary = data_fetcher._build_daily_summary(frame, "2026-08-24", "fixture")
+    assert summary is not None
+    assert summary["As Of"] == "2026-08-24"
+    assert summary["Freshness Days"] == 0
+
+
 def test_quality_rollup() -> None:
     quality = data_fetcher._build_summary_quality(
         {

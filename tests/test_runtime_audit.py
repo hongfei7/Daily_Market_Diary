@@ -15,21 +15,24 @@ REPORT_BODY = """# Morning Research Workbench | 2026-04-14
 ![Research Dashboard](charts/dashboard_2026-04-14.png)
 ![Catalyst & Event Radar](charts/catalyst_radar_2026-04-14.png)
 
-### 1.2 Global Asset Price Dashboard
+### 1.2 Opening Decision Board
+
+**Hong Kong local confirmation**
 
 | Asset | Last | Read |
 | --- | --- | --- |
 | China 10Y | 1.79% | China local rates anchor \\| Live public |
 
-### 1.3 Hong Kong Key Data Quick Check
-
 | Check | Value | Status |
 | --- | --- | --- |
 | Southbound / Northbound net flow | Southbound +HK$2.2bn \\| Northbound N/A | Live public |
 
-### 2.3 Flow Tracker and Attribution
+### 2.2 Hong Kong Local Tape and Flow
 **Stock Connect Southbound Active Names**
 **AH Premium Dispersion**
+
+### 3.1 Base Case and Scenario Map
+**Clocked validation scorecard**
 
 ### 3.3 Daily One Chart
 ![Daily One Chart](charts/daily_one_chart_2026-04-14.png)

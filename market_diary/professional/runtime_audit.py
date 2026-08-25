@@ -16,20 +16,17 @@ from typing import Any, Dict, List, Optional, Sequence
 REQUIRED_REPORT_SECTION_GROUPS = [
     ("Visual dashboard", ("## Visual Dashboard",)),
     ("Catalyst event radar", ("![Catalyst & Event Radar]",)),
-    ("Global asset dashboard", ("Global Asset Price Dashboard",)),
+    ("Opening decision board", ("Opening Decision Board",)),
     (
-        "Hong Kong quick check",
+        "Hong Kong local confirmation",
         (
-            # Legitimate variants that switch with the trading-day mode.
-            "Hong Kong Key Data Quick Check",
-            "Hong Kong Weekly Tape Quick Check",
-            "Hong Kong Baseline Quick Check (Friday Close)",
-            "Hong Kong Last Cash-Tape Quick Check (Reference)",
+            "**Hong Kong local confirmation**",
         ),
     ),
-    ("Flow tracker", ("Flow Tracker and Attribution",)),
+    ("Flow tracker", ("Hong Kong Local Tape and Flow", "Flow Tracker and Attribution")),
     ("Stock Connect active names", ("**Stock Connect Southbound Active Names**",)),
     ("A/H premium dispersion", ("**AH Premium Dispersion**",)),
+    ("Session playbook", ("Base Case and Scenario Map",)),
     ("Daily one chart", ("Daily One Chart",)),
     ("Report quality", ("Report Quality and Validation",)),
 ]
@@ -77,8 +74,8 @@ CLIPPED_CELL_RE = re.compile(r"(\.\.\.|…|\[trimmed\])\s*(?:\||$)", re.IGNORECA
 # prose. The previous 3000-4500 band was set when nearly a third of the report
 # was pipeline self-assessment; with that moved to audit/*.json the same budget
 # should now buy market content.
-REPORT_TARGET_WORDS = (4200, 6000)
-REPORT_HARD_MAX_WORDS = 7000
+REPORT_TARGET_WORDS = (3200, 4800)
+REPORT_HARD_MAX_WORDS = 5500
 # The Monday week-ahead report is shorter by design (no Friday replay).
 WEEK_AHEAD_TARGET_LOW = 2000
 WECOM_SAFE_MARKDOWN_BYTE_LIMIT = 3800

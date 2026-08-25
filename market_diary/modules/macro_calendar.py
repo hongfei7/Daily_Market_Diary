@@ -69,7 +69,12 @@ class MacroCalendar:
             "actual": "",
             "forecast": "",
             "previous": "",
-            "surprise": "inline",
+            # A rule-derived date is a monitoring window, not evidence that a
+            # release occurred or landed in line with consensus.
+            "surprise": "",
+            "verification_status": (
+                "past_expected_unverified" if item.get("status") == "released" else "scheduled_unverified"
+            ),
             "impact": item["impact"],
             "channel": item["channel"],
             "channel_note": item["channel_note"],

@@ -26,6 +26,12 @@ reports/
 # Ignore volatile/debug outputs and test-generated chart probes.
 reports_professional/*_email_preview.html
 reports_professional/*_morning_briefing.md
+reports_professional/*_morning_briefing.html
+reports_professional/*_wecom_preview.md
+reports_professional/*_morning_briefing_*.pdf
+reports_professional/*_morning_briefing_*.json
+reports_professional/wecom_*_receipt.json
+reports_professional/audit_*.txt
 reports_professional/charts/*
 reports_professional/raw/
 !reports_professional/archive/

@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from types import SimpleNamespace
 
@@ -40,8 +41,8 @@ def test_report_omits_absent_visual_sections_until_assets_exist() -> None:
     )
 
     report_without_visuals = render_professional_report(bundle, charts_section="")
-    assert "### 3.3 Daily One Chart" not in report_without_visuals
-    assert "### 3.4 Hong Kong Trend Pack" not in report_without_visuals
+    assert not re.search(r"^###\s+3\.\d+\s+Daily One Chart$", report_without_visuals, re.MULTILINE)
+    assert not re.search(r"^###\s+3\.\d+\s+Hong Kong Trend Pack$", report_without_visuals, re.MULTILINE)
 
     bundle["daily_one_chart"] = {
         "title": "Daily One Chart",
@@ -55,8 +56,8 @@ def test_report_omits_absent_visual_sections_until_assets_exist() -> None:
     }
 
     report_with_visuals = render_professional_report(bundle, charts_section="")
-    assert "### 3.3 Daily One Chart" in report_with_visuals
-    assert "### 3.4 Hong Kong Trend Pack" in report_with_visuals
+    assert re.search(r"^###\s+3\.\d+\s+Daily One Chart$", report_with_visuals, re.MULTILINE)
+    assert re.search(r"^###\s+3\.\d+\s+Hong Kong Trend Pack$", report_with_visuals, re.MULTILINE)
 
 
 def test_calendar_day_helpers() -> None:

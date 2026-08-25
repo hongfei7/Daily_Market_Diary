@@ -142,7 +142,7 @@ def build_professional_bundle(
     watchlists = build_watchlist_digest(config, report_date)
     catalysts = build_catalyst_calendar(morning_date, macro_agenda, sector_data, risk_data, watchlists, config)
     hk_quick_checks = build_hk_quick_checks(summary, movers_data, hk_desk_view, hk_local_metrics)
-    company_events = build_company_event_digest(sector_data, sector_digest)
+    company_events = build_company_event_digest(sector_data, sector_digest, morning_date)
     attribution = build_attribution(summary, hk_local_metrics, movers_digest, overview)
 
     # One regime label, not two. The overview derives its own vote-count regime

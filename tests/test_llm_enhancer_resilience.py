@@ -7,6 +7,7 @@ from _bootstrap import ROOT  # noqa: F401
 from market_diary.modules.llm_client import (
     get_available_providers,
     get_completion_extra_body,
+    get_completion_temperature,
     get_default_base_url,
     get_default_model,
 )
@@ -103,14 +104,8 @@ def test_deepseek_defaults_when_secret_present() -> None:
     assert workers == 4
 
 
-def test_deepseek_is_primary_with_minimax_as_fallback() -> None:
-    """Both keys present must still route the narrative tasks to DeepSeek.
-
-    Preferring MiniMax whenever its key existed sent every task without an
-    explicit provider to MiniMax-M3, a reasoning model whose reasoning tokens
-    count against max_tokens; those four tasks failed as truncated every day
-    while the three explicit-DeepSeek tasks worked.
-    """
+def test_minimax_m3_is_primary_with_deepseek_as_fallback() -> None:
+    """Both keys present route synthesis to M3 and keep DeepSeek independent."""
     env_names = ["DEEPSEEK_API_KEY", "MINIMAX_API_KEY", "OPENAI_API_KEY", "LLM_MODEL", "LLM_BASE_URL", "OPENAI_BASE_URL", "LLM_PRIMARY_PROVIDER"]
     prior_env = _preserve_env(env_names)
     os.environ["DEEPSEEK_API_KEY"] = "test-deepseek-key"
@@ -128,24 +123,28 @@ def test_deepseek_is_primary_with_minimax_as_fallback() -> None:
     finally:
         _restore_env(prior_env)
 
-    assert providers == ["deepseek", "minimax"]
-    # "preferred" rather than a bare default: the task now names its provider
-    # explicitly, so it no longer depends on whichever key happens to exist.
+    assert providers == ["minimax", "deepseek"]
     assert candidates == [
-        ("deepseek", "deepseek-v4-pro", "default_model:preferred"),
-        ("minimax", "MiniMax-M3", "default_model:fallback"),
+        ("minimax", "MiniMax-M3", "default_model:preferred"),
+        ("deepseek", "deepseek-v4-pro", "default_model:fallback"),
     ]
     assert fast_candidates == [
-        ("deepseek", "deepseek-v4-pro", "fast_model:preferred"),
-        ("minimax", "MiniMax-M3", "fast_model:fallback"),
+        ("minimax", "MiniMax-M3", "fast_model:preferred"),
+        ("deepseek", "deepseek-v4-pro", "fast_model:fallback"),
     ]
     assert fallback_base_url == "https://api.deepseek.com"
 
 
-def test_minimax_m3_splits_reasoning_from_final_content() -> None:
-    assert get_completion_extra_body("minimax", "MiniMax-M3") == {"reasoning_split": True}
-    assert get_completion_extra_body("minimax", "MiniMax-M2.7") == {}
-    assert get_completion_extra_body("deepseek", "deepseek-v4-pro") == {}
+def test_provider_request_options_match_current_api_contracts() -> None:
+    assert get_completion_extra_body("minimax", "MiniMax-M3") == {
+        "thinking": {"type": "disabled"},
+        "reasoning_split": True,
+    }
+    assert get_completion_extra_body("minimax", "MiniMax-M2.7") == {"reasoning_split": True}
+    assert get_completion_extra_body("deepseek", "deepseek-v4-pro") == {"thinking": {"type": "disabled"}}
+    assert get_completion_temperature("minimax", 0.0, "MiniMax-M3") == 0.0
+    assert get_completion_temperature("minimax", 0.0, "MiniMax-M2.7") == 1.0
+    assert get_completion_temperature("deepseek", 0.0, "deepseek-v4-pro") == 0.0
 
 
 def test_cache_path_changes_when_prompt_changes() -> None:
@@ -169,7 +168,7 @@ def main() -> None:
     test_effective_max_workers_caps_minimax_parallelism()
     test_effective_max_workers_caps_minimax_fallback_route()
     test_deepseek_defaults_when_secret_present()
-    test_deepseek_is_primary_with_minimax_as_fallback()
+    test_minimax_m3_is_primary_with_deepseek_as_fallback()
     test_cache_path_changes_when_prompt_changes()
     test_llm_response_truncation_guard()
     print("LLM enhancer resilience test passed")

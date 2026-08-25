@@ -17,7 +17,7 @@ def check_basic_imports() -> bool:
     print("Test 1: Third-party imports")
     print("=" * 60)
 
-    required = ["pandas", "numpy", "matplotlib", "openai", "yfinance", "pypdf"]
+    required = ["pandas", "numpy", "matplotlib", "openai", "yfinance", "pypdf", "websockets"]
     for module_name in required:
         try:
             __import__(module_name)
@@ -177,15 +177,11 @@ def check_workflow_guardrails() -> bool:
         if marker not in morning:
             print(f"FAIL missing LLM provider fallback config: {marker}")
             return False
-    # The briefing tasks target deepseek-v4-pro. Preferring MiniMax whenever its
-    # key existed routed every task without an explicit provider to MiniMax-M3,
-    # a reasoning model whose reasoning tokens consume max_tokens, so those tasks
-    # failed as truncated every day. MiniMax stays only as a fallback.
-    if "LLM_PRIMARY_PROVIDER: ${{ secrets.DEEPSEEK_API_KEY != '' && 'deepseek' || 'minimax' }}" not in morning:
-        print("FAIL DeepSeek must be the production primary provider")
+    if "LLM_PRIMARY_PROVIDER: ${{ secrets.MINIMAX_API_KEY != '' && 'minimax' || 'deepseek' }}" not in morning:
+        print("FAIL MiniMax-M3 must be the production primary provider")
         return False
-    if "secrets.MINIMAX_API_KEY != '' && 'minimax'" in morning:
-        print("FAIL workflow must not force MiniMax ahead of DeepSeek")
+    if "secrets.DEEPSEEK_API_KEY != '' && 'deepseek' || 'minimax'" in morning:
+        print("FAIL workflow must not force DeepSeek ahead of MiniMax-M3")
         return False
     if "continuing with delivery" in morning or "set +e" in morning:
         print("FAIL runtime audit must block automatic delivery")
@@ -203,7 +199,11 @@ def check_workflow_guardrails() -> bool:
         "Primary WeCom decision brief failed",
         "Full report attachment was not delivered to WeCom",
         "--mode summary",
-        "--mode file",
+        '--attachment "reports_professional/${BRIEFING_DATE}_morning_briefing.html"',
+        "Render validated A4 PDF companion",
+        "render_report_pdf.py",
+        "steps.pdf.outcome == 'success'",
+        "PDF companion was not delivered",
         "status=success",
         "archive_needed",
         "primary run did not succeed",
@@ -212,6 +212,7 @@ def check_workflow_guardrails() -> bool:
         "send_wecom_incident.py",
         "wecom_${BRIEFING_DATE}_summary_receipt.json",
         "wecom_${BRIEFING_DATE}_file_receipt.json",
+        "wecom_${BRIEFING_DATE}_pdf_receipt.json",
         "steps.audit.outcome == 'success'",
         "Notify WeCom when the run gate fails",
         "RUNS_FILE=\"$(mktemp)\"",
@@ -221,11 +222,17 @@ def check_workflow_guardrails() -> bool:
         if marker not in morning:
             print(f"FAIL workflow is missing SLA guard: {marker}")
             return False
+    if "steps.gate.outputs.archive_needed == 'true' && steps.archive.outcome == 'success'" not in morning:
+        print("FAIL a recovery run must not link a newly generated report to an older immutable archive")
+        return False
     if "export RUNS_JSON" in morning or "os.environ.get(\"RUNS_JSON\"" in morning:
         print("FAIL recovery gate must not put GitHub API payloads in the process environment")
         return False
     if "reports_professional/performance/*" not in morning:
         print("FAIL signal performance artifacts must be retained with each workflow run")
+        return False
+    if "reports_professional/*.pdf" not in morning:
+        print("FAIL validated PDF companions must be retained as workflow artifacts")
         return False
     deliver_block = morning.split("deliver:", 1)[1].split("run_full_tests:", 1)[0]
     if "default: true" not in deliver_block:

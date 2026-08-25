@@ -450,7 +450,15 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
     if provenance_status == "error":
         warnings.append("Source provenance validation failed; automatic distribution must remain blocked.")
 
-    quality_status = "manual_review" if release_recommendation.get("action") == "manual_review" else _score_to_status(score)
+    release_action = release_recommendation.get("action")
+    if release_action == "manual_review":
+        quality_status = "manual_review"
+    elif release_action == "send_with_caveats":
+        # A high weighted pipeline score must never overwrite a circulation
+        # caveat.  Keep production readiness reserved for clean sends.
+        quality_status = "usable_with_caveats"
+    else:
+        quality_status = _score_to_status(score)
 
     # A weighted average can still look respectable while a layer the reader
     # depends on is broken. These ceilings stop that.
@@ -479,6 +487,22 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
         grade = _cap_grade(grade, "B")
         grade_caps.append(prose_read)
 
+    hk_lens = bundle.get("hk_desk_view", {}) or {}
+    comparison_issue = str(hk_lens.get("style_comparison_issue", "") or "")
+    if comparison_issue:
+        quality_status = "usable_with_caveats" if quality_status != "manual_review" else quality_status
+        if release_recommendation.get("action") == "send":
+            release_recommendation = {
+                "action": "send_with_caveats",
+                "label": "Send with caveats",
+                "reason": "Hong Kong style inputs were not aligned on one effective date and basis, so the style conclusion was withheld.",
+            }
+        grade = _cap_grade(grade, "B")
+        grade_caps.append(f"Hong Kong style comparison blocked: {comparison_issue}")
+        warnings.append(
+            "Hong Kong style comparison was withheld because the input dates or bases were not aligned."
+        )
+
     return {
         "score": round(score, 1),
         "grade": grade,
@@ -491,5 +515,10 @@ def build_report_quality(bundle: Dict[str, Any]) -> Dict[str, Any]:
         "runtime_guidance": runtime_guidance,
         "runtime_guidance_summary": f"{blocking_guidance} blocking | {advisory_guidance} advisory",
         "release_recommendation": release_recommendation,
+        "readiness": {
+            "pipeline": "healthy" if score >= 85 else "degraded",
+            "data": "needs_targeted_fixes" if comparison_issue or stale_core else "ready",
+            "circulation": quality_status,
+        },
         "warnings": warnings[:8],
     }

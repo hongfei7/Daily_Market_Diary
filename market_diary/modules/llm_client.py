@@ -11,9 +11,11 @@ DEEPSEEK_API_KEY_ENV = "DEEPSEEK_API_KEY"
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_MODEL = "deepseek-v4-pro"
 MINIMAX_API_KEY_ENV = "MINIMAX_API_KEY"
+# The .com host is MiniMax's documented mainland-China endpoint.
 MINIMAX_BASE_URL = "https://api.minimaxi.com/v1"
 MINIMAX_MODEL = "MiniMax-M3"
 OPENAI_API_KEY_ENV = "OPENAI_API_KEY"
+DEFAULT_LLM_REQUEST_TIMEOUT_SECONDS = 45.0
 
 _API_KEY_ENV_PROVIDERS = (
     (MINIMAX_API_KEY_ENV, "minimax"),
@@ -117,31 +119,26 @@ def get_default_base_url(provider: str = "") -> str:
 
 
 def get_default_provider() -> str:
-    """Return the configured primary provider, preferring DeepSeek when available.
+    """Return the configured primary provider, preferring MiniMax when available.
 
-    The briefing tasks are structured extraction and rewriting against a small
-    JSON schema; they were designed for deepseek-v4-pro. Preferring MiniMax
-    whenever its key happened to exist silently routed every task that did not
-    name a provider to MiniMax-M3, a reasoning model whose reasoning tokens
-    count against ``max_tokens`` — so those tasks ran out of budget before
-    emitting their JSON and failed as truncated, every day.
-
-    MiniMax stays as a fallback for when DeepSeek is unavailable.
+    MiniMax-M3 supports disabling thinking, which keeps the bounded JSON tasks'
+    output budget available for final content. DeepSeek remains an independent
+    fallback.
     """
     explicit = (os.getenv("LLM_PRIMARY_PROVIDER") or "").strip().lower()
     if explicit in _PROVIDER_API_KEY_ENVS and _resolve_api_key(explicit)[0]:
         return explicit
-    if _resolve_api_key("deepseek")[0]:
-        return "deepseek"
     if _resolve_api_key("minimax")[0]:
         return "minimax"
-    return "deepseek"
+    if _resolve_api_key("deepseek")[0]:
+        return "deepseek"
+    return "minimax"
 
 
 def get_available_providers() -> list[str]:
-    """Return configured providers in priority order: DeepSeek first."""
+    """Return configured providers in production priority order."""
     providers = []
-    for provider in ("deepseek", "minimax"):
+    for provider in ("minimax", "deepseek"):
         api_key, _ = _resolve_api_key(provider)
         if api_key:
             providers.append(provider)
@@ -161,13 +158,38 @@ def get_completion_extra_body(provider: str = "", model: str = "") -> dict:
     selected_provider = (provider or get_default_provider()).strip().lower()
     selected_model = (model or get_default_model(selected_provider)).strip().lower()
     if selected_provider == "minimax" and selected_model == "minimax-m3":
+        return {"thinking": {"type": "disabled"}, "reasoning_split": True}
+    if selected_provider == "minimax" and selected_model.startswith("minimax-m2"):
         return {"reasoning_split": True}
+    if selected_provider == "deepseek" and selected_model.startswith("deepseek-v4"):
+        # These tasks are bounded JSON synthesis, not open-ended reasoning.
+        # DeepSeek V4 defaults to thinking mode, so disable it explicitly to
+        # reduce latency and keep the output budget available for valid JSON.
+        return {"thinking": {"type": "disabled"}}
     return {}
+
+
+def get_completion_temperature(provider: str, requested: float, model: str = "") -> float:
+    """Normalize sampling to each provider's documented accepted range."""
+    normalized_provider = str(provider or "").strip().lower()
+    normalized_model = str(model or "").strip().lower()
+    if normalized_provider == "minimax" and normalized_model.startswith("minimax-m2"):
+        # MiniMax M2.7 rejects 0.0 and documents 1.0 as its recommended value.
+        return 1.0
+    return float(requested)
 
 
 def api_key_available() -> bool:
     """Return whether an environment or local development API key is present."""
     return bool((_resolve_api_key()[0] or "").strip())
+
+
+def _request_timeout_seconds() -> float:
+    try:
+        configured = float(os.getenv("LLM_REQUEST_TIMEOUT_SECONDS", DEFAULT_LLM_REQUEST_TIMEOUT_SECONDS))
+    except (TypeError, ValueError):
+        configured = DEFAULT_LLM_REQUEST_TIMEOUT_SECONDS
+    return min(max(configured, 5.0), 180.0)
 
 
 def get_client(provider: str = "") -> OpenAI:
@@ -179,7 +201,15 @@ def get_client(provider: str = "") -> OpenAI:
     if not api_key:
         raise RuntimeError("API key missing: set DEEPSEEK_API_KEY, MINIMAX_API_KEY, or OPENAI_API_KEY")
 
-    return OpenAI(api_key=api_key, base_url=base_url)
+    # The application owns retries and cross-provider fallback. Disabling the
+    # SDK's hidden retry loop prevents one unavailable provider from consuming
+    # the entire GitHub Actions delivery window before fallback can start.
+    return OpenAI(
+        api_key=api_key,
+        base_url=base_url,
+        timeout=_request_timeout_seconds(),
+        max_retries=0,
+    )
 
 
 def format_market_data_for_prompt(summary_data):

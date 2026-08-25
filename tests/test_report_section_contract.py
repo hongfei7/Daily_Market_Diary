@@ -109,19 +109,19 @@ def test_contract_carries_no_hard_coded_section_numbers():
 
 
 class TestSectionMatching:
-    TITLE = "Flow Tracker and Attribution"
+    TITLE = "Hong Kong Local Tape and Flow"
 
     @pytest.mark.parametrize("heading", [
-        "### 2.3 Flow Tracker and Attribution",
-        "### 2.4 Flow Tracker and Attribution",
-        "### 9.9 Flow Tracker and Attribution",
-        "## Flow Tracker and Attribution",
+        "### 2.2 Hong Kong Local Tape and Flow",
+        "### 2.4 Hong Kong Local Tape and Flow",
+        "### 9.9 Hong Kong Local Tape and Flow",
+        "## Hong Kong Local Tape and Flow",
     ])
     def test_any_numbering_satisfies_the_contract(self, heading):
         assert _section_present(heading, self.TITLE)
 
     def test_prose_mention_does_not_satisfy_the_contract(self):
-        assert not _section_present("See the Flow Tracker and Attribution section below.", self.TITLE)
+        assert not _section_present("See the Hong Kong Local Tape and Flow section below.", self.TITLE)
 
     def test_a_genuinely_absent_section_is_still_caught(self):
         assert not _section_present("### 2.4 Something Else Entirely", self.TITLE)

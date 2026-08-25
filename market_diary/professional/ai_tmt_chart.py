@@ -97,7 +97,7 @@ def generate_ai_tmt_chain_chart(chain: Dict[str, Any], output_path: str) -> Opti
         ax.set_xlim(-span, span)
 
     fig.suptitle(
-        "AI / TMT read-through | overnight semis into Hong Kong tech",
+        "AI / TMT hand-off | overnight semis and prior Hong Kong close",
         x=0.055,
         y=0.98,
         ha="left",
@@ -107,11 +107,7 @@ def generate_ai_tmt_chain_chart(chain: Dict[str, Any], output_path: str) -> Opti
     )
 
     # State the relationship in the chart, not only in the prose.
-    verdict = chain.get("divergence_note") or (
-        "Hong Kong moved with the overnight leg, so the global cycle is a sufficient explanation."
-        if chain.get("hk_followed_overnight")
-        else "No comparable Hong Kong move was available."
-    )
+    verdict = chain.get("temporal_note") or "Transmission remains pending the next Hong Kong session."
     # Wrap rather than clip: the verdict is the point of the chart.
     caption = textwrap.fill(" ".join(str(verdict).split()), width=118)
     caption_lines = caption.count("\n") + 1

@@ -186,6 +186,30 @@ def test_company_event_monitor_aggregates_low_signal_market_warnings() -> None:
     assert "IPO and grey-market monitoring is not yet" not in rendered
 
 
+def test_catalyst_calendar_never_prints_none_estimates() -> None:
+    catalysts = build_catalyst_calendar(
+        "2026-04-13",
+        [],
+        {
+            "earnings_calendar": [
+                {
+                    "date": "2026-04-14",
+                    "ticker": "0001.HK",
+                    "company": "Example",
+                    "eps_estimate": None,
+                    "revenue_estimate": None,
+                }
+            ]
+        },
+        {},
+        {},
+        {"report": {"catalyst_window_days": 3}},
+    )
+
+    assert catalysts[0]["impact"] == "Estimate comparison unavailable"
+    assert "None" not in str(catalysts[0])
+
+
 def test_company_event_monitor_expands_portfolio_filing() -> None:
     filing = {
         "grade": "A",

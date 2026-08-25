@@ -9,10 +9,7 @@ from typing import Any, Dict, Optional
 DEFAULT_LLM_ROUTE_FALLBACK = {
     "deepseek": "deepseek-v4-pro",
     "minimax": "MiniMax-M3",
-    # The briefing tasks target deepseek-v4-pro. Defaulting to MiniMax-M3 sent
-    # every task that did not name a provider to a reasoning model whose
-    # reasoning tokens consume max_tokens, so they failed as truncated daily.
-    "default": "deepseek-v4-pro",
+    "default": "MiniMax-M3",
 }
 
 
@@ -50,10 +47,21 @@ DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
             "appendix_minutes": 15,
             # Keep in sync with runtime_audit.REPORT_TARGET_WORDS /
             # REPORT_HARD_MAX_WORDS: the audit enforces these, not this block.
-            "target_words_min": 4200,
-            "target_words_max": 6000,
-            "hard_max_words": 7000,
+            "target_words_min": 3200,
+            "target_words_max": 4800,
+            "hard_max_words": 5500,
+            "first_read_words_max": 700,
+            "core_print_pages_max": 12,
+            "full_print_pages_max": 16,
             "delivery_target_local": "07:30",
+        },
+        "section_limits": {
+            "cross_asset_rows": 8,
+            "southbound_names": 5,
+            "ah_outliers": 3,
+            "company_deep_dives": 2,
+            "company_event_cards": 3,
+            "dated_catalysts": 8,
         },
     },
     "source_health": {
@@ -114,57 +122,49 @@ DEFAULT_PROFESSIONAL_CONFIG: Dict[str, Any] = {
         "tasks": {
             "news_selection": {
                 "enabled": True,
-                "provider": "deepseek",
+                "provider": "minimax",
                 "route": "fast_model",
                 "temperature": 0.0,
                 "max_tokens": 3600,
             },
             "overnight_review": {
                 "enabled": True,
-                # Named explicitly: relying on the implicit default is what routed
-                # these four tasks to MiniMax-M3 and broke them.
-                "provider": "deepseek",
+                "provider": "minimax",
                 "route": "default_model",
                 "temperature": 0.1,
                 "max_tokens": 3600,
             },
             "hk_review": {
                 "enabled": True,
-                # Named explicitly: relying on the implicit default is what routed
-                # these four tasks to MiniMax-M3 and broke them.
-                "provider": "deepseek",
+                "provider": "minimax",
                 "route": "default_model",
                 "temperature": 0.1,
                 "max_tokens": 3600,
             },
             "macro_interpretation": {
                 "enabled": True,
-                "provider": "deepseek",
+                "provider": "minimax",
                 "route": "fast_model",
                 "temperature": 0.0,
                 "max_tokens": 3200,
             },
             "company_commentary": {
                 "enabled": True,
-                "provider": "deepseek",
+                "provider": "minimax",
                 "route": "fast_model",
                 "temperature": 0.0,
                 "max_tokens": 3600,
             },
             "theme_deep_dive": {
                 "enabled": True,
-                # Named explicitly: relying on the implicit default is what routed
-                # these four tasks to MiniMax-M3 and broke them.
-                "provider": "deepseek",
+                "provider": "minimax",
                 "route": "default_model",
                 "temperature": 0.1,
                 "max_tokens": 4000,
             },
             "final_framing": {
                 "enabled": True,
-                # Named explicitly: relying on the implicit default is what routed
-                # these four tasks to MiniMax-M3 and broke them.
-                "provider": "deepseek",
+                "provider": "minimax",
                 "route": "default_model",
                 "temperature": 0.0,
                 "max_tokens": 3200,

@@ -78,7 +78,7 @@ def _flow_price_divergence(rows: List[Dict[str, Any]], hk_local: Mapping[str, An
         "question": f"The index {direction} but Southbound {flow_side} — is the move real?",
         "evidence": f"HSI {_fmt(hsi)} against Southbound net {flow_bn:+.1f}bn HKD.",
         "answer": (
-            f"Treat it as unconfirmed. Price and mainland flow disagreed, so the {direction[:-1]}e was not "
+            "Treat it as unconfirmed. Price and mainland flow disagreed, so the price move was not "
             f"driven by Southbound participation; it needs another session of confirmation before being "
             f"read as a trend."
         ),

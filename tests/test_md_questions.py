@@ -57,6 +57,8 @@ def test_price_and_flow_disagreement_is_raised():
     item = next(q for q in questions if "is the move real" in q["question"])
     assert "-10.6bn" in item["evidence"]
     assert "unconfirmed" in item["answer"]
+    assert "price move was not" in item["answer"]
+    assert "fele" not in item["answer"]
 
 
 def test_agreeing_price_and_flow_raises_nothing():
