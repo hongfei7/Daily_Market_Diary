@@ -227,6 +227,14 @@ def _dashboard_label(label: Any) -> str:
     return mapping.get(str(label or ""), textwrap.shorten(str(label or "N/A"), width=12, placeholder=CHART_CLIP_MARK))
 
 
+def _session_aware_dashboard_label(label: Any) -> str:
+    base = _dashboard_label(label)
+    normalized = str(label or "").lower()
+    if any(token in normalized for token in ("hang seng", "3033", "smic", "hua hong", "sunny optical")):
+        return f"{base} [HK]"
+    return f"{base} [US]"
+
+
 def _name_label(item: Dict[str, Any], max_width: int = 18) -> str:
     ticker = str(item.get("ticker", "") or item.get("code", "") or "").strip()
     if ticker and ticker.isdigit():
@@ -730,11 +738,11 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
         # blue because it helps Hong Kong, not because it rose.
         _panel_title(
             ax_regime,
-            "Global regime",
-            "1D returns · blue helps Hong Kong, orange hurts",
+            "Cross-market hand-off",
+            "Prior HK close + overnight tape · compare direction, not return rank",
         )
         raw_labels = [row.get("label", "") for row in rows]
-        labels = [_dashboard_label(label) for label in raw_labels]
+        labels = [_session_aware_dashboard_label(label) for label in raw_labels]
         values = [float(row.get("change_pct", 0) or 0) for row in rows]
         colors = [_regime_impact_color(label, value) for label, value in zip(raw_labels, values)]
         max_abs = max(max((abs(value) for value in values), default=1.0), 1.0)
@@ -767,7 +775,7 @@ def generate_dashboard(bundle: Dict[str, Any], output_path: str) -> str:
     fig.text(
         0.045,
         0.025,
-        "Decision sequence: global regime -> Hong Kong confirmation -> concentration. Event timing is handled separately in the radar.",
+        "Decision sequence: cross-market hand-off -> Hong Kong confirmation -> concentration. Event timing is handled separately in the radar.",
         fontsize=9.8,
         color=SLATE,
     )

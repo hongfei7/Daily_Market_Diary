@@ -367,9 +367,11 @@ def build_company_event_digest(sector_data: Dict[str, Any], sector_digest: Dict[
             {
                 "ticker": item.get("ticker", ""),
                 "company": item.get("company", ""),
+                "date": item.get("date", ""),
                 "time": item.get("time", ""),
                 "comparison": f"EPS est. {item.get('eps_estimate', 'N/A')} | revenue est. {item.get('revenue_estimate', 'N/A')}",
                 "as_of": item.get("as_of", item.get("date", "")),
+                "date_confidence": item.get("date_confidence", ""),
                 "source": item.get("source", ""),
                 "source_url": item.get("source_url", item.get("url", "")),
             }

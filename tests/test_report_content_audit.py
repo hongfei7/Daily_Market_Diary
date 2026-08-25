@@ -93,11 +93,11 @@ class TestDivergencePoolIsRelevant:
     first checklist item and the dashboard subtitle.
     """
 
-    def test_hong_kong_instruments_are_candidates(self):
+    def test_only_same_session_hong_kong_proxies_are_candidates(self):
         from market_diary.modules.chart_features import _ASSET_KEYWORDS, _DIVERGENCE_CANDIDATES
 
         assert {"Nasdaq 100", "Hang Seng", "3033.HK", "FXI"} <= set(_ASSET_KEYWORDS)
-        assert _DIVERGENCE_CANDIDATES & {"Nasdaq 100", "3033.HK"}
+        assert _DIVERGENCE_CANDIDATES == {"Nasdaq 100", "FXI"}
 
     def test_commodities_and_crypto_cannot_be_the_headline_on_their_own(self):
         from market_diary.modules.chart_features import _DIVERGENCE_CANDIDATES

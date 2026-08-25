@@ -203,18 +203,17 @@ def _merge_observations(observations: Iterable[Mapping[str, Any]]) -> Tuple[List
             if conflict_key in conflicted_keys:
                 continue
             if name in existing and not math.isclose(existing[name], value, rel_tol=1e-6, abs_tol=1e-6):
-                # Keep the first-seen (immutable archive) observation, drop the
-                # later re-derived value. Popping the name here used to leave the
-                # surviving observation with an empty price map, which silently
-                # wiped every Friday session (the weekend run re-derived the same
-                # close with a slightly different value).
+                # Conflicting closes have no defensible automatic winner. Exclude
+                # that benchmark/date from research performance rather than let
+                # archive ordering choose a flattering or adverse result.
                 conflicts.append(
-                    f"{as_of} {name}: {existing[name]} versus {value}; kept archived observation"
+                    f"{as_of} {name}: {existing[name]} versus {value}; excluded conflicted observation"
                 )
+                existing.pop(name, None)
                 conflicted_keys.add(conflict_key)
                 continue
             existing.setdefault(name, value)
-    return [by_date[key] for key in sorted(by_date)], conflicts
+    return [by_date[key] for key in sorted(by_date) if by_date[key].get("prices")], conflicts
 
 
 def _merge_signals(signals: Iterable[Mapping[str, Any]]) -> List[Dict[str, Any]]:
@@ -486,9 +485,10 @@ def render_performance_chart(ledger: Mapping[str, Any], output_path: Path) -> st
     series = benchmark_payload.get("series", []) or []
     if not series:
         return ""
-    dates = [datetime.strptime(row["exit_date"], "%Y-%m-%d") for row in series]
-    strategy = [float(row["strategy_equity"]) for row in series]
-    benchmark = [float(row["benchmark_equity"]) for row in series]
+    dates = [datetime.strptime(series[0]["entry_date"], "%Y-%m-%d")]
+    dates.extend(datetime.strptime(row["exit_date"], "%Y-%m-%d") for row in series)
+    strategy = [1.0] + [float(row["strategy_equity"]) for row in series]
+    benchmark = [1.0] + [float(row["benchmark_equity"]) for row in series]
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig, ax = plt.subplots(figsize=(12, 5.2), dpi=160)

@@ -127,6 +127,26 @@ def test_truncated_llm_text_is_flagged():
     assert any(item["type"] == "truncated_text" for item in result["source_warnings"])
 
 
+def test_false_relative_performance_claim_blocks_release():
+    result = run_fact_check(_bundle("FXI outperformed 3033.HK despite a weak overnight tape."))
+    warning = next(item for item in result["logic_warnings"] if item["type"] == "relative_performance")
+    assert warning["severity"] == "critical"
+    assert result["release_blocking"] is True
+
+
+def test_true_same_session_relative_performance_is_allowed():
+    result = run_fact_check(_bundle("Nasdaq 100 underperformed S&P 500 during the US session."))
+    assert not any(item["type"] == "relative_performance" for item in result["logic_warnings"])
+    assert not any(item["type"] == "period_alignment" for item in result["logic_warnings"])
+
+
+def test_cross_session_ranking_requires_period_alignment_review():
+    result = run_fact_check(_bundle("3033.HK outperformed FXI."))
+    warning = next(item for item in result["logic_warnings"] if item["type"] == "period_alignment")
+    assert warning["severity"] == "review"
+    assert result["release_blocking"] is False
+
+
 def main() -> None:
     test_us10y_change_and_level_are_not_confused()
     test_us10y_wrong_change_is_flagged_as_critical()

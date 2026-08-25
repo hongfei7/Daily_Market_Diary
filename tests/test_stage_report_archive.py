@@ -111,10 +111,22 @@ def test_all_dates_include_archived_only_reports() -> None:
         assert archived_rel == {"reports_professional/archive/2026-04-18/morning_briefing.md"}
 
 
+def test_metric_history_is_part_of_tracked_performance_artifacts() -> None:
+    stage = _load_stage_module()
+    with tempfile.TemporaryDirectory() as tmp:
+        report_root = Path(tmp) / "reports_professional"
+        performance = report_root / "performance"
+        performance.mkdir(parents=True)
+        (performance / "metric_history.json").write_text("{}", encoding="utf-8")
+        stage.ARCHIVE_DIR = report_root
+        assert [path.name for path in stage._performance_files()] == ["metric_history.json"]
+
+
 def main() -> None:
     test_archive_manifest_is_verified_and_raw_bundle_is_opt_in()
     test_raw_bundle_can_be_included_on_first_publish()
     test_all_dates_include_archived_only_reports()
+    test_metric_history_is_part_of_tracked_performance_artifacts()
     print("Stage report archive test passed")
 
 

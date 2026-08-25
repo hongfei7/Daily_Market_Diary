@@ -146,6 +146,12 @@ def _stale_note(label: str, stale_days: Optional[int]) -> str:
     return f"{label} was stale ({stale_days} {suffix} old)"
 
 
+def _aligned_divergence(chart_features: Dict[str, Any]) -> Dict[str, Any]:
+    divergence = chart_features.get("divergence", {}) or {}
+    pair = {str(divergence.get("best_asset", "")), str(divergence.get("worst_asset", ""))}
+    return divergence if pair == {"Nasdaq 100", "FXI"} else {}
+
+
 def build_chart_read(chart_features: Dict[str, Any]) -> Dict[str, List[str]]:
     fx_bullets: List[str] = []
     asset_bullets: List[str] = []
@@ -163,7 +169,7 @@ def build_chart_read(chart_features: Dict[str, Any]) -> Dict[str, List[str]]:
     else:
         fx_bullets.append("USD chart features were unavailable, so the read should lean more on closing data and the event tape.")
 
-    divergence = chart_features.get("divergence", {}) or {}
+    divergence = _aligned_divergence(chart_features)
     if divergence:
         asset_bullets.append(
             f"The biggest cross-asset divergence was {divergence.get('best_asset')} versus {divergence.get('worst_asset')}, a spread of {divergence.get('spread_pp')}pct."
@@ -219,7 +225,7 @@ def build_market_overview(summary: Dict[str, Any], chart_features: Dict[str, Any
     usd_net = (chart_features.get("fx_composite", {}) or {}).get("net_pp") or 0
     usd_bias = "USD stronger" if usd_net > 0.15 else "USD softer" if usd_net < -0.15 else "USD range-bound"
     rate_bias = "lower yields supported duration" if (us10y_bp or 0) < -5.0 else "higher yields pressured valuations" if (us10y_bp or 0) > 5.0 else "rates were not the dominant driver"
-    asset_div = chart_features.get("divergence", {}) or {}
+    asset_div = _aligned_divergence(chart_features)
     divergence_text = f"{asset_div.get('best_asset')} outperformed {asset_div.get('worst_asset')}" if asset_div else "cross-asset divergence stayed modest"
     # Kept separately so the regime word can be reconciled against the composite
     # score without rebuilding the sentence by string surgery. Two independent
@@ -390,10 +396,18 @@ def build_hk_investor_lens(
         elif southbound < 0:
             participation_flags.append(f"Southbound recorded {_compact_hkd_flow(southbound)} net selling")
     if fxi is not None and hsi is not None:
-        if fxi < hsi - 0.5:
-            participation_flags.append(f"FXI ({_format_signed(fxi)}) lagged HSI ({_format_signed(hsi)})")
-        elif fxi > hsi + 0.5:
-            confirmation_flags.append(f"FXI ({_format_signed(fxi)}) outperformed HSI ({_format_signed(hsi)})")
+        # The HSI observation is the prior Hong Kong session, whereas FXI is
+        # overnight US trading. Compare direction as a hand-off, never rank the
+        # two returns as if they shared a measurement window.
+        if abs(fxi) >= 0.3 and abs(hsi) >= 0.3:
+            if (fxi > 0) == (hsi > 0):
+                confirmation_flags.append(
+                    f"overnight FXI ({_format_signed(fxi)}) confirmed the prior HSI direction ({_format_signed(hsi)})"
+                )
+            else:
+                participation_flags.append(
+                    f"overnight FXI ({_format_signed(fxi)}) reversed the prior HSI direction ({_format_signed(hsi)})"
+                )
     if usdcnh is not None:
         if usdcnh > 0.2:
             participation_flags.append(f"CNH weakened ({_format_signed(usdcnh)} in USD/CNH)")

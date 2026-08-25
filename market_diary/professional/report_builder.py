@@ -99,7 +99,7 @@ def render_professional_report(
     )
 
     if is_week_ahead:
-        layer2_title = "Layer 2 | Deep Read (10-15 min)"
+        layer2_title = "Layer 2 | Deep Read"
         overseas_section = ""
         hk_review_section = ""
         ai_tmt_section = ""
@@ -110,7 +110,7 @@ def render_professional_report(
         chart_head = "3.2"
         trend_head = "3.3"
     else:
-        layer2_title = "Layer 2 | Deep Read (20-30 min)"
+        layer2_title = "Layer 2 | Deep Read"
         overseas_section = (
             f"### 2.1 {overseas_title}\n{non_trading_lens}{_render_overseas_review_block(bundle)}\n\n"
             f"{_render_non_trading_focus(bundle)}\n\n{_render_weekly_review(bundle)}\n\n"

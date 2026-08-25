@@ -262,7 +262,10 @@ _ASSET_KEYWORDS = {
 # Only these carry enough transmission to Hong Kong equities to be worth naming
 # as the day's divergence. Gold, Oil and Bitcoin stay in the pool for context but
 # cannot become the headline comparison on their own.
-_DIVERGENCE_CANDIDATES = {"Nasdaq 100", "Hang Seng", "HSCEI", "3033.HK", "FXI"}
+# Only compare instruments observed over the same overnight US session. Hong
+# Kong cash/ETF closes belong to the prior local session in a morning note and
+# cannot be ranked honestly against FXI or Nasdaq as "outperformed/lagged".
+_DIVERGENCE_CANDIDATES = {"Nasdaq 100", "FXI"}
 
 
 def _extract_asset_features(timeseries_list: List[pd.DataFrame], tz: str) -> Dict:
@@ -308,14 +311,8 @@ def _extract_asset_features(timeseries_list: List[pd.DataFrame], tz: str) -> Dic
         for name, stats in asset_stats.items()
         if stats.get("available") and name in _DIVERGENCE_CANDIDATES
     }
-    if not available_nets:
-        # Nothing relevant priced; fall back to whatever is available rather
-        # than reporting no divergence at all.
-        available_nets = {
-            name: stats["net_pp"] for name, stats in asset_stats.items() if stats.get("available")
-        }
     divergence: Dict = {}
-    if available_nets:
+    if len(available_nets) >= 2:
         best = max(available_nets, key=available_nets.get)
         worst = min(available_nets, key=available_nets.get)
         divergence = {

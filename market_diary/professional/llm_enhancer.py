@@ -4,6 +4,7 @@ import ast
 import hashlib
 import json
 import os
+import re
 import threading
 import time
 from contextlib import nullcontext
@@ -613,6 +614,10 @@ def _day_mode_context(bundle: Dict[str, Any]) -> Dict[str, Any]:
         "report_horizon": day_mode.get("report_horizon", "daily"),
         "period_start": day_mode.get("period_start", ""),
         "period_end": day_mode.get("period_end", ""),
+        "target_hk_session": day_mode.get(
+            "target_hk_session",
+            day_mode.get("next_hk_trading_day", ""),
+        ),
         "next_hk_trading_day": day_mode.get("next_hk_trading_day", ""),
     }
 
@@ -803,7 +808,9 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
         "overnight_review": (
             "Task: write the overnight overseas market review.\n"
             "Explain why markets moved, not just how much.\n"
-            "Use attribution_v1 as a consistency anchor when it is present; do not add causal claims that conflict with it.\n"
+            "Use the supplied deterministic driver decomposition as a consistency anchor; do not add causal claims that conflict with it.\n"
+            "Use target_hk_session for today's open; next_hk_trading_day is the following session.\n"
+            "Never print internal JSON keys or compare outperform/lag across different trading sessions; label prior-HK versus overnight-US evidence explicitly.\n"
             "Keep paragraph to 2-4 short sentences. Put detailed causal points in drivers rather than making one dense paragraph.\n"
             "End with what the move means for today's Hong Kong open or next Hong Kong session via hk_open_implication.\n"
             "Return JSON with keys: paragraph, drivers, hk_open_implication.\n"
@@ -811,7 +818,8 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
         "hk_review": (
             "Task: write a Hong Kong / A-share review setup.\n"
             "Focus on style leadership, local flow implications, and cross-market read-through.\n"
-            "Use flow_tracker and attribution_v1 when available; if Connect or CCASS data is absent, state that confirmation is incomplete.\n"
+            "Use the supplied flow evidence and deterministic driver decomposition when available; if Connect or CCASS data is absent, state that confirmation is incomplete.\n"
+            "Do not rank prior-HK cash moves against overnight US-listed moves as outperform/lag; describe confirmation or reversal instead.\n"
             "The local_leadership field must include the style call, at least two supplied facts, and what the evidence means for the open; never return only a generic label such as 'Hong Kong growth / internet led'.\n"
             "Keep paragraph to 2-4 short sentences. Put the actionable confirmation test in follow_through.\n"
             "Return JSON with keys: paragraph, local_leadership, follow_through.\n"
@@ -836,7 +844,7 @@ def _build_prompt(task_name: str, context: Dict[str, Any]) -> str:
             "Task: write the final framing for the top and bottom of the report.\n"
             "Return JSON with keys: one_line_market_pulse, thinking_note, risk_check, interview_answer.\n"
             "The market pulse must be one sentence. The interview answer must be two short sentences.\n"
-            "Keep the framing aligned with attribution_v1 and flow_tracker if they are supplied.\n"
+            "Keep the framing aligned with the supplied deterministic driver decomposition and flow evidence. Never print internal JSON field names.\n"
         ),
     }
 
@@ -932,6 +940,7 @@ def _run_json_task_factory(llm_config: Dict[str, Any], cache_dir: str) -> TaskRu
                         "provider": provider,
                         "route": route_name,
                         "attempts": total_attempts,
+                        "usage": last_usage,
                     }
                 except Exception as exc:
                     last_error = f"{type(exc).__name__}: {exc}"
@@ -971,6 +980,21 @@ def _task_condition(task_name: str, bundle: Dict[str, Any]) -> Tuple[bool, str]:
 
 
 def _flatten_sections(task_outputs: Dict[str, Dict[str, Any]], task_meta: Dict[str, Any]) -> Dict[str, Any]:
+    def sanitize(value: Any) -> Any:
+        if isinstance(value, str):
+            return re.sub(
+                r"\battribution_v1\b",
+                "the deterministic driver decomposition",
+                value,
+                flags=re.IGNORECASE,
+            )
+        if isinstance(value, dict):
+            return {key: sanitize(child) for key, child in value.items()}
+        if isinstance(value, list):
+            return [sanitize(child) for child in value]
+        return value
+
+    task_outputs = sanitize(task_outputs)
     news_selection = task_outputs.get("news_selection", TASK_DEFAULTS["news_selection"])
     overnight_review = task_outputs.get("overnight_review", TASK_DEFAULTS["overnight_review"])
     hk_review = task_outputs.get("hk_review", TASK_DEFAULTS["hk_review"])

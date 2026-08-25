@@ -59,6 +59,7 @@ from market_diary.professional.md_questions import build_md_questions
 from market_diary.professional.performance import refresh_performance_tracking
 from market_diary.professional.skill_shadow import generate_skill_shadow
 from market_diary.professional.metric_history import load_history as load_metric_history
+from market_diary.professional.metric_history import backfill_archive_history as backfill_metric_history
 from market_diary.professional.metric_history import record_observations as record_metric_observations
 from market_diary.professional.metric_history import save_history as save_metric_history
 from market_diary.professional.prose_guard import check_markdown as check_prose
@@ -601,6 +602,7 @@ def main() -> None:
     metric_history_path = _metric_history_path(output_dir)
     try:
         metric_history = load_metric_history(metric_history_path)
+        backfill_metric_history(metric_history, os.path.join(output_dir, "archive"))
     except Exception as exc:
         print(f"[runtime] Metric history load failed (non-fatal): {_error_summary(exc)}")
         metric_history = {"observations": {}}

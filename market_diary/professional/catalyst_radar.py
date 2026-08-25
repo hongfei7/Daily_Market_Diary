@@ -20,7 +20,7 @@ NAVY = "#123a56"
 BLUE = "#2274a5"
 AMBER = "#b45309"
 MONITOR = "#69757f"
-CATALYST_RADAR_LAYOUT_VERSION = "catalyst-radar-v1"
+CATALYST_RADAR_LAYOUT_VERSION = "catalyst-radar-v2"
 
 
 def _text(value: Any) -> str:
@@ -59,6 +59,53 @@ def _importance_score(item: Dict[str, Any]) -> float:
     return 2.0
 
 
+def _timing_classification(item: Dict[str, Any], *, date: str, window: str, source: str) -> Tuple[str, str]:
+    """Return presentation lane and timing confidence without promoting aggregators.
+
+    A precise-looking date is not, by itself, confirmation. Only an explicit
+    confidence flag or an issuer/exchange/official source earns CONFIRMED.
+    """
+    confidence = _text(
+        item.get("date_confidence")
+        or item.get("timing_confidence")
+        or item.get("confidence")
+    ).lower().replace("-", "_").replace(" ", "_")
+    confirmed_values = {
+        "confirmed",
+        "confirmed_date",
+        "issuer_confirmed",
+        "exchange_confirmed",
+        "official",
+    }
+    reported_values = {"reported", "aggregator_reported", "calendar_reported"}
+    estimated_values = {"estimated", "inferred", "indicative", "window"}
+    source_text = _text(source).lower()
+    official_source = any(
+        token in source_text
+        for token in (
+            "hkex",
+            "issuer",
+            "company filing",
+            "official",
+            "regulator",
+            "federal reserve",
+            "people's bank",
+            "pboc",
+            "hkma",
+        )
+    )
+
+    if date and (confidence in confirmed_values or official_source):
+        return "confirmed", "confirmed"
+    if date and confidence in estimated_values:
+        return "window", "estimated"
+    if date and (confidence in reported_values or not confidence):
+        return "window", "reported"
+    if window:
+        return "window", "estimated"
+    return "monitor", "undated"
+
+
 def _row(
     *,
     lane: str,
@@ -70,6 +117,7 @@ def _row(
     impact: str = "",
     source: str = "",
     score: float = 2.0,
+    timing_confidence: str = "undated",
 ) -> Dict[str, Any]:
     return {
         "lane": lane,
@@ -81,6 +129,7 @@ def _row(
         "impact": impact,
         "source": source,
         "score": score,
+        "timing_confidence": timing_confidence,
     }
 
 
@@ -100,7 +149,13 @@ def _append_event_rows(
             continue
         date = _event_date(raw, default_date)
         window = _text(raw.get("window") or raw.get("date_window"))
-        lane = "confirmed" if date else "window" if window else "monitor"
+        source = _text(raw.get("source") or default_source)
+        lane, timing_confidence = _timing_classification(
+            raw,
+            date=date,
+            window=window,
+            source=source,
+        )
         entity = _text(raw.get("country") or raw.get("bank") or raw.get("ticker") or raw.get("company"))
         rows.append(
             _row(
@@ -111,8 +166,9 @@ def _append_event_rows(
                 event=event,
                 entity=entity,
                 impact=_text(raw.get("impact") or raw.get("why_it_matters") or raw.get("importance")),
-                source=_text(raw.get("source") or default_source),
+                source=source,
                 score=_importance_score(raw),
+                timing_confidence=timing_confidence,
             )
         )
 
@@ -172,17 +228,25 @@ def build_catalyst_radar_rows(bundle: Dict[str, Any]) -> Dict[str, Any]:
             name = _text(item.get("name"))
             ticker = _text(item.get("ticker"))
             entity = " · ".join(part for part in (ticker, name) if part)
+            source = _text(item.get("source")) or "Research watchlist"
+            lane, timing_confidence = _timing_classification(
+                item,
+                date=date,
+                window=_text(item.get("window") or item.get("date_window")),
+                source=source,
+            )
             rows.append(
                 _row(
-                    lane="confirmed" if date else "monitor",
+                    lane=lane,
                     date=date,
                     time="",
                     category=_text(bucket).replace("_", " ").title() or "Watchlist",
                     event=event,
                     entity=entity,
                     impact=_text(item.get("thesis") or item.get("why_it_matters")),
-                    source=_text(item.get("source")) or "Research watchlist",
+                    source=source,
                     score=3.0 if "core" in _text(bucket).lower() else 2.5,
+                    timing_confidence=timing_confidence,
                 )
             )
 
@@ -253,15 +317,20 @@ def build_catalyst_radar_rows(bundle: Dict[str, Any]) -> Dict[str, Any]:
             "window": len(windows),
             "monitor": len(monitors),
         },
-        "next_hk_open": _text((bundle.get("day_mode", {}) or {}).get("next_hk_trading_day")),
+        "next_hk_open": _text(
+            (bundle.get("day_mode", {}) or {}).get("target_hk_session")
+            or (bundle.get("day_mode", {}) or {}).get("next_hk_trading_day")
+        ),
     }
 
 
-def _lane_style(lane: str) -> Tuple[str, str]:
-    if lane == "confirmed":
+def _lane_style(item: Dict[str, Any]) -> Tuple[str, str]:
+    lane = _text(item.get("lane"))
+    confidence = _text(item.get("timing_confidence"))
+    if lane == "confirmed" and confidence == "confirmed":
         return "CONFIRMED", NAVY
     if lane == "window":
-        return "WINDOW", BLUE
+        return ("REPORTED", BLUE) if confidence == "reported" else ("ESTIMATED", AMBER)
     return "MONITOR", MONITOR
 
 
@@ -288,7 +357,7 @@ def _draw_queue(fig, payload: Dict[str, Any]) -> None:
 
     y = top
     for index, item in enumerate(rows):
-        lane_label, lane_color = _lane_style(_text(item.get("lane")))
+        lane_label, lane_color = _lane_style(item)
         face = WHITE if index % 2 == 0 else "#f6f7f7"
         fig.add_artist(Rectangle((left, y - row_h), right - left, row_h, transform=fig.transFigure, facecolor=face, edgecolor=LINE, linewidth=0.55))
         fig.add_artist(Rectangle((left, y - row_h), 0.006, row_h, transform=fig.transFigure, facecolor=lane_color, edgecolor=lane_color, linewidth=0))
@@ -345,14 +414,14 @@ def generate_catalyst_radar(bundle: Dict[str, Any], output_path: str) -> Dict[st
     fig.text(
         0.055,
         0.862,
-        "Confirmed dates lead; undated research triggers stay visible but are never presented as scheduled events.",
+        "Issuer/exchange-confirmed dates lead; reported or estimated timing remains visibly distinct.",
         fontsize=10.8,
         color=SLATE,
     )
 
     metrics = [
         ("CONFIRMED", str(counts["confirmed"]), NAVY),
-        ("TIME WINDOWS", str(counts["window"]), BLUE),
+        ("REPORTED / EST.", str(counts["window"]), BLUE),
         ("MONITORING", str(counts["monitor"]), MONITOR),
         ("NEXT HK OPEN", next_open, INK),
     ]
@@ -375,9 +444,9 @@ def generate_catalyst_radar(bundle: Dict[str, Any], output_path: str) -> Dict[st
     plt.close(fig)
 
     if counts["confirmed"]:
-        read = f"{counts['confirmed']} dated event(s) lead the queue; {counts['monitor']} undated trigger(s) remain explicitly in monitoring."
+        read = f"{counts['confirmed']} issuer/exchange-confirmed event(s) lead; {counts['window']} reported or estimated timing item(s) remain distinct."
     else:
-        read = f"No confirmed event date is populated; {counts['monitor']} undated research trigger(s) remain visible without invented timing."
+        read = f"No issuer/exchange-confirmed event date is populated; {counts['window']} reported or estimated timing item(s) and {counts['monitor']} undated trigger(s) remain explicit."
     return {
         "path": os.path.basename(output_path),
         "title": "Catalyst & Event Radar",

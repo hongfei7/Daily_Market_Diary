@@ -6,6 +6,7 @@ import os
 import sys
 
 from _bootstrap import MARKET_DIARY, ROOT
+from scripts.validate_workflow_shell import validate_workflow_shell
 
 
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "morning_briefing_professional.yml"
@@ -212,11 +213,17 @@ def check_workflow_guardrails() -> bool:
         "wecom_${BRIEFING_DATE}_summary_receipt.json",
         "wecom_${BRIEFING_DATE}_file_receipt.json",
         "steps.audit.outcome == 'success'",
+        "Notify WeCom when the run gate fails",
+        "RUNS_FILE=\"$(mktemp)\"",
+        "DMD_REPORT_LINK_ENABLED",
     )
     for marker in required_sla_guards:
         if marker not in morning:
             print(f"FAIL workflow is missing SLA guard: {marker}")
             return False
+    if "export RUNS_JSON" in morning or "os.environ.get(\"RUNS_JSON\"" in morning:
+        print("FAIL recovery gate must not put GitHub API payloads in the process environment")
+        return False
     if "reports_professional/performance/*" not in morning:
         print("FAIL signal performance artifacts must be retained with each workflow run")
         return False
@@ -274,6 +281,10 @@ def test_scheduled_archive_publish() -> None:
 
 def test_workflow_guardrails() -> None:
     assert check_workflow_guardrails()
+
+
+def test_workflow_run_blocks_are_valid_bash() -> None:
+    assert validate_workflow_shell(WORKFLOW_PATH) == []
 
 
 if __name__ == "__main__":

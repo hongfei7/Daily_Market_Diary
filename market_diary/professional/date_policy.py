@@ -186,10 +186,16 @@ def build_report_mode(briefing_date: str, config: Dict[str, Any]) -> Dict[str, A
         (day - timedelta(days=1)).isoformat(), config
     )
     next_trading_day = next_hk_trading_day_after(briefing_date, config)
+    target_hk_session = (
+        briefing_date
+        if is_hk_trading_day(briefing_date, config)
+        else next_trading_day
+    )
     base = {
         "briefing_date": briefing_date,
         "review_date": previous_calendar_day(briefing_date),
         "last_hk_trading_day": last_trading_day,
+        "target_hk_session": target_hk_session,
         "next_hk_trading_day": next_trading_day,
     }
 
@@ -311,6 +317,10 @@ def build_date_semantics(
         "period_start": (day_mode or {}).get("period_start", ""),
         "period_end": (day_mode or {}).get("period_end", ""),
         "last_hk_trading_day": (day_mode or {}).get("last_hk_trading_day", ""),
+        "target_hk_session": (day_mode or {}).get(
+            "target_hk_session",
+            (day_mode or {}).get("next_hk_trading_day", ""),
+        ),
         "next_hk_trading_day": (day_mode or {}).get("next_hk_trading_day", ""),
         "global_request_date": global_market_date,
         "global_effective_date": global_effective,

@@ -99,6 +99,17 @@ def main() -> None:
         assert clipped_audit["status"] == "error"
         assert any("clipped text" in item for item in clipped_audit["errors"])
 
+        commute_clipped_audit = audit_generated_run(
+            root,
+            "2026-04-14",
+            require_llm=True,
+            require_email_preview=True,
+            require_wecom_preview=True,
+            quality_policy="commute",
+        )
+        assert commute_clipped_audit["status"] == "ok"
+        assert any("clipped text" in item for item in commute_clipped_audit["warnings"])
+
         (root / "2026-04-14_morning_briefing.md").write_text(
             REPORT_BODY + "\nA headline may contain an ellipsis... without being clipped.\n",
             encoding="utf-8",

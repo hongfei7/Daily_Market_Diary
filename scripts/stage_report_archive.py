@@ -290,7 +290,7 @@ def _performance_files() -> List[Path]:
     return sorted(
         path
         for path in root.iterdir()
-        if path.is_file() and path.name in {"README.md", "signal_ledger.json", "performance_summary.json", "signal_performance.png"}
+        if path.is_file() and path.name in {"README.md", "metric_history.json", "signal_ledger.json", "performance_summary.json", "signal_performance.png"}
     )
 
 

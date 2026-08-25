@@ -625,8 +625,9 @@ def _event_card_html(item: Dict[str, Any]) -> str:
     drivers = str(item.get("filing_drivers", "") or "").strip()
     source = str(item.get("source", "") or "Primary source")
     url = str(item.get("source_url", item.get("url", "")) or "").strip()
+    source_suffix = " filing" if any(token in source.lower() for token in ("hkex", "filing", "issuer disclosure")) else ""
     source_link = (
-        f'<a class="event-source" href="{html.escape(url, quote=True)}">{html.escape(source)} filing ↗</a>'
+        f'<a class="event-source" href="{html.escape(url, quote=True)}">{html.escape(source + source_suffix)} ↗</a>'
         if url.startswith(("http://", "https://"))
         else f'<span class="event-source event-source-muted">{html.escape(source)}</span>'
     )

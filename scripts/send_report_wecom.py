@@ -71,6 +71,8 @@ def _load_bundle(output_dir: Path, report_date: str) -> dict:
 
 
 def _resolve_report_url(report_date: str) -> str:
+    if (os.getenv("DMD_REPORT_LINK_ENABLED") or "true").strip().lower() in {"0", "false", "no", "off"}:
+        return ""
     base = (os.getenv("WECOM_REPORT_BASE_URL") or "").strip().rstrip("/")
     if base:
         return f"{base}/{report_date}_morning_briefing.md"
@@ -433,7 +435,7 @@ HTML_CSS = """\
                  sans-serif;
     color: var(--ink); line-height: 1.62; max-width: 1360px; margin: 0 auto;
     padding: 0 44px 64px; background: var(--paper); font-size: 15px;
-    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    -webkit-font-smoothing: antialiased; width: 100%; min-width: 0;
   }
   h1, h2, h3, h4, h5, h6 { color: var(--ink); letter-spacing: -.025em; }
   h1 { font-size: 32px; line-height: 1.12; margin: 42px 0 18px; }
@@ -500,6 +502,7 @@ HTML_CSS = """\
   .section-traceable-appendix,
   .section-supplementary-visual-appendix { padding: 28px 30px; background: var(--soft); }
   .table-shell { width: 100%; margin: 18px 0 26px; overflow-x: auto; border-top: 2px solid var(--ink); -webkit-overflow-scrolling: touch; }
+  .figure-shell { width: 100%; max-width: 100%; min-width: 0; margin: 22px 0 30px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; border-collapse: collapse; margin: 0; font-size: 12.5px; font-variant-numeric: tabular-nums; }
   th { background: var(--paper); color: var(--ink); padding: 10px 10px; text-align: left; font-size: 10px; letter-spacing: .055em; text-transform: uppercase; font-weight: 800; border-bottom: 1px solid #9ea4a7; vertical-align: bottom; }
   td { padding: 10px; border-bottom: 1px solid #e3e4e4; vertical-align: top; }
@@ -545,8 +548,9 @@ HTML_CSS = """\
   .event-coverage-note { margin: 12px 0 0; padding: 10px 12px; border-left: 2px solid #9da4a7; color: var(--muted); background: #fafafa; font-size: 10.5px; line-height: 1.45; }
   .move-positive { color: var(--supportive); font-weight: 750; white-space: nowrap; }
   .move-negative { color: var(--adverse); font-weight: 750; white-space: nowrap; }
-  img { display: block; max-width: 100%; height: auto; margin: 22px 0 30px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  .section-visual-dashboard img { margin-top: 16px; border: 0; }
+  img { display: block; max-width: 100%; height: auto; margin: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .section-visual-dashboard .figure-shell { margin-top: 16px; }
+  .section-visual-dashboard img { border: 0; }
   code { background: #f0f1f1; padding: 2px 5px; font-family: "SF Mono", "Fira Code", "Consolas", monospace; font-size: 12px; }
   pre { background: var(--soft); padding: 14px; overflow-x: auto; font-size: 12px; line-height: 1.5; border-left: 3px solid var(--navy); }
   pre code { background: none; padding: 0; }
@@ -558,18 +562,21 @@ HTML_CSS = """\
   .report-footer { margin-top: 22px; padding: 23px 0 8px; border-top: 5px solid var(--ink); font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 18px; }
   @media (max-width: 860px) {
     body { padding: 0 18px 38px; font-size: 14px; }
+    p, li, dd { overflow-wrap: anywhere; }
     .report-shell { border-top-width: 6px; }
     .report-masthead { padding: 17px 0 24px; }
-    .masthead-line { padding-bottom: 13px; }
+    .masthead-line { display: block; padding-bottom: 13px; }
+    .issue-label { margin-top: 7px; }
     .report-wordmark, .issue-label { font-size: 8px; }
     .masthead-grid { display: block; padding-top: 24px; }
     .report-masthead h1 { font-size: 36px; }
     .report-deck { margin-top: 18px; font-size: 19px; line-height: 1.42; }
     .issue-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; margin-top: 24px; padding: 0; border-left: 0; border-top: 1px solid var(--line); }
     .issue-facts div { padding-top: 11px; margin-bottom: 0; }
-    .reading-path { margin-top: 22px; }
-    .reading-path li { display: block; padding: 11px 8px 11px 0; }
-    .reading-path li:nth-child(2), .reading-path li:last-child { padding-left: 10px; }
+    .reading-path { display: block; margin-top: 22px; }
+    .reading-path li { display: block; padding: 11px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+    .reading-path li:nth-child(2), .reading-path li:last-child { padding-left: 0; }
+    .reading-path li:last-child { border-bottom: 0; }
     .reading-path b { display: none; }
     .reading-path span { font-size: 10px; }
     .reading-path small { font-size: 9px; }
@@ -579,6 +586,7 @@ HTML_CSS = """\
     .mobile-toc summary { padding: 12px 0; cursor: pointer; color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
     .mobile-toc a { display: block; padding: 8px 0; color: #4e555a; font-size: 12px; text-decoration: none; }
     .mobile-toc nav { padding: 0 0 12px; }
+    .report-content, .report-section, .section-executive-summary > ul > li { min-width: 0; max-width: 100%; }
     .report-section { margin-bottom: 45px; }
     h2 { font-size: 25px; margin-bottom: 21px; padding-top: 14px; border-top-width: 4px; }
     h3 { font-size: 18px; margin-top: 31px; }
@@ -589,6 +597,8 @@ HTML_CSS = """\
     .section-traceable-appendix,
     .section-supplementary-visual-appendix { margin-left: -18px; margin-right: -18px; padding: 24px 18px 2px; }
     table { min-width: 660px; font-size: 12px; }
+    .section-visual-dashboard .figure-shell img { width: 900px; max-width: none; }
+    .section-supplementary-visual-appendix .figure-shell img { width: 720px; max-width: none; }
     th, td { padding: 9px 8px; }
     .event-monitor-summary { display: block; padding: 17px 16px; }
     .event-summary-copy h4 { font-size: 15px; }
@@ -622,6 +632,7 @@ HTML_CSS = """\
     .table-shell { overflow: visible; break-inside: avoid; }
     table { min-width: 0; }
     h2, h3, img { break-after: avoid; }
+    .figure-shell { overflow: visible; break-inside: avoid; }
     .report-section { break-inside: auto; }
   }
 </style>"""
@@ -651,6 +662,11 @@ def _structure_report_html(body_html: str) -> tuple[str, List[tuple[str, str]]]:
         flags=re.DOTALL,
     )
     body_html = re.sub(r"<table>(.*?)</table>", r'<div class="table-shell"><table>\1</table></div>', body_html, flags=re.DOTALL)
+    body_html = re.sub(
+        r'(<img\s+src="[^"]+"\s+alt="[^"]*"[^>]*/?>)',
+        r'<div class="figure-shell">\1</div>',
+        body_html,
+    )
 
     def _movement_cell(match: re.Match) -> str:
         inner = match.group("inner")
@@ -715,17 +731,21 @@ def _extract_header_context(md_text: str, report_date: str) -> Dict[str, str]:
         found = re.search(pattern, md_text, flags=re.MULTILINE | re.IGNORECASE)
         return " ".join(found.group(1).split()).strip() if found else default
 
-    pulse = _match(
-        r"^- \*\*Market pulse:\*\*\s*(.+)$",
-        "Evidence-led Hong Kong market briefing and decision checklist.",
-    )
+    pulse = _match(r"^- \*\*Market pulse:\*\*\s*(.+)$")
+    if not pulse:
+        pulse = _match(r"^- \*\*What changed overnight\?\*\*\s*(.+)$")
+    if not pulse:
+        pulse = _match(
+            r"^- \*\*What it means for AI/TMT:\*\*\s*(.+)$",
+            "Evidence-led Hong Kong market briefing and decision checklist.",
+        )
     mode = _match(r"Mode:\s*`([^`]+)`", "Daily briefing")
     global_date = _match(
-        r"Data through:\s*global\s*`([^`]+)`",
+        r"Data through:\s*(?:US/global|global)\s*`([^`]+)`",
         _match(r"Global request:\s*`([^`]+)`", "See report"),
     )
     hk_date = _match(
-        r"HK/China\s*`([^`]+)`",
+        r"(?:\||·)?\s*HK(?:/China)?\s*`([^`]+)`",
         _match(r"HK/China request:\s*`([^`]+)`", "See report"),
     )
     quality = _match(r"Report quality:\s*`([^`]+)`", "See validation")

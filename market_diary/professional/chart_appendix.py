@@ -37,7 +37,7 @@ def _visual_rows(
             (
                 "Catalyst & Event Radar",
                 f"`{catalyst_radar_rel_path}`",
-                "Confirmed dates, time windows, undated monitors, and recent issuer read-through.",
+                "Issuer/exchange-confirmed dates, reported or estimated timing, undated monitors, and recent issuer read-through.",
             )
         )
     if daily_chart_rel_path:

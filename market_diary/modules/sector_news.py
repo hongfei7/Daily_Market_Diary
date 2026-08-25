@@ -266,6 +266,7 @@ class SectorNewsAggregator:
                             "eps_estimate": None,
                             "revenue_estimate": None,
                             "as_of": date,
+                            "date_confidence": "aggregator_reported",
                             "source": "Yahoo Finance ticker calendar",
                             "source_url": f"https://finance.yahoo.com/quote/{ticker}",
                         }

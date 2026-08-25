@@ -18,6 +18,7 @@ from market_diary.professional.metric_history import (
     percentile_context,
     record_observations,
     save_history,
+    backfill_archive_history,
 )
 
 
@@ -113,3 +114,21 @@ def test_saved_history_is_valid_json(tmp_path):
     record_observations(history, "2026-08-19", {"short_selling_ratio": {"value": 17.0}})
     save_history(history, str(path))
     assert json.loads(path.read_text(encoding="utf-8"))["schema_version"]
+
+
+def test_archive_backfill_uses_effective_session_and_is_append_only(tmp_path):
+    report = tmp_path / "archive" / "2026-08-23" / "morning_briefing.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "| Main Board turnover vs 20D | 1.08x \\| +8% vs 20D | Live local | HKEX \\| 2026-08-21 | Read. |\n"
+        "| Short-selling ratio | 15.00% | Live local | HKEX \\| 2026-08-21 | Read. |\n"
+        "| HIBOR 1M | 2.68% | Live local | HKMA \\| 2026-08-21 | Read. |\n"
+        "| Southbound / Northbound net flow | Southbound Net HK$-0.5bn \\| turnover HK$133.9bn | Live local | HKEX \\| 2026-08-21 | Read. |\n",
+        encoding="utf-8",
+    )
+    history = {"observations": {"short_selling_ratio": {"2026-08-21": 99.0}}}
+    backfill_archive_history(history, tmp_path / "archive")
+    assert history["observations"]["turnover_vs_20d"]["2026-08-21"] == 1.08
+    assert history["observations"]["short_selling_ratio"]["2026-08-21"] == 99.0
+    assert history["observations"]["hibor_1m"]["2026-08-21"] == 2.68
+    assert history["observations"]["southbound_net_flow"]["2026-08-21"] == -500_000_000.0

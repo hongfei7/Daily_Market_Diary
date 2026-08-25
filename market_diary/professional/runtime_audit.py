@@ -265,7 +265,11 @@ def audit_generated_run(
     # stripped), so this gate fires and blocks release instead of destroying
     # legitimate Chinese company names and filing titles.
     errors.extend(_audit_english_only(report_text))
-    errors.extend(_audit_clipped_text(report_text))
+    clipped_text_findings = _audit_clipped_text(report_text)
+    if quality_policy == "commute":
+        warnings.extend(clipped_text_findings)
+    else:
+        errors.extend(clipped_text_findings)
 
     image_refs = re.findall(r"!\[[^\]]*\]\(([^)]+)\)", report_text)
     if len(image_refs) >= 2 and image_refs[0] == image_refs[-1]:

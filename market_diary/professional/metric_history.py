@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
+import re
 from typing import Any, Dict, List, Mapping, Optional
 
 SCHEMA_VERSION = "metric-history-v1"
@@ -25,6 +27,15 @@ MIN_SAMPLE_FOR_PERCENTILE = 20
 DEFAULT_WINDOW = 60
 
 TRACKED_METRICS = ("short_selling_ratio", "turnover_vs_20d", "southbound_net_flow", "hibor_1m")
+
+_ARCHIVE_ROW_PATTERNS = {
+    "turnover_vs_20d": re.compile(r"^\| Main Board turnover vs 20D \|\s*([+-]?[0-9.]+)x\b"),
+    "short_selling_ratio": re.compile(r"^\| Short-selling ratio \|\s*([+-]?[0-9.]+)%"),
+    "hibor_1m": re.compile(r"^\| HIBOR 1M \|\s*([+-]?[0-9.]+)%"),
+    "southbound_net_flow": re.compile(
+        r"^\| Southbound / Northbound net flow \|.*?Southbound Net HK\$([+-]?[0-9.]+)bn\b"
+    ),
+}
 
 
 def _default_path(output_dir: str) -> str:
@@ -67,6 +78,39 @@ def record_observations(
         series = observations.setdefault(key, {})
         # Append-only: the first value recorded for a date is authoritative.
         series.setdefault(report_date, numeric)
+    return history
+
+
+def backfill_archive_history(history: Dict[str, Any], archive_root: str | Path) -> Dict[str, Any]:
+    """Seed missing observations from immutable archived report tables.
+
+    The effective local-data date in the source column is used instead of the
+    report publication date, so weekend reports do not create duplicate market
+    sessions. Existing observations remain authoritative.
+    """
+    root = Path(archive_root)
+    if not root.exists():
+        return history
+    observations = history.setdefault("observations", {})
+    for report_path in sorted(root.glob("*/morning_briefing.md")):
+        try:
+            lines = report_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", line)
+            if not dates:
+                continue
+            effective_date = dates[-1]
+            for metric, pattern in _ARCHIVE_ROW_PATTERNS.items():
+                match = pattern.search(line)
+                if not match:
+                    continue
+                value = float(match.group(1))
+                if metric == "southbound_net_flow":
+                    value *= 1_000_000_000.0
+                observations.setdefault(metric, {}).setdefault(effective_date, value)
+                break
     return history
 
 

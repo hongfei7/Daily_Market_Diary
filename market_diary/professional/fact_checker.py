@@ -337,6 +337,28 @@ def _logic_warnings(bundle: Dict[str, Any], texts: List[Tuple[str, str]]) -> Lis
     us10y, us10y_unit = summary_change(_summary_item(bundle, "Rates", "10Y Treasury"))
     southbound = ((bundle.get("hk_local", {}) or {}).get("southbound_net_flow", {}) or {})
 
+    relative_facts = {
+        "S&P 500": (summary_change(_summary_item(bundle, "Equities", "S&P 500"))[0], "us"),
+        "Nasdaq 100": (summary_change(_summary_item(bundle, "Equities", "Nasdaq 100"))[0], "us"),
+        "Hang Seng": (summary_change(_summary_item(bundle, "Equities", "Hang Seng Index"))[0], "hk_prior"),
+        "3033.HK": (summary_change(_summary_item(bundle, "Equities", "Hang Seng TECH ETF"))[0], "hk_prior"),
+        "FXI": (summary_change(_summary_item(bundle, "Equities", "China Large-Cap (FXI)"))[0], "us"),
+    }
+    relative_aliases = {
+        "S&P 500": ["S&P 500", "SPX"],
+        "Nasdaq 100": ["Nasdaq 100", "Nasdaq", "NDX"],
+        "Hang Seng": ["Hang Seng Index", "Hang Seng", "HSI"],
+        "3033.HK": ["3033.HK ETF", "3033.HK", "HSTECH ETF", "HSTECH"],
+        "FXI": ["FXI"],
+    }
+    relative_verbs = {
+        "outperformed": lambda left, right: left > right,
+        "beat": lambda left, right: left > right,
+        "lagged": lambda left, right: left < right,
+        "underperformed": lambda left, right: left < right,
+    }
+    relative_seen = set()
+
     for path, raw_text in texts:
         text = raw_text.lower()
         if "risk-on" in risk_regime and _contains_any(text, risk_off_assertions):
@@ -355,6 +377,55 @@ def _logic_warnings(bundle: Dict[str, Any], texts: List[Tuple[str, str]]) -> Lis
                 warnings.append({"field": path, "type": "rates_logic", "severity": "review", "message": "Narrative says yields rose, but US 10Y was materially lower."})
         if southbound.get("status") == "unavailable" and _contains_any(text, ["southbound net buy", "southbound net inflow", "southbound bought"]):
             warnings.append({"field": path, "type": "flow_availability", "severity": "review", "message": "Narrative discusses Southbound net buying although the normalized metric is unavailable."})
+
+        for left_label, left_aliases in relative_aliases.items():
+            left_value, left_session = relative_facts[left_label]
+            if left_value is None:
+                continue
+            for right_label, right_aliases in relative_aliases.items():
+                if right_label == left_label:
+                    continue
+                right_value, right_session = relative_facts[right_label]
+                if right_value is None:
+                    continue
+                for left_alias in left_aliases:
+                    for right_alias in right_aliases:
+                        pattern = re.compile(
+                            rf"(?<!\w){re.escape(left_alias)}(?!\w)[^\n.;]{{0,28}}?"
+                            rf"\b(?P<verb>{'|'.join(relative_verbs)})\b[^\n.;]{{0,28}}?"
+                            rf"(?<!\w){re.escape(right_alias)}(?!\w)",
+                            re.IGNORECASE,
+                        )
+                        for match in pattern.finditer(raw_text):
+                            key = (path, match.start(), left_label, right_label)
+                            if key in relative_seen:
+                                continue
+                            relative_seen.add(key)
+                            verb = match.group("verb").lower()
+                            if not relative_verbs[verb](float(left_value), float(right_value)):
+                                warnings.append(
+                                    {
+                                        "field": path,
+                                        "type": "relative_performance",
+                                        "severity": "critical",
+                                        "message": (
+                                            f"Narrative says {left_label} {verb} {right_label}, but the supplied moves were "
+                                            f"{float(left_value):+.2f}% and {float(right_value):+.2f}%."
+                                        ),
+                                    }
+                                )
+                            elif left_session != right_session:
+                                warnings.append(
+                                    {
+                                        "field": path,
+                                        "type": "period_alignment",
+                                        "severity": "review",
+                                        "message": (
+                                            f"{left_label} and {right_label} come from different trading sessions; "
+                                            "describe confirmation/reversal rather than outperform/lag."
+                                        ),
+                                    }
+                                )
 
     return warnings
 
@@ -483,10 +554,11 @@ def run_fact_check(bundle: Dict[str, Any]) -> Dict[str, Any]:
     logic_warnings = _logic_warnings(bundle, texts)
     structured_checked, source_warnings = _source_and_date_warnings(bundle)
     source_warnings.extend(_truncation_warnings(llm_sections))
-    critical_count = sum(1 for item in mismatches if item.get("severity") == "critical")
+    logic_critical = sum(1 for item in logic_warnings if item.get("severity") == "critical")
+    critical_count = sum(1 for item in mismatches if item.get("severity") == "critical") + logic_critical
     review_count = (
         sum(1 for item in mismatches if item.get("severity") == "review")
-        + sum(1 for item in logic_warnings if item.get("severity", "review") == "review")
+        + sum(1 for item in logic_warnings if item.get("severity") == "review")
     )
     source_critical = sum(1 for item in source_warnings if item.get("severity") == "critical")
     source_review = sum(1 for item in source_warnings if item.get("severity") == "review")

@@ -8,7 +8,12 @@ from professional.analytics import build_professional_bundle
 from professional.catalyst_radar import build_catalyst_radar_rows, generate_catalyst_radar
 from professional.config import load_professional_config
 from professional.daily_one_chart import generate_daily_one_chart
-from professional.dashboard import DASHBOARD_LAYOUT_VERSION, generate_dashboard, _regime_impact_color
+from professional.dashboard import (
+    DASHBOARD_LAYOUT_VERSION,
+    generate_dashboard,
+    _regime_impact_color,
+    _session_aware_dashboard_label,
+)
 from professional.report_builder import render_professional_report
 from professional.trend_pack import generate_hk_trend_pack
 
@@ -221,6 +226,33 @@ def main():
     assert weekend_payload["rows"][0]["date"] == ""
     assert weekend_payload["issuer_signals"][0]["event"] == "Quarterly results announcement"
 
+    timing_payload = build_catalyst_radar_rows(
+        {
+            "meta": {"briefing_date": "2026-08-25"},
+            "day_mode": {"target_hk_session": "2026-08-25"},
+            "catalysts": [
+                {
+                    "date": "2026-08-26",
+                    "event": "Aggregator earnings date",
+                    "date_confidence": "aggregator_reported",
+                    "source": "Yahoo Finance ticker calendar",
+                },
+                {
+                    "date": "2026-08-27",
+                    "event": "Issuer results date",
+                    "date_confidence": "issuer_confirmed",
+                    "source": "HKEXnews issuer filing",
+                },
+            ],
+        }
+    )
+    aggregator = next(item for item in timing_payload["all_rows"] if item["event"] == "Aggregator earnings date")
+    issuer = next(item for item in timing_payload["all_rows"] if item["event"] == "Issuer results date")
+    assert aggregator["lane"] == "window"
+    assert aggregator["timing_confidence"] == "reported"
+    assert issuer["lane"] == "confirmed"
+    assert issuer["timing_confidence"] == "confirmed"
+
     fixture = _minimal_fixture()
     config = load_professional_config()
     config["watchlists"] = {"core_coverage": [], "focus_pool": [], "learning_pool": []}
@@ -294,6 +326,8 @@ def main():
         assert DASHBOARD_LAYOUT_VERSION == "morning-dashboard-v10"
         assert _regime_impact_color("US 10Y", 0.6) != _regime_impact_color("S&P 500", 0.6)
         assert _regime_impact_color("DXY", -0.3) == _regime_impact_color("S&P 500", 0.6)
+        assert _session_aware_dashboard_label("S&P 500") == "S&P 500 [US]"
+        assert _session_aware_dashboard_label("Hang Seng Index") == "HSI [HK]"
 
         catalyst_radar_path = os.path.join(chart_dir, "test_catalyst_radar.png")
         catalyst_meta = generate_catalyst_radar(bundle, catalyst_radar_path)
@@ -301,7 +335,8 @@ def main():
         assert os.path.exists(catalyst_radar_path)
         radar_payload = build_catalyst_radar_rows(bundle)
         assert radar_payload["rows"]
-        assert radar_payload["counts"]["confirmed"] >= 1
+        assert radar_payload["counts"]["window"] >= 1
+        assert all(item["timing_confidence"] != "confirmed" for item in radar_payload["all_rows"])
 
         daily_chart_path = os.path.join(chart_dir, "test_daily_one_chart.png")
         daily_meta = generate_daily_one_chart(bundle, daily_chart_path)

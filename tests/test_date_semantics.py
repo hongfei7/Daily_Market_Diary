@@ -98,6 +98,8 @@ def test_report_mode_keyed_on_briefing_day() -> None:
     assert monday["week_start"] == "2026-08-24"
     assert monday["week_end"] == "2026-08-28"
     assert monday["last_hk_trading_day"] == "2026-08-21"
+    assert monday["target_hk_session"] == "2026-08-24"
+    assert monday["next_hk_trading_day"] == "2026-08-25"
 
     thursday = build_report_mode("2026-04-16", config)
     assert thursday["mode"] == "trading_daily"
@@ -106,6 +108,8 @@ def test_report_mode_keyed_on_briefing_day() -> None:
     saturday = build_report_mode("2026-04-18", config)
     assert saturday["mode"] == "trading_daily"
     assert saturday["last_hk_trading_day"] == "2026-04-17"
+    assert saturday["target_hk_session"] == "2026-04-20"
+    assert saturday["next_hk_trading_day"] == "2026-04-20"
 
 
 def test_holiday_modes() -> None:
@@ -117,6 +121,7 @@ def test_holiday_modes() -> None:
     easter_monday = build_report_mode("2026-04-06", config)
     assert easter_monday["mode"] == "holiday_event_watch"
     assert easter_monday["last_hk_trading_day"] == "2026-04-02"
+    assert easter_monday["target_hk_session"] == "2026-04-07"
 
     reopen = build_report_mode("2026-04-07", config)
     assert reopen["mode"] == "holiday_reopen_playbook"

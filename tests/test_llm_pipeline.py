@@ -113,6 +113,7 @@ def main() -> None:
     )
 
     seen_tasks = []
+    leak_identifier = False
 
     def fake_runner(task_name, context, prompt):
         seen_tasks.append(task_name)
@@ -149,7 +150,11 @@ def main() -> None:
             },
             "final_framing": {
                 "one_line_market_pulse": "Lower yields and firm AI sentiment left the overnight setup mildly constructive for Hong Kong.",
-                "thinking_note": "Treat the opening tone as promising but still conditional on local follow-through.",
+                "thinking_note": (
+                    "This follows attribution_v1 without leaking it."
+                    if leak_identifier
+                    else "Treat the opening tone as promising but still conditional on local follow-through."
+                ),
                 "risk_check": "A rebound in yields or a stronger dollar could quickly weaken the setup.",
                 "interview_answer": "The setup is constructive but not one-way. I would watch Hong Kong growth leadership for confirmation.",
             },
@@ -169,6 +174,11 @@ def main() -> None:
     assert llm_sections["theme_paragraph"]
     assert llm_sections["selected_news"][0]["headline"] == "AI demand remains firm"
     assert llm_sections["task_meta"]["tasks"]["final_framing"]["status"] == "ok"
+
+    leak_identifier = True
+    sanitized = generate_llm_sections(bundle=bundle, config=config, cache_dir="", runner=fake_runner)
+    assert "attribution_v1" not in sanitized["thinking_note"].lower()
+    assert "deterministic driver decomposition" in sanitized["thinking_note"].lower()
 
     weekly_bundle = build_professional_bundle(
         report_date="2026-04-18",
