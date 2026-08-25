@@ -79,6 +79,7 @@
       }
     }
   },
+  "chart_path": "signal_performance_2026-08-26.png",
   "data_quality": {
     "active_signal_dates": 86,
     "conflicts": [
@@ -119,6 +120,7 @@
     "observations": 69,
     "signals": 86
   },
+  "ledger_path": "performance/signal_ledger.json",
   "methodology": {
     "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",
     "horizons_sessions": [
@@ -137,6 +139,8 @@
     "signal": "Published deterministic risk regime mapped to long (+1), neutral (0), or short (-1).",
     "transaction_cost_bps": 10.0
   },
+  "rel_path": "charts/signal_performance_2026-08-26.png",
   "schema_version": "signal-performance-v1",
-  "status": "exploratory_with_caveats"
+  "status": "exploratory_with_caveats",
+  "summary_path": "performance/performance_summary.json"
 }
