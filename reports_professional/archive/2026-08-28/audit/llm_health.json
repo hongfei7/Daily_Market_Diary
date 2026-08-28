@@ -1,0 +1,56 @@
+{
+  "dominant_failure_class": "",
+  "failed": 0,
+  "failure_class_by_task": {},
+  "failures_by_class": {},
+  "read": "7/7 tasks succeeded (100%).",
+  "schema_version": "llm-health-v1",
+  "skipped": 0,
+  "succeeded": 7,
+  "success_rate_pct": 100.0,
+  "tasks_total": 7,
+  "token_budget_by_task": {
+    "company_commentary": {
+      "budget_used_pct": 24.2,
+      "completion_tokens": 871,
+      "max_tokens": 3600,
+      "reasoning_tokens": null
+    },
+    "final_framing": {
+      "budget_used_pct": 8.0,
+      "completion_tokens": 255,
+      "max_tokens": 3200,
+      "reasoning_tokens": null
+    },
+    "hk_review": {
+      "budget_used_pct": 18.4,
+      "completion_tokens": 661,
+      "max_tokens": 3600,
+      "reasoning_tokens": 0
+    },
+    "macro_interpretation": {
+      "budget_used_pct": 15.5,
+      "completion_tokens": 496,
+      "max_tokens": 3200,
+      "reasoning_tokens": null
+    },
+    "news_selection": {
+      "budget_used_pct": 16.0,
+      "completion_tokens": 576,
+      "max_tokens": 3600,
+      "reasoning_tokens": null
+    },
+    "overnight_review": {
+      "budget_used_pct": 18.0,
+      "completion_tokens": 647,
+      "max_tokens": 3600,
+      "reasoning_tokens": 0
+    },
+    "theme_deep_dive": {
+      "budget_used_pct": 14.0,
+      "completion_tokens": 559,
+      "max_tokens": 4000,
+      "reasoning_tokens": null
+    }
+  }
+}
