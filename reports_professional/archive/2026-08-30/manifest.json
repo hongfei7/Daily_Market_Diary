@@ -1,0 +1,64 @@
+{
+  "archive_id": "5a149b1cbc1bd78d04d2ad4ef9af7e3b48a8472825954b7459333c0a01f68290",
+  "files": [
+    {
+      "path": "audit/llm_health.json",
+      "sha256": "19356c821fd1b8114de4c80d109de12b5145bc90579ef550321b3f4d5233402d",
+      "size_bytes": 1362
+    },
+    {
+      "path": "audit/performance_summary.json",
+      "sha256": "430401ff5c76a045d099e45c0f12c5a9d34c0c75e44f9d329d1b31331bfa4cd5",
+      "size_bytes": 6542
+    },
+    {
+      "path": "audit/prose_guard.json",
+      "sha256": "ddb0536cb0339a9c1a935430ce3d75555635fa5945be135020e6b462d3718dec",
+      "size_bytes": 350
+    },
+    {
+      "path": "audit/source_health.json",
+      "sha256": "b03de0ac5475042ba84c7be32945d09b1ccae18a0dc5aa706e3d52850f6929bf",
+      "size_bytes": 6167
+    },
+    {
+      "path": "charts/ai_tmt_chain_2026-08-30.png",
+      "sha256": "2330bf639db5c342087b3eba81f4743e2b1bb388eada7b1824af863397cda284",
+      "size_bytes": 101121
+    },
+    {
+      "path": "charts/catalyst_radar_2026-08-30.png",
+      "sha256": "ed64f48a8b6a2b1d9bbf3baa1c14a14b539d9df5c3efd37d1b3e467ae798bc04",
+      "size_bytes": 207818
+    },
+    {
+      "path": "charts/daily_one_chart_2026-08-30.png",
+      "sha256": "6373668fdd292c6ac9de267ea06855bf249bcc6420100ec25f33dee56b88726e",
+      "size_bytes": 204774
+    },
+    {
+      "path": "charts/dashboard_2026-08-30.png",
+      "sha256": "73380888c7f33a61d16e8d680e864f49108e165dffe60741cb14bc02c1eb7b9d",
+      "size_bytes": 236094
+    },
+    {
+      "path": "charts/hk_trend_pack_2026-08-30.png",
+      "sha256": "5ee4488c552234df4970bf03444ad6d5960219aef884fdf4e27247279fce16a9",
+      "size_bytes": 343901
+    },
+    {
+      "path": "morning_briefing.html",
+      "sha256": "287505ec465f56852f4bc3878568398a0fd383d5406e1b996df2bf3fdcab71fd",
+      "size_bytes": 77109
+    },
+    {
+      "path": "morning_briefing.md",
+      "sha256": "f1dbf6309b45af4fcacd0135914f907741a8a9f1e5125806842a506dca094013",
+      "size_bytes": 39243
+    }
+  ],
+  "immutability": "Published payload files are append-only. A conflicting rerun must use a new report date.",
+  "manifest_scope": "README.md is generated navigation and is intentionally excluded from payload hashes.",
+  "report_date": "2026-08-30",
+  "schema_version": "report-archive-manifest-v1"
+}

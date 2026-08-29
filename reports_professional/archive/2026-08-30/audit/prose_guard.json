@@ -1,0 +1,17 @@
+{
+  "by_rule": {
+    "severed_list": 1
+  },
+  "findings": [
+    {
+      "detail": "Sentence ends mid-enumeration",
+      "line": 319,
+      "rule": "severed_list",
+      "text": "Desk read. Weekly review for Aug 24 - 28, 2026."
+    }
+  ],
+  "read": "1 prose defect(s) detected: 1 severed_list.",
+  "score": 80.0,
+  "status": "warning",
+  "total": 1
+}
