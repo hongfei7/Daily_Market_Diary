@@ -1,0 +1,24 @@
+{
+  "by_rule": {
+    "sentence_fragment": 1,
+    "unbalanced_bracket": 1
+  },
+  "findings": [
+    {
+      "detail": "Unbalanced parenthesis",
+      "line": 129,
+      "rule": "unbalanced_bracket",
+      "text": "4. Tariffs Could Bring Canada Auto \"To Its Knees\" (Trump 50% tariff threat on Canadian"
+    },
+    {
+      "detail": "Sentence ends on a function word",
+      "line": 155,
+      "rule": "sentence_fragment",
+      "text": "Coverage caveat. 3033.HK ETF was stale (2 trading days old). Those names are excluded from the averages above."
+    }
+  ],
+  "read": "2 prose defect(s) detected: 1 sentence_fragment, 1 unbalanced_bracket.",
+  "score": 60.0,
+  "status": "warning",
+  "total": 2
+}
