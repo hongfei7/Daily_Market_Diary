@@ -1,0 +1,17 @@
+{
+  "by_rule": {
+    "unbalanced_bracket": 1
+  },
+  "findings": [
+    {
+      "detail": "Unbalanced parenthesis",
+      "line": 223,
+      "rule": "unbalanced_bracket",
+      "text": "Whether the unverified China NBS and Caixin Manufacturing PMI prints are officially released and how H-share cyclicals (machinery, building"
+    }
+  ],
+  "read": "1 prose defect(s) detected: 1 unbalanced_bracket.",
+  "score": 80.0,
+  "status": "warning",
+  "total": 1
+}
