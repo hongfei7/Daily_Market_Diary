@@ -1,0 +1,59 @@
+{
+  "archive_id": "eac7aff209ab49931917d18ab7a673a77c161422d8c1c6d225832d4f231dccf4",
+  "files": [
+    {
+      "path": "audit/llm_health.json",
+      "sha256": "c425acc8edfaee63553c5ea765cd042f173db2b37aedcf6843171486176e9374",
+      "size_bytes": 1356
+    },
+    {
+      "path": "audit/performance_summary.json",
+      "sha256": "746cff65ee4499e18fb72f7a4db80648be363217cf73c8e651a195a09cbe82a0",
+      "size_bytes": 6545
+    },
+    {
+      "path": "audit/prose_guard.json",
+      "sha256": "a49205bc68c7b40d1c6048dfa73a1e9f2aa997a649fe01af3a458d4c208c58b0",
+      "size_bytes": 150
+    },
+    {
+      "path": "audit/source_health.json",
+      "sha256": "dd9e69427cbc76984f2978bd07a6aef0da13a9912c209df2affae017fe01bf29",
+      "size_bytes": 6167
+    },
+    {
+      "path": "charts/ai_tmt_chain_2026-09-01.png",
+      "sha256": "3d2d4dff287de86684601037dc6fcc991faa83ce27848be728bc9a25bf7a4576",
+      "size_bytes": 104712
+    },
+    {
+      "path": "charts/catalyst_radar_2026-09-01.png",
+      "sha256": "53f2755e862fda22917a0fb2b1342aaaca23e02d6cc1747dd9ba26f0432fd90d",
+      "size_bytes": 206679
+    },
+    {
+      "path": "charts/daily_one_chart_2026-09-01.png",
+      "sha256": "66b973fb12c8d7053c2453de177dbb4f63b9f169bafd7a41e0c368880db332f7",
+      "size_bytes": 204407
+    },
+    {
+      "path": "charts/dashboard_2026-09-01.png",
+      "sha256": "8249cb4c685ff565043fe166b2cb718cd0b38c70bc5e4939c767339047f1c985",
+      "size_bytes": 236961
+    },
+    {
+      "path": "morning_briefing.html",
+      "sha256": "b6d6ef40e8a9685cb21ffb1bb581e5a03084fad94c7cbd8f8ea3e2e1c616925d",
+      "size_bytes": 65350
+    },
+    {
+      "path": "morning_briefing.md",
+      "sha256": "7fa3f4fe47163d86ac1dc9efbcf5266ad947d57b310a085422b1ae9b9c32332c",
+      "size_bytes": 31018
+    }
+  ],
+  "immutability": "Published payload files are append-only. A conflicting rerun must use a new report date.",
+  "manifest_scope": "README.md is generated navigation and is intentionally excluded from payload hashes.",
+  "report_date": "2026-09-01",
+  "schema_version": "report-archive-manifest-v1"
+}
