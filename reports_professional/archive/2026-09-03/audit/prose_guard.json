@@ -1,0 +1,29 @@
+{
+  "by_rule": {
+    "unbalanced_bracket": 3
+  },
+  "findings": [
+    {
+      "detail": "Unbalanced parenthesis",
+      "line": 49,
+      "rule": "unbalanced_bracket",
+      "text": "Equal-weighted average across 14 A/H pairs that resolved today. Composition varies by day, so the level is not comparable with prior reports (fixed basket incom"
+    },
+    {
+      "detail": "Unbalanced parenthesis",
+      "line": 49,
+      "rule": "unbalanced_bracket",
+      "text": "| AH premium index | 38.83% | Live public | Yahoo \\| 2026-09-02 | Equal-weighted average across 14 A/H pairs that resolved today. Composition varies by day, so "
+    },
+    {
+      "detail": "Unbalanced parenthesis",
+      "line": 131,
+      "rule": "unbalanced_bracket",
+      "text": "5. China NBS and Caixin Manufacturing PMI prints for August (expected window"
+    }
+  ],
+  "read": "3 prose defect(s) detected: 3 unbalanced_bracket.",
+  "score": 40.0,
+  "status": "warning",
+  "total": 3
+}

@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HK Morning Market Brief | 2026-09-03</title>
+<style>
+  :root {
+    --ink: #101114;
+    --navy: #18364a;
+    --blue: #176b92;
+    --muted: #5f666b;
+    --line: #d9dcdd;
+    --paper: #ffffff;
+    --warm: #f4f2ed;
+    --soft: #f6f7f7;
+    --supportive: #176b92;
+    --adverse: #9a5a21;
+  }
+  * { box-sizing: border-box; }
+  html { background: #efefec; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial,
+                 sans-serif;
+    color: var(--ink); line-height: 1.62; max-width: 1360px; margin: 0 auto;
+    padding: 0 44px 64px; background: var(--paper); font-size: 15px;
+    -webkit-font-smoothing: antialiased; width: 100%; min-width: 0;
+  }
+  h1, h2, h3, h4, h5, h6 { color: var(--ink); letter-spacing: -.025em; }
+  h1 { font-size: 32px; line-height: 1.12; margin: 42px 0 18px; }
+  h2 { font-size: 30px; line-height: 1.14; margin: 0 0 26px; padding-top: 18px; border-top: 5px solid var(--ink); }
+  h3 { font-size: 21px; line-height: 1.26; margin: 38px 0 14px; padding-left: 12px; border-left: 3px solid var(--blue); }
+  h4 { font-size: 16px; margin: 28px 0 10px; color: var(--navy); letter-spacing: -.01em; }
+  h5, h6 { font-size: 15px; margin: 22px 0 8px; }
+  p { margin: 0 0 13px; }
+  blockquote {
+    border-left: 3px solid var(--blue); padding: 13px 17px; margin: 18px 0 24px;
+    background: var(--soft); color: #374047; font-size: 14px;
+  }
+  blockquote p:last-child { margin-bottom: 0; }
+  .report-shell { border-top: 9px solid var(--ink); }
+  .report-masthead { padding: 24px 0 34px; border-bottom: 1px solid var(--line); }
+  .masthead-line {
+    display: flex; justify-content: space-between; gap: 20px; align-items: baseline;
+    padding-bottom: 19px; border-bottom: 1px solid var(--ink);
+  }
+  .report-wordmark, .issue-label {
+    margin: 0; font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
+  }
+  .report-wordmark { color: var(--blue); }
+  .issue-label { color: var(--muted); letter-spacing: .11em; }
+  .masthead-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 54px; padding-top: 34px; }
+  .report-eyebrow { margin: 0 0 11px; color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+  .report-masthead h1 { margin: 0; max-width: 820px; font-size: 48px; font-weight: 720; line-height: 1.02; }
+  .report-deck {
+    max-width: 900px; margin: 24px 0 0; font-size: 24px; font-weight: 500;
+    line-height: 1.38; letter-spacing: -.02em; color: #2e3438;
+  }
+  .issue-facts { margin: 2px 0 0; padding: 0 0 0 20px; border-left: 1px solid var(--line); }
+  .issue-facts div { padding: 0 0 14px; margin: 0 0 14px; border-bottom: 1px solid var(--line); }
+  .issue-facts div:last-child { margin-bottom: 0; border-bottom: 0; }
+  .issue-facts dt { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  .issue-facts dd { margin: 4px 0 0; color: var(--ink); font-size: 13px; font-weight: 700; line-height: 1.35; }
+  .reading-path { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 31px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .reading-path li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; margin: 0; padding: 14px 18px 14px 0; border-right: 1px solid var(--line); }
+  .reading-path li:last-child { border-right: 0; padding-left: 18px; }
+  .reading-path li:nth-child(2) { padding-left: 18px; }
+  .reading-path b { color: var(--blue); font-size: 11px; }
+  .reading-path span { display: block; font-size: 12px; font-weight: 750; line-height: 1.2; }
+  .reading-path small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+  .report-grid { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 58px; align-items: start; padding-top: 34px; }
+  .report-toc { position: sticky; top: 18px; padding-top: 8px; }
+  .report-toc-title { padding-bottom: 9px; border-bottom: 2px solid var(--ink); font-size: 9px; font-weight: 800; color: var(--ink); letter-spacing: .14em; text-transform: uppercase; }
+  .report-toc a { display: block; margin-top: 11px; color: #4e555a; font-size: 11px; line-height: 1.35; text-decoration: none; }
+  .report-toc a:hover { color: var(--blue); }
+  .mobile-toc { display: none; }
+  .report-content { min-width: 0; max-width: 990px; }
+  .report-content > h1 { display: none; }
+  .report-section { margin: 0 0 58px; scroll-margin-top: 18px; }
+  .section-executive-summary > ul {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
+    padding: 0; margin: 0; list-style: none;
+  }
+  .section-executive-summary > ul > li {
+    margin: 0; padding: 14px 0 0; border-top: 3px solid var(--blue); color: #353c41;
+  }
+  .section-executive-summary > ul > li strong { display: block; margin-bottom: 7px; color: var(--ink); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
+  .section-visual-dashboard { padding: 24px 26px 2px; background: var(--warm); }
+  .section-visual-dashboard h2 { border-top-color: var(--blue); }
+  [class*="section-optional-appendix-traceability-and-performance"],
+  .section-traceable-appendix,
+  .section-supplementary-visual-appendix { padding: 28px 30px; background: var(--soft); }
+  .table-shell { width: 100%; margin: 18px 0 26px; overflow-x: auto; border-top: 2px solid var(--ink); -webkit-overflow-scrolling: touch; }
+  .figure-shell { width: 100%; max-width: 100%; min-width: 0; margin: 22px 0 30px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; margin: 0; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  th { background: var(--paper); color: var(--ink); padding: 10px 10px; text-align: left; font-size: 10px; letter-spacing: .055em; text-transform: uppercase; font-weight: 800; border-bottom: 1px solid #9ea4a7; vertical-align: bottom; }
+  td { padding: 10px; border-bottom: 1px solid #e3e4e4; vertical-align: top; }
+  tbody tr:hover td { background: #f7f7f5; }
+  th:first-child, td:first-child { font-weight: 700; }
+  th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) { font-variant-numeric: tabular-nums; }
+  .company-event-monitor { margin: 20px 0 30px; }
+  .event-monitor-summary {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: center;
+    padding: 20px 22px; background: var(--warm); border-top: 3px solid var(--navy); border-bottom: 1px solid var(--line);
+  }
+  .event-summary-copy { min-width: 0; }
+  .event-kicker { display: block; margin-bottom: 5px; color: var(--blue); font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+  .event-summary-copy h4 { margin: 0; color: var(--ink); font-size: 17px; line-height: 1.34; }
+  .event-summary-copy p { margin: 7px 0 0; color: var(--muted); font-size: 11px; }
+  .event-stats { display: grid; grid-template-columns: repeat(3, 84px); border-left: 1px solid #cfd1d0; }
+  .event-stats div { min-width: 0; padding: 3px 12px; border-right: 1px solid #cfd1d0; }
+  .event-stats strong { display: block; font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .event-stats span { display: block; margin-top: 6px; color: var(--muted); font-size: 8px; font-weight: 750; letter-spacing: .07em; line-height: 1.25; text-transform: uppercase; }
+  .event-card-list { display: grid; gap: 12px; margin-top: 14px; }
+  .event-card { position: relative; padding: 16px 18px 15px 20px; border: 1px solid var(--line); border-left: 4px solid #8b9398; background: var(--paper); }
+  .event-card.priority-portfolio { border-left-color: #8d2e24; }
+  .event-card.priority-high { border-left-color: var(--adverse); }
+  .event-card.priority-review { border-left-color: var(--blue); }
+  .event-card.priority-prepare { border-left-color: var(--blue); }
+  .event-card-meta { display: flex; flex-wrap: wrap; gap: 7px 13px; align-items: center; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
+  .event-card-meta time { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .event-priority { padding: 2px 7px; border: 1px solid currentColor; color: var(--navy); }
+  .priority-portfolio .event-priority { color: #8d2e24; }
+  .priority-high .event-priority { color: var(--adverse); }
+  .priority-review .event-priority { color: var(--blue); }
+  .priority-prepare .event-priority { color: var(--blue); }
+  .event-card h5 { margin: 10px 0 7px; font-size: 16px; line-height: 1.25; }
+  .event-fact { margin: 0; color: #252b2f; font-size: 13px; font-weight: 600; line-height: 1.48; }
+  .event-drivers { margin: 8px 0 0; color: #4f585e; font-size: 11px; line-height: 1.5; }
+  .event-drivers span { margin-right: 7px; color: var(--ink); font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .event-read-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 13px; padding-top: 12px; border-top: 1px solid #e2e3e2; }
+  .event-read-grid span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 8px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+  .event-read-grid p { margin: 0; color: #3b4348; font-size: 11px; line-height: 1.45; }
+  .event-source { display: inline-block; margin-top: 11px; font-size: 10px; font-weight: 750; text-decoration: none; }
+  .event-source-muted { color: var(--muted); }
+  .event-monitor-empty { padding: 18px 20px; border: 1px solid var(--line); border-left: 4px solid #8b9398; background: var(--soft); }
+  .event-monitor-empty strong { font-size: 13px; }
+  .event-monitor-empty p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+  .event-coverage-note { margin: 12px 0 0; padding: 10px 12px; border-left: 2px solid #9da4a7; color: var(--muted); background: #fafafa; font-size: 10.5px; line-height: 1.45; }
+  .move-positive { color: var(--supportive); font-weight: 750; white-space: nowrap; }
+  .move-negative { color: var(--adverse); font-weight: 750; white-space: nowrap; }
+  img { display: block; max-width: 100%; height: auto; margin: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .section-visual-dashboard .figure-shell { margin-top: 16px; }
+  .section-visual-dashboard img { border: 0; }
+  code { background: #f0f1f1; padding: 2px 5px; font-family: "SF Mono", "Fira Code", "Consolas", monospace; font-size: 12px; }
+  pre { background: var(--soft); padding: 14px; overflow-x: auto; font-size: 12px; line-height: 1.5; border-left: 3px solid var(--navy); }
+  pre code { background: none; padding: 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0 17px; }
+  li { margin: 6px 0; }
+  strong { color: var(--ink); }
+  a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  hr { border: none; border-top: 1px solid var(--line); margin: 34px 0; }
+  .report-footer { margin-top: 22px; padding: 23px 0 8px; border-top: 5px solid var(--ink); font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 18px; }
+  @media (max-width: 860px) {
+    body { padding: 0 18px 38px; font-size: 14px; }
+    p, li, dd { overflow-wrap: anywhere; }
+    .report-shell { border-top-width: 6px; }
+    .report-masthead { padding: 17px 0 24px; }
+    .masthead-line { display: block; padding-bottom: 13px; }
+    .issue-label { margin-top: 7px; }
+    .report-wordmark, .issue-label { font-size: 8px; }
+    .masthead-grid { display: block; padding-top: 24px; }
+    .report-masthead h1 { font-size: 36px; }
+    .report-deck { margin-top: 18px; font-size: 19px; line-height: 1.42; }
+    .issue-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; margin-top: 24px; padding: 0; border-left: 0; border-top: 1px solid var(--line); }
+    .issue-facts div { padding-top: 11px; margin-bottom: 0; }
+    .reading-path { display: block; margin-top: 22px; }
+    .reading-path li { display: block; padding: 11px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+    .reading-path li:nth-child(2), .reading-path li:last-child { padding-left: 0; }
+    .reading-path li:last-child { border-bottom: 0; }
+    .reading-path b { display: none; }
+    .reading-path span { font-size: 10px; }
+    .reading-path small { font-size: 9px; }
+    .report-grid { display: block; padding-top: 20px; }
+    .report-toc { display: none; }
+    .mobile-toc { display: block; margin: 0 0 30px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--line); }
+    .mobile-toc summary { padding: 12px 0; cursor: pointer; color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .mobile-toc a { display: block; padding: 8px 0; color: #4e555a; font-size: 12px; text-decoration: none; }
+    .mobile-toc nav { padding: 0 0 12px; }
+    .report-content, .report-section, .section-executive-summary > ul > li { min-width: 0; max-width: 100%; }
+    .report-section { margin-bottom: 45px; }
+    h2 { font-size: 25px; margin-bottom: 21px; padding-top: 14px; border-top-width: 4px; }
+    h3 { font-size: 18px; margin-top: 31px; }
+    .section-executive-summary > ul { display: block; }
+    .section-executive-summary > ul > li { margin-bottom: 20px; }
+    .section-visual-dashboard,
+    [class*="section-optional-appendix-traceability-and-performance"],
+    .section-traceable-appendix,
+    .section-supplementary-visual-appendix { margin-left: -18px; margin-right: -18px; padding: 24px 18px 2px; }
+    table { min-width: 660px; font-size: 12px; }
+    /* Portrait decision visuals should fit the phone.  Only genuinely wide
+       analytical charts use a swipeable canvas; the previous rule did the
+       reverse and forced the dashboard itself to 900px. */
+    .figure-shell img { width: 100%; max-width: 100%; }
+    .figure-ai-tmt-read-through img,
+    .figure-daily-one-chart img,
+    .figure-signal-performance img,
+    .figure-hong-kong-trend-pack img { width: 760px; max-width: none; }
+    th, td { padding: 9px 8px; }
+    .event-monitor-summary { display: block; padding: 17px 16px; }
+    .event-summary-copy h4 { font-size: 15px; }
+    .event-stats { grid-template-columns: repeat(3, 1fr); margin-top: 15px; padding-top: 13px; border-top: 1px solid #cfd1d0; border-left: 0; }
+    .event-stats div { padding: 0 9px; }
+    .event-stats div:first-child { padding-left: 0; }
+    .event-stats div:last-child { padding-right: 0; border-right: 0; }
+    .event-stats strong { font-size: 19px; }
+    .event-card { padding: 15px 14px 14px 16px; }
+    .event-card-meta time { width: 100%; margin-left: 0; }
+    .event-read-grid { display: block; }
+    .event-read-grid div + div { margin-top: 10px; }
+    .report-footer { display: block; }
+    .report-footer span { display: block; margin-top: 5px; }
+  }
+  @media (max-width: 430px) {
+    body { padding-left: 14px; padding-right: 14px; }
+    .report-masthead h1 { font-size: 32px; }
+    .report-deck { font-size: 18px; }
+    .section-visual-dashboard,
+    [class*="section-optional-appendix-traceability-and-performance"],
+    .section-traceable-appendix,
+    .section-supplementary-visual-appendix { margin-left: -14px; margin-right: -14px; padding-left: 14px; padding-right: 14px; }
+  }
+  @media print {
+    @page { size: A4 portrait; margin: 17mm 15mm 18mm; }
+    :root {
+      --ink: #111820; --navy: #18364a; --blue: #176b92;
+      --muted: #505960; --line: #bfc4c7; --paper: #ffffff;
+      --warm: #ffffff; --soft: #ffffff;
+    }
+    html { background: #fff; }
+    body {
+      max-width: none; padding: 0; margin: 0; font-size: 9.6pt;
+      line-height: 1.46; color: #111820; print-color-adjust: exact;
+      -webkit-print-color-adjust: exact; orphans: 3; widows: 3;
+    }
+    body.print-core [class*="section-optional-appendix-traceability-and-performance"],
+    body.print-core .section-supplementary-visual-appendix { display: none; }
+    .report-shell { border-top-width: 4pt; }
+    .report-masthead { padding: 7mm 0 5mm; }
+    .masthead-line { padding-bottom: 4mm; }
+    .masthead-grid { grid-template-columns: minmax(0, 1fr) 48mm; gap: 10mm; padding-top: 5mm; }
+    .report-masthead h1 { font-size: 28pt; }
+    .report-deck { margin-top: 3mm; font-size: 12.5pt; line-height: 1.32; }
+    .issue-facts { padding-left: 5mm; }
+    .reading-path { display: none; }
+    .report-grid { display: block; padding-top: 7mm; }
+    .report-toc, .mobile-toc { display: none; }
+    .report-content { max-width: none; }
+    .report-section { margin-bottom: 10mm; break-inside: auto; }
+    .section-visual-dashboard,
+    [class*="section-optional-appendix-traceability-and-performance"],
+    .section-traceable-appendix,
+    .section-supplementary-visual-appendix { padding: 0; background: #fff; }
+    .section-visual-dashboard,
+    [class*="section-optional-appendix-traceability-and-performance"],
+    .section-traceable-appendix,
+    .section-supplementary-visual-appendix { margin-left: 0; margin-right: 0; }
+    .section-visual-dashboard,
+    .section-layer-1-scan-5-min,
+    .section-layer-1-weekly-scan-5-min,
+    .section-layer-1-reset-5-min,
+    .section-layer-2-deep-read,
+    .section-layer-2-core-research-20-30-min,
+    [class*="section-optional-appendix-traceability-and-performance"] { break-before: page; }
+    h1 { font-size: 23pt; }
+    h2 { font-size: 18pt; margin: 0 0 6mm; padding-top: 3mm; border-top-width: 3pt; }
+    h3 { font-size: 13pt; margin: 8mm 0 3mm; padding-left: 3mm; }
+    h4 { font-size: 10.5pt; margin: 5mm 0 2mm; }
+    h2, h3, h4 { break-after: avoid-page; }
+    p, li { orphans: 3; widows: 3; }
+    blockquote, .event-card, .event-monitor-summary { break-inside: avoid-page; }
+    .section-executive-summary > ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5mm 8mm; }
+    .section-layer-1-scan-5-min > ol:last-child,
+    .section-layer-1-weekly-scan-5-min > ol:last-child,
+    .section-layer-1-reset-5-min > ol:last-child {
+      columns: 2; column-gap: 8mm; column-rule: 0.3pt solid var(--line);
+    }
+    .section-layer-1-scan-5-min > ol:last-child > li,
+    .section-layer-1-weekly-scan-5-min > ol:last-child > li,
+    .section-layer-1-reset-5-min > ol:last-child > li { break-inside: avoid-page; padding-right: 3mm; }
+    .section-layer-1-scan-5-min h3,
+    .section-layer-1-weekly-scan-5-min h3,
+    .section-layer-1-reset-5-min h3 { margin: 4mm 0 2mm; }
+    .section-layer-1-scan-5-min .table-shell,
+    .section-layer-1-weekly-scan-5-min .table-shell,
+    .section-layer-1-reset-5-min .table-shell { margin: 2mm 0 4mm; }
+    .section-layer-1-scan-5-min table,
+    .section-layer-1-weekly-scan-5-min table,
+    .section-layer-1-reset-5-min table { font-size: 7.6pt; line-height: 1.25; }
+    .section-layer-1-scan-5-min th, .section-layer-1-scan-5-min td,
+    .section-layer-1-weekly-scan-5-min th, .section-layer-1-weekly-scan-5-min td,
+    .section-layer-1-reset-5-min th, .section-layer-1-reset-5-min td { padding: 1.5mm 1.6mm; }
+    .table-shell { overflow: visible; break-inside: auto; margin: 4mm 0 6mm; }
+    table { min-width: 0; font-size: 7.8pt; line-height: 1.32; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    tr { break-inside: avoid-page; }
+    th, td { padding: 2.1mm 1.8mm; }
+    tbody tr:hover td { background: transparent; }
+    .figure-shell { overflow: visible; break-inside: avoid-page; margin: 4mm 0 6mm; }
+    .figure-shell img { width: 100%; max-width: 180mm; max-height: 242mm; object-fit: contain; margin: 0 auto; }
+    .section-visual-dashboard h2 { margin-bottom: 3mm; }
+    .section-visual-dashboard .figure-shell { break-before: auto; break-after: auto; margin: 0 0 5mm; }
+    .section-visual-dashboard .figure-research-dashboard { break-after: page; }
+    .section-visual-dashboard p:has(+ .figure-catalyst-event-radar) {
+      break-before: page; break-after: avoid-page; margin: 0 0 3mm;
+      font-size: 13pt; color: var(--ink);
+    }
+    .section-visual-dashboard .figure-catalyst-event-radar { break-after: avoid-page; }
+    .section-visual-dashboard .figure-catalyst-event-radar + p { break-before: avoid-page; margin-top: 3mm; }
+    .figure-ai-tmt-read-through img,
+    .figure-daily-one-chart img,
+    .figure-signal-performance img,
+    .figure-hong-kong-trend-pack img { width: 100%; max-width: 180mm; }
+    .figure-ai-tmt-read-through,
+    .figure-daily-one-chart,
+    .figure-signal-performance,
+    .figure-hong-kong-trend-pack { break-after: avoid-page; }
+    .figure-ai-tmt-read-through + p,
+    .figure-daily-one-chart + p,
+    .figure-signal-performance + p,
+    .figure-hong-kong-trend-pack + p { break-before: avoid-page; break-after: avoid-page; }
+    .figure-ai-tmt-read-through + p + p,
+    .figure-daily-one-chart + p + p,
+    .figure-signal-performance + p + p,
+    .figure-hong-kong-trend-pack + p + p { break-before: avoid-page; }
+    .report-footer { display: none; }
+    a { color: #111820; text-decoration: none; }
+  }
+</style>
+</head>
+<body class="report-screen">
+<div class="report-shell">
+  <header class="report-masthead">
+    <div class="masthead-line">
+      <p class="report-wordmark">Hong Kong Market Intelligence</p>
+      <p class="issue-label">Daily research note · 2026-09-03</p>
+    </div>
+    <div class="masthead-grid">
+      <div>
+        <p class="report-eyebrow">Decision brief · Source-audited</p>
+        <h1>Morning Market Brief</h1>
+        <p class="report-deck">Semis led higher: SOXX +0.23%, NVDA +3.21%, TSMC +0.36%. HSI -0.93% and 3033.HK -1.41%.</p>
+      </div>
+      <dl class="issue-facts">
+        <div><dt>Edition</dt><dd>Trading Daily</dd></div>
+        <div><dt>Global through</dt><dd>2026-09-02</dd></div>
+        <div><dt>HK / China through</dt><dd>2026-09-02</dd></div>
+        <div><dt>Report quality</dt><dd>92.6/100</dd></div>
+      </dl>
+    </div>
+    <ol class="reading-path" aria-label="Commute reading path">
+      <li><b>01</b><div><span>Decision scan</span><small>5 minutes</small></div></li>
+      <li><b>02</b><div><span>Causal deep read</span><small>about 17 minutes</small></div></li>
+      <li><b>03</b><div><span>Evidence appendix</span><small>Optional</small></div></li>
+    </ol>
+  </header>
+  <div class="report-grid">
+    <nav class="report-toc" aria-label="Report sections">
+      <div class="report-toc-title">In this issue</div>
+      <a href="#executive-summary">Executive Summary</a><a href="#layer-1-scan-5-min">Layer 1 | Scan (5 min)</a><a href="#visual-dashboard">Visual Dashboard</a><a href="#layer-2-core-research-20-30-min">Layer 2 | Core Research (20-30 min)</a><a href="#layer-3-session-playbook-8-12-min">Layer 3 | Session Playbook (8-12 min)</a><a href="#optional-appendix-traceability-and-performance-10-15-min">Optional Appendix | Traceability and Performance (10-15 min)</a>
+    </nav>
+    <main class="report-content">
+      <details class="mobile-toc">
+        <summary>In this issue</summary>
+        <nav aria-label="Mobile report sections"><a href="#executive-summary">Executive Summary</a><a href="#layer-1-scan-5-min">Layer 1 | Scan (5 min)</a><a href="#visual-dashboard">Visual Dashboard</a><a href="#layer-2-core-research-20-30-min">Layer 2 | Core Research (20-30 min)</a><a href="#layer-3-session-playbook-8-12-min">Layer 3 | Session Playbook (8-12 min)</a><a href="#optional-appendix-traceability-and-performance-10-15-min">Optional Appendix | Traceability and Performance (10-15 min)</a></nav>
+      </details>
+      <h1>Morning Research Workbench | 2026-09-03</h1>
+<section class="report-section section-executive-summary"><h2 id="executive-summary">Executive Summary</h2>
+<ul>
+<li><strong>Did yesterday's call work?</strong> NO CALL - The 2026-09-02 report published no directional call because release was blocked on quality.</li>
+<li><strong>What changed overnight?</strong> Semis led higher: SOXX +0.23%, NVDA +3.21%, TSMC +0.36%. HSI -0.93% and 3033.HK -1.41%.</li>
+<li><strong>What it means for AI/TMT</strong> Style, not beta - Selective old-economy / H-share leadership, a 0.82pp spread. Treat banks, energy, telecoms, and SOE yield as the cleaner relative expression; growth beta still needs proof.</li>
+<li><strong>What to watch today</strong> Next scheduled catalyst: US Non-Farm Payrolls on 2026-09-04. Confirm if SMIC and Hua Hong open in the same direction as the overnight leg and hold it through the first hour; invalidate if they track HSCEI instead.</li>
+</ul>
+</section><section class="report-section section-layer-1-scan-5-min"><h2 id="layer-1-scan-5-min">Layer 1 | Scan (5 min)</h2>
+<h3 id="1-1-yesterday-s-call">1.1 Yesterday's Call</h3>
+<p><strong>Verdict: NO CALL.</strong> The 2026-09-02 report published no directional call because release was blocked on quality.</p>
+<p><strong>Recent record.</strong> 6 confirmed / 4 broken over the last 10 scoreable calls (60.0% hit rate). This is a directional close-to-close diagnostic, not a track record.</p>
+<h3 id="1-2-opening-decision-board">1.2 Opening Decision Board</h3>
+<p><strong>Global-to-Hong Kong signals</strong></p>
+<p><em>Decision-useful subset: each row states the implication and the next test. Descriptive secondary monitors are kept out of the five-minute scan.</em></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Signal</th>
+  <th>Last / move</th>
+  <th>Interpretation</th>
+  <th>Confirmation / invalidation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>S&amp;P 500</td>
+  <td>7,666.60 / <span class="move-positive">+0.46%</span></td>
+  <td>Broad US risk rose as volatility drained out of the tape, which sets the external floor Hong Kong opens against. Falling volatility confirms lower near-term stress.</td>
+  <td>Watch whether Nasdaq and offshore-China proxies move the same way.</td>
+</tr>
+<tr>
+  <td>Nasdaq 100</td>
+  <td>29,143.33 / <span class="move-positive">+0.23%</span></td>
+  <td>Growth lagged broad beta, warning that headline risk-on may not transmit cleanly to the 3033.HK ETF proxy.</td>
+  <td>3033.HK versus HSI leadership carries the read; rising yields would undo it.</td>
+</tr>
+<tr>
+  <td>Hang Seng Index</td>
+  <td>25,329.73 / <span class="move-negative">-0.93%</span></td>
+  <td>Broad beta fell with no single driver visible in today's fields.</td>
+  <td>Southbound participation decides whether this is investable or just a print.</td>
+</tr>
+<tr>
+  <td>Hang Seng TECH ETF (3033.HK)</td>
+  <td>4.4680 / <span class="move-negative">-1.41%</span></td>
+  <td>Hong Kong growth lagged, so broad-index strength is not yet a duration signal.</td>
+  <td>Needs a stable CNH and Southbound buying to become a duration signal.</td>
+</tr>
+<tr>
+  <td>Semiconductors (SOXX)</td>
+  <td>501.44 / <span class="move-positive">+0.23%</span></td>
+  <td>Semis moved with the Nasdaq, so the tape is broad rather than cycle-specific.</td>
+  <td>SMIC and Hua Hong at the open show whether it transmits to Hong Kong.</td>
+</tr>
+<tr>
+  <td>US 10Y</td>
+  <td>4.7960% / <span class="move-positive">+0.0bp</span></td>
+  <td>The yield proxy was stable and did not materially change the valuation backdrop.</td>
+  <td>Read it through 3033.HK relative performance, not the index level.</td>
+</tr>
+<tr>
+  <td>USD/CNH</td>
+  <td>6.7125 / <span class="move-negative">-0.08%</span></td>
+  <td>A stronger offshore renminbi supports the external-risk backdrop for Hong Kong equities.</td>
+  <td>FXI and Southbound flow decide whether this reaches Hong Kong equities.</td>
+</tr>
+<tr>
+  <td>VIX</td>
+  <td>15.20 / <span class="move-negative"><strong>-6.98%</strong></span></td>
+  <td>Lower implied volatility reduces near-term stress, but is supportive only if equity breadth confirms.</td>
+  <td>Falling volatility on narrowing breadth is a warning, not support.</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Secondary monitors retained in the source bundle: SMIC (0981.HK), CSI 300, China 10Y, CN-US 10Y spread, DXY, USD/HKD, Brent crude, COMEX gold, Copper.</em></p>
+<p><strong>Hong Kong local confirmation</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Check</th>
+  <th>Value</th>
+  <th>Status</th>
+  <th>Source / as of</th>
+  <th>Why it matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Main Board turnover vs 20D</td>
+  <td>0.86x | <span class="move-negative">-14%</span> vs 20D</td>
+  <td>Live local</td>
+  <td>HKEX | 2026-09-02</td>
+  <td>Trailing 20-session average turnover was HK$252.2bn.</td>
+</tr>
+<tr>
+  <td>Southbound / Northbound net flow</td>
+  <td>Southbound Net HK$4.1bn | turnover HK$82.7bn | Northbound Turnover RMB244.8bn | net not reported</td>
+  <td>Live local</td>
+  <td>HKEX Connect | 2026-09-02</td>
+  <td>Southbound net buy is calculated from HKEX disclosed buy and sell turnover.</td>
+</tr>
+<tr>
+  <td>Short-selling ratio</td>
+  <td>22.00%</td>
+  <td>Live local</td>
+  <td>HKEX | 2026-09-02</td>
+  <td>Official HKEX stock-level short-selling table, aggregated as a share of total market turnover.</td>
+</tr>
+<tr>
+  <td>AH premium index</td>
+  <td>38.83%</td>
+  <td>Live public</td>
+  <td>Yahoo | 2026-09-02</td>
+  <td>Equal-weighted average across 14 A/H pairs that resolved today. Composition varies by day, so the level is not comparable with prior reports (fixed basket incomplete [trimmed]</td>
+</tr>
+<tr>
+  <td>USD/HKD spot vs band</td>
+  <td>7.8407 | band 7.7500 to 7.8500</td>
+  <td>Live quote + local</td>
+  <td>Yahoo | 2026-09-02</td>
+  <td>Mid-band: 93 pips from the weak side and 907 pips from the strong side, so the peg is not an active constraint. Official Convertibility Undertakings define the linked-rate stress boundaries for USD/HKD.</td>
+</tr>
+<tr>
+  <td>HIBOR 1M</td>
+  <td>2.86%</td>
+  <td>Live local</td>
+  <td>HKMA | 2026-09-02</td>
+  <td>1M HIBOR is the cleanest quick read for Hong Kong funding conditions and equity-duration pressure.</td>
+</tr>
+<tr>
+  <td>Hong Kong leadership</td>
+  <td>Selective old-economy / H-share leadership</td>
+  <td>Proxy</td>
+  <td>HSI / HSCEI / 3033.HK ETF relative | 2026-09-02</td>
+  <td>Use HSI / HSCEI / 3033.HK ETF relative moves as the opening style read.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Risk state and evidence</strong></p>
+<p><strong>Composite risk score:</strong> <code>47.6/100</code> | <strong>Regime:</strong> <code>Mixed</code></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Component</th>
+  <th>Score impact</th>
+  <th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>US beta</td>
+  <td><span class="move-positive">+2.8</span></td>
+  <td>S&amp;P 500 <span class="move-positive">+0.46%</span></td>
+</tr>
+<tr>
+  <td>HK growth ETF proxy</td>
+  <td><span class="move-negative">-7.0</span></td>
+  <td>3033.HK ETF <span class="move-negative">-1.41%</span></td>
+</tr>
+<tr>
+  <td>Semis complex</td>
+  <td><span class="move-positive">+1.2</span></td>
+  <td>SOXX <span class="move-positive">+0.23%</span></td>
+</tr>
+<tr>
+  <td>Offshore China proxy</td>
+  <td><span class="move-positive">+2.8</span></td>
+  <td>FXI <span class="move-positive">+0.57%</span></td>
+</tr>
+<tr>
+  <td>Dollar pressure</td>
+  <td><span class="move-positive">+0.9</span></td>
+  <td>DXY <span class="move-negative">-0.09%</span></td>
+</tr>
+<tr>
+  <td>Volatility</td>
+  <td><span class="move-positive">+10</span></td>
+  <td>VIX <span class="move-negative">-6.98%</span></td>
+</tr>
+<tr>
+  <td>HK short-selling</td>
+  <td><span class="move-negative">-8</span></td>
+  <td>Short-selling ratio 22.00%</td>
+</tr>
+<tr>
+  <td>HK turnover</td>
+  <td><span class="move-negative">-5</span></td>
+  <td>Turnover 0.86x 20D</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Base 50 plus the component deltas above. Semis complex entered the score on 2026-08-22; earlier scores in the ledger exclude it.</em></p>
+<p><strong>Morning Checklist</strong></p>
+<ol>
+<li><strong>Mixed backdrop with USD softer, rates were not the dominant driver, and Nasdaq 100 outperformed FXI</strong>
+Overnight regime | Start by deciding whether the day is about Mixed conditions or a style pivot.</li>
+<li><strong>China NBS Manufacturing PMI (Past expected window (unverified))</strong>
+Macro / policy | Growth direction, cyclicals, and manufacturing-chain pricing | Industries: Machinery, Building materials, Industrials</li>
+<li><strong>China Caixin Manufacturing PMI (Past expected window (unverified))</strong>
+Macro / policy | Growth direction, cyclicals, and manufacturing-chain pricing | Industries: Machinery, Building materials, Industrials</li>
+<li><strong>US Non-Farm Payrolls (Upcoming)</strong>
+Macro / policy | Watch whether it changes the day's core market narrative | Industries: Market-wide</li>
+</ol>
+</section><section class="report-section section-visual-dashboard"><h2 id="visual-dashboard">Visual Dashboard</h2>
+<div class="figure-shell figure-research-dashboard"><img src="charts/dashboard_2026-09-03.png" alt="Research Dashboard" /></div>
+<p><strong>Catalyst &amp; Event Radar</strong></p>
+<div class="figure-shell figure-catalyst-event-radar"><img src="charts/catalyst_radar_2026-09-03.png" alt="Catalyst &amp; Event Radar" /></div>
+<p><strong>Chart read:</strong> No issuer/exchange-confirmed event date is populated; 3 reported or estimated timing item(s) and 10 undated trigger(s) remain explicit.</p>
+<p><em>Source: Public calendars, issuer disclosures and configured research watchlists</em></p>
+</section><section class="report-section section-layer-2-core-research-20-30-min"><h2 id="layer-2-core-research-20-30-min">Layer 2 | Core Research (20-30 min)</h2>
+<h3 id="2-1-global-to-hong-kong-transmission">2.1 Global-to-Hong Kong Transmission</h3>
+<p><strong>Market Setup</strong>
+<strong>Core tape.</strong> Prior-HK session (2 Sep) closed with the HSI -0.93% and HSCEI -0.59%, while the 3033.HK TECH proxy fell -1.41%.
+<strong>Main driver.</strong> The split signals that yesterday's Hong Kong drawdown was locally driven rather than a global risk-off impulse.
+<strong>HK relevance.</strong> Today's open (3 Sep) needs to test whether offshore China leadership confirms or whether HSCEI old-economy leadership persists with cleaner breadth.</p>
+<p><strong>Key Drivers</strong></p>
+<ul>
+<li>HK short-selling ratio at 22.00% (92nd pct of last 60 sessions) and turnover at 0.86x 20-day average confirm prior-HK weakness was supply-heavy and thin-liquidity rather than macro-driven.</li>
+<li>Offshore China proxy FXI +0.57% alongside a softer USD (-0.20% intraday) and USD/CNH -0.08% argues against a broad China risk-off read.</li>
+<li>AI capex narrative re-energised: NVDA +3.21% post HPE AI-server beat, SOXX +0.23%, TSMC ADR +0.36%, supporting HK AI supply-chain read-across but not enough to lift HK names in the prior session.</li>
+<li>Fed messaging split (Williams benign, Barr/Warsh hawkish) caps duration rally, limiting the USD-weakness tailwind for HK property and rate-sensitive yield names.</li>
+</ul>
+<p><strong>Hong Kong Read-Through</strong>
+<strong>Opening implication.</strong> For the 3 Sep open, watch whether HSCEI extends its leadership over 3033.HK with turnover above 0.86x 20D and short-selling ratio easing from 22.00%.
+<em>Hong Kong style leadership and flow confirmation are set out in the Hong Kong review below.</em></p>
+<p><strong>Watch Points</strong></p>
+<ul>
+<li>USD composite moved lower by -0.20pct intraday, with a 0.392pct range.</li>
+<li>Main turning points appeared around 2026-09-02 08:10 peak / 2026-09-02 08:35 peak / 2026-09-02 09:05 peak, suggesting event-driven repricing rather than a clean one-way USD move.</li>
+<li>The biggest cross-asset divergence was Nasdaq 100 versus FXI, a spread of 0.385pct.</li>
+<li>Gold moved +1.85pct intraday with a 2.062pct high-low range.</li>
+</ul>
+<p><strong>Curated overnight stories</strong></p>
+<ol>
+<li><hr />
+Why it matters: Defines the cross-asset backdrop for the 3 September HK open: weaker USD is a tailwind for HK property and offshore CNH assets.
+HK read-through: Supports HK property, insurers, and CNH-sensitive names; headwind for relative-performance trades that assume China internet catch-up. Watch HSCEI vs. NDX spread at the open.</li>
+<li><strong>HPE follows Dell with an AI-server earnings beat, with an analyst noting better profit</strong>
+Why it matters: Reinforces that AI server demand is broadening beyond hyperscalers into enterprise and sovereign buyers.
+HK read-through: Read-across to HK AI hardware / supply chain (foundry, HBM-adjacent packaging, power-cooling, EMS).</li>
+<li><strong>Fed messaging split: Williams attributes the yield surge to strong economic prospects</strong>
+Why it matters: Hawkish-dovish split at the Fed keeps the front end from rallying.
+HK read-through: Caps upside in HK property and high-dividend utilities; reinforces a barbell of growth (AI-linked) versus yield rather than a broad beta lift.</li>
+<li><strong>Aon to acquire USI to build a 'premiere middle-market platform'</strong>
+Why it matters: A material insurance brokerage consolidation in the US can reset valuation comps and prompt capital-return reactions across the global insurance and brokerage complex.
+HK read-through: Most relevant for HK-listed insurance leaders and brokers; secondary read-across to Aon-related HK distribution partners. Low direct China link.</li>
+<li><strong>China NBS and Caixin Manufacturing PMI prints for August (expected window</strong>
+Why it matters: These are the single most important data points for HK cyclicals today; the direction will set the tape for industrials, materials, and machinery at the 3 September open.
+HK read-through: Stronger prints support machinery, building materials, and industrials; weaker prints extend the defensive / AI-barbell stance. Note: we do not have verified actual values.</li>
+</ol>
+<p><strong>AI / TMT hand-off</strong></p>
+<div class="figure-shell figure-ai-tmt-read-through"><img src="charts/ai_tmt_chain_2026-09-03.png" alt="AI / TMT read-through" /></div>
+<p><strong>Overnight leg.</strong> The overnight semis leg was risk-on at +1.27% average (SOXX +0.23%, NVDA +3.21%, TSMC +0.36%).
+<strong>Hong Kong expression.</strong> SMIC, Hua Hong and Sunny Optical are best placed at the open, and 3033.HK should be tested before the Hang Seng Index.
+<strong>Observable test.</strong> Confirm if SMIC and Hua Hong open in the same direction as the overnight leg and hold it through the first hour; invalidate if they track HSCEI instead, which would mean local flow is overriding the global cycle.</p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Role in the chain</th>
+  <th>1D</th>
+  <th>Leg</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>SOXX</td>
+  <td>Semis complex</td>
+  <td><span class="move-positive">+0.23%</span></td>
+  <td>overnight</td>
+</tr>
+<tr>
+  <td>NVDA</td>
+  <td>AI capex narrative</td>
+  <td><span class="move-positive">+3.21%</span></td>
+  <td>overnight</td>
+</tr>
+<tr>
+  <td>TSMC</td>
+  <td>Foundry demand</td>
+  <td><span class="move-positive">+0.36%</span></td>
+  <td>overnight</td>
+</tr>
+<tr>
+  <td>SMIC</td>
+  <td>Leading-edge / domestic substitution</td>
+  <td><span class="move-negative">-0.87%</span></td>
+  <td>Hong Kong</td>
+</tr>
+<tr>
+  <td>Hua Hong</td>
+  <td>Mature-node pricing cycle</td>
+  <td><span class="move-negative">-2.81%</span></td>
+  <td>Hong Kong</td>
+</tr>
+<tr>
+  <td>Sunny Optical</td>
+  <td>Hardware and optics supply chain</td>
+  <td><span class="move-negative">-0.28%</span></td>
+  <td>Hong Kong</td>
+</tr>
+<tr>
+  <td>3033.HK ETF</td>
+  <td>Broad HK tech beta</td>
+  <td><span class="move-negative">-1.41%</span></td>
+  <td>Hong Kong</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Clock discipline.</strong> The Hong Kong rows are the prior cash-session close and predate the US overnight leg. Use them as the inherited local setup only; validate transmission on today's Hong Kong open, first hour and close.</p>
+<h3 id="2-2-hong-kong-local-tape-and-flow">2.2 Hong Kong Local Tape and Flow</h3>
+<p><strong>Local Tape Setup</strong>
+<strong>Local read.</strong> Prior-HK (2 Sep) was locally weak: HSI -0.93%, HSCEI -0.59%, 3033.HK TECH proxy -1.41% on 0.86x 20D turnover, with the 22.00% short-selling ratio flagging supply-heavy, thin-liquidation conditions rather than macro risk-off.
+<strong>Verification point.</strong> Overnight-US ran counter-direction (S&amp;P 500 +0.46%, Nasdaq 100 +0.23%, FXI +0.57%, DXY -0.09%), and Southbound net buy of HK$4.1bn on HK$82.7bn turnover shows onshore bid stayed selective into internet/AI names.
+<strong>Risk to watch.</strong> The split sets up a confirmation test: whether HSCEI can hold its relative lead over 3033.HK with cleaner breadth and easing short activity, or whether offshore-China leadership from FXI pulls HK growth back.</p>
+<p><strong>Style and Local Leadership</strong>
+<strong>Style call.</strong> Selective old-economy / H-share leadership.</p>
+<ul>
+<li><strong>Evidence:</strong> HSCEI beat 3033.HK by 0.82pp (-0.59% versus -1.41%)</li>
+<li><strong>Portfolio meaning:</strong> Treat banks, energy, telecoms, and SOE yield as the cleaner relative expression; growth beta still needs proof.</li>
+<li><strong>Cross-market read:</strong> Hang Seng -0.93% / HSCEI -0.59% / 3033.HK ETF -1.41%. Offshore China proxy FXI +0.57% and USD/CNH -0.08% frame cross-border risk appetite. USD/HKD last traded around 7.8407, which keeps the Hong Kong funding lens in focus.</li>
+</ul>
+<p><strong>Flow Confirmation</strong>
+Official Stock Connect evidence is available; the Flow Tracker confirms whether local money supports the price action.</p>
+<p><strong>Follow-Through Checklist</strong>
+<strong>Follow-through check.</strong> Watch (1) whether 3033.HK TECH proxy closes gap toward FXI's +0.57% overnight or lags further.
+<strong>Failure condition.</strong> Invalidate if 3033.HK retakes leadership while CNH firms and local participation broadens.</p>
+<p><strong>Cross-asset attribution</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Driver</th>
+  <th>Direction</th>
+  <th>Score</th>
+  <th>Evidence</th>
+  <th>HK implication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Short-selling pressure</td>
+  <td>drag</td>
+  <td>4.9</td>
+  <td>HKEX short-selling ratio was 22.00%.</td>
+  <td>Elevated short activity argues for extra confirmation before chasing rebounds.</td>
+</tr>
+<tr>
+  <td>Hong Kong participation</td>
+  <td>drag</td>
+  <td>1.41</td>
+  <td>Main Board turnover was 0.86x the 20-session average.</td>
+  <td>Thin turnover makes index moves easier to fade.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Local flow evidence</strong></p>
+<p><strong>Flow Takeaways</strong></p>
+<ul>
+<li>Short-selling pressure is elevated, so local rebounds need cleaner breadth and flow confirmation.</li>
+<li>Stock Connect Southbound: net HK$4.1bn on turnover HK$82.7bn (as of 2026-09-02).</li>
+<li>Stock Connect Northbound: turnover RMB244.8bn; public file provides total turnover/top active names, not full net-buy.</li>
+<li>AH premium: covered-pair average +38.83% over 14 pairs. Composition varies by day, so this level is not comparable with prior reports; widest premium: Bank of China 116.57%.</li>
+</ul>
+<p><strong>Stock Connect Southbound Active Names</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Ticker</th>
+  <th>Name</th>
+  <th>Buy</th>
+  <th>Sell</th>
+  <th>Net buy</th>
+  <th>HKEX turnover rank</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td>01299.HK</td>
+  <td>AIA</td>
+  <td>HK$993.6mn</td>
+  <td>HK$27.8mn</td>
+  <td>HK$965.8mn</td>
+  <td>9</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>09988.HK</td>
+  <td>BABA-W</td>
+  <td>HK$912.9mn</td>
+  <td>HK$1,677.8mn</td>
+  <td>HK$<span class="move-negative">-764.9mn</span></td>
+  <td>2</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>03308.HK</td>
+  <td>ZJ INNOLIGHT</td>
+  <td>HK$666.8mn</td>
+  <td>HK$214.9mn</td>
+  <td>HK$451.9mn</td>
+  <td>10</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>01347.HK</td>
+  <td>HUA HONG GRACE</td>
+  <td>HK$126.5mn</td>
+  <td>HK$530.7mn</td>
+  <td>HK$<span class="move-negative">-404.2mn</span></td>
+  <td>8</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>00700.HK</td>
+  <td>TENCENT</td>
+  <td>HK$3,018.2mn</td>
+  <td>HK$2,681.7mn</td>
+  <td>HK$336.5mn</td>
+  <td>1</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>AH Premium Dispersion</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>A ticker</th>
+  <th>H ticker</th>
+  <th>Premium</th>
+  <th>As of</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Bank of China</td>
+  <td>601988.SS</td>
+  <td>3988.HK</td>
+  <td><span class="move-positive">+116.57%</span></td>
+  <td>2026-09-02</td>
+</tr>
+<tr>
+  <td>China Communications Construction</td>
+  <td>601800.SS</td>
+  <td>1800.HK</td>
+  <td><span class="move-positive">+93.53%</span></td>
+  <td>2026-09-02</td>
+</tr>
+<tr>
+  <td>China Railway</td>
+  <td>601390.SS</td>
+  <td>0390.HK</td>
+  <td><span class="move-positive">+51.24%</span></td>
+  <td>2026-09-02</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>HKEX Short-Selling Watch</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Ticker</th>
+  <th>Name</th>
+  <th>Short ratio</th>
+  <th>Short turnover</th>
+  <th>Total turnover</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>00388.HK</td>
+  <td>HKEX</td>
+  <td>21.93%</td>
+  <td>HK$0.3bn</td>
+  <td>HK$1.5bn</td>
+</tr>
+<tr>
+  <td>00700.HK</td>
+  <td>TENCENT</td>
+  <td>9.68%</td>
+  <td>HK$0.9bn</td>
+  <td>HK$9.3bn</td>
+</tr>
+<tr>
+  <td>00941.HK</td>
+  <td>CHINA MOBILE</td>
+  <td>23.49%</td>
+  <td>HK$0.2bn</td>
+  <td>HK$0.7bn</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Short-value leaders:</strong> 02800.HK TRACKER FUND (HK$5.1bn); 03033.HK CSOP HS TECH (HK$3.7bn); 09988.HK BABA-W (HK$2.1bn); 07709.HK XL2CSOPHYNIX (HK$1.9bn).</li>
+</ul>
+<h3 id="2-3-macro-transmission">2.3 Macro Transmission</h3>
+<p><strong>Desk read.</strong> Use the calendar table and released data below as the primary macro read.</p>
+<p><strong>Macro watchpoints</strong></p>
+<ul>
+<li>Verify the official NBS and Caixin August Manufacturing PMI prints and reaction before drawing any cyclical H-share conclusion.</li>
+<li>Track US yields and DXY tonight into payrolls; a softer USD that persists into the HK open would reinforce the Nasdaq-versus-FXI leadership gap</li>
+<li>Monitor whether the AI capex theme (NVDA +3.21%, TSMC ADR +0.36%) holds into the 2026-09-03 HK session as the primary support for HK tech</li>
+<li>Watch HIBOR and any HKMA balance-sheet signals post-payrolls for the duration read in HK equities.</li>
+</ul>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Time</th>
+  <th>Region</th>
+  <th>Event</th>
+  <th>Status</th>
+  <th>Desk read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td></td>
+  <td>CN</td>
+  <td>China NBS Manufacturing PMI</td>
+  <td>Past expected window (unverified)</td>
+  <td>Impact: Growth direction, cyclicals, and manufacturing-chain pricing | Attention: 5/5 | Industries: Machinery, Building materials, Industrials</td>
+</tr>
+<tr>
+  <td></td>
+  <td>CN</td>
+  <td>China Caixin Manufacturing PMI</td>
+  <td>Past expected window (unverified)</td>
+  <td>Impact: Growth direction, cyclicals, and manufacturing-chain pricing | Attention: 3/5 | Industries: Machinery, Building materials, Industrials</td>
+</tr>
+<tr>
+  <td></td>
+  <td>US</td>
+  <td>US Non-Farm Payrolls</td>
+  <td>Upcoming</td>
+  <td>Impact: Watch whether it changes the day's core market narrative | Attention: 5/5 | Industries: Market-wide</td>
+</tr>
+<tr>
+  <td></td>
+  <td>CN</td>
+  <td>China Trade Balance</td>
+  <td>Upcoming</td>
+  <td>Impact: Watch whether it changes the day's core market narrative | Attention: 3/5 | Industries: Market-wide</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Positioning and risk backdrop</strong></p>
+<ul>
+<li>Detailed local flow evidence is covered under Flow Tracker and Attribution; keep this section focused on options, hedging, and macro-positioning risk.</li>
+</ul>
+<h3 id="2-4-company-micro-research-and-catalysts">2.4 Company Micro Research and Catalysts</h3>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Grade</th>
+  <th>Sector</th>
+  <th>Headline</th>
+  <th>Why it matters</th>
+  <th>Horizon</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>A</td>
+  <td>Financials</td>
+  <td>Aon CEO says insurance broker seeks to build 'premiere middle market</td>
+  <td>Capital allocation or shareholder-return events can trigger a valuation</td>
+  <td>Medium-term trend</td>
+</tr>
+<tr>
+  <td>A</td>
+  <td>Semiconductors and AI</td>
+  <td>HPE follows in Dell's footsteps as it rides the AI server boom to a</td>
+  <td>This can directly reshape earnings forecasts and the valuation framework</td>
+  <td>Short-term catalyst</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Company Event Takeaway</strong>
+<strong>Desk read.</strong> Session close on 2 Sep was thin on company-specific catalysts, with the more relevant signal coming from US peers.
+<strong>Why it matters.</strong> HPE's reported AI-server beat (above Dell on customer mix, per cited analyst read) is the most estimate-relevant item for the Hong Kong tape.
+<strong>Follow-up.</strong> Aon's USI deal is a capital-allocation story that should be mapped into the Hong Kong insurance complex via AIA (1299.HK).</p>
+<p><strong>LLM Quick Takes</strong></p>
+<ul>
+<li><strong>3690.HK</strong> | Core coverage. Closed +2.74% at 78.75, mid-range at 49% of 60-session band. Two attached Q2-result headlines (revenue ~RMB104.6bn, core local commerce back to profit, Keeta progress)…</li>
+<li><strong>1211.HK</strong> | Priority follow-up. Closed -3.40% at 85.25, mid-range at 57%. No headline provided, so the move is unexplained by the supplied facts. Next check…</li>
+<li><strong>1299.HK</strong> | Priority follow-up. Closed +0.07% at 76.00, mid-range at 61%. No direct catalyst in the supplied data; Aon/USI news is a US M&amp;A signal that maps indirectly into the insurance complex via…</li>
+<li><strong>0700.HK</strong> | Core coverage. Closed -0.72% at 438.2, mid-range at 33%. No headline attached and no earnings until 12 Nov per calendar, so the session move is marginal and should not be read as a…</li>
+</ul>
+<div class="company-event-monitor">
+<div class="event-monitor-summary">
+<div class="event-summary-copy"><span class="event-kicker">Decision filter</span><h4>No immediate portfolio catalyst: 20 official filings were screened and the low-signal market set stays aggregated.</h4><p>20 profit warnings</p></div>
+<div class="event-stats" aria-label="Company event summary">
+<div><strong>20</strong><span>Official filings</span></div>
+<div><strong>0</strong><span>Watchlist hits</span></div>
+<div><strong>0</strong><span>Actionable events</span></div>
+</div>
+</div>
+<div class="event-card-list"><div class="event-monitor-empty">
+<strong>No event cleared the portfolio decision filter.</strong>
+<p>Broad-market filings remain traceable in the source appendix; they are not expanded here without a watchlist, estimate or liquidity read-through.</p>
+</div></div>
+<p class="event-coverage-note"><strong>Coverage boundary.</strong> sell-side rating changes, IPO / grey-market monitor were not decision-grade in this run; their absence is not treated as confirmation that no event exists.</p>
+</div>
+
+<p><strong>Core coverage requiring follow-up</strong></p>
+<p><strong>Core coverage</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Ticker</th>
+  <th>Last</th>
+  <th>1D</th>
+  <th>Range position</th>
+  <th>Morning note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Meituan</td>
+  <td>3690.HK</td>
+  <td>78.75</td>
+  <td><span class="move-positive">+2.74%</span></td>
+  <td>Mid-range</td>
+  <td>Up 2.74% on the session, mid-range at 49% of its 60-session band.</td>
+</tr>
+<tr>
+  <td>Tencent</td>
+  <td>0700.HK</td>
+  <td>438.20</td>
+  <td><span class="move-negative">-0.72%</span></td>
+  <td>Mid-range</td>
+  <td>Marginally lower (<span class="move-negative">-0.72%</span>), mid-range at 33% of its 60-session band.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Recent headlines for Meituan:</strong></p>
+<ul>
+<li><a href="https://finance.yahoo.com/markets/stocks/articles/meituan-mpngf-q2-2026-earnings-190123345.html">Meituan (MPNGF) (Q2 2026) Earnings Call Highlights: Record Revenue and Strategic AI Pivot Drive...</a> (GuruFocus.com)</li>
+</ul>
+<p><strong>Priority follow-up</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Ticker</th>
+  <th>Last</th>
+  <th>1D</th>
+  <th>Range position</th>
+  <th>Morning note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>BYD Company</td>
+  <td>1211.HK</td>
+  <td>85.25</td>
+  <td><span class="move-negative">-3.40%</span></td>
+  <td>Mid-range</td>
+  <td>Down 3.40% on the session, mid-range at 57% of its 60-session band.</td>
+</tr>
+<tr>
+  <td>AIA</td>
+  <td>1299.HK</td>
+  <td>76.00</td>
+  <td><span class="move-positive">+0.07%</span></td>
+  <td>Mid-range</td>
+  <td>Marginally higher (<span class="move-positive">+0.07%</span>), mid-range at 61% of its 60-session band.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="2-5-morning-meeting-questions">2.5 Morning Meeting Questions</h3>
+<p><strong>Q1. The index fell but Southbound bought - is the move real?</strong></p>
+<ul>
+<li><strong>Evidence:</strong> HSI -0.93% against Southbound net +4.1bn HKD.</li>
+<li><strong>How to answer:</strong> Treat it as unconfirmed. Price and mainland flow disagreed, so the price move was not driven by Southbound participation; it needs another session of confirmation before being read as a trend.</li>
+</ul>
+<p><strong>Q2. Short selling was very high at 22.0% - who is positioned against this market?</strong></p>
+<ul>
+<li><strong>Evidence:</strong> Short-selling ratio 22.0% (92nd pct of the last 60 sessions, very high).</li>
+<li><strong>How to answer:</strong> Check the concentration before reading it as bearish: ETF-heavy short turnover is macro hedging, while single-name pressure is company-specific. The HKEX short-selling table in this report separates the two.</li>
+</ul>
+</section><section class="report-section section-layer-3-session-playbook-8-12-min"><h2 id="layer-3-session-playbook-8-12-min">Layer 3 | Session Playbook (8-12 min)</h2>
+<h3 id="3-1-base-case-and-scenario-map">3.1 Base Case and Scenario Map</h3>
+<p><strong>Starting posture.</strong> Selective old-economy / H-share leadership (medium confidence); composite risk <code>47.6/100</code> (Mixed). Treat banks, energy, telecoms, and SOE yield as the cleaner relative expression; growth beta still needs proof.</p>
+<p><strong>Scenario map</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Scenario</th>
+  <th>Observable trigger</th>
+  <th>Interpretation</th>
+  <th>Research response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Selective growth confirms</td>
+  <td>3033.HK keeps a &gt;0.5pp first-hour lead over HSCEI; SMIC and Hua Hong stop lagging broad beta; CNH is stable.</td>
+  <td>The prior style split has live price confirmation, but is not yet broad China risk-on.</td>
+  <td>Prioritize internet/platform relative strength; verify participation again at the close.</td>
+</tr>
+<tr>
+  <td>Broad beta takes over</td>
+  <td>HSI and HSCEI rise together, breadth improves and the 3033.HK lead narrows without turning negative.</td>
+  <td>Leadership is broadening from a style trade into market beta.</td>
+  <td>Expand the research set from growth leaders to financials, SOEs and index-heavy names.</td>
+</tr>
+<tr>
+  <td>Risk-off continuation</td>
+  <td>3033.HK loses its lead, semis underperform HSCEI and CNH depreciation accelerates.</td>
+  <td>The prior divergence was a temporary pocket of strength rather than a durable hand-off.</td>
+  <td>Treat rebounds as unconfirmed; focus on balance-sheet, catalyst and crowding risk.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Clocked validation scorecard</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Window</th>
+  <th>Check</th>
+  <th>Prior evidence</th>
+  <th>Pass condition</th>
+  <th>What it decides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>09:30-10:30</td>
+  <td>3033.HK vs HSCEI</td>
+  <td><span class="move-negative">-0.82</span>pp at the prior close</td>
+  <td>3033.HK retains &gt;0.5pp relative lead</td>
+  <td>Whether growth leadership survives the open</td>
+</tr>
+<tr>
+  <td>09:30-10:30</td>
+  <td>Semiconductor hand-off</td>
+  <td>SMIC <span class="move-negative">-0.87%</span>; Hua Hong Semiconductor -2.81%</td>
+  <td>Stabilise after the open; at least one stops underperforming HSCEI</td>
+  <td>Whether overnight semis pressure is contained locally</td>
+</tr>
+<tr>
+  <td>09:30-10:30</td>
+  <td>HSI price zone</td>
+  <td>25,330 vs 25,000 / 25,500 reference grid</td>
+  <td>Hold above the lower grid or reclaim the upper grid with breadth</td>
+  <td>Whether broad beta is stabilising; grid is derived, not technical analysis</td>
+</tr>
+<tr>
+  <td>09:30-10:30</td>
+  <td>USD/CNH</td>
+  <td>6.7125 | <span class="move-negative">-0.08%</span></td>
+  <td>No acceleration in CNH depreciation</td>
+  <td>Whether FX permits a clean Hong Kong risk extension</td>
+</tr>
+<tr>
+  <td>At close</td>
+  <td>Turnover</td>
+  <td>0.86x | <span class="move-negative">-14%</span> vs 20D</td>
+  <td>At least 1.0x the 20-session average</td>
+  <td>Whether the move had normal participation</td>
+</tr>
+<tr>
+  <td>At close</td>
+  <td>Southbound</td>
+  <td>Net HK$4.1bn | turnover HK$82.7bn</td>
+  <td>Net buying remains positive and broadens beyond one or two names</td>
+  <td>Whether mainland money confirms the price move</td>
+</tr>
+<tr>
+  <td>At close</td>
+  <td>Short pressure</td>
+  <td>22.00%</td>
+  <td>Falls versus the prior verified reading (22.00%)</td>
+  <td>Whether rebound conviction improved</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Upgrade rule.</strong> Confirm if HSCEI keeps outperforming 3033.HK with healthy turnover and broad Southbound participation.
+<strong>Kill switch.</strong> Invalidate if 3033.HK retakes leadership while CNH firms and local participation broadens.
+<strong>Clock discipline.</strong> At 07:30, same-day Southbound, turnover and short-selling outcomes are not known. Use the first-hour price/FX checks provisionally and make the final classification only after the close.
+<strong>Event clock.</strong> No same-day decision-grade item is populated; the nearest reported/estimated item is US Non-Farm Payrolls on 2026-09-04. Verify the issuer or official calendar before relying on the date.</p>
+<h3 id="3-2-conditional-theme-deep-dive">3.2 Conditional Theme Deep Dive</h3>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Field</th>
+  <th>Read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Theme</td>
+  <td>China Exports and Supply-Chain Relocation</td>
+</tr>
+<tr>
+  <td>Angle for the day</td>
+  <td>Track tariffs, trade policy, shipping, and manufacturing orders to see whether export resilience is still the cleaner China macro expression.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Theme desk read</strong>
+<strong>Core thesis.</strong> The weekly China Exports and Supply-Chain Relocation angle remains the cleaner expression of mainland macro right now, and the overnight tape is consistent with that framing rather than contradicting it.
+<strong>Evidence.</strong> The USD softer, non-rates-driven backdrop, with Nasdaq 100 outperforming FXI, argues that leadership is coming from the AI capex complex rather than from a broad China re-rating.
+<strong>What to test.</strong> Within the supplied signals, NVDA +3.21% is the strongest cross-border read-through and should bias HK tech sentiment into the 2026-09-03 session.</p>
+<p><strong>Signals to keep in mind</strong></p>
+<ul>
+<li>VIX -6.98%: Lower volatility signals easing stress in the tape.</li>
+<li>NVDA +3.21%: The AI capex narrative supports; expect it to reach HK through sentiment before earnings.</li>
+</ul>
+<p><strong>LLM watch items:</strong></p>
+<ul>
+<li>Verify whether 1211.HK's -3.40% session move ties to a specific export, tariff, or pricing headline before treating mid-range levels as a setup</li>
+<li>Track the 2026-09-04 US Non-Farm Payrolls print for any reset to the USD-soft / non-rates narrative, since HK exposure is indirect via Fed path and</li>
+<li>Use the 2026-09-07 China Trade Balance release as the next clean test of the export-resilience thesis</li>
+<li>Confirm the 2026-08-31 NBS and 2026-09-01 Caixin Manufacturing PMI prints from official sources, as both are flagged past expected window and</li>
+</ul>
+<p><strong>Related names to keep close:</strong></p>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Ticker</th>
+  <th>Bucket</th>
+  <th>Morning read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>BYD Company</td>
+  <td>1211.HK</td>
+  <td>Priority follow-up</td>
+  <td>Down 3.40% on the session, mid-range at 57% of its 60-session band.</td>
+</tr>
+<tr>
+  <td>China Mobile</td>
+  <td>0941.HK</td>
+  <td>Priority follow-up</td>
+  <td>Unchanged on the session, mid-range at 72% of its 60-session band.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Upcoming catalysts tied to the theme:</strong></p>
+<ul>
+<li>2026-09-07 | China Trade Balance | Watch whether it changes the day's core market narrative</li>
+</ul>
+<h3 id="3-3-daily-one-chart">3.3 Daily One Chart</h3>
+<p><strong>Daily One Chart | HKEX short-selling pressure map</strong></p>
+<div class="figure-shell figure-daily-one-chart"><img src="charts/daily_one_chart_2026-09-03.png" alt="Daily One Chart" /></div>
+<p><strong>Chart read.</strong> Market short-selling reached 22.00% of turnover.
+<strong>Why it matters.</strong> The chart leads today because the pressure is either broad, concentrated, or acute in the top name.</p>
+<p><em>Source: HKEX Daily Quotations - Short Selling Turnover</em></p>
+</section><section class="report-section section-optional-appendix-traceability-and-performance-10-15-min"><h2 id="optional-appendix-traceability-and-performance-10-15-min">Optional Appendix | Traceability and Performance (10-15 min)</h2>
+<h3 id="report-metadata">Report Metadata</h3>
+<blockquote>
+<p>Date policy: Review date 2026-09-02 is treated as <code>Trading Daily</code>. | Global (US/Europe) data date is 2026-09-02; adapter effective date is 2026-09-02 and summary date is 2026-09-02. | Hong Kong local data date is 2026-09-02; role: same-session local cash tape.
+Market data quality: Coverage: <code>37/38</code> | Missing: <code>1</code>
+Report quality: <code>92.6/100</code> | Grade <code>B</code> | Status <code>usable with caveats</code></p>
+</blockquote>
+<h3 id="report-quality-and-validation">Report Quality and Validation</h3>
+<ul>
+<li><strong>Quality score:</strong> 92.6/100 | <strong>Grade:</strong> B | <strong>Status:</strong> usable with caveats</li>
+<li><strong>Run summary:</strong> 8 healthy | 2 caveat | 0 failed</li>
+<li><strong>Release recommendation:</strong> Send with caveats | The report is usable, but the advisory guidance should travel with it so readers understand the data gaps.</li>
+</ul>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Source</th>
+  <th>Status</th>
+  <th>Bucket</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Macro calendar</td>
+  <td>partial</td>
+  <td>caveat</td>
+</tr>
+<tr>
+  <td>Risk and sentiment feed</td>
+  <td>partial</td>
+  <td>caveat</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Desk-use guidance summary:</strong> 0 blocking | 1 advisory</p>
+<p><strong>Desk-use guidance</strong></p>
+<ul>
+<li><strong>Advisory:</strong> Questionable narrative fields were removed; use the deterministic fallback copy and review the audit trail.</li>
+<li><strong>Grade capped:</strong> 3 prose defect(s) detected: 3 unbalanced_bracket.</li>
+</ul>
+<div class="table-shell"><table>
+<thead>
+<tr>
+  <th>Weak component</th>
+  <th>Score</th>
+  <th>Read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Report prose</td>
+  <td>40.0</td>
+  <td>3 prose defect(s) detected: 3 unbalanced_bracket.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Quality warnings</strong></p>
+<ul>
+<li>Report prose is weak: 3 prose defect(s) detected: 3 unbalanced_bracket.</li>
+<li>Narrative fact-check guardrail produced warnings; review the validation table before relying on narrative sections.</li>
+</ul>
+<p><strong>Narrative fact-check guardrail</strong></p>
+<ul>
+<li>Checked 35 numeric claims; 0 numeric mismatch(es), 0 logic warning(s); 13 structured claims, 0 source/text warning(s); 0 critical, 0 review. Replaced 6 unsafe narrative field(s) with deterministic fallback copy.</li>
+<li><strong>Deterministic fallback fields:</strong> macro_takeaway, news_summary, selected_news[0].headline, tasks.macro_interpretation.paragraph, tasks.news_selection.selected_news[0].headline, tasks.news_selection.summary</li>
+</ul>
+<p><em>Full component weights, per-source freshness, adapter status and provenance records are archived with this report under <code>audit/</code> rather than printed here.</em></p>
+<h3 id="historical-signal-performance">Historical Signal Performance</h3>
+<ul>
+<li><strong>Readiness:</strong> exploratory with caveats | 69 observations | 92 active signal dates | next-close entry, 10bps cost, no same-day returns.</li>
+<li><strong>Interpretation boundary:</strong> exploratory until a benchmark reaches 252 sessions and 100 active-signal sessions.</li>
+<li><strong>Data-quality caveat:</strong> 23 conflicting price revision(s) and 6 non-session observation(s) remain in the research ledger.</li>
+<li><strong>Daily-use boundary:</strong> cumulative return, Sharpe and the performance chart stay out of the daily commute edition until the sample and trading-calendar gates pass; use Yesterday's Call instead.</li>
+</ul>
+<h3 id="source-links">Source Links</h3>
+<ul>
+<li><a href="https://www.cnbc.com/2026/08/31/aon-ceo-says-usi-deal-seeks-to-build-premiere-middle-market-insurance-platform.html">Aon CEO says insurance broker seeks to build 'premiere middle market platform' with purchase of rival USI</a> (cnbc_markets)</li>
+<li><a href="https://www.marketwatch.com/story/hpe-follows-in-dells-footsteps-as-it-rides-the-ai-server-boom-to-a-big-earnings-beat-ec46eaea?mod=mw_rss_topstories">HPE follows in Dell's footsteps as it rides the AI server boom to a big earnings beat</a> (wsj_markets)</li>
+<li><a href="https://finance.yahoo.com/markets/stocks/articles/meituan-mpngf-q2-2026-earnings-190123345.html">Meituan (MPNGF) (Q2 2026) Earnings Call Highlights: Record Revenue and Strategic AI Pivot Drive...</a> (GuruFocus.com)</li>
+<li><a href="https://www.wsj.com/business/earnings/meituan-returns-to-profit-as-food-delivery-competition-eases-1026a0e9?siteid=yhoof2&amp;yptr=yahoo">Meituan Returns to Profit as Food-Delivery Competition Eases</a> (The Wall Street Journal)</li>
+<li><a href="https://www.fool.com/investing/2026/09/01/alibaba-is-down-60-from-its-all-time-high-is-this/">Alibaba Is Down 60% From Its All-Time High. Is This the Once-in-a-Decade Setup That Patient Investors Wait For?</a> (Motley Fool)</li>
+<li><a href="http://www1.hkexnews.hk/listedco/listconews/sehk/2026/0831/2026083100934.pdf">00333.HK Profit warning / alert announcement</a> (HKEXnews)</li>
+<li><a href="http://www1.hkexnews.hk/listedco/listconews/sehk/2026/0831/2026083100716.pdf">01496.HK Profit warning / alert announcement</a> (HKEXnews)</li>
+<li><a href="http://www1.hkexnews.hk/listedco/listconews/sehk/2026/0828/2026082801978.pdf">00875.HK Profit warning / alert announcement</a> (HKEXnews)</li>
+<li><a href="http://www1.hkexnews.hk/listedco/listconews/sehk/2026/0828/2026082800863.pdf">01152.HK Profit warning / alert announcement</a> (HKEXnews)</li>
+<li><a href="http://www1.hkexnews.hk/listedco/listconews/sehk/2026/0828/2026082802456.pdf">01255.HK Profit warning / alert announcement</a> (HKEXnews)</li>
+<li><a href="http://www1.hkexnews.hk/listedco/listconews/sehk/2026/0828/2026082804114.pdf">01518.HK Profit warning / alert announcement</a> (HKEXnews)</li>
+<li><a href="http://www1.hkexnews.hk/listedco/listconews/sehk/2026/0828/2026082802706.pdf">01561.HK Profit warning / alert announcement</a> (HKEXnews)</li>
+<li><a href="http://www1.hkexnews.hk/listedco/listconews/gem/2026/0828/2026082800571.pdf">08270.HK Profit warning / alert announcement</a> (HKEXnews)</li>
+</ul>
+</section>
+    </main>
+  </div>
+  <div class="report-footer">
+    <strong>Morning Market Brief</strong>
+    <span>Generated 2026-09-03 · For research review, not investment advice</span>
+  </div>
+</div>
+</body>
+</html>
