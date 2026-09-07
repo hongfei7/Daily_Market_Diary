@@ -1,0 +1,17 @@
+{
+  "by_rule": {
+    "unbalanced_bracket": 1
+  },
+  "findings": [
+    {
+      "detail": "Unbalanced parenthesis",
+      "line": 258,
+      "rule": "unbalanced_bracket",
+      "text": "3690.HK | Fact: closed -2.08% at 80.05, mid-range (53% of 60-session band). Read: move looks positioning-led; the 28-Aug Q2 print (RMB104.6bn revenue, +14.4% Yo"
+    }
+  ],
+  "read": "1 prose defect(s) detected: 1 unbalanced_bracket.",
+  "score": 80.0,
+  "status": "warning",
+  "total": 1
+}
