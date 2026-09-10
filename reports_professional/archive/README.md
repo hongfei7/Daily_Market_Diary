@@ -7,6 +7,7 @@ Use `../latest/README.md` when you want the newest published report without chec
 
 | Date | Mode | Pulse | Quality | Report | Dashboard | Event Radar | One Chart | Trend Pack | Raw |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-09-11 | Trading Daily | Pulse unavailable | 91.4/100 | [Report](2026-09-11/README.md) | [Dashboard](2026-09-11/charts/dashboard_2026-09-11.png) | [Event Radar](2026-09-11/charts/catalyst_radar_2026-09-11.png) | [One Chart](2026-09-11/charts/daily_one_chart_2026-09-11.png) | N/A | N/A |
 | 2026-09-10 | Trading Daily | Pulse unavailable | 88.1/100 | [Report](2026-09-10/README.md) | [Dashboard](2026-09-10/charts/dashboard_2026-09-10.png) | [Event Radar](2026-09-10/charts/catalyst_radar_2026-09-10.png) | [One Chart](2026-09-10/charts/daily_one_chart_2026-09-10.png) | N/A | N/A |
 | 2026-09-09 | Trading Daily | Pulse unavailable | 95.6/100 | [Report](2026-09-09/README.md) | [Dashboard](2026-09-09/charts/dashboard_2026-09-09.png) | [Event Radar](2026-09-09/charts/catalyst_radar_2026-09-09.png) | [One Chart](2026-09-09/charts/daily_one_chart_2026-09-09.png) | N/A | N/A |
 | 2026-09-08 | Trading Daily | Pulse unavailable | 90.4/100 | [Report](2026-09-08/README.md) | [Dashboard](2026-09-08/charts/dashboard_2026-09-08.png) | [Event Radar](2026-09-08/charts/catalyst_radar_2026-09-08.png) | [One Chart](2026-09-08/charts/daily_one_chart_2026-09-08.png) | N/A | N/A |
