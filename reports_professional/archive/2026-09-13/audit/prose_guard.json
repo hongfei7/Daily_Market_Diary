@@ -1,0 +1,17 @@
+{
+  "by_rule": {
+    "severed_list": 1
+  },
+  "findings": [
+    {
+      "detail": "Sentence ends mid-enumeration",
+      "line": 323,
+      "rule": "severed_list",
+      "text": "02293.HK | BAMBOOSHEALTH profit warning on 2026-09-09. Small-cap, headline-only. Next check: bridge the decline to the prior interim/annual period before drawin"
+    }
+  ],
+  "read": "1 prose defect(s) detected: 1 severed_list.",
+  "score": 80.0,
+  "status": "warning",
+  "total": 1
+}
