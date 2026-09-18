@@ -1,0 +1,17 @@
+{
+  "by_rule": {
+    "severed_list": 1
+  },
+  "findings": [
+    {
+      "detail": "Sentence ends mid-enumeration",
+      "line": 255,
+      "rule": "severed_list",
+      "text": "1299.HK | Fact: -0.78% on 18 Sep, range position 74.5%, mid-range. Read: marginal move only. Next check: NBV/agency channel data remain the cleanest catalyst; n"
+    }
+  ],
+  "read": "1 prose defect(s) detected: 1 severed_list.",
+  "score": 80.0,
+  "status": "warning",
+  "total": 1
+}
