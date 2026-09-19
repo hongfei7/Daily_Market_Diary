@@ -1,0 +1,17 @@
+{
+  "by_rule": {
+    "unbalanced_bracket": 1
+  },
+  "findings": [
+    {
+      "detail": "Unbalanced parenthesis",
+      "line": 419,
+      "rule": "unbalanced_bracket",
+      "text": "Leadership breadth beyond 3033.HK / HSTECH: HSCEI lagged by -0.7pp vs HSTECH +1.9pp, so watch whether mainland names (Tencent at 9% range, AIA at"
+    }
+  ],
+  "read": "1 prose defect(s) detected: 1 unbalanced_bracket.",
+  "score": 80.0,
+  "status": "warning",
+  "total": 1
+}
