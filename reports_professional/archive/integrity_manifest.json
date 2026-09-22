@@ -1,6 +1,6 @@
 {
-  "archive_id": "23fc8c497dbe818765d0814e9e6314a17e805a61515087ba7d1dc2ebab958c98",
-  "dates": 135,
+  "archive_id": "d655709bd8de17ad44904f1dbf564b22661bc507a5309e0bcaf451152c8e8dd5",
+  "dates": 136,
   "entries": [
     {
       "archive_id": "9daf3f7a7bc9f45312e251e074b2a936794ec1b63a6753aebd0aab784772529d",
@@ -4931,6 +4931,62 @@
         }
       ],
       "report_date": "2026-09-22"
+    },
+    {
+      "archive_id": "6f2688d2f1bfa57f900e50ef8adf5ed9960ed218eb3a073c71e45417ce743ca9",
+      "files": [
+        {
+          "path": "audit/llm_health.json",
+          "sha256": "f0e41e87de5b1187498d9a27838f1fc3bfbaf36c6e0e3684d90f93e2c640f7af",
+          "size_bytes": 1358
+        },
+        {
+          "path": "audit/performance_summary.json",
+          "sha256": "b76fd6841f7a56b3464db359115f86bef25059dbff0cb0b6afa737c2e2af4f85",
+          "size_bytes": 6542
+        },
+        {
+          "path": "audit/prose_guard.json",
+          "sha256": "a49205bc68c7b40d1c6048dfa73a1e9f2aa997a649fe01af3a458d4c208c58b0",
+          "size_bytes": 150
+        },
+        {
+          "path": "audit/source_health.json",
+          "sha256": "da2f6b1e9cf382e8bf3c1c041a2e3ea19ed5291499e1f9728748d9662f26c9e0",
+          "size_bytes": 6167
+        },
+        {
+          "path": "charts/ai_tmt_chain_2026-09-23.png",
+          "sha256": "8f04013353a5f087c13d5efab491b2950f303293aaff4bae29d6ee2b8f2f1715",
+          "size_bytes": 100295
+        },
+        {
+          "path": "charts/catalyst_radar_2026-09-23.png",
+          "sha256": "303b41afed0e3b3424c092d382d816c3eb6b7af146e8ef4d65cc0ba275511522",
+          "size_bytes": 214850
+        },
+        {
+          "path": "charts/daily_one_chart_2026-09-23.png",
+          "sha256": "7847d37d92f3c3e05d4cd555c9a3a5f8aa0c9684479a32cd81c7d54af3c9a127",
+          "size_bytes": 205801
+        },
+        {
+          "path": "charts/dashboard_2026-09-23.png",
+          "sha256": "8051cd853143ab2d7803cb232ca9219ad3ceaf26b4e4d12e95eed07ee03bae6e",
+          "size_bytes": 234492
+        },
+        {
+          "path": "morning_briefing.html",
+          "sha256": "0b607266562b3a043dc2a3118827aa97152c4987977c0e84b75bd2ef8b38be35",
+          "size_bytes": 65342
+        },
+        {
+          "path": "morning_briefing.md",
+          "sha256": "a70b2ea397ef90975e3986b22ec6362c678559ea138d8b5ad87c65ba6815780a",
+          "size_bytes": 31111
+        }
+      ],
+      "report_date": "2026-09-23"
     }
   ],
   "schema_version": "report-archive-integrity-index-v1",
