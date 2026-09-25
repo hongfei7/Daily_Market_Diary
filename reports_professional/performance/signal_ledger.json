@@ -3,12 +3,12 @@
     "Hang Seng Index": {
       "event_horizons": {
         "1": {
-          "average_directional_return_net": 0.000282,
+          "average_directional_return_net": 0.000206,
           "hit_rate": 0.5263,
           "resolved_signals": 38
         },
         "20": {
-          "average_directional_return_net": -0.008857,
+          "average_directional_return_net": -0.008755,
           "hit_rate": 0.4483,
           "resolved_signals": 29
         },
@@ -21,21 +21,21 @@
       "metrics": {
         "active_exposure_ratio": 0.4706,
         "active_sessions": 32,
-        "annualized_return": -0.016359,
-        "annualized_volatility": 0.163281,
-        "average_daily_return": -1.247e-05,
-        "benchmark_return": -0.059109,
-        "cumulative_return_net": -0.004441,
-        "excess_return": 0.054668,
+        "annualized_return": -0.027041,
+        "annualized_volatility": 0.165111,
+        "average_daily_return": -5.457e-05,
+        "benchmark_return": -0.061874,
+        "cumulative_return_net": -0.00737,
+        "excess_return": 0.054505,
         "hit_rate_active_sessions": 0.5,
-        "max_drawdown": -0.077416,
+        "max_drawdown": -0.078637,
         "median_daily_return": 0.0,
         "sample_gate": {
           "minimum_active_sessions": 100,
           "minimum_sessions": 252
         },
         "sessions": 68,
-        "sharpe_zero_rf": -0.019,
+        "sharpe_zero_rf": -0.083,
         "status": "exploratory"
       },
       "outcomes": [
@@ -1616,9 +1616,9 @@
             },
             "20": {
               "directional_return_net": 0.0,
-              "exit_date": "2026-09-24",
+              "exit_date": "2026-09-25",
               "hit": null,
-              "underlying_return": 0.01106899
+              "underlying_return": 0.00809743
             },
             "5": {
               "directional_return_net": 0.0,
@@ -1642,10 +1642,10 @@
               "underlying_return": 0.02364646
             },
             "20": {
-              "directional_return_net": -0.01306899,
-              "exit_date": "2026-09-24",
+              "directional_return_net": -0.01009743,
+              "exit_date": "2026-09-25",
               "hit": false,
-              "underlying_return": 0.01106899
+              "underlying_return": 0.00809743
             },
             "5": {
               "directional_return_net": -0.02825738,
@@ -2027,9 +2027,9 @@
             },
             "5": {
               "directional_return_net": -0.0,
-              "exit_date": "2026-09-24",
+              "exit_date": "2026-09-25",
               "hit": null,
-              "underlying_return": -0.0238226
+              "underlying_return": -0.02669161
             }
           },
           "market_as_of": "2026-08-12",
@@ -2101,10 +2101,10 @@
           "entry_date": "2026-08-20",
           "horizons": {
             "1": {
-              "directional_return_net": -0.02792466,
-              "exit_date": "2026-09-24",
+              "directional_return_net": -0.03078749,
+              "exit_date": "2026-09-25",
               "hit": false,
-              "underlying_return": -0.02592466
+              "underlying_return": -0.02878749
             }
           },
           "market_as_of": "2026-08-19",
@@ -2113,7 +2113,7 @@
           "signal_id": "hk-beta:2026-08-19:2026-08-20"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-20",
           "position": 0,
@@ -2121,7 +2121,7 @@
           "signal_id": "hk-beta:2026-08-20:2026-08-21"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-21",
           "position": 1,
@@ -2129,7 +2129,7 @@
           "signal_id": "hk-beta:2026-08-21:2026-08-22"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-25",
           "position": 0,
@@ -2137,7 +2137,7 @@
           "signal_id": "hk-beta:2026-08-25:2026-08-26"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-26",
           "position": 0,
@@ -2145,7 +2145,7 @@
           "signal_id": "hk-beta:2026-08-26:2026-08-27"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-27",
           "position": 0,
@@ -2153,7 +2153,7 @@
           "signal_id": "hk-beta:2026-08-27:2026-08-28"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-28",
           "position": -1,
@@ -2161,7 +2161,7 @@
           "signal_id": "hk-beta:2026-08-28:2026-08-29"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-31",
           "position": 0,
@@ -2169,7 +2169,7 @@
           "signal_id": "hk-beta:2026-08-31:2026-09-01"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-01",
           "position": 0,
@@ -2177,7 +2177,7 @@
           "signal_id": "hk-beta:2026-09-01:2026-09-02"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-02",
           "position": 0,
@@ -2185,7 +2185,7 @@
           "signal_id": "hk-beta:2026-09-02:2026-09-03"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-03",
           "position": 0,
@@ -2193,7 +2193,7 @@
           "signal_id": "hk-beta:2026-09-03:2026-09-04"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-04",
           "position": 0,
@@ -2201,7 +2201,7 @@
           "signal_id": "hk-beta:2026-09-04:2026-09-05"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-07",
           "position": 0,
@@ -2209,7 +2209,7 @@
           "signal_id": "hk-beta:2026-09-07:2026-09-08"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-08",
           "position": -1,
@@ -2217,7 +2217,7 @@
           "signal_id": "hk-beta:2026-09-08:2026-09-09"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-09",
           "position": 0,
@@ -2225,7 +2225,7 @@
           "signal_id": "hk-beta:2026-09-09:2026-09-10"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-10",
           "position": -1,
@@ -2233,7 +2233,7 @@
           "signal_id": "hk-beta:2026-09-10:2026-09-11"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-11",
           "position": 0,
@@ -2241,7 +2241,7 @@
           "signal_id": "hk-beta:2026-09-11:2026-09-12"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-14",
           "position": -1,
@@ -2249,7 +2249,7 @@
           "signal_id": "hk-beta:2026-09-14:2026-09-15"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-15",
           "position": -1,
@@ -2257,7 +2257,7 @@
           "signal_id": "hk-beta:2026-09-15:2026-09-16"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-16",
           "position": -1,
@@ -2265,7 +2265,7 @@
           "signal_id": "hk-beta:2026-09-16:2026-09-17"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-17",
           "position": 1,
@@ -2273,7 +2273,7 @@
           "signal_id": "hk-beta:2026-09-17:2026-09-18"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-18",
           "position": 1,
@@ -2281,7 +2281,7 @@
           "signal_id": "hk-beta:2026-09-18:2026-09-19"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-21",
           "position": 0,
@@ -2289,7 +2289,7 @@
           "signal_id": "hk-beta:2026-09-21:2026-09-22"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-22",
           "position": 1,
@@ -2297,12 +2297,20 @@
           "signal_id": "hk-beta:2026-09-22:2026-09-23"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-23",
           "position": -1,
           "report_date": "2026-09-24",
           "signal_id": "hk-beta:2026-09-23:2026-09-24"
+        },
+        {
+          "entry_date": "2026-09-25",
+          "horizons": {},
+          "market_as_of": "2026-09-24",
+          "position": -1,
+          "report_date": "2026-09-25",
+          "signal_id": "hk-beta:2026-09-24:2026-09-25"
         }
       ],
       "series": [
@@ -3044,27 +3052,27 @@
           "underlying_return": 0.0009391
         },
         {
-          "benchmark_equity": 0.9408909,
+          "benchmark_equity": 0.9381256,
           "entry_date": "2026-08-20",
-          "exit_date": "2026-09-24",
+          "exit_date": "2026-09-25",
           "position": 1,
           "signal_id": "hk-beta:2026-08-19:2026-08-20",
-          "strategy_equity": 0.99555911,
-          "strategy_return_net": -0.02692466,
+          "strategy_equity": 0.99263013,
+          "strategy_return_net": -0.02978749,
           "turnover": 1,
-          "underlying_return": -0.02592466
+          "underlying_return": -0.02878749
         }
       ]
     },
     "Hang Seng TECH ETF (3033.HK)": {
       "event_horizons": {
         "1": {
-          "average_directional_return_net": -0.001248,
+          "average_directional_return_net": -0.001294,
           "hit_rate": 0.5,
           "resolved_signals": 38
         },
         "20": {
-          "average_directional_return_net": -0.008455,
+          "average_directional_return_net": -0.008394,
           "hit_rate": 0.4828,
           "resolved_signals": 29
         },
@@ -3077,21 +3085,21 @@
       "metrics": {
         "active_exposure_ratio": 0.4776,
         "active_sessions": 32,
-        "annualized_return": -0.259005,
-        "annualized_volatility": 0.273619,
-        "average_daily_return": -0.00103761,
-        "benchmark_return": -0.142972,
-        "cumulative_return_net": -0.076605,
-        "excess_return": 0.066366,
+        "annualized_return": -0.264206,
+        "annualized_volatility": 0.275522,
+        "average_daily_return": -0.00106327,
+        "benchmark_return": -0.144574,
+        "cumulative_return_net": -0.078333,
+        "excess_return": 0.066241,
         "hit_rate_active_sessions": 0.5,
-        "max_drawdown": -0.161722,
+        "max_drawdown": -0.16329,
         "median_daily_return": 0.0,
         "sample_gate": {
           "minimum_active_sessions": 100,
           "minimum_sessions": 252
         },
         "sessions": 67,
-        "sharpe_zero_rf": -0.956,
+        "sharpe_zero_rf": -0.972,
         "status": "exploratory"
       },
       "outcomes": [
@@ -4672,9 +4680,9 @@
             },
             "20": {
               "directional_return_net": -0.0,
-              "exit_date": "2026-09-24",
+              "exit_date": "2026-09-25",
               "hit": null,
-              "underlying_return": -0.05602117
+              "underlying_return": -0.05778562
             },
             "5": {
               "directional_return_net": 0.0,
@@ -4698,10 +4706,10 @@
               "underlying_return": 0.02558447
             },
             "20": {
-              "directional_return_net": 0.05402117,
-              "exit_date": "2026-09-24",
+              "directional_return_net": 0.05578562,
+              "exit_date": "2026-09-25",
               "hit": true,
-              "underlying_return": -0.05602117
+              "underlying_return": -0.05778562
             },
             "5": {
               "directional_return_net": -0.02008558,
@@ -5083,9 +5091,9 @@
             },
             "5": {
               "directional_return_net": -0.0,
-              "exit_date": "2026-09-24",
+              "exit_date": "2026-09-25",
               "hit": null,
-              "underlying_return": -0.08586074
+              "underlying_return": -0.08756941
             }
           },
           "market_as_of": "2026-08-12",
@@ -5157,10 +5165,10 @@
           "entry_date": "2026-08-20",
           "horizons": {
             "1": {
-              "directional_return_net": -0.08196561,
-              "exit_date": "2026-09-24",
+              "directional_return_net": -0.0836853,
+              "exit_date": "2026-09-25",
               "hit": false,
-              "underlying_return": -0.07996561
+              "underlying_return": -0.0816853
             }
           },
           "market_as_of": "2026-08-19",
@@ -5169,7 +5177,7 @@
           "signal_id": "hk-beta:2026-08-19:2026-08-20"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-20",
           "position": 0,
@@ -5177,7 +5185,7 @@
           "signal_id": "hk-beta:2026-08-20:2026-08-21"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-21",
           "position": 1,
@@ -5185,7 +5193,7 @@
           "signal_id": "hk-beta:2026-08-21:2026-08-22"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-25",
           "position": 0,
@@ -5193,7 +5201,7 @@
           "signal_id": "hk-beta:2026-08-25:2026-08-26"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-26",
           "position": 0,
@@ -5201,7 +5209,7 @@
           "signal_id": "hk-beta:2026-08-26:2026-08-27"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-27",
           "position": 0,
@@ -5209,7 +5217,7 @@
           "signal_id": "hk-beta:2026-08-27:2026-08-28"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-28",
           "position": -1,
@@ -5217,7 +5225,7 @@
           "signal_id": "hk-beta:2026-08-28:2026-08-29"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-08-31",
           "position": 0,
@@ -5225,7 +5233,7 @@
           "signal_id": "hk-beta:2026-08-31:2026-09-01"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-01",
           "position": 0,
@@ -5233,7 +5241,7 @@
           "signal_id": "hk-beta:2026-09-01:2026-09-02"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-02",
           "position": 0,
@@ -5241,7 +5249,7 @@
           "signal_id": "hk-beta:2026-09-02:2026-09-03"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-03",
           "position": 0,
@@ -5249,7 +5257,7 @@
           "signal_id": "hk-beta:2026-09-03:2026-09-04"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-04",
           "position": 0,
@@ -5257,7 +5265,7 @@
           "signal_id": "hk-beta:2026-09-04:2026-09-05"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-07",
           "position": 0,
@@ -5265,7 +5273,7 @@
           "signal_id": "hk-beta:2026-09-07:2026-09-08"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-08",
           "position": -1,
@@ -5273,7 +5281,7 @@
           "signal_id": "hk-beta:2026-09-08:2026-09-09"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-09",
           "position": 0,
@@ -5281,7 +5289,7 @@
           "signal_id": "hk-beta:2026-09-09:2026-09-10"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-10",
           "position": -1,
@@ -5289,7 +5297,7 @@
           "signal_id": "hk-beta:2026-09-10:2026-09-11"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-11",
           "position": 0,
@@ -5297,7 +5305,7 @@
           "signal_id": "hk-beta:2026-09-11:2026-09-12"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-14",
           "position": -1,
@@ -5305,7 +5313,7 @@
           "signal_id": "hk-beta:2026-09-14:2026-09-15"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-15",
           "position": -1,
@@ -5313,7 +5321,7 @@
           "signal_id": "hk-beta:2026-09-15:2026-09-16"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-16",
           "position": -1,
@@ -5321,7 +5329,7 @@
           "signal_id": "hk-beta:2026-09-16:2026-09-17"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-17",
           "position": 1,
@@ -5329,7 +5337,7 @@
           "signal_id": "hk-beta:2026-09-17:2026-09-18"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-18",
           "position": 1,
@@ -5337,7 +5345,7 @@
           "signal_id": "hk-beta:2026-09-18:2026-09-19"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-21",
           "position": 0,
@@ -5345,7 +5353,7 @@
           "signal_id": "hk-beta:2026-09-21:2026-09-22"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-22",
           "position": 1,
@@ -5353,12 +5361,20 @@
           "signal_id": "hk-beta:2026-09-22:2026-09-23"
         },
         {
-          "entry_date": "2026-09-24",
+          "entry_date": "2026-09-25",
           "horizons": {},
           "market_as_of": "2026-09-23",
           "position": -1,
           "report_date": "2026-09-24",
           "signal_id": "hk-beta:2026-09-23:2026-09-24"
+        },
+        {
+          "entry_date": "2026-09-25",
+          "horizons": {},
+          "market_as_of": "2026-09-24",
+          "position": -1,
+          "report_date": "2026-09-25",
+          "signal_id": "hk-beta:2026-09-24:2026-09-25"
         }
       ],
       "series": [
@@ -6089,21 +6105,21 @@
           "underlying_return": 0.0
         },
         {
-          "benchmark_equity": 0.85702843,
+          "benchmark_equity": 0.85542651,
           "entry_date": "2026-08-20",
-          "exit_date": "2026-09-24",
+          "exit_date": "2026-09-25",
           "position": 1,
           "signal_id": "hk-beta:2026-08-19:2026-08-20",
-          "strategy_equity": 0.92339487,
-          "strategy_return_net": -0.08096561,
+          "strategy_equity": 0.92166702,
+          "strategy_return_net": -0.0826853,
           "turnover": 1,
-          "underlying_return": -0.07996561
+          "underlying_return": -0.0816853
         }
       ]
     }
   },
   "data_quality": {
-    "active_signal_dates": 108,
+    "active_signal_dates": 109,
     "conflicts": [
       "2026-05-29 Hang Seng Index: 25006.16 versus 25182.39; excluded conflicted observation",
       "2026-05-29 Hang Seng TECH ETF (3033.HK): 4.782 versus 4.784; excluded conflicted observation",
@@ -6138,9 +6154,9 @@
       "2026-06-21: excluded non-session weekend effective date"
     ],
     "first_observation": "2026-04-16",
-    "last_observation": "2026-09-24",
+    "last_observation": "2026-09-25",
     "observations": 69,
-    "signals": 108
+    "signals": 109
   },
   "methodology": {
     "execution": "A signal can enter only at the first available benchmark close on or after publication and strictly after its market as-of date.",
@@ -6773,12 +6789,12 @@
       "source": "reports_professional/archive/2026-08-21/morning_briefing.md"
     },
     {
-      "as_of": "2026-09-24",
+      "as_of": "2026-09-25",
       "prices": {
-        "Hang Seng Index": 24834.1191,
-        "Hang Seng TECH ETF (3033.HK)": 4.28
+        "Hang Seng Index": 24761.1309,
+        "Hang Seng TECH ETF (3033.HK)": 4.272
       },
-      "report_date": "2026-09-25",
+      "report_date": "2026-09-26",
       "source": "current_bundle"
     }
   ],
@@ -8799,6 +8815,26 @@
       "report_date": "2026-09-25",
       "signal": "Risk-off",
       "signal_id": "hk-beta:2026-09-24:2026-09-25",
+      "source": "current_bundle",
+      "status": "active"
+    },
+    {
+      "benchmark_scope": [
+        "Hang Seng Index",
+        "Hang Seng TECH ETF (3033.HK)"
+      ],
+      "entry_policy": "next_available_close",
+      "evidence": {
+        "market_pulse": "Mixed backdrop with USD range-bound, rates were not the dominant driver, and Nasdaq 100 outperformed FXI",
+        "report_quality": 83.5,
+        "risk_score": null,
+        "source_health": "degraded"
+      },
+      "market_as_of": "2026-09-25",
+      "position": 0,
+      "report_date": "2026-09-26",
+      "signal": "Mixed",
+      "signal_id": "hk-beta:2026-09-25:2026-09-26",
       "source": "current_bundle",
       "status": "active"
     }
